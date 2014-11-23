@@ -1,0 +1,128 @@
+<html>
+<head>
+	<script type="text/javascript" src="http://tv.barnsley.nz:6680/mopidy/mopidy.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/spotify.js"></script>
+	<script type="text/javascript" src="/js/core.js"></script>
+	<link href="/css/layout.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+	<div id="player">
+		<div class="liner">
+			<div class="current-track">
+				<div class="thumbnail"></div>
+				<div class="track">No track</div>
+				<div class="artist clickable">No artist</div>
+			</div>
+			<div class="button previous" data-action="previous-track"><span class="icon medium previous-track"></span></div>
+			<div class="button play-pause" data-action="play-pause"><span class="icon medium play"></span></div>
+			<div class="button next" data-action="next-track"><span class="icon medium next-track"></span></div>
+		</div>
+	</div>
+	
+	<div id="menu">
+		<div class="branding"><h2>Mopspot</h2></div>
+		<div class="menu-item-wrapper queue">
+			<a class="menu-item" data-target="queue" href="#queue"><span class="icon small queue"></span> Queue</a>
+		</div>
+		<div class="menu-item-wrapper playlists">
+			<a class="menu-item" data-target="playlists" href="#playlists"><span class="icon small playlists"></span> Playlists</a>
+		</div>
+		<div class="menu-item-wrapper explore">
+			<a class="menu-item" data-target="explore" href="#explore"><span class="icon small explore"></span> Explore</a>
+		</div>
+		<div class="menu-item-wrapper search hide search-results-menu-item">
+			<a class="menu-item" data-target="search" href="#search"><span class="icon small search"></span> Search results</a>
+		</div>
+
+		<div class="search-field">
+			<input type="text" /><div class="submit"><span class="icon medium search"></span></div>
+		</div>
+	</div>
+	
+	<div id="pages">
+		<div class="liner">
+		
+			<div class="page" id="queue">
+				<h1 class="bottom-padding">Queue</h1>
+				<div class="tracks"><div class="loader"></div></div>
+			</div>
+			
+			<div class="page" id="playlists">
+				<h1 class="bottom-padding">Playlists</h1>
+				<div class="loader"></div>
+			</div>
+			
+			<div class="page" id="explore">
+				<div class="explore-subpage artist hide">
+					
+					<div class="artwork-panel">
+						<h1>
+							<span class="name reset-on-load"></span>
+						</h1>
+						<div class="background-image"></div>
+					</div>
+					
+					<div class="clear-both"></div>
+					
+					<div class="explore-artist-section">
+						<div class="albums reset-on-load"><div class="loader"></div></div>
+						<div class="clear-both"></div>
+					</div>
+					
+					<div class="explore-artist-section">
+						<div class="tracks-wrapper">
+							<h2 class="bottom-padding">Top Tracks</h2>
+							<div class="tracks reset-on-load"><div class="loader"></div></div>
+						</div>						
+						<div class="related-artists-wrapper">
+							<h2 class="bottom-padding">Related artists</h2>
+							<div class="related-artists reset-on-load"><div class="loader"></div></div>
+						</div>
+						<div class="clear-both"></div>
+					</div>
+				</div>
+				<div class="explore-subpage album hide">
+					
+					<div class="artwork-panel">
+						<h1>
+							<span class="name reset-on-load"></span>
+							by
+							<span class="artist reset-on-load"></span>
+						</h1>
+						<div class="background-image"></div>
+					</div>
+					
+					<div class="clear-both"></div>
+					
+					<div class="tracks reset-on-load"><div class="loader"></div></div>
+					<div class="clear-both"></div>
+				</div>
+			</div>
+			
+			<div class="page" id="search">
+				<div id="search-results">
+					<div class="search-results-section artist">
+						<h2>Artists</h2>
+						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="clear-both"></div>
+					</div>
+					<div class="search-results-section album">
+						<h2>Albums</h2>
+						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="clear-both"></div>
+					</div>
+					<div class="search-results-section track">
+						<h2 class="bottom-padding">Top tracks</h2>
+						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="clear-both"></div>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+	</div>
+	
+</body>
+</html>
