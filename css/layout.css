@@ -2,7 +2,7 @@
 
 body,
 html {
-	background: #282725;
+	background: #1A1917;
 	color: #FFFFFF;
 	font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 	font-size: 12px;
@@ -183,39 +183,71 @@ input[type='submit'] {
 
 #menu {
 	width: 15%;
-	background: #3a3937;
-	height: 100%;
+	background: #292826;
 	z-index: 2;
 	position: fixed;
 	font-size: 14px;
 	top: 0;
 	left: 0;
+	bottom: 63px;
 }
 
-#menu > .menu-item-wrapper {
+#menu .menu-bar {
+	overflow-y: scroll;
+	position: absolute;
+	top: 63px;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+#menu .menu-item-wrapper {
 	padding: 10px 12px;
-	color: #FFFFFF;
-	opacity: 0.5;
+	color: #ADA9A1;
+}
+
+#menu .menu-item-wrapper:not(.playlists) .menu-item {
+	text-decoration: none;
 	cursor: hand;
 	cursor: pointer;
+	color: #ADA9A1;
 }
 
-#menu > .menu-item-wrapper .menu-item {
-	color: #FFFFFF;
-	text-decoration: none;
-}
-
-#menu > .menu-item-wrapper .icon {
+#menu .menu-item-wrapper .icon {
 	margin: 0px 0 -5px 0;
+	opacity: 0.5;
 }
 
-#menu > .menu-item-wrapper:hover {
+#menu .menu-item-wrapper:hover:not(.playlists) .menu-item {
+	color: #FFFFFF;
+}
+
+#menu .menu-item-wrapper:hover:not(.playlists) .menu-item .icon {
 	opacity: 1;
 }
 
-#menu > .menu-item-wrapper.current {
-	border-color: #1cf4c4;
-	opacity: 1;
+#menu .menu-item-wrapper.current:not(.playlists) {
+	color: #FFFFFF;
+}
+
+#menu .playlist-list {
+	padding: 6px 6px 10px 26px;
+	font-size: 12px;
+	line-height: 1.2em;
+}
+
+#menu .playlist-list .playlist-item {
+	padding: 4px 0;
+}
+
+#menu .playlist-list .playlist-item a {
+	text-decoration: none;
+	color: #ADA9A1;
+}
+
+#menu .playlist-list .playlist-item.current a,
+#menu .playlist-list .playlist-item a:hover {
+	color: #FFFFFF;
 }
 
 
@@ -283,8 +315,8 @@ input[type='submit'] {
 }
 
 .track-row {
-	border-top: 1px solid #333333;
-	border-bottom: 1px solid #333333;
+	border-top: 1px solid #252525;
+	border-bottom: 1px solid #252525;
 	margin-top: -1px;
 	cursor: hand;
 	cursor: pointer;
@@ -309,7 +341,7 @@ input[type='submit'] {
 
 .track-row.highlighted,
 .track-row.highlighted:hover {
-	background: #333333;
+	background: #242320;
 	color: #FFFFFF;
 }
 
@@ -327,7 +359,7 @@ input[type='submit'] {
 }
 
 .track-row:hover {
-	background: #2A2A2A;
+	background: #1F1D1B;
 	color: #FFFFFF;
 }
 
@@ -406,7 +438,7 @@ input[type='submit'] {
 .album-panel {
 	width: 19%;
 	height: 200px;
-	background: #333333 50% 50% no-repeat;
+	background: #262523 50% 50% no-repeat;
 	background-size: cover;
 	display: block;
 	float: left;
@@ -453,9 +485,8 @@ input[type='submit'] {
 }
 
 #player > .liner {
-	background: #3a3937;
+	background: #2E2D2B;
 	padding: 10px;
-	border-top: 1px solid #666666;
 }
 
 #player .button {

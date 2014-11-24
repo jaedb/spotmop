@@ -10,7 +10,7 @@
 /* ================================================================================= */
  
 // initiate mopidy
-var mopidy = new Mopidy({});
+var mopidy = new Mopidy();
 
 // hold core data
 var coreArray = new Array();
@@ -40,6 +40,15 @@ function navigate(){
     
     if(section == 'explore'){
 		explore( hash[1], hash[2] );
+    };
+    
+    // hide playlist 'current' selectors
+	$('#menu .playlist-item').removeClass('current');
+	$('#playlists .playlist-subpage').addClass('hide');
+    
+    if(section == 'playlists'){
+		$('#playlists .playlist-subpage[data-uri="'+hash[1]+'"]').removeClass('hide');
+		$('#menu .playlist-item a[href="#playlists/'+hash[1]+'"]').parent().addClass('current');
     };	
 };
 
@@ -60,9 +69,6 @@ function navigateToPage( page ){
 	$('.page#'+page).show();
 	
 	coreArray['currentPage'] = page;
-	
-	if( page == 'playlists' )
-		updatePlaylists();
 	
 	if( page == 'queue' )
 		updatePlayQueue();
@@ -318,37 +324,40 @@ function updatePlaylists(){
 	
 	// Get the users playlists and place them in the client
 	mopidy.playlists.getPlaylists().then(function(playlists){
-	
+		
+		var lists = $('.menu-item-wrapper.playlists .playlist-list');
+		var tracks = $('#playlists .playlist-tracks');
 		coreArray['playlists'] = playlists;
 		
-		var groupedLists = {},splitList = [];
+		// clear out the previous playlists
+		lists.html('');
+		tracks.html('');
 		
-		// All the playlists are build on the following way: [...Playlist name... / ...Playlist folder (if sorted)...]
-		// We split this structure so we can place the playlists in the right folder in the client. 
-		for(var x = 0;x < playlists.length;x++){
-			var list = playlists[x];
-			var splitName = list.name.split('/');
-			var groups = [];
+		// loop each playlist
+		for( var i = 0; i < playlists.length; i++ ){
+		
+			var playlist = playlists[i];
+			var tracklist = '';
 			
-			if(splitName.length == 2){
-				splitList.push(splitName);
+			// add list to the playlists bar
+			lists.append('<div class="playlist-item"><a href="#playlists/'+playlist.uri+'">'+playlist.name+'</a></div>');
+			
+			// loop each playlist's tracks
+			for( var t = 0; t < playlist.tracks.length; t++ ){
+			
+				var track = playlist.tracks[t];
+				var albumDetails = '';
+				
+				if( typeof(track.album) !== 'undefined' )
+					albumDetails = '<div class="col w30"><span class="clickable" data-uri="'+track.album.uri+'">'+track.album.name+'</span></div>';
+				
+				// add list of tracks to playlist page
+				tracklist += '<div class="track-row row" data-id="'+t+'" data-uri="'+track.uri+'"><span class="icon small"></span><div class="col w30 title">'+track.name+'</div><div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>'+albumDetails+'<div class="clear-both"></div></div>';
+				
 			}
-			else if(splitName.length > 2 ){
-				splitList.push([splitName.shift(), splitName.join('/')]);
-			}
-			else{
-				splitList.push(["unlisted",splitName[0]]);
-			}
-		}
-		
-		// We now know which playlist has which parent folder. We now need to place these in the right subarray.
-		var groupname;
-		for(var x = 0;x < splitList.length;x++){
-			var groupname = splitList[x][0];
-			if (!(groupname in groupedLists))
-				groupedLists[groupname] = [];
-
-			groupedLists[groupname].push([splitList[x][1],x,playlists[x].uri]);
+			
+			// inject tracklist
+			tracks.append('<div class="playlist-subpage hide" data-uri="'+playlist.uri+'"><h1 class="bottom-padding">'+playlist.name+'</h1><div class="tracks" data-uri="'+playlist.uri+'">'+tracklist+'</div></div>');
 		}
 		
 	},consoleError);
@@ -381,6 +390,10 @@ var doUpdatePlayer = function(track){
 			$('#player .thumbnail').attr('style','background-image: url('+spotifyAlbum.images[2].url+');');
 		});
 		
+		// see if we can find the current track anywhere else in the interface (playlists, explore, etc)
+		$(document).find('.track-row').removeClass('current');
+		$(document).find('.track-row[data-uri="'+track.uri+'"]').addClass('current');
+		
 		coreArray['currentTrackURI'] = track.uri;
 		
 	} else {
@@ -395,8 +408,14 @@ var doUpdateState = function(state){
 	// update player/pause button
 	if(state == "playing"){
 		$('#player .button[data-action="play-pause"]').children('.icon').removeClass('play').addClass('pause');
+		
+		// see if we can find the current track anywhere else in the interface (playlists, explore, etc)
+		$(document).find('.track-row.current').addClass('playing').removeClass('not-playing');
 	}else{
 		$('#player .button[data-action="play-pause"]').children('.icon').removeClass('pause').addClass('play');
+		
+		// see if we can find the current track anywhere else in the interface (playlists, explore, etc)
+		$(document).find('.track-row.current').removeClass('playing').addClass('not-playing');
 	}
 	
 	coreArray['state'] = state;
@@ -551,6 +570,8 @@ function addSearchResults(type, results){
 mopidy.on("state:online", function(){
 	
 	updatePlayer();
+	updatePlaylists();
+	
 	if( window.location.hash )
 		navigate();
 
@@ -582,15 +603,20 @@ mopidy.on("state:online", function(){
 		window.location.hash = buildHashURL($(this).data('uri'));
 	});
 	
-	// search submit
+	// search submit <enter>
+	$('.search-field input').keyup(function(evt){
+		if( $(this).val() != '' && evt.keyCode == 13 )
+			window.location.hash = 'search/'+$(this).val();
+	});
+	
+	// search submit click
 	$('.search-field .submit').on('click', function(evt){
-		window.location.hash = 'search/'+$(this).siblings('input').val();
+		if( $(this).siblings('input').val() != '' )
+			window.location.hash = 'search/'+$(this).siblings('input').val();
 	});
 	
 	// listen to hash changes (drives all functionality!)
-	$(window).on('hashchange',function(){ 
-	    console.log('hash changed to:'+ window.location.hash);
-	    
+	$(window).on('hashchange',function(){
 	    navigate();
 	});
 	
@@ -612,13 +638,17 @@ mopidy.on("state:online", function(){
 		},consoleError);
 	});
 	
-	
 	// double-click to play track from album list (explore/search result)
-	$(document).on('dblclick', '#explore .explore-subpage.album .track-row', function(evt){		
-	
+	$(document).on('dblclick', '#explore .explore-subpage.album .track-row', function(evt){	
 		var trackID = $(this).data('id');		
 		var tracklistURI = $('#explore .explore-subpage.album .tracks').data('uri');
-		
+		replaceAndPlay( tracklistURI, trackID );
+	});
+	
+	// double-click to play track from playlist list 
+	$(document).on('dblclick', '#playlists .tracks .track-row', function(evt){	
+		var trackID = $(this).data('id');		
+		var tracklistURI = $(this).closest('.tracks').data('uri');
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	

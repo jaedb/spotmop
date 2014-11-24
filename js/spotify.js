@@ -7,6 +7,15 @@ var spotifyAPI = {
 	album: "https://api.spotify.com/v1/search?type=album&limit=10&q="
 };
 
+function getPlaylists( albumID ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/albums/'+albumID+'?country=NZ',
+		type: "GET",
+		dataType: "json",
+		timeout: 5000
+	});
+};
+
 function getAlbum( albumID ){
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/albums/'+albumID+'?country=NZ',
