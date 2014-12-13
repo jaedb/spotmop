@@ -1,29 +1,55 @@
 <html>
 <head>
-	<script type="text/javascript" src="/mopidy/mopidy.min.js"></script>
+	<script type="text/javascript" src="/config.js"></script>
+	<script type="text/javascript" src="http://tv.barnsley.nz:6680/mopidy/mopidy.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.js"></script>
-	<script type="text/javascript" src="/js/spotify.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
+	<script type="text/javascript" src="/js/spotify.js"></script>
+	<script type="text/javascript" src="/js/explore.js"></script>
+	<script type="text/javascript" src="/js/search.js"></script>
+	<script type="text/javascript" src="/js/navigation.js"></script>
+	<script type="text/javascript" src="/js/playlists.js"></script>
+	<link href="/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
 	<link href="/css/layout.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
 
 	<div id="player">
 		<div class="liner">
-			<div class="current-track">
-				<div class="thumbnail"></div>
-				<div class="track">No track</div>
-				<div class="artist clickable">No artist</div>
+		
+			<div class="col w35">
+				
+				<div class="controls">
+					<div class="button previous" data-action="previous-track"><span class="icon medium previous-track"></span></div>
+					<div class="button play-pause" data-action="play-pause"><span class="icon medium play"></span></div>
+					<div class="button next" data-action="next-track"><span class="icon medium next-track"></span></div>
+				</div>
+			
+				<div class="current-track">
+					<a class="thumbnail"></a>
+					<div class="track">No track</div>
+					<div class="artist">No artist</div>
+				</div>
+				
 			</div>
-			<div class="button previous" data-action="previous-track"><span class="icon medium previous-track"></span></div>
-			<div class="button play-pause" data-action="play-pause"><span class="icon medium play"></span></div>
-			<div class="button next" data-action="next-track"><span class="icon medium next-track"></span></div>
+			
+			<div class="col w65">
+			
+				<div class="progress">
+					<div class="bar-track">
+						<div class="bar"></div>
+					</div>
+				</div>
+				
+			</div>
+			
+			<div class="clear-both"></div>
 		</div>
 	</div>
 	
 	<div id="menu">
-	
-		<div class="branding"><h2>Mopspot</h2></div>
 		
 		<div class="menu-bar">
 		
@@ -32,16 +58,16 @@
 			</div>
 			
 			<div class="menu-item-wrapper queue">
-				<a class="menu-item" data-target="queue" href="#queue"><span class="icon small queue"></span> Queue</a>
+				<a class="menu-item" data-target="queue" href="#queue"><i class="fa fa-list-ol"></i> &nbsp; Queue</a>
 			</div>
 			
 			<div class="menu-item-wrapper explore">
-				<a class="menu-item" data-target="explore" href="#explore"><span class="icon small explore"></span> Explore</a>
+				<a class="menu-item" data-target="explore" href="#explore/playlists"><i class="fa fa-star"></i> &nbsp; Featured</a>
 			</div>
 			
 			<div class="menu-item-wrapper playlists">
-				<span class="menu-item" data-target="playlists"><span class="icon small playlists"></span> Playlists</span>
-				<div class="playlist-list"><div class="loader"></div></div>
+				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
+				<div class="playlist-list"></div>
 			</div>
 			
 		</div>
@@ -63,6 +89,41 @@
 			</div>
 			
 			<div class="page" id="explore">
+				
+				<div class="explore-subpage playlists hide">
+					
+					<div class="artwork-panel">
+						<h1>
+							<span class="name reset-on-load"></span>
+						</h1>
+						<div class="background-image"></div>
+					</div>
+					
+					<div class="clear-both"></div>
+					
+					<div class="playlists">
+						<div class="loader"></div>
+					</div>
+					
+				</div>
+				
+				<div class="explore-subpage playlist hide">
+					
+					<div class="artwork-panel">
+						<h1>
+							<span class="name reset-on-load"></span>
+						</h1>
+						<div class="background-image"></div>
+					</div>
+					
+					<div class="clear-both"></div>
+					
+					<div class="tracks use-tracklist-in-focus">
+						<div class="loader"></div>
+					</div>
+					
+				</div>
+				
 				<div class="explore-subpage artist hide">
 					
 					<div class="artwork-panel">
@@ -75,14 +136,9 @@
 					<div class="clear-both"></div>
 					
 					<div class="explore-artist-section">
-						<div class="albums reset-on-load"><div class="loader"></div></div>
-						<div class="clear-both"></div>
-					</div>
-					
-					<div class="explore-artist-section">
 						<div class="tracks-wrapper">
 							<h2 class="bottom-padding">Top Tracks</h2>
-							<div class="tracks reset-on-load"><div class="loader"></div></div>
+							<div class="tracks reset-on-load use-tracklist-in-focus"><div class="loader"></div></div>
 						</div>						
 						<div class="related-artists-wrapper">
 							<h2 class="bottom-padding">Related artists</h2>
@@ -90,6 +146,13 @@
 						</div>
 						<div class="clear-both"></div>
 					</div>
+					
+					<div class="explore-artist-section">
+				        <h2 class="bottom-padding">Albums</h2>
+						<div class="albums reset-on-load"><div class="loader"></div></div>
+						<div class="clear-both"></div>
+					</div>
+                    
 				</div>
 				<div class="explore-subpage album hide">
 					
@@ -130,6 +193,10 @@
 			</div>
 			
 		</div>
+	</div>
+	
+	<div id="notification">
+		<div class="message"></div>
 	</div>
 	
 </body>
