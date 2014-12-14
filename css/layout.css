@@ -609,6 +609,18 @@ a:hover {
 	cursor: pointer;
 }
 
+
+#player .volume {
+	position: relative;
+	width: 100%;
+	height: 45px;
+	cursor: hand;
+	cursor: pointer;
+}
+
+
+/* bars (progress and volume */
+
 #player .bar-track {
 	height: 5px;
 	background: #3e3d3b;
@@ -625,5 +637,15 @@ a:hover {
 	position: absolute;
 	top: 0;
 	left: 0;
+}
+
+#player .bar-tip {
+	width: 13px;
+    height: 13px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    position: absolute;
+    top: -4px;
+    right: -6px;
 }
 

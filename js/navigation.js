@@ -20,6 +20,9 @@ function navigate(){
     
     navigateToPage(section);
     
+    if( section == 'queue' )
+        updatePlayQueue();
+    
     if(section == 'search'){
 		startSearch( hash[1] );
     };

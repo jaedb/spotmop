@@ -34,7 +34,8 @@ $(document).ready( function(evt){
     // kick off standard events
     mopidy.on("event:trackPlaybackResumed" ,function(track){	updatePlayer(); console.log('resumed'); });
     mopidy.on("event:trackPlaybackStarted" ,function(track){	updatePlayer(); console.log('started'); });
-    mopidy.on("event:volumeChanged" ,function(vol){				updatePlayer(); });
+    mopidy.on("event:trackPlaybackEnded" ,function(track){	    updatePlayer(); console.log('ended'); });
+    mopidy.on("event:volumeChanged" ,function(vol){				updateVolume(); });
     mopidy.on("event:playbackStateChanged", function(obj){		updatePlayer(); console.log('playback changed'); });
 
 
@@ -52,6 +53,7 @@ $(document).ready( function(evt){
         coreArray['browsePageLoaded'] = false;
 
         updatePlayer();
+        updateVolume();
         updatePlaylists();
 
     });
@@ -156,7 +158,8 @@ $(document).ready( function(evt){
 	});
 	
 	
-	// --- PLAYER EVENTS --- //
+    
+	// --- PLAYER CONTROLS EVENTS --- //
 	
 	$('#player .button[data-action="previous-track"]').on('click', function(evt){
 		mopidy.playback.previous();
@@ -180,6 +183,10 @@ $(document).ready( function(evt){
 		updatePlayer();
 	}); 
 	
+	
+    
+	// --- PLAYER SEEK EVENTS --- //
+	
 	// click to seek on current track
 	$(document).on('click', '.progress', function(evt){
 	
@@ -195,6 +202,21 @@ $(document).ready( function(evt){
 	        
 	      };
 	});
+	
+    
+	// --- PLAYER VOLUME EVENTS --- //
+    $(document).on('click', '.volume', function(evt){
+	
+		var position = evt.pageX - $(this).position().left;
+		var width = $(this).width();
+        var percent = position / width * 100;
+			
+        mopidy.playback.setVolume(percent).then( function(result){
+            updateVolume();
+        },consoleError);
+        
+    });
+                   
 });
 
 
@@ -443,7 +465,6 @@ function addTrackToQueue( uri ){
 /* ================================================================================= */
 
 function updatePlayer(){
-	updatePlayQueue();
 	mopidy.playback.getCurrentTrack().done(doUpdatePlayer, consoleError);	
 	mopidy.playback.getState().done(doUpdateState, consoleError);
 	updatePlayPosition();
@@ -502,6 +523,15 @@ function updatePlayPosition(){
 		$('#player .progress .bar').css('width',percent+'%');
 	}
 	
+}
+
+// update volume, and update interface accordingly
+function updateVolume(){
+    
+    mopidy.playback.getVolume().then( function(volume){
+        $('#player .volume .bar').css('width',volume+'%');
+    },consoleError);
+    
 }
 
 // update player state
