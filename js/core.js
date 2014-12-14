@@ -205,7 +205,7 @@ $(document).ready( function(evt){
 	
     
 	// --- PLAYER VOLUME EVENTS --- //
-    $(document).on('click', '.volume', function(evt){
+    $(document).on('click', '.volume-wrapper', function(evt){
 	
 		var position = evt.pageX - $(this).position().left;
 		var width = $(this).width();
