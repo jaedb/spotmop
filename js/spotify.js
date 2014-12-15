@@ -131,6 +131,19 @@ function getFeaturedPlaylists(){
 	});
 };
 
+function getNewReleases(){
+	checkToken();
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/new-releases?country=NZ',
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + spotifyAPI.token
+		},
+		dataType: "json",
+		timeout: 100000
+	});
+};
+
 function getPlaylist( userID, playlistID ){
 	checkToken();
 	return $.ajax({

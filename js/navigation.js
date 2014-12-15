@@ -20,8 +20,9 @@ function navigate(){
     
     navigateToPage(section);
     
-    if( section == 'queue' )
+    if( section == 'queue' ){
         updatePlayQueue();
+    }
     
     if(section == 'search'){
 		startSearch( hash[1] );
@@ -29,6 +30,10 @@ function navigate(){
     
     if(section == 'explore'){
 		explore( hash[1], hash[2] );
+    };
+    
+    if(section == 'featured'){
+		featured();
     };
     
     // hide playlist 'current' selectors

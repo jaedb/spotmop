@@ -39,16 +39,6 @@ function explore( type, uri ){
 			renderExploreAlbum( album );
 		}).fail( function( response ){ notifyUser('error', 'Error fetching album: '+response.responseJSON.error.message ); } );
 	
-	// playlists view
-	}else if( type == 'playlists' ){
-	
-		// drop in the loader
-		addLoader( $('#explore .explore-subpage.playlists') );
-	
-		getFeaturedPlaylists().success(function( playlists ) {
-			renderFeaturedPlaylists( playlists );
-		}).fail( function( response ){ notifyUser('error', 'Error fetching featured playlists: '+response.responseJSON.error.message ); } );
-	
 	// playlist view
 	}else if( type == 'playlist' ){
 	
@@ -176,30 +166,6 @@ function renderExploreAlbum( album ){
 	coreArray['tracklistInFocus'] = album.tracks.items;
 	
 	renderTracksTable( $('.explore-subpage.album .tracks'), album.tracks.items, album.uri, album );
-};
-
-
-/*
- * Render the Featured Playlists section
-*/
-function renderFeaturedPlaylists( playlists ){
-
-	var playlists = playlists.playlists.items;
-	
-	// empty out previous playlists
-	$('#explore .playlists').html('').removeClass('hide');
-	
-	for(var i = 0; i < playlists.length; i++){
-		
-		var playlist = playlists[i];
-		
-		imageURL = '';
-		if( playlists.length > 0 )
-			imageURL = playlist.images[0].url;
-		
-		$('#explore .playlists').append( '<a class="album-panel" href="#explore/playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+playlist.name+'</span></a>' );
-		
-	};
 };
 
 

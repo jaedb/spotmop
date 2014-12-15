@@ -249,8 +249,8 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	
 	var html = '';
 	html += '<div class="track-row row headings">';
-		html += '<div class="col icon-spacer"></div>';
-		html += '<div class="col w30">Track</div>';
+		html += '<div class="col w5"></div>';
+		html += '<div class="col w25">Track</div>';
 		html += '<div class="col w30">Artist</div>';
 		html += '<div class="col w30">Album</div>';
 		html += '<div class="clear-both"></div>';
@@ -266,7 +266,8 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				var track = tracks[x];
 			
 			html += '<div class="track-row row" data-id="'+x+'" data-uri="'+track.uri+'">';
-				html += '<span class="icon small"></span><div class="col w30 title">'+track.name+'</div>';
+				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i></div>';
+                html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
 				if( album )
 					html += '<div class="col w30"><a href="#explore/album/'+album.uri+'" data-uri="'+album.uri+'">'+album.name+'</a></div>';
