@@ -18,6 +18,8 @@ function explore( type, uri ){
 		var id = getIdFromUri( uri );
 	
 	navigateToPage('explore');
+    
+    coreArray['currentPageSection'] = type;
 	
 	// clear out all the data
 	$('#explore .reset-on-load').html('<div class="loader"></div>');
@@ -60,7 +62,9 @@ function explore( type, uri ){
  * Uses a combo of backend API and Spotify API
 */
 function renderExploreArtist( artist ){
-
+    
+    console.log(artist);
+    
 	// inject artist name
 	$('.explore-subpage.artist .name').html( artist.name );
 			
@@ -176,6 +180,7 @@ function renderPlaylist( playlist ){
 	
 	// inject artist name
 	$('.explore-subpage.playlist .name').html( playlist.name );
+	$('.explore-subpage.playlist').attr( 'data-uri', getIdFromUri(playlist.uri) );
 			
 	imageURL = '';
 	if( playlist.images.length > 0 )

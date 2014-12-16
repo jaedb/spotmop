@@ -622,8 +622,6 @@ a:hover {
 	position: relative;
 	width: 90%;
 	height: 45px;
-	cursor: hand;
-	cursor: pointer;
 }
 
 #player .volume-wrapper {
@@ -640,24 +638,25 @@ a:hover {
 #player .volume-wrapper .volume {
 	position: relative;
 	height: 45px;
-	cursor: hand;
-	cursor: pointer;
     margin-left: 20px;
+    margin-right: 20px;
 }
 
 
 /* bars (progress and volume */
 
-#player .bar-track {
+.slider {
 	height: 5px;
 	background: #3e3d3b;
 	position: absolute;
 	top: 20px;
 	left: 0;
 	right: 0px;
+    cursor: hand;
+    cursor: pointer;
 }
 
-#player .bar {
+.slider .ui-slider-range {
 	height: 100%;
 	background: #1cf4c4;
 	width: 1px;
@@ -666,7 +665,7 @@ a:hover {
 	left: 0;
 }
 
-#player .bar-tip {
+.slider .ui-slider-handle {
 	width: 13px;
     height: 13px;
     border-radius: 10px;

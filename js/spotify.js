@@ -200,5 +200,20 @@ function addTrackToPlaylist( playlistID, trackURI ){
 	});
 };
 
+function removeTracksFromPlaylist( playlistID, trackURIs ){
+	checkToken();
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
+		type: "DELETE",
+		headers: {
+			'Authorization': 'Bearer ' + spotifyAPI.token
+		},
+		dataType: "json",
+		data: JSON.stringify( { tracks: trackURIs } ),
+		contentType: "application/json; charset=utf-8",
+		timeout: 10000
+	});
+};
+
 
 

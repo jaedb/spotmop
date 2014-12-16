@@ -42,7 +42,13 @@ function featured(){
             zIndex: 10000
         });
 
-	}).fail( function( response ){ notifyUser('error', 'Error fetching content: '+response.responseJSON.error.message ); } );
+	})
+    .fail( function( response ){
+        if( typeof response.responseJSON !== 'undefined' )
+            notifyUser('error', 'Error fetching content: '+response.responseJSON.error.message );
+        else
+            notifyUser('error', 'Error fetching content, and no error response' );
+    });
 	
 	
 	
