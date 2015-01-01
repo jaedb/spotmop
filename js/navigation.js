@@ -1,6 +1,6 @@
 /*
  * Spotmop
- * By James Barnsley (http://jamesbarnsley.co.nz
+ * By James Barnsley (http://jamesbarnsley.co.nz)
  * 
  * Navigate page sections
  *
@@ -20,8 +20,9 @@ function navigate(){
     
     navigateToPage(section);
     
-    if( section == 'queue' )
+    if( section == 'queue' ){
         updatePlayQueue();
+    }
     
     if(section == 'search'){
 		startSearch( hash[1] );
@@ -29,6 +30,10 @@ function navigate(){
     
     if(section == 'explore'){
 		explore( hash[1], hash[2] );
+    };
+    
+    if(section == 'featured'){
+		featured();
     };
     
     // hide playlist 'current' selectors
@@ -76,15 +81,10 @@ function exploreSubpage( subpage ){
  * Initiate base navigation
 */
 $(document).ready( function(evt){
-    mopidy.on("state:online", function(){
-	
-        if( window.location.hash )
-            navigate();
-		
-		// listen to hash changes (drives all functionality!)
-		$(window).on('hashchange',function(){
-		    navigate();
-		});
-	
-	});
+
+    // listen to hash changes (drives all functionality!)
+    $(window).on('hashchange',function(){
+        navigate();
+    });
+    
 });

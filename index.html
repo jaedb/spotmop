@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
+	<script type="text/javascript" src="/js/featured.js"></script>
 	<script type="text/javascript" src="/js/explore.js"></script>
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
@@ -40,9 +41,7 @@
 			<div class="col w55">
 			
 				<div class="progress">
-					<div class="bar-track">
-						<div class="bar"><div class="bar-tip"></div></div>
-					</div>
+					<div class="slider"></div>
 				</div>
 				
 			</div>
@@ -50,9 +49,7 @@
 			<div class="col w10 volume-wrapper">
                 <i class="fa fa-volume-down"></i>
 				<div class="volume">
-					<div class="bar-track">
-						<div class="bar"><div class="bar-tip"></div></div>
-					</div>
+					<div class="slider"></div>
 				</div>
 				
 			</div>
@@ -66,7 +63,7 @@
 		<div class="menu-bar">
 		
 			<div class="search-field">
-				<input type="text" /><div class="submit"><span class="icon medium search"></span></div>
+				<input type="text" /><div class="submit"><i class="fa fa-search"></i></div>
 			</div>
 			
 			<div class="menu-item-wrapper queue">
@@ -74,7 +71,11 @@
 			</div>
 			
 			<div class="menu-item-wrapper explore">
-				<a class="menu-item" data-target="explore" href="#explore/playlists"><i class="fa fa-star"></i> &nbsp; Featured</a>
+				<a class="menu-item" data-target="explore" href="#featured"><i class="fa fa-star"></i> &nbsp; Featured</a>
+			</div>
+			
+			<div class="menu-item-wrapper explore">
+				<a class="menu-item" data-target="explore" href="#browse"><i class="fa fa-paper-plane"></i> &nbsp; Browse</a>
 			</div>
 			
 			<div class="menu-item-wrapper playlists">
@@ -94,6 +95,30 @@
 				<div class="tracks"><div class="loader"></div></div>
 			</div>
 			
+			<div class="page" id="featured">
+				
+				<div class="section">
+					<h1>New Releases</h1>
+					<div class="albums">
+						<div class="loader"></div>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+				<div class="section">
+					<h1>Featured Playlists</h1>
+					<div class="playlists">
+						<div class="loader"></div>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+			</div>
+			
+			<div class="page" id="browse">
+				<h1>Browse is coming soon</h1>
+			</div>
+			
 			<div class="page" id="playlists">
 				<div class="playlist-tracks">
 					<div class="loader"></div>
@@ -102,31 +127,11 @@
 			
 			<div class="page" id="explore">
 				
-				<div class="explore-subpage playlists hide">
-					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
-					</div>
-					
-					<div class="clear-both"></div>
-					
-					<div class="playlists">
-						<div class="loader"></div>
-					</div>
-					
-				</div>
-				
 				<div class="explore-subpage playlist hide">
 					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
-					</div>
+					<h1>
+						<span class="name reset-on-load"></span>
+					</h1>
 					
 					<div class="clear-both"></div>
 					

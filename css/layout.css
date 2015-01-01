@@ -2,8 +2,8 @@
 
 body,
 html {
-	background: #1A1917;
-	color: #FFFFFF;
+	background: ##FFFFFF;
+	color: #000000;
 	font-family: 'Roboto', Helvetica, Arial, sans-serif;
 	font-size: 12px;
 }
@@ -16,7 +16,7 @@ html {
 
 h1 {
 	font-size: 26px;
-	font-weight: 100;
+	font-weight: 400;
 }
 
 h2 {
@@ -41,7 +41,7 @@ a {
 
 .explore-subpage .clickable:not(.album-panel):not(.artist-panel):hover,
 .track-row .clickable:hover {
-	border-bottom: 1px dotted #FFFFFF;
+	border-bottom: 1px dotted #000000;
 }
 
 
@@ -95,6 +95,10 @@ a {
 
 #explore .explore-subpage.playlists .loader {
 	padding-top: 300px;
+}
+
+*:focus {
+    outline: none;
 }
 
 
@@ -160,7 +164,7 @@ a {
 }
 
 a:hover {
-	border-color: #FFFFFF;
+	border-color: #000000;
 }
 
 
@@ -177,9 +181,10 @@ a:hover {
 	width: 250px;
 	padding: 20px;
 	border-radius: 5px;
-	background: #FFFFFF;
+	background: #777777;
 	opacity: 0.9;
-	color: #222222;
+	color: #FFFFFF;
+    font-weight: 700;
 	z-index: 9;
 }
 
@@ -204,13 +209,6 @@ a:hover {
 	padding: 20px;
 }
 
-#menu .branding {
-	background: #1cf4c4;
-	color: #333333;
-	padding: 20px;
-	margin-bottom: 12px;
-}
-
 #menu {
 	width: 15%;
 	z-index: 2;
@@ -219,7 +217,7 @@ a:hover {
 	top: 0;
 	left: 0;
 	bottom: 63px;
-	border-right: 1px solid #282725;
+	border-right: 1px solid #EEEEEE;
 }
 
 #menu .menu-bar {
@@ -229,19 +227,19 @@ a:hover {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	border-right: 1px solid #000000;
+	border-right: 1px solid #BBBBBB;
 }
 
 #menu .menu-item-wrapper {
 	padding: 10px 12px 10px 14px;
-	color: #FFFFFF;
+	color: #000000;
 }
 
 #menu .menu-item-wrapper:not(.playlists) .menu-item {
 	text-decoration: none;
 	cursor: hand;
 	cursor: pointer;
-	color: #FFFFFF;
+	color: #000000;
 }
 
 #menu .menu-item-wrapper .menu-item > i {
@@ -249,7 +247,7 @@ a:hover {
 }
 
 #menu .menu-item-wrapper:hover:not(.playlists) .menu-item {
-	color: #FFFFFF;
+	color: #000000;
 	border-color: transparent;
 }
 
@@ -258,7 +256,7 @@ a:hover {
 }
 
 #menu .menu-item-wrapper.current:not(.playlists) {
-	color: #FFFFFF;
+	color: #000000;
 }
 
 #menu .playlist-list {
@@ -273,12 +271,12 @@ a:hover {
 
 #menu .playlist-list .playlist-item a {
 	text-decoration: none;
-	color: #ADA9A1;
+	color: #444444;
 }
 
 #menu .playlist-list .playlist-item.current a,
 #menu .playlist-list .playlist-item a:hover {
-	color: #FFFFFF;
+	color: #000000;
 }
 
 #menu .new-playlist-button {
@@ -303,6 +301,11 @@ a:hover {
 */
 
 .page {
+}
+
+.page > .section {
+	padding-bottom: 15px;
+	clear: both;
 }
 
 
@@ -330,11 +333,13 @@ a:hover {
 	z-index: 2;
 	position: absolute;
 	bottom: 12px;
-	left: 20px;
+	left: 12px;
+	background: #FFFFFF;
+	padding: 0 8px;
 }
 
 .explore-subpage .artwork-panel .background-image {
-	background: 50% 50% no-repeat;
+	background: 50% 50% no-repeat #EEEEEE;
 	background-size: cover;
 	position: absolute;
 	top: 0px;
@@ -359,9 +364,9 @@ a:hover {
 .track-row.headings,
 .track-row.headings:hover {
 	border-top: none;
-	border-bottom: 1px solid #393939;
+	border-bottom: 1px solid #EEEEEE;
 	text-transform: uppercase;
-	color: #696565;
+	color: #AAAAAA;
 	background: transparent;
 }
 
@@ -372,17 +377,21 @@ a:hover {
 	display: inline-block;
 }
 
+.track-row.headings .col {
+    padding-bottom: 5px;
+}
+
 .tracks {
 	margin: 0 -20px;
 }
 
 .track-row {
-	border-top: 1px solid #252525;
-	border-bottom: 1px solid #252525;
+	border-top: 1px solid #DDDDDD;
+	border-bottom: 1px solid #DDDDDD;
 	margin-top: -1px;
 	cursor: hand;
 	cursor: pointer;
-	color: #CCCCCC;
+	color: #000000;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -391,11 +400,14 @@ a:hover {
     user-select: none;
 }
 
-.track-row .icon {
-	background-position: 0px 0px;
-	margin: 10px 5px 10px 15px;
-	float: left;
+.track-row .icon-container {
+    font-size: 6px;
+    text-align: center;
+    padding-top: 14px !important;
 }
+
+.track-row .icon-container .fa-play {           display: none; font-size: 8px; }
+.track-row .icon-container .fa-circle {         display: inline; }
 
 .track-row .col {
 	padding: 10px 0;
@@ -403,14 +415,16 @@ a:hover {
 
 .track-row.highlighted,
 .track-row.highlighted:hover {
-	background: #242320;
-	color: #FFFFFF;
+	background: #FFF39C;
 }
 
 .track-row.current,
 .track-row.current:hover {
-	color: #1cf4c4;
+    font-weight: 600;
 }
+
+.track-row.current .icon-container .fa-play {    display: inline; }
+.track-row.current .icon-container .fa-circle {    display: none; }
 
 .track-row.current .icon {
 	background-position: -20px -20px;
@@ -421,8 +435,7 @@ a:hover {
 }
 
 .track-row:hover {
-	background: #1F1D1B;
-	color: #FFFFFF;
+	background: #F2F2F2;
 }
 
 
@@ -430,12 +443,12 @@ a:hover {
 
 .track-row.ui-draggable-dragging,
 .album-panel.ui-draggable-dragging {
-	background: #FFFFFF !important;
+	background: #777777 !important;
 	display: block;
 	padding: 10px;
 	border: 0;
 	border-radius: 3px;
-	color: #222222 !important;
+	color: #000000 !important;
 	opacity: 0.8;
 	width: auto;
 	min-width: 200px;
@@ -473,7 +486,7 @@ a:hover {
 	background-position: 50% 50%;
 	background-size: cover;
 	border-radius: 3px;
-	background-color: #444444;
+	background-color: #EEEEEE;
 }
 
 .related-artist-panel {
@@ -483,7 +496,7 @@ a:hover {
 }
 
 .related-artist-panel:hover {
-	background: #1F1D1B;
+	background: #eeeeee;
 }
 
 .related-artist-panel .name {
@@ -505,19 +518,25 @@ a:hover {
 }
 
 .search-field input {
-	padding: 10px 12px;
-	background: #4a4947;
+	padding: 7px 0;
+	background: #FFFFFF;
 	font-family: 'Roboto', Helvetica, Arial, sans-serif;
-	color: #FFFFFF;
+	color: #000000;
 	width: 100%;
+    border-bottom: 2px solid #000000;
+}
+
+.search-field input:focus {
+    border-color: #1cf4c4;
 }
 
 .search-field .submit {
 	position: absolute;
 	top: 12px;
-	right: 12px;
-	width: 40px;
-	height: 40px;
+	right: 0;
+	width: 20px;
+	height: 20px;
+    padding: 7px;
 	cursor: hand;
 	cursor: pointer;
 }
@@ -535,9 +554,9 @@ a:hover {
 
 .artist-panel,
 .album-panel {
-	width: 19%;
-	height: 200px;
-	background: #262523 50% 50% no-repeat;
+	width: 15.65%;
+	height: 170px;
+	background: #EEEEEE 50% 50% no-repeat;
 	background-size: cover;
 	display: block;
 	float: left;
@@ -552,13 +571,14 @@ a:hover {
 	bottom: 0;
 	right: 0;
 	left: 0;
-	background: #444444;
+	background: #000000;
 	padding: 10px;
+    color: #FFFFFF;
 }
 
 .artist-panel:hover .name,
 .album-panel:hover .name {
-	background: #555555;
+	background: #333333;
 }
 
 
@@ -591,8 +611,9 @@ a:hover {
 }
 
 #player > .liner {
-	background: #2E2D2B;
+	background: #000000;
 	padding: 10px;
+    color: #FFFFFF;
 }
 
 #player .button {
@@ -605,8 +626,6 @@ a:hover {
 	position: relative;
 	width: 90%;
 	height: 45px;
-	cursor: hand;
-	cursor: pointer;
 }
 
 #player .volume-wrapper {
@@ -623,24 +642,25 @@ a:hover {
 #player .volume-wrapper .volume {
 	position: relative;
 	height: 45px;
-	cursor: hand;
-	cursor: pointer;
     margin-left: 20px;
+    margin-right: 20px;
 }
 
 
 /* bars (progress and volume */
 
-#player .bar-track {
+.slider {
 	height: 5px;
 	background: #3e3d3b;
 	position: absolute;
 	top: 20px;
 	left: 0;
 	right: 0px;
+    cursor: hand;
+    cursor: pointer;
 }
 
-#player .bar {
+.slider .ui-slider-range {
 	height: 100%;
 	background: #1cf4c4;
 	width: 1px;
@@ -649,7 +669,7 @@ a:hover {
 	left: 0;
 }
 
-#player .bar-tip {
+.slider .ui-slider-handle {
 	width: 13px;
     height: 13px;
     border-radius: 10px;
