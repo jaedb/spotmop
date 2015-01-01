@@ -106,19 +106,20 @@ $(document).ready( function(evt){
 			if( coreArray['currentPage'] == 'explore' && coreArray['currentPageSection'] == 'playlist' ){
 				
 				var uris = [];
-				var trackDOMs = $('#queue').find('.track-row.highlighted');
+				var trackDOMs = $('#explore .explore-subpage.playlist').find('.track-row.highlighted');
                 var playlistID = $('#explore .explore-subpage.playlist').data('uri');
 
 				// loop each track, and remove it from the tracklist / play queue
 				trackDOMs.each( function(index, value){
-					uris.push( $(value).data('uri') );
+					uris.push( {'uri' : $(value).data('uri')} );
 				});
-				
+                
+                // remove them from visibility to enhance UX 'snappiness'
+                trackDOMs.addClass('hide');
+                
 				// remove all the tracks from the list
 				removeTracksFromPlaylist(playlistID, uris).success( function(result){
-					//updatePlayQueue();
-                    console.log(result);
-					//trackDOMs.each( function(index,value){ $(value).remove(); } );
+                    trackDOMs.each( function(index,value){ $(value).remove(); } );
 				},consoleError);
 
 			}
@@ -229,8 +230,19 @@ $(document).ready( function(evt){
         updatePlaylists();
         
         navigate();
-
     });
+
+    // On reconnecting
+    mopidy.on("reconnecting", function(){
+        notifyUser('notify',"Reconnecting to server");
+    });
+
+    // On state offline
+    mopidy.on("state:offline", function(){
+        notifyUser('bad',"No connection to the sever");
+    });
+    
+    
 	
 	// Check the current time position of a track every second
 	setInterval(function(){
@@ -325,8 +337,11 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
  * Join artist names
  * Loops an array of artists, and produces a front-end version of strings
 */
-function joinArtistNames( artists ){
+function joinArtistNames( artists, make_links ){
 	
+    if( typeof(make_links) === 'undefined' )
+        var make_links = true;
+    
 	var jointArtists = '';
 	
 	if( typeof(artists) !== 'undefined' ){
@@ -338,7 +353,10 @@ function joinArtistNames( artists ){
 			if( jointArtists != '' )
 				jointArtists += ', ';
 				
-			jointArtists += '<a href="#explore/artist/'+ artist.uri +'" data-uri="'+ artist.uri +'">'+ artist.name +'</a>';
+            if( make_links )
+                jointArtists += '<a href="#explore/artist/'+ artist.uri +'" data-uri="'+ artist.uri +'">'+ artist.name +'</a>';
+            else
+                jointArtists += artist.name;
 		};
 	}
 	
@@ -490,13 +508,14 @@ function addTrackToQueue( uri ){
 /* ================================================================================= */
 
 function updatePlayer(){
-	mopidy.playback.getCurrentTrack().done(doUpdatePlayer, consoleError);	
 	mopidy.playback.getState().done(doUpdateState, consoleError);
+	mopidy.playback.getCurrentTrack().done(doUpdatePlayer, consoleError);	
 	updatePlayPosition();
 }
 
 // update artist/track and artwork
 var doUpdatePlayer = function(track){
+    
 	if( track ){
 		
 		// check if the current track is different from what we're already showing
@@ -519,7 +538,8 @@ var doUpdatePlayer = function(track){
 		$('#player .artist').html();
 		$('#player .track').html();
 	}
-	
+    
+	updateWindowTitle();
 	highlightPlayingTrack();
 };
 
@@ -560,6 +580,29 @@ function updateVolume(){
     },consoleError);
     
 }
+
+// update the title in the window tab
+function updateWindowTitle(){
+    
+    var documentIcon = '\u25FC ';
+    
+	if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){
+    
+        var track = coreArray['currentTrack'];
+        
+        // inject icon
+        if( coreArray['state'] == 'playing' )
+            documentIcon = '\u25B6 ';
+
+        // update window title
+        document.title = documentIcon + track.name +' - '+ joinArtistNames(track.artists,false);
+
+    }else{
+        document.title = documentIcon + 'No track playing';
+    }
+    
+}
+
 
 // update player state
 function highlightPlayingTrack(){

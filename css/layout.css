@@ -97,6 +97,10 @@ a {
 	padding-top: 300px;
 }
 
+*:focus {
+    outline: none;
+}
+
 
 /*
  * Animations

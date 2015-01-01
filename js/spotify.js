@@ -24,7 +24,14 @@ function checkToken(){
 		localStorage.token = spotifyAPI.token;
 		localStorage.token_expiry = spotifyAPI.token_expiry;
 		
-		window.location.hash = 'explore';
+        // if we don't have a return URL, go to explore
+        if( localStorage.getItem("returnURL") === null ){
+            window.location.hash = 'explore';
+        }else{
+            var returnURL = localStorage.getItem("returnURL");
+            localStorage.returnURL = null;
+            window.location = returnURL;
+        }
 	};
 	
 	// if we have a token stored locally from a previous session, parse it back to where it belongs
@@ -32,8 +39,17 @@ function checkToken(){
 		spotifyAPI.token = localStorage.token;
 	
 	// if we don't have a token (or it has expired), go get one
-	if( localStorage.getItem("token") === null || localStorage.token_expiry < new Date().getTime() )
-		window.location = 'https://accounts.spotify.com/authorize?client_id='+spotifyAPI.clientid+'&redirect_uri='+spotifyAPI.referrer+'&scope=playlist-modify-private%20playlist-modify-public&response_type=token';
+	if( localStorage.getItem("token") === null || localStorage.token_expiry < new Date().getTime() ){
+        
+        // save current URL, before we redirect
+        localStorage.returnURL = window.location.href;
+        
+        var newURL = '';
+        newURL += 'https://accounts.spotify.com/authorize?client_id='+spotifyAPI.clientid;
+        newURL += '&redirect_uri='+spotifyAPI.referrer;
+        newURL += '&scope=playlist-modify-private%20playlist-modify-public&response_type=token';
+        window.location = newURL;
+    }
 };
 
 
