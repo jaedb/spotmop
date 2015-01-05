@@ -141,7 +141,7 @@ $(document).ready( function(evt){
 	// --- TRACK SELECTION EVENTS --- //
 	
 	// click to select a track
-	$(document).on('click', '.track-row', function(evt){
+	$(document).on('click', '.track-row:not(.headings)', function(evt){
 		$(this).siblings().removeClass('highlighted');
 		$(this).addClass('highlighted');
 	});
@@ -166,14 +166,20 @@ $(document).ready( function(evt){
 	});
 	
 	// double-click to play track from playlist list 
-	$(document).on('doubletap', '#playlists .tracks .track-row', function(evt){	
-		var trackID = $(this).data('id');		
+	$(document).on('doubletap', '#playlists .tracks .track-row', function(evt){
+		console.log('playlist list');
+		$('.loader').show();
+		var trackID = $(this).data('id');
 		var tracklistURI = $(this).closest('.tracks').data('uri');
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	
 	// double-click to play track from a top-tracks list
+	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
 	$(document).on('doubletap', '.tracks.use-tracklist-in-focus .track-row', function(evt){	
+	
+		$('.loader').show();
+		
 		var trackID = $(this).data('id');
 		
 		var trackURIs = [];
@@ -231,7 +237,8 @@ $(document).ready( function(evt){
         
         navigate();
     });
-
+	
+	/*
     // On reconnecting
     mopidy.on("reconnecting", function(){
         notifyUser('notify',"Reconnecting to server");
@@ -241,8 +248,7 @@ $(document).ready( function(evt){
     mopidy.on("state:offline", function(){
         notifyUser('bad',"No connection to the sever");
     });
-    
-    
+	*/
 	
 	// Check the current time position of a track every second
 	setInterval(function(){
@@ -262,16 +268,6 @@ $(document).ready( function(evt){
 
 /* ======================================================== GLOBAL FUNCTIONALITY === */
 /* ================================================================================= */
-
-
-
-/*
- * Inject the loader into the specified DOM
- * @var container = DOM of where we'll inject the loader
-*/
-function addLoader( container ){
-	container.html('<div class="loader"><i class="fa fa-circle-o-notch fa-spin"></i></div>');
-};
 
 
 
@@ -391,18 +387,21 @@ function getIdFromUri( uri ){
  * @var trackID is integer of track number we want to play
 */
 function replaceAndPlay( tracklistURI, trackID ){
-	
+	console.log('replace and play tracklisturi '+ tracklistURI);
 	// run a mopidy lookup on the uri (to get compatibile Track objects)
 	mopidy.library.lookup(tracklistURI).then(function(result){
 		
+		console.log('looked up');
 		// clear current tracklist
 		mopidy.tracklist.clear().then(function(){
 			
 			// add the fetched list of mopidy Track objects
 			mopidy.tracklist.add(result).then(function(){
+				console.log('added');
                 
                 // play the track chris!
 				playTrackByID( trackID );
+				$('.loader').fadeOut();
 			},consoleError);
 		});
 	},consoleError);
@@ -423,11 +422,15 @@ function replaceAndPlayTracks( trackURIs, trackID ){
 		for( var i = 0; i < trackURIs.length; i++ ){
 			
 			// add each track to the tracklist
-			mopidy.tracklist.add(null, i, trackURIs[i]);
-            
+			mopidy.tracklist.add(null, i, trackURIs[i]).then( function(response){
+				//console.log( response );
+			});
+			
 			// if we're the track we want to play
-			if( i == trackID )
+			if( i == trackID ){
                 playTrackByID( trackID );
+				$('.loader').fadeOut();
+			}
 			
 		};
 	});
@@ -441,22 +444,21 @@ function replaceAndPlayTracks( trackURIs, trackID ){
 */
 
 function playTrackByID( trackID ){
-    
+
     // fetch this list of Track objects from the source
     mopidy.tracklist.getTlTracks().then(function( tracks ){
-
+		
         // change play cursor to trackID of the tracklist
         mopidy.playback.changeTrack( tracks[trackID], 1 ).then( function(evt){
-            
+			
             mopidy.playback.play();
             
         });
         
         updatePlayer();
         
-    },consoleError);  
+    },consoleError); 
 };
-
 
 /*
  * Build a hash url to inject into the hash location
@@ -479,14 +481,25 @@ function buildHashURL( uri ){
  * @var message = message string
 */
 
-function notifyUser( type, message ){
+function notifyUser( type, message, persistent ){
+	
+	// set default values
+	persistent = typeof persistent !== 'undefined' ? persistent : false;
 	
 	var notification = $('#notification');
 	
 	notification.find('.message').html( message );
-	notification.fadeIn('fast');
-	notification.delay(3000).fadeOut('slow');
+	notification.slideDown('fast');
 	
+	if( !persistent )
+		notification.delay(3000).fadeOut('slow');
+	
+}
+
+function closeNotification(){
+	var notification = $('#notification');
+	notification.find('.message').html( '' );
+	notification.hide();
 }
 
 
@@ -526,10 +539,12 @@ var doUpdatePlayer = function(track){
 			$('#player .track').html(track.name).data('uri', track.uri);
 			
 			// get the spotify album object and load image
-			getAlbum( getIdFromUri( track.album.uri ) ).success( function( spotifyAlbum ){
-				$('#player .thumbnail').attr('style','background-image: url('+spotifyAlbum.images[2].url+');');
-				$('#player .thumbnail').attr('href','#explore/album/'+ track.album.uri );
-			});
+			if( typeof( track.album ) !== 'undefined' ){
+				getAlbum( getIdFromUri( track.album.uri ) ).success( function( spotifyAlbum ){
+					$('#player').attr('style','background-image: url('+spotifyAlbum.images[0].url+');');
+					$('#player .thumbnail').attr('href','#explore/album/'+ track.album.uri );
+				});
+			};
 			
 			coreArray['currentTrack'] = track;
 		}
@@ -548,9 +563,9 @@ var doUpdateState = function(state){
 	
 	// update player/pause button
 	if(state == "playing"){
-		$('#player .button[data-action="play-pause"]').children('.icon').removeClass('play').addClass('pause');
+		$('#player .button[data-action="play-pause"]').children('.fa').removeClass('fa-play').addClass('fa-pause');
 	}else{
-		$('#player .button[data-action="play-pause"]').children('.icon').removeClass('pause').addClass('play');
+		$('#player .button[data-action="play-pause"]').children('.fa').removeClass('fa-pause').addClass('fa-play');
 	}
 	
 	coreArray['state'] = state;
@@ -631,7 +646,7 @@ function highlightPlayingTrack(){
 function updatePlayQueue(){
 
     mopidy.tracklist.getTracks().then(function( tracks ){
-
+		
         // add the tracks for further use
         coreArray['tracklist'] = tracks;
 

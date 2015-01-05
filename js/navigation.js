@@ -32,8 +32,8 @@ function navigate(){
 		explore( hash[1], hash[2] );
     };
     
-    if(section == 'featured'){
-		featured();
+    if(section == 'discover'){
+		discover( hash[1] );
     };
     
     // hide playlist 'current' selectors

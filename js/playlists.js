@@ -32,7 +32,7 @@ function setupNewPlaylistButton(){
 				var lists = $('.menu-item-wrapper.playlists .playlist-list');
 				coreArray['playlists'] += playlist;
 				
-				lists.prepend('<div class="playlist-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></	div>');
+				lists.prepend('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			
 				// draggable to drop them onto playlists
 				$(document).find('#menu .playlist-list .playlist-item[data-uri="'+playlist.uri+'"]').droppable({
@@ -71,9 +71,8 @@ function setupRefreshPlaylistButton(){
 */
 
 function updatePlaylists(){
-	
-	// drop in the loader
-	addLoader( $('#menu .playlist-list') );
+
+	$('.loader').show();
 	
 	// Get the users playlists and place them in the client
 	getMyPlaylists().success( function( playlists ){
@@ -83,6 +82,7 @@ function updatePlaylists(){
 		
 		// clear out the previous playlists
 		lists.html('');
+		$('.loader').fadeOut();
 		
 		// loop each playlist
 		for( var i = 0; i < playlists.items.length; i++ ){
@@ -90,7 +90,7 @@ function updatePlaylists(){
 			var playlist = playlists.items[i];
 			
 			// add list to the playlists bar
-			lists.append('<div class="playlist-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
+			lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 		}
 		
 		// draggable to drop them onto playlists
@@ -101,6 +101,7 @@ function updatePlaylists(){
 		});
 		
 	}).fail( function( response ){
+		$('.loader').fadeOut();
         notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
         $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
     });

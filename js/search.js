@@ -15,11 +15,7 @@ function startSearch( query ){
 	
 	// reveal search results menu item
 	$('.search-results-menu-item').show();
-	
-	// inject loaders
-	addLoader( $('.search-results-section.artist .results') );
-	addLoader( $('.search-results-section.album .results') );
-	addLoader( $('.search-results-section.track .results') );
+	$('.loader').show();
 	
 	// Search tracks
 	$.ajax({
@@ -29,6 +25,7 @@ function startSearch( query ){
 		timeout: 5000,
 		success: function(result){
 			addSearchResults('track',result.tracks);
+			$('.loader').fadeOut();
 		},
 		error: function(x,t,m){
 			console.log(x+" - "+t+" - "+m);
@@ -43,6 +40,7 @@ function startSearch( query ){
 		timeout: 5000,
 		success: function(result){
 			addSearchResults('album',result.albums);
+			$('.loader').fadeOut();
 		},
 		error: function(x,t,m){
 			console.log(x+" - "+t+" - "+m);
@@ -57,6 +55,7 @@ function startSearch( query ){
 		timeout: 5000,
 		success: function(result){
 			addSearchResults('artist',result.artists);
+			$('.loader').fadeOut();
 		},
 		error: function(x,t,m){
 			console.log(x+" - "+t+" - "+m);

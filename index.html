@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
-	<script type="text/javascript" src="/js/featured.js"></script>
+	<script type="text/javascript" src="/js/discover.js"></script>
 	<script type="text/javascript" src="/js/explore.js"></script>
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
@@ -19,39 +19,35 @@
 
 	<div id="player">
 		<div class="liner">
-		
-			<div class="col w20">
 			
-				<div class="current-track">
-					<a class="thumbnail"></a>
-					<div class="track">No track</div>
-					<div class="artist">No artist</div>
-				</div>
-				
+			<div class="loader"></div>
+			
+			<div class="current-track">
+				<span class="track">No track</span> <span class="artist">No artist</span>
 			</div>
-            
-            <div class="col w15">
-				<div class="controls">
-					<div class="button previous" data-action="previous-track"><span class="icon medium previous-track"></span></div>
-					<div class="button play-pause" data-action="play-pause"><span class="icon medium play"></span></div>
-					<div class="button next" data-action="next-track"><span class="icon medium next-track"></span></div>
-				</div>
-            </div>
 			
-			<div class="col w55">
+			<div class="clear-both"></div>
 			
-				<div class="progress">
+			<div class="col w75 progress">
+				<div class="liner">
+					<div class="controls">
+						<div class="button previous" data-action="previous-track"><i class="fa fa-step-backward"></i></div>
+						<div class="button play-pause" data-action="play-pause"><i class="fa fa-play"></i></div>
+						<div class="button next" data-action="next-track"><i class="fa fa-step-forward"></i></div>
+					</div>
 					<div class="slider"></div>
 				</div>
-				
 			</div>
             
-			<div class="col w10 volume-wrapper">
-                <i class="fa fa-volume-down"></i>
-				<div class="volume">
+			<div class="col w25 volume">
+				<div class="liner">
+					<div class="controls">
+						<div class="button random" data-action="random"><i class="fa fa-random"></i></div>
+						<div class="button repeat" data-action="repeat"><i class="fa fa-repeat"></i></div>
+						<div class="button toggle-mute" data-action="toggle-mute"><i class="fa fa-volume-down"></i></div>
+					</div>
 					<div class="slider"></div>
 				</div>
-				
 			</div>
 			
 			<div class="clear-both"></div>
@@ -70,17 +66,21 @@
 				<a class="menu-item" data-target="queue" href="#queue"><i class="fa fa-list-ol"></i> &nbsp; Queue</a>
 			</div>
 			
-			<div class="menu-item-wrapper explore">
-				<a class="menu-item" data-target="explore" href="#featured"><i class="fa fa-star"></i> &nbsp; Featured</a>
+			<div class="menu-item-wrapper discover heading">
+				<span class="menu-item"><i class="fa fa-star"></i> &nbsp; Discover</span>
+				<div class="menu-item-children">
+					<div class="child-menu-item"><a href="#discover/featured-playlists">Featured playlists</a></div>
+					<div class="child-menu-item"><a href="#discover/new-releases">New releases</a></div>
+				</div>
 			</div>
 			
-			<div class="menu-item-wrapper explore">
+			<div class="menu-item-wrapper explore hide">
 				<a class="menu-item" data-target="explore" href="#browse"><i class="fa fa-paper-plane"></i> &nbsp; Browse</a>
 			</div>
 			
-			<div class="menu-item-wrapper playlists">
+			<div class="menu-item-wrapper playlists heading">
 				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
-				<div class="playlist-list"></div>
+				<div class="menu-item-children playlist-list"></div>
 			</div>
 			
 		</div>
@@ -92,25 +92,33 @@
 		
 			<div class="page" id="queue">
 				<h1 class="bottom-padding">Queue</h1>
-				<div class="tracks"><div class="loader"></div></div>
+				<div class="tracks"></div>
 			</div>
 			
-			<div class="page" id="featured">
+			<div class="page" id="discover">
 				
-				<div class="section">
-					<h1>New Releases</h1>
-					<div class="albums">
-						<div class="loader"></div>
-					</div>
+				<div class="subpage featured-playlists hide">
+					
+					<h1>
+						Featured playlists
+					</h1>
+					
 					<div class="clear-both"></div>
+					
+					<div class="content"></div>
+					
 				</div>
 				
-				<div class="section">
-					<h1>Featured Playlists</h1>
-					<div class="playlists">
-						<div class="loader"></div>
-					</div>
+				<div class="subpage new-releases hide">
+					
+					<h1>
+						New releases
+					</h1>
+					
 					<div class="clear-both"></div>
+					
+					<div class="content"></div>
+					
 				</div>
 				
 			</div>
@@ -121,7 +129,6 @@
 			
 			<div class="page" id="playlists">
 				<div class="playlist-tracks">
-					<div class="loader"></div>
 				</div>
 			</div>
 			
@@ -136,7 +143,6 @@
 					<div class="clear-both"></div>
 					
 					<div class="tracks use-tracklist-in-focus">
-						<div class="loader"></div>
 					</div>
 					
 				</div>
@@ -155,18 +161,18 @@
 					<div class="explore-artist-section">
 						<div class="tracks-wrapper">
 							<h2 class="bottom-padding">Top Tracks</h2>
-							<div class="tracks reset-on-load use-tracklist-in-focus"><div class="loader"></div></div>
+							<div class="tracks reset-on-load use-tracklist-in-focus"></div>
 						</div>						
 						<div class="related-artists-wrapper">
 							<h2 class="bottom-padding">Related artists</h2>
-							<div class="related-artists reset-on-load"><div class="loader"></div></div>
+							<div class="related-artists reset-on-load"></div>
 						</div>
 						<div class="clear-both"></div>
 					</div>
 					
 					<div class="explore-artist-section">
 				        <h2 class="bottom-padding">Albums</h2>
-						<div class="albums reset-on-load"><div class="loader"></div></div>
+						<div class="albums reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
                     
@@ -184,7 +190,7 @@
 					
 					<div class="clear-both"></div>
 					
-					<div class="tracks reset-on-load"><div class="loader"></div></div>
+					<div class="tracks reset-on-load"></div>
 					<div class="clear-both"></div>
 				</div>
 			</div>
@@ -193,17 +199,17 @@
 				<div id="search-results">
 					<div class="search-results-section artist">
 						<h2>Artists</h2>
-						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="results reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section album">
 						<h2>Albums</h2>
-						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="results reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section track">
 						<h2 class="bottom-padding">Top tracks</h2>
-						<div class="results reset-on-load"><div class="loader"></div></div>
+						<div class="results reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
 				</div>

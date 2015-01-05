@@ -137,7 +137,7 @@ function getRelatedArtists( artistID ){
 function getFeaturedPlaylists(){
 	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/browse/featured-playlists?market=NZ',
+		url: 'https://api.spotify.com/v1/browse/featured-playlists?market=NZ&locale=en_NZ&country=NZ',
 		type: "GET",
 		headers: {
 			'Authorization': 'Bearer ' + spotifyAPI.token

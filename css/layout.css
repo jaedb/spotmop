@@ -56,6 +56,7 @@ a {
 
 .col {
 	float: left;
+	min-height: 1px;
 }
 
 .col.w5{	width: 5%; }
@@ -88,13 +89,13 @@ a {
 }
 
 .loader {
-	font-size: 22px;
-	padding: 40px;
-	text-align: center;
-}
-
-#explore .explore-subpage.playlists .loader {
-	padding-top: 300px;
+	background: url('../images/loader.gif') 0 0 no-repeat;
+	width: 16px;
+	height: 16px;
+	display: block;
+	position: absolute;
+	top: 15px;
+	right: 15px;
 }
 
 *:focus {
@@ -108,6 +109,7 @@ a {
 */
 
 .animate,
+.button,
 button,
 input[type='submit'] {
     -webkit-transition: all 0.2s ease-in-out;
@@ -117,6 +119,7 @@ input[type='submit'] {
 
 /* prevent animations when page is loading */
 .loading .animate,
+.loading .button,
 .loading button,
 .loading input[type='submit'] {
     -webkit-transition: none !important;
@@ -176,16 +179,19 @@ a:hover {
 #notification {
 	display: none;
 	position: fixed;
-	top: 20px;
-	right: 20px;
-	width: 250px;
-	padding: 20px;
-	border-radius: 5px;
-	background: #777777;
+	right: 0px;
+	left: 0px;
+	bottom: 75px;
+	background: #999999;
 	opacity: 0.9;
 	color: #FFFFFF;
     font-weight: 700;
 	z-index: 9;
+}
+
+#notification .message {
+	padding: 10px;
+	text-align: center;
 }
 
 
@@ -217,7 +223,6 @@ a:hover {
 	top: 0;
 	left: 0;
 	bottom: 63px;
-	border-right: 1px solid #EEEEEE;
 }
 
 #menu .menu-bar {
@@ -227,7 +232,8 @@ a:hover {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	border-right: 1px solid #BBBBBB;
+	border-right: 1px solid #DDDDDD;
+	background: #F9F9F9;
 }
 
 #menu .menu-item-wrapper {
@@ -235,7 +241,7 @@ a:hover {
 	color: #000000;
 }
 
-#menu .menu-item-wrapper:not(.playlists) .menu-item {
+#menu .menu-item-wrapper:not(.heading) .menu-item {
 	text-decoration: none;
 	cursor: hand;
 	cursor: pointer;
@@ -246,36 +252,36 @@ a:hover {
 	font-size: 0.85em;
 }
 
-#menu .menu-item-wrapper:hover:not(.playlists) .menu-item {
+#menu .menu-item-wrapper:hover:not(.heading) .menu-item {
 	color: #000000;
 	border-color: transparent;
 }
 
-#menu .menu-item-wrapper:hover:not(.playlists) .menu-item .icon {
+#menu .menu-item-wrapper:hover:not(.heading) .menu-item .icon {
 	opacity: 1;
 }
 
-#menu .menu-item-wrapper.current:not(.playlists) {
+#menu .menu-item-wrapper.current:not(.heading) {
 	color: #000000;
 }
 
-#menu .playlist-list {
-	padding: 6px 6px 10px 26px;
+#menu .menu-item-children {
+	padding: 6px 6px 0 26px;
 	font-size: 12px;
 	line-height: 1.2em;
 }
 
-#menu .playlist-list .playlist-item {
+#menu .menu-item-children .child-menu-item {
 	padding: 4px 0;
 }
 
-#menu .playlist-list .playlist-item a {
+#menu .menu-item-children .child-menu-item a {
 	text-decoration: none;
 	color: #444444;
 }
 
-#menu .playlist-list .playlist-item.current a,
-#menu .playlist-list .playlist-item a:hover {
+#menu .menu-item-children .child-menu-item.current a,
+#menu .menu-item-children .child-menu-item a:hover {
 	color: #000000;
 }
 
@@ -347,11 +353,6 @@ a:hover {
 	bottom: 0px;
 	left: 0px;
 	z-index: 1;
-	-webkit-filter: blur(20px);
-	-moz-filter: blur(20px);
-	-o-filter: blur(20px);
-	-ms-filter: blur(20px);
-	filter: blur(20px);
 }
 
 
@@ -368,6 +369,7 @@ a:hover {
 	text-transform: uppercase;
 	color: #AAAAAA;
 	background: transparent;
+	cursor: default !important;
 }
 
 .track-row.headings .icon-spacer {
@@ -379,10 +381,6 @@ a:hover {
 
 .track-row.headings .col {
     padding-bottom: 5px;
-}
-
-.tracks {
-	margin: 0 -20px;
 }
 
 .track-row {
@@ -443,12 +441,12 @@ a:hover {
 
 .track-row.ui-draggable-dragging,
 .album-panel.ui-draggable-dragging {
-	background: #777777 !important;
+	background: #333333 !important;
 	display: block;
 	padding: 10px;
 	border: 0;
 	border-radius: 3px;
-	color: #000000 !important;
+	color: #FFFFFF !important;
 	opacity: 0.8;
 	width: auto;
 	min-width: 200px;
@@ -519,7 +517,7 @@ a:hover {
 
 .search-field input {
 	padding: 7px 0;
-	background: #FFFFFF;
+	background: #F9F9F9;
 	font-family: 'Roboto', Helvetica, Arial, sans-serif;
 	color: #000000;
 	width: 100%;
@@ -554,13 +552,13 @@ a:hover {
 
 .artist-panel,
 .album-panel {
-	width: 15.65%;
-	height: 170px;
+	width: 13.65%;
+	height: 140px;
 	background: #EEEEEE 50% 50% no-repeat;
 	background-size: cover;
 	display: block;
 	float: left;
-	margin: 0.5%;
+	margin: 1.5%;
 	position: relative;
 	border: none;
 }
@@ -587,19 +585,43 @@ a:hover {
  * Sticky to page footer
 */
 
-#player .thumbnail {
-	margin-right: 10px;
-	height: 45px;
-	width: 45px;
-	border: 0;
+#player a:hover {
+	border-color: #FFFFFF;
 }
 
 #player .controls {
-	float: right;
+	position: absolute;
+	top: -3px;
+	left: 0;
+}
+
+#player .button {
+	padding: 5px;
+	margin: 0 5px;
+	font-size: 14px;
+	opacity: 0.75;
+}
+
+#player .button.active,
+#player .button:hover {
+	opacity: 1;
+}
+
+#player .current-track {
+	text-align: center;
+	font-size: 16px;
+	text-transform: uppercase;
 }
 
 #player .current-track .track {
+	display: inline-block;
 	padding: 5px 0 2px;
+}
+
+#player .current-track .artist {
+	display: inline-block;
+	padding: 5px 0 2px;
+	opacity: 0.5;
 }
 
 #player {
@@ -608,10 +630,13 @@ a:hover {
 	right: 0;
 	left: 0;
 	z-index: 8;
+	background-position: 50% 50%;
+	background-size: cover;
+	background-color: #000000;
 }
 
 #player > .liner {
-	background: #000000;
+	background: rgba(0,0,0,0.75);
 	padding: 10px;
     color: #FFFFFF;
 }
@@ -622,42 +647,22 @@ a:hover {
 	display: inline-block;
 }
 
-#player .progress {
+#player .progress > .liner,
+#player .volume > .liner {
 	position: relative;
-	width: 90%;
-	height: 45px;
-}
-
-#player .volume-wrapper {
-    position: relative;
-}
-
-#player .volume-wrapper i {
-    position: absolute;
-    left: 0;
-    top: 14px;
-    font-size: 18px;
-}
-
-#player .volume-wrapper .volume {
-	position: relative;
-	height: 45px;
-    margin-left: 20px;
-    margin-right: 20px;
+	padding: 10px 0 15px 110px;
+	margin: 0 30px;
 }
 
 
 /* bars (progress and volume */
 
 .slider {
-	height: 5px;
-	background: #3e3d3b;
-	position: absolute;
-	top: 20px;
-	left: 0;
-	right: 0px;
+	height: 2px;
+	background: #888888;
     cursor: hand;
     cursor: pointer;
+	position: relative;
 }
 
 .slider .ui-slider-range {
@@ -677,5 +682,6 @@ a:hover {
     position: absolute;
     top: -4px;
     right: -6px;
+	display: none;
 }
 
