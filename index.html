@@ -7,8 +7,6 @@
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
-	<script type="text/javascript" src="/js/discover.js"></script>
-	<script type="text/javascript" src="/js/explore.js"></script>
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
 	<script type="text/javascript" src="/js/playlists.js"></script>
@@ -69,8 +67,8 @@
 			<div class="menu-item-wrapper discover heading">
 				<span class="menu-item"><i class="fa fa-star"></i> &nbsp; Discover</span>
 				<div class="menu-item-children">
-					<div class="child-menu-item"><a href="#discover/featured-playlists">Featured playlists</a></div>
-					<div class="child-menu-item"><a href="#discover/new-releases">New releases</a></div>
+					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
+					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
 				</div>
 			</div>
 			
@@ -95,105 +93,74 @@
 				<div class="tracks"></div>
 			</div>
 			
-			<div class="page" id="discover">
-				
-				<div class="subpage featured-playlists hide">
-					
-					<h1>
-						Featured playlists
-					</h1>
-					
-					<div class="clear-both"></div>
-					
-					<div class="content"></div>
-					
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="new-releases">
+				<h1>New releases</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="featured-playlists">
+				<h1>Featured playlists</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="artist">
+		
+				<div class="artwork-panel">
+					<h1><span class="name reset-on-load"></span></h1>
+					<div class="background-image"></div>
 				</div>
 				
-				<div class="subpage new-releases hide">
-					
-					<h1>
-						New releases
-					</h1>
-					
+				<div class="clear-both"></div>
+				
+				<div class="explore-artist-section">
+					<div class="tracks-wrapper">
+						<h2 class="bottom-padding">Top Tracks</h2>
+						<div class="tracks reset-on-load use-tracklist-in-focus"></div>
+					</div>						
+					<div class="related-artists-wrapper">
+						<h2 class="bottom-padding">Related artists</h2>
+						<div class="related-artists reset-on-load"></div>
+					</div>
 					<div class="clear-both"></div>
-					
-					<div class="content"></div>
-					
+				</div>
+				
+				<div class="explore-artist-section">
+					<h2 class="bottom-padding">Albums</h2>
+					<div class="albums reset-on-load"></div>
+					<div class="clear-both"></div>
 				</div>
 				
 			</div>
 			
-			<div class="page" id="browse">
-				<h1>Browse is coming soon</h1>
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="album">
+				<div class="artwork-panel">
+					<h1><span class="name reset-on-load"></span> by <span class="artist reset-on-load"></span></h1>
+					<div class="background-image"></div>
+				</div>
+				<div class="clear-both"></div>
+				<div class="tracks reset-on-load"></div>
+				<div class="clear-both"></div>
 			</div>
 			
-			<div class="page" id="playlists">
-				<div class="playlist-tracks">
-				</div>
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="playlist">
+				<h1><span class="name reset-on-load"></span></h1>
+				<div class="clear-both"></div>
+				<div class="tracks use-tracklist-in-focus reset-on-load"></div>
 			</div>
 			
-			<div class="page" id="explore">
-				
-				<div class="explore-subpage playlist hide">
-					
-					<h1>
-						<span class="name reset-on-load"></span>
-					</h1>
-					
-					<div class="clear-both"></div>
-					
-					<div class="tracks use-tracklist-in-focus">
-					</div>
-					
-				</div>
-				
-				<div class="explore-subpage artist hide">
-					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
-					</div>
-					
-					<div class="clear-both"></div>
-					
-					<div class="explore-artist-section">
-						<div class="tracks-wrapper">
-							<h2 class="bottom-padding">Top Tracks</h2>
-							<div class="tracks reset-on-load use-tracklist-in-focus"></div>
-						</div>						
-						<div class="related-artists-wrapper">
-							<h2 class="bottom-padding">Related artists</h2>
-							<div class="related-artists reset-on-load"></div>
-						</div>
-						<div class="clear-both"></div>
-					</div>
-					
-					<div class="explore-artist-section">
-				        <h2 class="bottom-padding">Albums</h2>
-						<div class="albums reset-on-load"></div>
-						<div class="clear-both"></div>
-					</div>
-                    
-				</div>
-				<div class="explore-subpage album hide">
-					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-							by
-							<span class="artist reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
-					</div>
-					
-					<div class="clear-both"></div>
-					
-					<div class="tracks reset-on-load"></div>
-					<div class="clear-both"></div>
-				</div>
-			</div>
+			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="search">
 				<div id="search-results">

@@ -86,7 +86,7 @@ function addSearchResults(type, results){
 			if( result.images.length > 0 )
 				imageURL = result.images[0].url;
 			
-			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="artist-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#explore/artist/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
+			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="artist-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#artist/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
 		
 		// albums
 		}else if( type == 'album' ){
@@ -94,7 +94,7 @@ function addSearchResults(type, results){
 			if( result.images.length > 0 )
 				imageURL = result.images[1].url;
 			
-			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="album-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#explore/album/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
+			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="album-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#album/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
 		
 		// tracks
 		}else if( type == 'track' ){

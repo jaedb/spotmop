@@ -4,6 +4,29 @@
  */
 
  
+
+
+/*
+ * Get an item's ID out of a provided URI
+ * Returns string
+*/
+function getIdFromUri( uri ){
+	
+	// get the id (3rd part of the URI)
+	if( typeof uri === 'undefined' )
+		return false;
+	
+	var uriArray = uri.split(':');
+	
+	// see if we're a playlist URI
+	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
+		return uriArray[4];
+	
+	var id = uriArray[2];
+	return id;
+};
+
+
  
 
 /* ======================================================== SYSTEM INIT ============ */
@@ -26,6 +49,7 @@ var playlists;
 $(document).ready( function(evt){
     
     checkToken();
+    navigate();
 
     // kick off standard events
     mopidy.on("event:trackPlaybackResumed" ,function(track){	updatePlayer(); console.log('resumed'); });
@@ -76,8 +100,8 @@ $(document).ready( function(evt){
 	
 	$(document).on('keydown', function(evt){
 	
-		if( evt.keyCode == 8 ){
-            
+		if( evt.keyCode == 8 && !$('input').is(':focus') ){
+		
 			// disarm the key functionality in any case, for UX consistency
 			evt.preventDefault();
 			
@@ -96,31 +120,38 @@ $(document).ready( function(evt){
 				// remove all the tracks from the list
 				mopidy.tracklist.remove({uri: uris}).then( function(result){
 					updatePlayQueue();
-					//trackDOMs.each( function(index,value){ $(value).remove(); } );
+					trackDOMs.each( function(index,value){ $(value).remove(); } );
 				},consoleError);
 
 			}
 			
             // --- removing from playlist --- //
-            
-			if( coreArray['currentPage'] == 'explore' && coreArray['currentPageSection'] == 'playlist' ){
+			
+			if( coreArray['currentPage'] == 'playlist' ){
+				
+				$('.loader').show();
 				
 				var uris = [];
-				var trackDOMs = $('#explore .explore-subpage.playlist').find('.track-row.highlighted');
-                var playlistID = $('#explore .explore-subpage.playlist').data('uri');
-
+				var trackDOMs = $('#playlist').find('.track-row.highlighted');
+                var playlistID = $('#playlist').data('uri');
+				
 				// loop each track, and remove it from the tracklist / play queue
 				trackDOMs.each( function(index, value){
 					uris.push( {'uri' : $(value).data('uri')} );
 				});
                 
-                // remove them from visibility to enhance UX 'snappiness'
+                // hide them from DOM to enhance UX 'snappiness'
                 trackDOMs.addClass('hide');
                 
-				// remove all the tracks from the list
+				// now actually remove all the tracks from the list
 				removeTracksFromPlaylist(playlistID, uris).success( function(result){
-                    trackDOMs.each( function(index,value){ $(value).remove(); } );
-				},consoleError);
+					$('.loader').fadeOut();
+					trackDOMs.remove();
+				}).fail( function( response ){
+					$('.loader').fadeOut();
+					trackDOMs.removeClass('hide');
+					notifyUser('error', 'Error removing track: '+response.responseJSON.error.message );
+				});
 
 			}
 		}
@@ -221,8 +252,6 @@ $(document).ready( function(evt){
     // --- CONNECTION TO MOPIDY --- ///
     
     mopidy.on("state:online", function(){
-   
-        checkToken();
 
         notifyUser('notify','Connection established to Mopidy');
 
@@ -234,8 +263,6 @@ $(document).ready( function(evt){
         updatePlayer();
         updateVolume();
         updatePlaylists();
-        
-        navigate();
     });
 	
 	/*
@@ -302,9 +329,9 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
 				if( album )
-					html += '<div class="col w30"><a href="#explore/album/'+album.uri+'" data-uri="'+album.uri+'">'+album.name+'</a></div>';
+					html += '<div class="col w30"><a href="#album/'+album.uri+'" data-uri="'+album.uri+'">'+album.name+'</a></div>';
 				else if ( track.album )
-					html += '<div class="col w30"><a href="#explore/album/'+track.album.uri+'" data-uri="'+track.album.uri+'">'+track.album.name+'</a></div>';
+					html += '<div class="col w30"><a href="#album/'+track.album.uri+'" data-uri="'+track.album.uri+'">'+track.album.name+'</a></div>';
 				html += '<div class="clear-both"></div>';
 			html += '</div>';
 		}
@@ -350,34 +377,13 @@ function joinArtistNames( artists, make_links ){
 				jointArtists += ', ';
 				
             if( make_links )
-                jointArtists += '<a href="#explore/artist/'+ artist.uri +'" data-uri="'+ artist.uri +'">'+ artist.name +'</a>';
+                jointArtists += '<a href="#artist/'+ artist.uri +'" data-uri="'+ artist.uri +'">'+ artist.name +'</a>';
             else
                 jointArtists += artist.name;
 		};
 	}
 	
 	return jointArtists;
-};
-
-
-/*
- * Get an item's ID out of a provided URI
- * Returns string
-*/
-function getIdFromUri( uri ){
-	
-	// get the id (3rd part of the URI)
-	if( typeof uri === 'undefined' )
-		return false;
-	
-	var uriArray = uri.split(':');
-	
-	// see if we're a playlist URI
-	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
-		return uriArray[4];
-	
-	var id = uriArray[2];
-	return id;
 };
 
 
@@ -489,6 +495,7 @@ function notifyUser( type, message, persistent ){
 	var notification = $('#notification');
 	
 	notification.find('.message').html( message );
+	notification.removeClass('error').removeClass('notice').removeClass('warning').addClass(type);
 	notification.slideDown('fast');
 	
 	if( !persistent )

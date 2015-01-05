@@ -182,8 +182,7 @@ a:hover {
 	right: 0px;
 	left: 0px;
 	bottom: 75px;
-	background: #999999;
-	opacity: 0.9;
+	background: rgba(0,0,0,0.75);
 	color: #FFFFFF;
     font-weight: 700;
 	z-index: 9;
@@ -192,6 +191,14 @@ a:hover {
 #notification .message {
 	padding: 10px;
 	text-align: center;
+}
+
+#notification.error {
+	background: rgba(214,47,47,0.9);
+}
+
+#notification.notice {
+	background: rgba(250,236,85,0.9);
 }
 
 
@@ -314,20 +321,7 @@ a:hover {
 	clear: both;
 }
 
-
-/* === EXPLORE PAGE === */
-
-.explore-subpage.artist .related-artists-wrapper {
-	float: right;
-	width: 26%;
-}
-
-.explore-subpage.artist .tracks-wrapper {
-	float: left;
-	width: 70%;
-}
-
-.explore-subpage .artwork-panel {
+.artwork-panel {
 	background-size: cover;
 	height: 200px;
 	position: relative;
@@ -335,7 +329,7 @@ a:hover {
 	margin: -20px -20px 20px -20px;
 }
 
-.explore-subpage .artwork-panel h1 {
+.artwork-panel h1 {
 	z-index: 2;
 	position: absolute;
 	bottom: 12px;
@@ -344,7 +338,7 @@ a:hover {
 	padding: 0 8px;
 }
 
-.explore-subpage .artwork-panel .background-image {
+.artwork-panel .background-image {
 	background: 50% 50% no-repeat #EEEEEE;
 	background-size: cover;
 	position: absolute;
@@ -353,6 +347,16 @@ a:hover {
 	bottom: 0px;
 	left: 0px;
 	z-index: 1;
+}
+
+#artist .related-artists-wrapper {
+	float: right;
+	width: 26%;
+}
+
+#artist .tracks-wrapper {
+	float: left;
+	width: 70%;
 }
 
 

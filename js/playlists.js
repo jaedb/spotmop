@@ -32,7 +32,7 @@ function setupNewPlaylistButton(){
 				var lists = $('.menu-item-wrapper.playlists .playlist-list');
 				coreArray['playlists'] += playlist;
 				
-				lists.prepend('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
+				lists.prepend('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			
 				// draggable to drop them onto playlists
 				$(document).find('#menu .playlist-list .playlist-item[data-uri="'+playlist.uri+'"]').droppable({
@@ -90,7 +90,7 @@ function updatePlaylists(){
 			var playlist = playlists.items[i];
 			
 			// add list to the playlists bar
-			lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#explore/playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
+			lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 		}
 		
 		// draggable to drop them onto playlists
