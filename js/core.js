@@ -218,19 +218,30 @@ $(document).ready( function(evt){
 	
 	// double-click to play track from a top-tracks list
 	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '.tracks.use-tracklist-in-focus .track-row.track-item', function(evt){	
-	
+	$(document).on('doubletap', '.tracks.top-tracks .track-row.track-item', function(evt){	
+		
 		$('.loader').show();
 		
-		var trackID = $(this).data('id');
+		var track_to_play = $(this);
+		var tracks_following = $(this).nextAll();
 		
-		var trackURIs = [];
+		// empty the list
+		mopidy.tracklist.clear();
 		
-		$(this).parent().children('.track-row:not(.headings)').each( function(key,value){
-			trackURIs.push( $(value).data('uri') );
-		});
+		// add the track we need to play first
+		mopidy.tracklist.add( null, track_to_play.index(), track_to_play.data('uri') ).then(function(response){
+			console.log('added first');
+			mopidy.playback.play();
 		
-		replaceAndPlayTracks( trackURIs, trackID );
+			// now add all the other tracks ... (yes, one by one)
+			tracks_following.each( function(index, value){
+				mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
+					$('.loader').fadeOut();
+				},consoleError);
+			});
+			
+		},consoleError);
+		
 	});
 	
 	
