@@ -231,5 +231,12 @@ function removeTracksFromPlaylist( playlistID, trackURIs ){
 	});
 };
 
+function getSearchResults( type, query ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
+		type: "GET",
+		timeout: 5000
+	});
+};
 
 

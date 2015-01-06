@@ -133,7 +133,7 @@ function renderArtistPage( id ){
 		$('#artist .artwork-panel .background-image').attr('style','background-image: url('+imageURL+');');
 		
 		
-		// ---- ALBUMS (straight to Spotify API) ---- //
+		// ---- ALBUMS
 			
 		$('.loader').show();
 		
@@ -169,7 +169,7 @@ function renderArtistPage( id ){
 		
 		
 		
-		// ---- TRACKS (straight to Spotify API) ---- //
+		// ---- TRACKS
 			
 		// drop in the loader
 		$('.loader').show();
@@ -186,7 +186,7 @@ function renderArtistPage( id ){
 		
 		
 		
-		// ---- RELATED ARTISTS (straight to Spotify API) ---- //
+		// --- RELATED ARTISTS
 			
 		// drop in the loader
 		$('.loader').show();
@@ -198,13 +198,15 @@ function renderArtistPage( id ){
 			$('.loader').fadeOut();
 			
 			// loop each artist
-			for(var x = 0; x < relatedArtists.artists.length && x <= 10; x++){
+			for(var x = 0; x < relatedArtists.artists.length && x <= 8; x++){
 			
 				var relatedArtist = relatedArtists.artists[x];
 				
 				imageURL = '';
-				if( relatedArtist.images.length > 0 )
-					imageURL = relatedArtist.images[2].url;
+				if( relatedArtist.images.length > 0 ){
+					var lastImage = relatedArtist.images.length-1;
+					imageURL = relatedArtist.images[lastImage].url;
+				}
 				
 				$('#artist .related-artists').append( '<a class="related-artist-panel" href="#artist/'+relatedArtist.uri+'" data-uri="'+relatedArtist.uri+'"><span class="thumbnail" style="background-image: url('+imageURL+');"></span><span class="name animate">'+relatedArtist.name+'</span><div class="clear-both"></div></a>' );
 			}
@@ -351,7 +353,7 @@ function renderPlaylistPage( uri ){
 			
 		// inject artist name
 		$('#playlist .name').html( playlist.name );
-		$('#playlist').attr( 'data-uri', getIdFromUri(playlist.uri) );
+		$('#playlist .tracks').attr( 'data-uri', getIdFromUri(playlist.uri) );
 		
 		imageURL = '';
 		if( playlist.images.length > 0 )

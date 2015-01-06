@@ -40,7 +40,7 @@ var mopidy = new Mopidy({
 
 // hold core data
 var coreArray = new Array();
-var consoleError = console.error.bind(console);
+var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(console); };
 var playlists;
 
 	
@@ -172,16 +172,21 @@ $(document).ready( function(evt){
 	// --- TRACK SELECTION EVENTS --- //
 	
 	// click to select a track
-	$(document).on('click', '.track-row:not(.headings)', function(evt){
+	$(document).on('click', '.track-row.track-item', function(evt){
 		$(this).siblings().removeClass('highlighted');
 		$(this).addClass('highlighted');
 	});
 	
 	// double-click to play track from queue
-	$(document).on('doubletap', '#queue .track-row', function(evt){
+	$(document).on('doubletap', '#queue .track-row.track-item', function(evt){
 		
 		var trackID = $(this).data('id');
 		
+		// immediately update dom, for 'snappy' ux
+		$('#queue .track-item').removeClass('current').removeClass('playing');
+		$(this).addClass('current').addClass('playing');
+		
+		// now actually change what's playing
 		mopidy.tracklist.getTlTracks().then(function( tracks ){
 			mopidy.playback.changeTrack( tracks[trackID], 1 );
 			mopidy.playback.play();
@@ -190,16 +195,22 @@ $(document).ready( function(evt){
 	});
 	
 	// double-click to play track from album list (explore/search result)
-	$(document).on('doubletap', '#explore .explore-subpage.album .track-row', function(evt){	
+	$(document).on('doubletap', '#album .track-row.track-item', function(evt){	
 		var trackID = $(this).data('id');		
-		var tracklistURI = $('#explore .explore-subpage.album .tracks').data('uri');
+		var tracklistURI = $('#album .tracks').data('uri');
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	
 	// double-click to play track from playlist list 
-	$(document).on('doubletap', '#playlists .tracks .track-row', function(evt){
-		console.log('playlist list');
+	$(document).on('doubletap', '#playlist .track-row.track-item', function(evt){
+	
 		$('.loader').show();
+		
+		// immediately update dom, for 'snappy' ux
+		$('#queue .track-item').removeClass('current').removeClass('playing');
+		$(this).addClass('current').addClass('playing');
+		
+		// now actually do it
 		var trackID = $(this).data('id');
 		var tracklistURI = $(this).closest('.tracks').data('uri');
 		replaceAndPlay( tracklistURI, trackID );
@@ -207,7 +218,7 @@ $(document).ready( function(evt){
 	
 	// double-click to play track from a top-tracks list
 	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '.tracks.use-tracklist-in-focus .track-row', function(evt){	
+	$(document).on('doubletap', '.tracks.use-tracklist-in-focus .track-row.track-item', function(evt){	
 	
 		$('.loader').show();
 		
@@ -315,8 +326,11 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 		html += '<div class="clear-both"></div>';
 	html += '</div>';
 	
-	// loop each of the album's tracks
-	if( tracks.length > 0 ){
+	if( typeof(tracks) === 'undefined' || tracks == null || tracks.length <= 0 ){
+		html += '<div class="track-row no-tracks">No tracks</div>';
+	}else{
+	
+		// loop each of the album's tracks
 		for(var x = 0; x < tracks.length; x++){
 			
 			if( tracks[x].track )
@@ -324,7 +338,7 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			else
 				var track = tracks[x];
 			
-			html += '<div class="track-row row" data-id="'+x+'" data-uri="'+track.uri+'">';
+			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'">';
 				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i></div>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
@@ -343,7 +357,7 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 		container.data('uri', tracklistUri);
 	
 	// draggable to drop them onto playlists
-	container.find('.track-row:not(.headings)').draggable({
+	container.find('.track-row.track-item').draggable({
         distance: 30,
 		revert: true,
 		revertDuration: 0,
@@ -651,7 +665,12 @@ function highlightPlayingTrack(){
 
 // update the current play queue
 function updatePlayQueue(){
-
+	
+	if( typeof( mopidy.tracklist ) === 'undefined' ){
+        renderTracksTable( $("#queue .tracks"), null, null );
+		return false;
+	}
+	
     mopidy.tracklist.getTracks().then(function( tracks ){
 		
         // add the tracks for further use

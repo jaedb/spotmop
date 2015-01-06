@@ -8,6 +8,10 @@ html {
 	font-size: 12px;
 }
 
+html {
+	overflow-y: scroll;
+}
+
 * {
 	border: 0;
 	padding: 0;
@@ -385,6 +389,15 @@ a:hover {
 
 .track-row.headings .col {
     padding-bottom: 5px;
+}
+
+.track-row.no-tracks,
+.track-row.no-tracks:hover {
+	text-align: center;
+	padding: 10px;
+	color: #AAAAAA;
+	background: none;
+	cursor: default;
 }
 
 .track-row {

@@ -17,94 +17,47 @@ function startSearch( query ){
 	$('.search-results-menu-item').show();
 	$('.loader').show();
 	
-	// Search tracks
-	$.ajax({
-		url: spotifyAPI.track+query,
-		type: "GET",
-		dataType: "json",
-		timeout: 5000,
-		success: function(result){
-			addSearchResults('track',result.tracks);
-			$('.loader').fadeOut();
-		},
-		error: function(x,t,m){
-			console.log(x+" - "+t+" - "+m);
+	// artists
+	getSearchResults( 'artist', query ).success( function(response){
+		
+		var artists = response.artists.items;
+		
+		for( var i = 0; i < artists.length; i++ ){
+			
+			var artist = artists[i];
+			
+			if( artist.images.length > 0 )
+				imageURL = artist.images[0].url;
+				
+			$('#search .artists').append( '<a class="artist-panel" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');" href="#artist/'+artist.uri+'"><span class="name animate">'+artist.name+'</span></a>' );
 		}
+		
 	});
 	
-	// Search albums
-	$.ajax({
-		url: spotifyAPI.album+query,
-		type: "GET",
-		dataType: "json",
-		timeout: 5000,
-		success: function(result){
-			addSearchResults('album',result.albums);
-			$('.loader').fadeOut();
-		},
-		error: function(x,t,m){
-			console.log(x+" - "+t+" - "+m);
+	// albums
+	getSearchResults( 'album', query ).success( function(response){
+		
+		var albums = response.albums.items;
+		
+		for( var i = 0; i < albums.length; i++ ){
+			
+			var album = albums[i];
+			
+			if( album.images.length > 0 )
+				imageURL = album.images[0].url;
+			
+			$('#search .albums').append( '<a class="album-panel" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');" href="#album/'+album.uri+'"><span class="name animate">'+album.name+'</span></a>' );
 		}
+		
 	});
 	
-	// Search artists
-	$.ajax({
-		url: spotifyAPI.artist+query,
-		type: "GET",
-		dataType: "json",
-		timeout: 5000,
-		success: function(result){
-			addSearchResults('artist',result.artists);
-			$('.loader').fadeOut();
-		},
-		error: function(x,t,m){
-			console.log(x+" - "+t+" - "+m);
-		}
+	// tracks
+	getSearchResults( 'track', query ).success( function(response){
+		renderTracksTable( $('#search .tracks'), response.tracks.items );
 	});
 	
 };
 
-
-/*
- * Add search results to the interface
- * Injects into #search page
-*/
-function addSearchResults(type, results){
-	
-	var counter = 0;
-	
-	$('#search-results .search-results-section.'+ type +' .results').html('');
-	
-	for(var i = 0;i < results.items.length; i++){
-	
-		var result = results.items[i];
-		var imageURL = '';
-		
-		// artists
-		if( type == 'artist' ){
-			
-			if( result.images.length > 0 )
-				imageURL = result.images[0].url;
-			
-			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="artist-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#artist/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
-		
-		// albums
-		}else if( type == 'album' ){
-			
-			if( result.images.length > 0 )
-				imageURL = result.images[1].url;
-			
-			$('#search-results .search-results-section.'+ type +' .results').append( '<a class="album-panel" data-uri="'+result.uri+'" style="background-image: url('+imageURL+');" href="#album/'+result.uri+'"><span class="name animate">'+result.name+'</span></a>' );
-		
-		// tracks
-		}else if( type == 'track' ){
-		
-			$('#search-results .search-results-section.'+ type +' .results').append( '<div class="track-row row" data-uri="'+result.uri+'"><div class="name col w30">'+result.name+'</div><div class="name col w30">'+joinArtistNames(result.artists)+'</div><div class="name col w30"><span class="clickable" data-uri="'+ result.album.uri +'">'+result.album.name+'</span></div><div class="clear-both"></div></div>' );
-		
-		};
-	};
-	
-};
 
 
 /*
