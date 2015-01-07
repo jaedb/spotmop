@@ -47,7 +47,7 @@ function checkToken(){
         var newURL = '';
         newURL += 'https://accounts.spotify.com/authorize?client_id='+spotifyAPI.clientid;
         newURL += '&redirect_uri='+spotifyAPI.referrer;
-        newURL += '&scope=playlist-modify-private%20playlist-modify-public&response_type=token';
+        newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
         window.location = newURL;
     }
 };
@@ -147,6 +147,19 @@ function getFeaturedPlaylists(){
 	});
 };
 
+function getUsersPlaylists( userid ){
+	checkToken();
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/spotify/playlists',
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + spotifyAPI.token
+		},
+		dataType: "json",
+		timeout: 50000
+	});
+};
+
 function getNewReleases(){
 	checkToken();
 	return $.ajax({
@@ -171,6 +184,20 @@ function getPlaylist( userID, playlistID ){
 		dataType: "json",
 		timeout: 10000
 	});
+};
+
+function getMyProfile(){
+	checkToken();
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/me',
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + spotifyAPI.token
+		},
+		dataType: "json",
+		contentType: "application/json; charset=utf-8",
+		timeout: 10000
+	});	
 };
 
 function getMyPlaylists(){
@@ -235,8 +262,13 @@ function getSearchResults( type, query ){
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
 		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + spotifyAPI.token
+		},
 		timeout: 5000
 	});
 };
+
+
 
 

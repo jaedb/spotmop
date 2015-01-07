@@ -10,8 +10,10 @@
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
 	<script type="text/javascript" src="/js/playlists.js"></script>
+	
 	<link href="/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
 	<link href="/css/layout.css" type="text/css" rel="stylesheet" />
+	<link href="/css/form.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
 			
@@ -69,6 +71,7 @@
 				<div class="menu-item-children">
 					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
 					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
+					<div class="child-menu-item hide"><a href="#playlists/spotify">Spotify playlists</a></div>
 				</div>
 			</div>
 			
@@ -105,6 +108,14 @@
 			
 			<div class="page" id="featured-playlists">
 				<h1>Featured playlists</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="playlists">
+				<h1>Playlists</h1>
 				<div class="clear-both"></div>
 				<div class="content"></div>
 			</div>
@@ -174,6 +185,11 @@
 						<div class="albums reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
+					<div class="search-results-section playlist">
+						<h2>Playlists</h2>
+						<div class="playlists reset-on-load"></div>
+						<div class="clear-both"></div>
+					</div>
 					<div class="search-results-section track">
 						<h2 class="bottom-padding">Top tracks</h2>
 						<div class="reset-on-load tracks"></div>
@@ -186,6 +202,58 @@
 			
 			<div class="page" id="settings">
 				<h1>Settings</h1>
+				
+				<br />
+				
+				<div class="clear-both"></div>
+				
+				<h4>Mopidy server</h4>
+				
+				<div class="field">
+					<div class="label">Mopidy hostname</div>
+					<div class="input">
+						<input type="text" name="hostname" placeholder="http://127.0.0.1" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Mopidy port</div>
+					<div class="input">
+						<input type="text" name="port" placeholder="6680" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Country code</div>
+					<div class="input">
+						<input type="text" name="country" placeholder="NZ" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Locale</div>
+					<div class="input">
+						<input type="text" name="locale" placeholder="en_NZ" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="clear-both"></div>
+				<br />
+				
+				<h4>Connected services</h4>
+				
+				<div class="field">
+					<div class="label">Spotify connnection</div>
+					<div class="input">
+						<div class="my-profile"></div>
+					</div>
+				</div>
+				
+				
 			</div>
 			
 		</div>

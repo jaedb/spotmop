@@ -600,8 +600,6 @@ function closeNotification(){
 */
 function updateLoader( event ){
 	
-	console.log('begin: '+chainedEventsCount);
-	
 	if( typeof(event) === null )
 		event = 'start';
 	
@@ -616,8 +614,6 @@ function updateLoader( event ){
 	}else{
 		$('.loader').show();
 	}
-	
-	console.log('end: '+chainedEventsCount);
 }
 
 
@@ -639,9 +635,11 @@ function addTrackToQueue( uri ){
 /* ================================================================================= */
 
 function updatePlayer(){
-	mopidy.playback.getState().done(doUpdateState, consoleError);
-	mopidy.playback.getCurrentTrack().done(doUpdatePlayer, consoleError);	
-	updatePlayPosition();
+	if( typeof(mopidy.playback) !== 'undefined' ){
+		mopidy.playback.getState().done(doUpdateState, consoleError);
+		mopidy.playback.getCurrentTrack().done(doUpdatePlayer, consoleError);	
+		updatePlayPosition();
+	}
 }
 
 // update artist/track and artwork

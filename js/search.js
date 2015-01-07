@@ -15,12 +15,13 @@ function startSearch( query ){
 	
 	// reveal search results menu item
 	$('.search-results-menu-item').show();
-	$('.loader').show();
 	
 	// artists
+	updateLoader('start');
 	getSearchResults( 'artist', query ).success( function(response){
 		
 		var artists = response.artists.items;
+		updateLoader('stop');
 		
 		for( var i = 0; i < artists.length; i++ ){
 			
@@ -35,9 +36,11 @@ function startSearch( query ){
 	});
 	
 	// albums
+	updateLoader('start');
 	getSearchResults( 'album', query ).success( function(response){
 		
 		var albums = response.albums.items;
+		updateLoader('stop');
 		
 		for( var i = 0; i < albums.length; i++ ){
 			
@@ -52,8 +55,28 @@ function startSearch( query ){
 	});
 	
 	// tracks
+	updateLoader('start');
 	getSearchResults( 'track', query ).success( function(response){
+		updateLoader('stop');
 		renderTracksTable( $('#search .tracks'), response.tracks.items );
+	});
+	
+	// playlists
+	updateLoader('start');
+	getSearchResults( 'playlist', query ).success( function(response){
+	
+		var playlists = response.playlists.items;
+		updateLoader('stop');
+		
+		for( var i = 0; i < playlists.length; i++ ){
+			
+			var playlist = playlists[i];
+			
+			if( playlist.images.length > 0 )
+				imageURL = playlist.images[0].url;
+			
+			$('#search .playlists').append( '<a class="album-panel" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');" href="#playlist/'+playlist.uri+'"><span class="name animate">'+playlist.name+'</span></a>' );
+		}
 	});
 	
 };

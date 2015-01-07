@@ -2,7 +2,7 @@
  * Spotmop
  * By James Barnsley (http://jamesbarnsley.co.nz
  * 
- * Explore artists/albums functionality
+ * Settings
  *
  */
 

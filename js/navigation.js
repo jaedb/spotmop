@@ -61,6 +61,10 @@ function navigate(){
 		renderNewReleasesPage( hash[1] );
     };
     
+    if(page == 'playlists'){
+		renderUsersPlaylistsPage( hash[1] );
+    };
+    
     if(page == 'settings'){
 		renderSettingsPage();
     };
@@ -236,6 +240,42 @@ function renderArtistPage( id ){
 
 
 /*
+ * Render a user's playlists page
+ * Shows a user's playlists
+*/
+function renderUsersPlaylistsPage(){
+    
+    updateLoader('start');
+	
+	getUsersPlaylists('spotify').then( function(response){
+		
+		// empty out previous albums
+		$(document).find('#playlists .content').html('');
+		updateLoader('stop');
+		
+		// loop each playlist
+		for(var i = 0; i < response.items.length; i++){
+		
+			var playlist = response.items[i];
+			
+			imageURL = '';
+			if( playlist.images.length > 0 )
+				imageURL = playlist.images[0].url;
+			
+			$('#playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+playlist.name+'</span></a>' );
+		};
+		
+
+	})
+	.fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
+	});
+}
+
+
+
+/*
  * Render featured playlists page
  * Shows a handful of featured and time-sensitive playlists
 */
@@ -405,7 +445,53 @@ function renderPlaylistPage( uri ){
 */
 function renderSettingsPage(){
 	
-	console.log('Settings still to come');
+    if( localStorage.hostname == null ){
+		localStorage.hostname = 'http://127.0.0.1';
+	}else{
+		$('#settings input[name="hostname"]').val( localStorage.hostname );
+	}
+	
+    if( localStorage.port == null ){
+		localStorage.port = '6680';
+	}else{
+		$('#settings input[name="port"]').val( localStorage.port );
+	}
+	
+    if( localStorage.country == null ){
+		localStorage.country = 'NZ';
+	}else{
+		$('#settings input[name="country"]').val( localStorage.country );
+	}
+	
+    if( localStorage.locale == null ){
+		localStorage.locale = 'en_NZ';
+	}else{
+		$('#settings input[name="locale"]').val( localStorage.locale );
+	}
+	
+	$('#settings input.autosave').on('blur', function(evt){
+		localStorage.setItem( $(this).attr('name'), $(this).val() );
+		$(this).closest('.field').find('.autosave-success').show().delay(1000).fadeOut('slow');
+	});
+	
+	updateLoader('start');
+	getMyProfile().success( function(response){
+		
+		console.log(response);
+		
+		updateLoader('stop');
+		
+		var html = '';
+		
+		html += '<div class="thumbnail" style="background-image: url('+response.images[0].url+');"></div>';
+		html += '<div class="name">'+response.display_name+'</div>';
+		
+		$('#settings .my-profile').html( html );
+		
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching user profile: '+response.responseJSON.error.message );
+	});
 	
 };
 
