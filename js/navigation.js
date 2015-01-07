@@ -243,11 +243,11 @@ function renderArtistPage( id ){
  * Render a user's playlists page
  * Shows a user's playlists
 */
-function renderUsersPlaylistsPage(){
+function renderUsersPlaylistsPage( userID ){
     
     updateLoader('start');
 	
-	getUsersPlaylists('spotify').then( function(response){
+	getUsersPlaylists(userID).then( function(response){
 		
 		// empty out previous albums
 		$(document).find('#playlists .content').html('');
@@ -477,8 +477,6 @@ function renderSettingsPage(){
 	updateLoader('start');
 	getMyProfile().success( function(response){
 		
-		console.log(response);
-		
 		updateLoader('stop');
 		
 		var html = '';
@@ -486,7 +484,12 @@ function renderSettingsPage(){
 		html += '<div class="thumbnail" style="background-image: url('+response.images[0].url+');"></div>';
 		html += '<div class="name">'+response.display_name+'</div>';
 		
-		$('#settings .my-profile').html( html );
+		$('#settings .my-profile').html( html );		
+		$('#settings .token').html( localStorage.token_expiry );
+		
+		$('#settings .refresh-token-button').on('click', function(evt){
+			getNewToken();
+		});
 		
 	}).fail( function( response ){
 		updateLoader('stop');

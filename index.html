@@ -71,7 +71,7 @@
 				<div class="menu-item-children">
 					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
 					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
-					<div class="child-menu-item hide"><a href="#playlists/spotify">Spotify playlists</a></div>
+					<div class="child-menu-item"><a href="#playlists/spotifyusa">Spotify playlists</a></div>
 				</div>
 			</div>
 			
@@ -247,11 +247,19 @@
 				<h4>Connected services</h4>
 				
 				<div class="field">
-					<div class="label">Spotify connnection</div>
+					<div class="label">Current user</div>
 					<div class="input">
 						<div class="my-profile"></div>
 					</div>
 				</div>
+				
+				<div class="field">
+					<div class="label">Authentication token</div>
+					<div class="input authentication-token">
+						<span class="token"></span><a class="refresh-token-button"><i class="fa fa-refresh"></i>&nbsp; Refresh</a>
+					</div>
+				</div>
+
 				
 				
 			</div>
@@ -262,6 +270,8 @@
 	<div id="notification">
 		<div class="message"></div>
 	</div>
+	
+	<iframe class="api-iframe" style="position: fixed; bottom: 75px; right: 10px; width: 200px; height: 200px; z-index: 999;" src="">&nbsp;</iframe>
 	
 </body>
 </html>

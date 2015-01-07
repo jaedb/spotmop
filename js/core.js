@@ -27,6 +27,15 @@ function getIdFromUri( uri ){
 };
 
 
+/* currently not in need */
+
+window.addEventListener("storage", storageUpdated, false);
+
+function storageUpdated(storage){
+	console.log('localStorage contents has been changed');
+}
+
+/* end */
  
 
 /* ======================================================== SYSTEM INIT ============ */

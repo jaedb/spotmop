@@ -36,4 +36,8 @@
 	font-size: 18px;
 }
 
+.field .authentication-token > * {
+	padding: 8px 8px 0 0;
+	display: inline-block;
+}
 
