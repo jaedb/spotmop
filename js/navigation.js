@@ -26,7 +26,6 @@ function navigate(){
 		
 	$('.page').hide();
 	$('#'+page+' .reset-on-load').html('');
-	$('.loader').show();
 	
 	// hide/show relevant content
 	$('.menu-item-wrapper').removeClass('current');
@@ -36,7 +35,6 @@ function navigate(){
     
     if( page == 'queue' ){
         updatePlayQueue();
-		$('.loader').fadeOut();
     }
     
     if(page == 'search'){
@@ -62,7 +60,11 @@ function navigate(){
     if(page == 'new-releases'){
 		renderNewReleasesPage( hash[1] );
     };
-	
+    
+    if(page == 'settings'){
+		renderSettingsPage();
+    };
+
 };
 
 
@@ -120,8 +122,12 @@ $(document).ready( function(evt){
 */
 function renderArtistPage( id ){
     
+    updateLoader('start');
+    
 	// get the artist object
 	getArtist( id ).success( function( artist ){
+    
+    	updateLoader('stop');
 		
 		// inject artist name
 		$('#artist .artwork-panel .name').html( artist.name );
@@ -134,14 +140,13 @@ function renderArtistPage( id ){
 		
 		
 		// ---- ALBUMS
-			
-		$('.loader').show();
+		updateLoader('start');
 		
 		getArtistsAlbums( artist.id ).success(function( albums ){
 			
 			// empty out previous albums
 			$('#artist .albums').html('');
-			$('.loader').fadeOut();
+			updateLoader('stop');
 			
 			// loop each album
 			for(var i = 0; i < albums.items.length; i++){
@@ -165,37 +170,43 @@ function renderArtistPage( id ){
 				zIndex: 10000
 			});
 
-		}).fail( function( response ){ $('.loader').fadeOut(); notifyUser('error', 'Error fetching artist\'s albums: '+response.responseJSON.error.message ); } );
+		}).fail( function( response ){ 
+			updateLoader('stop');
+			notifyUser('error', 'Error fetching artist\'s albums: '+response.responseJSON.error.message );
+		});
 		
 		
 		
 		// ---- TRACKS
 			
 		// drop in the loader
-		$('.loader').show();
+		updateLoader('start');
 		
 		getArtistsTopTracks( artist.id ).success(function( tracks ){
 			
 			// empty out previous albums
 			$('#artist .tracks').html('');
-			$('.loader').fadeOut();
+			updateLoader('stop');
 		
 			renderTracksTable( $('#artist .tracks'), tracks.tracks );	
 			
-		}).fail( function( response ){ $('.loader').fadeOut(); notifyUser('error', 'Error fetching artist\'s top tracks: '+response.responseJSON.error.message ); } );
+		}).fail( function( response ){
+			updateLoader('stop');
+			notifyUser('error', 'Error fetching artist\'s top tracks: '+response.responseJSON.error.message );
+		});
 		
 		
 		
 		// --- RELATED ARTISTS
 			
 		// drop in the loader
-		$('.loader').show();
+		updateLoader('start');
 		
 		getRelatedArtists( artist.id ).success(function( relatedArtists ){
 			
 			// empty out previous related artists
 			$('#artist .related-artists').html('');
-			$('.loader').fadeOut();
+			updateLoader('stop');
 			
 			// loop each artist
 			for(var x = 0; x < relatedArtists.artists.length && x <= 8; x++){
@@ -210,10 +221,15 @@ function renderArtistPage( id ){
 				
 				$('#artist .related-artists').append( '<a class="related-artist-panel" href="#artist/'+relatedArtist.uri+'" data-uri="'+relatedArtist.uri+'"><span class="thumbnail" style="background-image: url('+imageURL+');"></span><span class="name animate">'+relatedArtist.name+'</span><div class="clear-both"></div></a>' );
 			}
-		}).fail( function( response ){ $('.loader').fadeOut(); notifyUser('error', 'Error fetching related artists: '+response.responseJSON.error.message ); } );
+		}).fail( function( response ){
+    		updateLoader('stop');
+			notifyUser('error', 'Error fetching related artists: '+response.responseJSON.error.message );
+		});
+    
+    	updateLoader('stop');
 		
 	}).fail( function( response ){
-		$('.loader').fadeOut();
+		updateLoader('stop');
 		notifyUser('error', 'Error fetching artist: '+response.responseJSON.error.message );
 	});
 };
@@ -224,15 +240,14 @@ function renderArtistPage( id ){
  * Shows a handful of featured and time-sensitive playlists
 */
 function renderNewReleasesPage(){
-
-	// empty out previous albums
-	$('.loader').show();
+    
+    updateLoader('start');
 	
 	getNewReleases().then( function(response){
 		
 		// empty out previous albums
 		$(document).find('#new-releases .content').html('');
-		$('.loader').fadeOut();
+		updateLoader('stop');
 		
 		// loop each album
 		for(var i = 0; i < response.albums.items.length; i++){
@@ -259,7 +274,7 @@ function renderNewReleasesPage(){
 
 	})
 	.fail( function( response ){
-		$('.loader').fadeOut();
+		updateLoader('stop');
 		if( typeof response.responseJSON !== 'undefined' )
 			notifyUser('error', 'Error fetching new releases: '+response.responseJSON.error.message );
 		else
@@ -273,9 +288,9 @@ function renderNewReleasesPage(){
  * Shows a handful of featured and time-sensitive playlists
 */
 function renderFeaturedPlaylistsPage(){
+    
+    updateLoader('start');
 
-	// drop in the loader
-	$('.loader').show();
 	$(document).find('#featured-playlists').show();
 
 	getFeaturedPlaylists().success(function( playlists ) {
@@ -284,7 +299,7 @@ function renderFeaturedPlaylistsPage(){
 		
 		// empty out previous playlists
 		$(document).find('#featured-playlists .content').html('');
-		$('.loader').fadeOut();
+		updateLoader('stop');
 		
 		for(var i = 0; i < playlists.length; i++){
 			
@@ -298,7 +313,10 @@ function renderFeaturedPlaylistsPage(){
 			
 		};
 		
-	}).fail( function( response ){ $('.loader').fadeOut(); notifyUser('error', 'Error fetching featured playlists: '+response.responseJSON.error.message ); } );
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching featured playlists: '+response.responseJSON.error.message );
+	});
 }
 
 
@@ -310,10 +328,12 @@ function renderFeaturedPlaylistsPage(){
  * Shows a single album and it's tracks
 */
 function renderAlbumPage( id ){
-	
+    
+    updateLoader('start');
+    
 	getAlbum( id ).success(function( album ){
 	
-		$('.loader').fadeOut();
+		updateLoader('stop');
 			
 		imageURL = '';
 		if( album.images.length > 0 )
@@ -331,7 +351,7 @@ function renderAlbumPage( id ){
 		
 		
 	}).fail( function( response ){
-		$('.loader').fadeOut();
+		updateLoader('stop');
 		notifyUser('error', 'Error fetching album: '+response.responseJSON.error.message );
 	});
 }
@@ -341,19 +361,21 @@ function renderAlbumPage( id ){
  * Render the a single playlist
 */
 function renderPlaylistPage( uri ){
-	
-	$('.loader').show();
+    
+    updateLoader('start');
 
 	var userid = uri.split(':')[2];
 	var playlistid = uri.split(':')[4];
 	
 	getPlaylist( userid, playlistid ).success(function( playlist ){
-	
-		$('.loader').fadeOut();
+
+		updateLoader('stop');
 			
 		// inject artist name
 		$('#playlist .name').html( playlist.name );
-		$('#playlist .tracks').attr( 'data-uri', getIdFromUri(playlist.uri) );
+		$('#playlist .tracks').attr( 'data-id', getIdFromUri(playlist.uri) );
+		$('#playlist .tracks').attr( 'data-uri', playlist.uri );
+		$('#playlist .tracks').attr( 'data-userid', userid );
 		
 		imageURL = '';
 		if( playlist.images.length > 0 )
@@ -371,9 +393,19 @@ function renderPlaylistPage( uri ){
 		renderTracksTable( $('#playlist .tracks'), playlist.tracks.items );
 		
 	}).fail( function( response ){
-		$('.loader').fadeOut(); 
+		updateLoader('stop');
 		notifyUser('error', 'Error fetching playlist: '+response.responseJSON.error.message );
 	});
+	
+};
+
+
+/*
+ * Render the interface settings page
+*/
+function renderSettingsPage(){
+	
+	console.log('Settings still to come');
 	
 };
 

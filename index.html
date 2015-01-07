@@ -14,11 +14,11 @@
 	<link href="/css/layout.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
+			
+	<div class="loader"></div>
 
 	<div id="player">
 		<div class="liner">
-			
-			<div class="loader"></div>
 			
 			<div class="current-track">
 				<span class="track">No track</span> <span class="artist">No artist</span>
@@ -72,13 +72,13 @@
 				</div>
 			</div>
 			
-			<div class="menu-item-wrapper explore hide">
-				<a class="menu-item" data-target="explore" href="#browse"><i class="fa fa-paper-plane"></i> &nbsp; Browse</a>
-			</div>
-			
 			<div class="menu-item-wrapper playlists heading">
 				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
 				<div class="menu-item-children playlist-list"></div>
+			</div>
+			
+			<div class="menu-item-wrapper settings">
+				<a class="menu-item" data-target="settings" href="#settings"><i class="fa fa-cog"></i> &nbsp; Settings</a>
 			</div>
 			
 		</div>
@@ -180,6 +180,12 @@
 						<div class="clear-both"></div>
 					</div>
 				</div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="settings">
+				<h1>Settings</h1>
 			</div>
 			
 		</div>

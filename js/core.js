@@ -42,6 +42,7 @@ var mopidy = new Mopidy({
 var coreArray = new Array();
 var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(console); };
 var playlists;
+var chainedEventsCount = 0;
 
 	
 
@@ -201,6 +202,7 @@ $(document).ready( function(evt){
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	
+	/*
 	// double-click to play track from playlist list 
 	$(document).on('doubletap', '#playlist .track-row.track-item', function(evt){
 	
@@ -215,31 +217,82 @@ $(document).ready( function(evt){
 		var tracklistURI = $(this).closest('.tracks').data('uri');
 		replaceAndPlay( tracklistURI, trackID );
 	});
+	*/
 	
 	// double-click to play track from a top-tracks list
 	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '.tracks.top-tracks .track-row.track-item', function(evt){	
+	$(document).on('doubletap', '#artist .tracks .track-row.track-item', function(evt){	
 		
 		$('.loader').show();
+		
+		// immediately update dom, for 'snappy' ux
+		$(this).siblings().removeClass('current').removeClass('playing');
+		$(this).addClass('current').addClass('playing');
 		
 		var track_to_play = $(this);
 		var tracks_following = $(this).nextAll();
 		
 		// empty the list
-		mopidy.tracklist.clear();
-		
-		// add the track we need to play first
-		mopidy.tracklist.add( null, track_to_play.index(), track_to_play.data('uri') ).then(function(response){
-			console.log('added first');
-			mopidy.playback.play();
-		
-			// now add all the other tracks ... (yes, one by one)
-			tracks_following.each( function(index, value){
-				mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
-					$('.loader').fadeOut();
-				},consoleError);
-			});
+		mopidy.tracklist.clear().then( function(response){;
 			
+			// add the track we need to play first
+			mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
+				
+				mopidy.playback.changeTrack(response[0],1);
+				mopidy.playback.play();
+				updatePlayer();
+			
+				// now add all the other tracks ... (yes, one by one)
+				tracks_following.each( function(index, value){
+					chainedEventsCount++;
+					mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
+						chainedEventsCount--;
+						if( chainedEventsCount == 0)
+							$('.loader').fadeOut();
+					},consoleError);
+				});
+			},consoleError);
+		},consoleError);
+	});
+	
+	
+	
+	// double-click to play track from a top-tracks list
+	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
+	$(document).on('doubletap', '#playlist .tracks .track-row.track-item', function(evt){	
+		
+		$('.loader').show();
+		
+		// immediately update dom, for 'snappy' ux
+		$(this).siblings().removeClass('current').removeClass('playing');
+		$(this).addClass('current').addClass('playing');
+		
+		var track_to_play_uri = $(this).attr('data-uri');
+		var tracklist_uri = $(this).closest('.tracks').attr('data-uri');
+		
+		// empty the list
+		mopidy.tracklist.clear().then( function(response){
+			
+			// run a lookup on this playlist
+			mopidy.library.lookup(tracklist_uri).then(function(tracks){
+				
+				// add all the tracks to the queue
+				mopidy.tracklist.add( tracks ).then(function(response){
+					
+					$('.loader').fadeOut();
+					
+					// loop the tracks returned (Tl_Track object)
+					for(var i = 0; i < response.length; i++){
+						
+						// if this track uri matches the one we clicked on, then play it chris!
+						if( response[i].track.uri == track_to_play_uri ){
+							mopidy.playback.changeTrack(response[i],1);
+							mopidy.playback.play();
+							updatePlayer();
+						}
+					}
+				},consoleError);
+			},consoleError);
 		},consoleError);
 		
 	});
@@ -285,6 +338,8 @@ $(document).ready( function(evt){
         updatePlayer();
         updateVolume();
         updatePlaylists();
+        updatePlayQueue();
+        
     });
 	
 	/*
@@ -350,7 +405,7 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				var track = tracks[x];
 			
 			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'">';
-				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i></div>';
+				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i><i class="fa fa-refresh  fa-spin"></i></div>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
 				if( album )
@@ -377,8 +432,11 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
   		zIndex: 10000
 	});
 	
+	highlightPlayingTrack();
+	
 	return true;
 };
+
 
 
 /*
@@ -536,13 +594,41 @@ function closeNotification(){
 
 
 /*
+ * Update loader
+ * Check if we have no more things loading, then hide the loader
+ * @var event = start/stop 
+*/
+function updateLoader( event ){
+	
+	console.log('begin: '+chainedEventsCount);
+	
+	if( typeof(event) === null )
+		event = 'start';
+	
+	if( event == 'start' )
+		chainedEventsCount++;
+	else if( event == 'stop' )
+		chainedEventsCount--;
+	
+	if( chainedEventsCount <= 0){
+		$('.loader').fadeOut();	
+		chainedEventsCount = 0;
+	}else{
+		$('.loader').show();
+	}
+	
+	console.log('end: '+chainedEventsCount);
+}
+
+
+/*
  * Add a track (by URI) to the play queue
  * @var uri = trackURI
 */
 function addTrackToQueue( uri ){
 	mopidy.tracklist.add(null, null, uri).then( function(result){
 		updatePlayQueue();
-		notifyUser('notify','Track(s) added to queue');
+		updateLoader();
 	});
 };
 
@@ -677,12 +763,17 @@ function highlightPlayingTrack(){
 // update the current play queue
 function updatePlayQueue(){
 	
+	updateLoader('start');
+	
 	if( typeof( mopidy.tracklist ) === 'undefined' ){
         renderTracksTable( $("#queue .tracks"), null, null );
+		updateLoader('stop');
 		return false;
 	}
 	
     mopidy.tracklist.getTracks().then(function( tracks ){
+    	
+		updateLoader('stop');
 		
         // add the tracks for further use
         coreArray['tracklist'] = tracks;
@@ -705,6 +796,8 @@ function updatePlayQueue(){
                 mopidy.tracklist.move( $(ui.item).data('id'), $(ui.item).data('id')+1, newPosition );
             }
         });
+
+		updateLoader();
 
     },consoleError);
 }

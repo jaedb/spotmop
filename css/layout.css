@@ -94,12 +94,13 @@ a {
 
 .loader {
 	background: url('../images/loader.gif') 0 0 no-repeat;
-	width: 16px;
-	height: 16px;
+	width: 24px;
+	height: 24px;
 	display: block;
 	position: absolute;
 	top: 15px;
 	right: 15px;
+	z-index: 99;
 }
 
 *:focus {
@@ -423,6 +424,7 @@ a:hover {
 
 .track-row .icon-container .fa-play {           display: none; font-size: 8px; }
 .track-row .icon-container .fa-circle {         display: inline; }
+.track-row .icon-container .fa-refresh {        display: none; font-size: 9px; }
 
 .track-row .col {
 	padding: 10px 0;
@@ -440,6 +442,10 @@ a:hover {
 
 .track-row.current .icon-container .fa-play {    display: inline; }
 .track-row.current .icon-container .fa-circle {    display: none; }
+
+.track-row.loading .icon-container .fa-play {    display: none; }
+.track-row.loading .icon-container .fa-circle {    display: none; }
+.track-row.loading .icon-container .fa-refresh {    display: inline-block; }
 
 .track-row.current .icon {
 	background-position: -20px -20px;
