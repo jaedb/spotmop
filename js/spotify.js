@@ -32,7 +32,7 @@ function getNewToken(){
     newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
     
     // open a new window to handle this authentication
-    window.open(newURL);
+    window.open(newURL,'spotifyAPIrequest','height=550,width=400');
 }
 
 
