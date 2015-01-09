@@ -463,17 +463,10 @@ function renderPlaylistPage( uri ){
 */
 function renderSettingsPage(){
 	
-    if( mopidy ){
-		$('#settings .mopidy-connection-status')
-			.removeClass('red')
-			.addClass('green')
-			.html('<i class="fa fa-circle"></i><div class="status">Connected</div>');
-	}else{
-		$('#settings .mopidy-connection-status')
-			.removeClass('green')
-			.addClass('red')
-			.html('<i class="fa fa-circle"></i><div class="status">Disconnected</div>');
-	}
+    if( coreArray['mopidyOnline'] )
+		$('#settings .mopidy.connection-status').addClass('online').removeClass('offline');
+	else
+		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
 	
     if( localStorage.hostname != null ){
 		$('#settings input[name="hostname"]').val( localStorage.hostname );
@@ -500,10 +493,7 @@ function renderSettingsPage(){
 		
 		updateLoader('start');
 				
-		$('#settings .spotify-connection-status')
-			.removeClass('red')
-			.addClass('green')
-			.html('<i class="fa fa-circle"></i><div class="status">Connected</div>');
+		$('#settings .spotify.connection-status').addClass('online').removeClass('offline');
 		
 		getMyProfile().success( function(response){
 			
@@ -526,11 +516,7 @@ function renderSettingsPage(){
 			notifyUser('error', 'Error fetching user profile: '+response.responseJSON.error.message );
 		});
 	}else{
-		
-		$('#settings .spotify-connection-status')
-			.removeClass('green')
-			.addClass('red')
-			.html('<i class="fa fa-circle"></i><div class="status">Disconnected</div>');
+		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
 	}
 	
 };

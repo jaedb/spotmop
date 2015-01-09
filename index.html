@@ -1,7 +1,7 @@
 <html>
 <head>
 	<script type="text/javascript" src="/config.js"></script>
-	<script type="text/javascript" src="http://tv.barnsley.nz:6680/mopidy/mopidy.min.js"></script>
+	<script type="text/javascript" src="/js/mopidy.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
@@ -211,15 +211,16 @@
 				
 				<div class="field">
 					<div class="label">Status</div>
-					<div class="input mopidy-connection-status">
-						
+					<div class="input mopidy connection-status">
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
 					</div>
 				</div>
 				
 				<div class="field">
 					<div class="label">Hostname</div>
 					<div class="input">
-						<input type="text" name="hostname" placeholder="http://127.0.0.1" class="autosave" />
+						<input type="text" name="hostname" placeholder="localhost" class="autosave" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -255,8 +256,9 @@
 				
 				<div class="field">
 					<div class="label">Status</div>
-					<div class="input spotify-connection-status">
-						
+					<div class="input spotify connection-status">
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
 					</div>
 				</div>
 				

@@ -33,6 +33,7 @@ window.addEventListener("storage", storageUpdated, false);
 
 function storageUpdated(storage){
 	console.log('localStorage contents has been changed');
+	navigate();
 }
 
 /* end */
@@ -48,7 +49,7 @@ var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(consol
 var playlists;
 var chainedEventsCount = 0;
 var mopidy;
-var mopidyConnectionChecker = setInterval(function(){ if(!mopidy) checkMopidyConnection(); }, 5000);
+var mopidyConnectionChecker = setInterval(function(){ if(!coreArray['mopidyOnline']) initiateMopidy(); }, 5000);
 
 
 /*
@@ -57,32 +58,31 @@ var mopidyConnectionChecker = setInterval(function(){ if(!mopidy) checkMopidyCon
 */
 $(document).ready( function(evt){
     checkToken();
-    checkMopidyConnection();
-    navigate();
+    initiateMopidy();
+	navigate();
 });
-
-
-/* 
- * Check if there's a mopidy connection
-*/
-
-function checkMopidyConnection(){
-	
-	if( typeof Mopidy === 'function' ){
-		mopidy = new Mopidy({
-			webSocketUrl: mopidyWS
-		});
-		initiateMopidy();
-	}else{
-		console.log('Mopidy not connected');	
-	}	
-}
 
 
 /*
  * Initiate a mopidy connection
 */
 function initiateMopidy(){
+
+	var everySecond;
+	var mopidyHostname = 'localhost';
+	var mopidyPort = '6680';
+	
+	if( localStorage.hostname )
+		mopidyHostname = localStorage.hostname;
+	
+	if( localStorage.port )
+		mopidyPort = localStorage.port;
+		
+	var websocketURL = "ws://"+ mopidyHostname +":"+ mopidyPort +"/mopidy/ws";
+	
+	mopidy = new Mopidy({
+		webSocketUrl: websocketURL
+	});
 	
     mopidy.on("event:trackPlaybackResumed" ,function(track){	updatePlayer(); });
     mopidy.on("event:trackPlaybackStarted" ,function(track){	updatePlayer(); });
@@ -92,42 +92,36 @@ function initiateMopidy(){
     
     mopidy.on("state:online", function(){
 
-        notifyUser('notify','Connection established to Mopidy');
-
         // set play queue as consuming (once played, remove the track)
         mopidy.tracklist.consume = true;
-
-        coreArray['browsePageLoaded'] = false;
-
+		coreArray['mopidyOnline'] = true;
+		
+		$(document).find('.mopidy.connection-status').removeClass('offline').addClass('online');
+		
         updatePlayer();
         updateVolume();
         updatePlaylists();
         updatePlayQueue();
-        
-    });
-    
-    setupInteractivity();
 	
-	/*
-    // On reconnecting
-    mopidy.on("reconnecting", function(){
-        notifyUser('notify',"Reconnecting to server");
+		// Check the current time position of a track every second
+		everySecond = setInterval(function(){
+			mopidy.playback.getTimePosition().then( function( position ) {
+				coreArray['currentTrackPosition'] = position;
+				updatePlayPosition();
+				highlightPlayingTrack();
+			}, consoleError);
+		},1000);
+    
+		setupInteractivity();
+        
     });
 
     // On state offline
     mopidy.on("state:offline", function(){
-        notifyUser('bad',"No connection to the sever");
+		$(document).find('.mopidy.connection-status').removeClass('online').addClass('offline');
+		clearInterval( everySecond );
+		coreArray['mopidyOnline'] = false;
     });
-	*/
-	
-	// Check the current time position of a track every second
-	setInterval(function(){
-		mopidy.playback.getTimePosition().then( function( position ) {
-			coreArray['currentTrackPosition'] = position;
-			updatePlayPosition();
-			highlightPlayingTrack();
-		}, consoleError);
-	},1000);
 	
 }
 

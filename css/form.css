@@ -35,10 +35,20 @@
 	font-size: 18px;
 }
 
-.field .spotify-connection-status > *,
-.field .mopidy-connection-status > *,
+.field .connection-status .status,
 .field .authentication-token > * {
 	padding: 8px 8px 8px 0;
 	display: inline-block;
+}
+
+.field .connection-status.online .status,
+.field .connection-status.online .status.disconnected,
+.field .connection-status.offline .status.connected {
+	display: none;
+}
+
+.field .connection-status.online .status.connected,
+.field .connection-status.offline .status.disconnected {
+	display: block;
 }
 
