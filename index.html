@@ -166,7 +166,7 @@
 			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="playlist">
-				<h1><span class="name reset-on-load"></span></h1>
+				<h1 class="bottom-padding"><span class="name reset-on-load"></span></h1>
 				<div class="clear-both"></div>
 				<div class="tracks use-tracklist-in-focus reset-on-load"></div>
 			</div>
@@ -210,7 +210,14 @@
 				<h4>Mopidy server</h4>
 				
 				<div class="field">
-					<div class="label">Mopidy hostname</div>
+					<div class="label">Status</div>
+					<div class="input mopidy-connection-status">
+						
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Hostname</div>
 					<div class="input">
 						<input type="text" name="hostname" placeholder="http://127.0.0.1" class="autosave" />
 						<i class="fa fa-check autosave-success"></i>
@@ -218,7 +225,7 @@
 				</div>
 				
 				<div class="field">
-					<div class="label">Mopidy port</div>
+					<div class="label">Port</div>
 					<div class="input">
 						<input type="text" name="port" placeholder="6680" class="autosave" />
 						<i class="fa fa-check autosave-success"></i>
@@ -244,7 +251,14 @@
 				<div class="clear-both"></div>
 				<br />
 				
-				<h4>Connected services</h4>
+				<h4>Spotify service</h4>
+				
+				<div class="field">
+					<div class="label">Status</div>
+					<div class="input spotify-connection-status">
+						
+					</div>
+				</div>
 				
 				<div class="field">
 					<div class="label">Current user</div>

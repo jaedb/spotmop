@@ -15,7 +15,10 @@ function checkToken(){
 	// if we don't have a token (or it has expired), go get one
 	if( localStorage.token == null || localStorage.token_expiry < new Date().getTime() ){        
         getNewToken();
+        return false;
     }
+    
+    return true;
 };
 
 /*
@@ -37,7 +40,6 @@ function getNewToken(){
 
 
 function getPlaylists( albumID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market=NZ',
 		type: "GET",
@@ -47,7 +49,6 @@ function getPlaylists( albumID ){
 };
 
 function getAlbum( albumID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market=NZ',
 		type: "GET",
@@ -57,7 +58,6 @@ function getAlbum( albumID ){
 };
 
 function getAlbumsTracks( albumID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/albums/'+albumID+'/tracks?market=NZ',
 		type: "GET",
@@ -67,7 +67,6 @@ function getAlbumsTracks( albumID ){
 };
 
 function getArtistsAlbums( artistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/artists/'+artistID+'/albums?market=NZ&album_type=album,single',
 		type: "GET",
@@ -77,7 +76,6 @@ function getArtistsAlbums( artistID ){
 };
 
 function getArtist( artistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/artists/'+artistID+'?market=NZ',
 		type: "GET",
@@ -87,7 +85,6 @@ function getArtist( artistID ){
 };
 
 function getTrack( trackID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/tracks/'+trackID+'?market=NZ',
 		type: "GET",
@@ -98,7 +95,6 @@ function getTrack( trackID ){
 
 // TODO: Add dynamic country code
 function getArtistsTopTracks( artistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/artists/'+artistID+'/top-tracks?country=NZ',
 		type: "GET",
@@ -108,7 +104,6 @@ function getArtistsTopTracks( artistID ){
 };
 
 function getRelatedArtists( artistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/artists/'+artistID+'/related-artists?limit=10&market=NZ',
 		type: "GET",
@@ -118,7 +113,6 @@ function getRelatedArtists( artistID ){
 };
 
 function getFeaturedPlaylists(){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/browse/featured-playlists?market=NZ&locale=en_NZ&country=NZ',
 		type: "GET",
@@ -131,7 +125,6 @@ function getFeaturedPlaylists(){
 };
 
 function getUsersPlaylists( userid ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+userid+'/playlists',
 		type: "GET",
@@ -144,7 +137,6 @@ function getUsersPlaylists( userid ){
 };
 
 function getNewReleases(){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/browse/new-releases?country=NZ',
 		type: "GET",
@@ -157,7 +149,6 @@ function getNewReleases(){
 };
 
 function getPlaylist( userID, playlistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+userID+'/playlists/'+playlistID,
 		type: "GET",
@@ -170,7 +161,6 @@ function getPlaylist( userID, playlistID ){
 };
 
 function getMyProfile(){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/me',
 		type: "GET",
@@ -184,7 +174,6 @@ function getMyProfile(){
 };
 
 function getMyPlaylists(){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
 		type: "GET",
@@ -198,7 +187,6 @@ function getMyPlaylists(){
 };
 
 function createPlaylist( name ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
 		type: "POST",
@@ -213,7 +201,6 @@ function createPlaylist( name ){
 };
 
 function addTrackToPlaylist( playlistID, trackURI ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks?uris='+trackURI,
 		type: "POST",
@@ -227,7 +214,6 @@ function addTrackToPlaylist( playlistID, trackURI ){
 };
 
 function removeTracksFromPlaylist( playlistID, trackURIs ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
 		type: "DELETE",

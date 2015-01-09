@@ -57,6 +57,15 @@ a {
 	border-bottom: 1px dotted #000000;
 }
 
+.red {
+	color: red;
+}
+
+.green {
+	color: green;
+}
+
+
 
 /*
  * Columns and row structure
@@ -106,7 +115,7 @@ a {
 	width: 24px;
 	height: 24px;
 	display: block;
-	position: absolute;
+	position: fixed;
 	top: 15px;
 	right: 15px;
 	z-index: 99;
@@ -343,6 +352,10 @@ a:hover {
 	margin: -20px -20px 20px -20px;
 }
 
+#artist .artwork-panel {
+	height: 400px;
+}
+
 .artwork-panel h1 {
 	z-index: 2;
 	position: absolute;
@@ -500,6 +513,27 @@ a:hover {
 .track-row.ui-draggable-dragging *:not(.title),
 .album-panel.ui-draggable-dragging *:not(.name){
 	display: none;
+}
+
+
+/*
+ * Percentage bars (mainly for track popularity)
+*/
+
+.percentage {
+	margin-top: 6px;
+	width: 70%;
+	height: 5px;
+	position: relative;
+	background: #DDDDDD;
+}
+
+.percentage .bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	background: #555555;
 }
 
 

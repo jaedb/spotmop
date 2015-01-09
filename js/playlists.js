@@ -75,36 +75,38 @@ function updatePlaylists(){
 	$('.loader').show();
 	
 	// Get the users playlists and place them in the client
-	getMyPlaylists().success( function( playlists ){
-		
-		var lists = $('.menu-item-wrapper.playlists .playlist-list');
-		coreArray['playlists'] = playlists.items;
-		
-		// clear out the previous playlists
-		lists.html('');
-		$('.loader').fadeOut();
-		
-		// loop each playlist
-		for( var i = 0; i < playlists.items.length; i++ ){
-		
-			var playlist = playlists.items[i];
+	if( checkToken() ){
+		getMyPlaylists().success( function( playlists ){
 			
-			// add list to the playlists bar
-			lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
-		}
-		
-		// draggable to drop them onto playlists
-		$(document).find('#menu .playlist-list .playlist-item').droppable({
-			drop: function(evt, ui){
-				addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success();
+			var lists = $('.menu-item-wrapper.playlists .playlist-list');
+			coreArray['playlists'] = playlists.items;
+			
+			// clear out the previous playlists
+			lists.html('');
+			$('.loader').fadeOut();
+			
+			// loop each playlist
+			for( var i = 0; i < playlists.items.length; i++ ){
+			
+				var playlist = playlists.items[i];
+				
+				// add list to the playlists bar
+				lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			}
-		});
-		
-	}).fail( function( response ){
-		$('.loader').fadeOut();
-        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
-        $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
-    });
+			
+			// draggable to drop them onto playlists
+			$(document).find('#menu .playlist-list .playlist-item').droppable({
+				drop: function(evt, ui){
+					addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success();
+				}
+			});
+			
+		}).fail( function( response ){
+			$('.loader').fadeOut();
+	        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
+	        $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
+	    });
+	};
 	
 };
 
