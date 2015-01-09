@@ -3,8 +3,6 @@
  * 
  */
 
- 
-
 
 /*
  * Get an item's ID out of a provided URI
@@ -60,6 +58,18 @@ $(document).ready( function(evt){
     checkToken();
     initiateMopidy();
 	navigate();
+	
+    if( !localStorage.settings_hostname )
+		localStorage.settings_hostname = 'localhost';
+	
+    if( !localStorage.settings_port )
+		localStorage.settings_port = '6680';
+	
+    if( !localStorage.settings_country )
+		localStorage.settings_country = 'NZ';
+	
+    if( !localStorage.settings_locale )
+		localStorage.settings_locale = 'en_NZ';
 });
 
 

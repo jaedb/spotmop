@@ -468,24 +468,19 @@ function renderSettingsPage(){
 	else
 		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
 	
-    if( localStorage.hostname != null ){
-		$('#settings input[name="hostname"]').val( localStorage.hostname );
-	}
+	// load values into the fields (if it's not the default/placeholder)
+	$('#settings input.autosave').each( function(index, value){
+		if( $(value).attr('placeholder') != localStorage.getItem( 'settings_'+$(value).attr('name') ) )
+			$(value).val( localStorage.getItem( 'settings_'+$(value).attr('name') ) );
+	});
 	
-    if( localStorage.port != null ){
-		$('#settings input[name="port"]').val( localStorage.port );
-	}
-	
-    if( localStorage.country != null ){
-		$('#settings input[name="country"]').val( localStorage.country );
-	}
-	
-    if( localStorage.locale != null ){
-		$('#settings input[name="locale"]').val( localStorage.locale );
-	}
-	
+	// autosave
 	$('#settings input.autosave').on('blur', function(evt){
-		localStorage.setItem( $(this).attr('name'), $(this).val() );
+		if( $(this).val() == null || $(this).val() == '' )
+			localStorage.setItem( 'settings_'+$(this).attr('name'), $(this).attr('placeholder') );
+		else
+			localStorage.setItem( 'settings_'+$(this).attr('name'), $(this).val() );
+			
 		$(this).closest('.field').find('.autosave-success').show().delay(1000).fadeOut('slow');
 	});
 	
