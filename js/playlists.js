@@ -38,7 +38,7 @@ function setupNewPlaylistButton(){
 				$(document).find('#menu .playlist-list .playlist-item[data-uri="'+playlist.uri+'"]').droppable({
 					drop: function(evt, ui){
 						addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success(function(evt){
-							notifyUser('notify','Track added to playlist');	
+							notifyUser('good','Track added to playlist');
 						});
 					}
 				});
@@ -71,11 +71,10 @@ function setupRefreshPlaylistButton(){
 */
 
 function updatePlaylists(){
-
-	$('.loader').show();
 	
 	// Get the users playlists and place them in the client
 	if( checkToken() ){
+		updateLoader('start');
 		getMyPlaylists().success( function( playlists ){
 			
 			var lists = $('.menu-item-wrapper.playlists .playlist-list');
@@ -83,7 +82,7 @@ function updatePlaylists(){
 			
 			// clear out the previous playlists
 			lists.html('');
-			$('.loader').fadeOut();
+			updateLoader('stop');
 			
 			// loop each playlist
 			for( var i = 0; i < playlists.items.length; i++ ){
@@ -97,12 +96,26 @@ function updatePlaylists(){
 			// draggable to drop them onto playlists
 			$(document).find('#menu .playlist-list .playlist-item').droppable({
 				drop: function(evt, ui){
-					addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success();
+					var tracks = $(ui.helper.context).siblings('.highlighted').andSelf();
+					var trackURIs = [];
+					
+					tracks.each( function(index,value){
+						trackURIs.push( $(value).data('uri') );
+					});
+					
+					addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), trackURIs )
+						.success( function( response ){
+							updateLoader('stop');
+							notifyUser('good','Track(s) added to playlist');			
+						}).fail( function( response ){
+							updateLoader('stop');
+							notifyUser('error', 'Error adding tracks to playlists: '+response.responseJSON.error.message );
+						});
 				}
 			});
 			
 		}).fail( function( response ){
-			$('.loader').fadeOut();
+			updateLoader('stop');
 	        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
 	        $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
 	    });

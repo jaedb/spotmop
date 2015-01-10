@@ -57,6 +57,10 @@ a {
 	border-bottom: 1px dotted #000000;
 }
 
+.black {
+	color: #000000;
+}
+
 .red {
 	color: red;
 }
@@ -222,6 +226,11 @@ a:hover {
 
 #notification.notice {
 	background: rgba(250,236,85,0.9);
+	color: #000000;
+}
+
+#notification.good {
+	background: rgba(53,204,53,0.9);
 }
 
 

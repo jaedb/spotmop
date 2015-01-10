@@ -29,7 +29,7 @@ function getNewToken(){
     localStorage.returnURL = window.location.href;
 
     var newURL = '';
-    newURL += 'https://accounts.spotify.com/authorize?client_id='+settings.clientid;
+    newURL += 'https://accounts.spotify.com/authorize?client_id='+localStorage.settings_clientid;
     newURL += '&redirect_uri='+spotifyAPI.referrer;
     newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
     
@@ -199,14 +199,15 @@ function createPlaylist( name ){
 	});
 };
 
-function addTrackToPlaylist( playlistID, trackURI ){
+function addTrackToPlaylist( playlistID, trackURIs ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks?uris='+trackURI,
+		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
 		type: "POST",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
+		data: JSON.stringify( { uris: trackURIs } ),
 		contentType: "application/json; charset=utf-8",
 		timeout: 10000
 	});

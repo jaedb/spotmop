@@ -463,10 +463,14 @@ function renderPlaylistPage( uri ){
 */
 function renderSettingsPage(){
 	
-    if( coreArray['mopidyOnline'] )
+    if( coreArray['mopidyOnline'] ){
 		$('#settings .mopidy.connection-status').addClass('online').removeClass('offline');
-	else
+	}else{
 		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
+		$('#settings .mopidy.connection-status .reconnect').on('click', function(evt){
+			initiateMopidy();
+		});
+	}
 	
 	// load values into the fields (if it's not the default/placeholder)
 	$('#settings input.autosave').each( function(index, value){
@@ -511,7 +515,7 @@ function renderSettingsPage(){
 			notifyUser('error', 'Error fetching user profile: '+response.responseJSON.error.message );
 		});
 	}else{
-		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
+		$('#settings .spotify.connection-status').addClass('offline').removeClass('online');
 	}
 	
 };

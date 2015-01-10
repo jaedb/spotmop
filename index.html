@@ -212,8 +212,8 @@
 				<div class="field">
 					<div class="label">Status</div>
 					<div class="input mopidy connection-status">
-						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
-						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; Disconnected &nbsp;&nbsp; <a class="reconnect black"><i class="fa fa-refresh"></i>&nbsp; Retry</a></div>
 					</div>
 				</div>
 				
@@ -263,6 +263,14 @@
 				</div>
 				
 				<div class="field">
+					<div class="label">Client ID</div>
+					<div class="input">
+						<input type="text" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
 					<div class="label">Current user</div>
 					<div class="input">
 						<div class="my-profile"></div>
@@ -286,8 +294,6 @@
 	<div id="notification">
 		<div class="message"></div>
 	</div>
-	
-	<iframe class="api-iframe" style="position: fixed; bottom: 75px; right: 10px; width: 200px; height: 200px; z-index: 999;" src="">&nbsp;</iframe>
 	
 </body>
 </html>

@@ -47,7 +47,6 @@ var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(consol
 var playlists;
 var chainedEventsCount = 0;
 var mopidy;
-var mopidyConnectionChecker = setInterval(function(){ if(!coreArray['mopidyOnline']) initiateMopidy(); }, 5000);
 
 
 /*
@@ -55,21 +54,22 @@ var mopidyConnectionChecker = setInterval(function(){ if(!coreArray['mopidyOnlin
  * Kickstart the engine
 */
 $(document).ready( function(evt){
+
     checkToken();
     initiateMopidy();
 	navigate();
 	
+	// set defaults for mopidy api
     if( !localStorage.settings_hostname )
-		localStorage.settings_hostname = 'localhost';
-	
+		localStorage.settings_hostname = 'localhost';	
     if( !localStorage.settings_port )
-		localStorage.settings_port = '6680';
-	
+		localStorage.settings_port = '6680';	
     if( !localStorage.settings_country )
-		localStorage.settings_country = 'NZ';
-	
+		localStorage.settings_country = 'NZ';	
     if( !localStorage.settings_locale )
-		localStorage.settings_locale = 'en_NZ';
+		localStorage.settings_locale = 'en_NZ';	
+    if( !localStorage.settings_clientid )
+		localStorage.settings_clientid = 'a87fb4dbed30475b8cec38523dff53e2';
 });
 
 
@@ -77,18 +77,9 @@ $(document).ready( function(evt){
  * Initiate a mopidy connection
 */
 function initiateMopidy(){
-
-	var everySecond;
-	var mopidyHostname = 'localhost';
-	var mopidyPort = '6680';
 	
-	if( localStorage.hostname )
-		mopidyHostname = localStorage.hostname;
-	
-	if( localStorage.port )
-		mopidyPort = localStorage.port;
-		
-	var websocketURL = "ws://"+ mopidyHostname +":"+ mopidyPort +"/mopidy/ws";
+	var everySecond;		
+	var websocketURL = "ws://"+ localStorage.settings_hostname +":"+ localStorage.settings_port +"/mopidy/ws";
 	
 	mopidy = new Mopidy({
 		webSocketUrl: websocketURL
@@ -101,7 +92,7 @@ function initiateMopidy(){
     mopidy.on("event:playbackStateChanged", function(obj){		updatePlayer(); });	
     
     mopidy.on("state:online", function(){
-
+	
         // set play queue as consuming (once played, remove the track)
         mopidy.tracklist.consume = true;
 		coreArray['mopidyOnline'] = true;
@@ -681,7 +672,7 @@ function notifyUser( type, message, persistent ){
 	var notification = $('#notification');
 	
 	notification.find('.message').html( message );
-	notification.removeClass('error').removeClass('notice').removeClass('warning').addClass(type);
+	notification.removeClass('error').removeClass('notice').removeClass('warning').removeClass('good').addClass(type);
 	notification.slideDown('fast');
 	
 	if( !persistent )
