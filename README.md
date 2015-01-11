@@ -3,25 +3,33 @@ Spotmop
 
 Spotmop Mopidy HTTP interface
 
-Screenshots
------------
-
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-results.jpg)
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-album.jpg)
-
 Requirements
 --------
 
 * Mopidy
 * Mopidy-Spotify
 
+Installation
+--------
+
+1. Get Mopidy server running with Mopidy-Spotify plugin
+2. Extract Spotmop to your http root folder (as specified in ~/.config/mopidy/mopidy.conf
+3. Navigate to your server address (typically http://localhost:6680/)
+4. Alternatively, extract Spotmop to any webserver and configure your Mopidy server address on the Settings tab
+
 Features
 --------
 
 * Full web-based interface controls for Mopidy
 * Uses Spotify API to deliver high-quality audio and music information
-* Spotmop can be run completely independently of your Mopify machine, just set your URL in the settings tab
+* Spotmop can be run completely independently of your Mopidy machine, just set your URL in the settings tab
+
+Screenshots
+-----------
+
+![Search Results](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-results.jpg)
+![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
+![Album](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-album.jpg)
 
 To-do
 -----
