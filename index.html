@@ -1,26 +1,26 @@
 <html>
 <head>
 	<script type="text/javascript" src="/config.js"></script>
-	<script type="text/javascript" src="http://tv.barnsley.nz:6680/mopidy/mopidy.min.js"></script>
+	<script type="text/javascript" src="/js/mopidy.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
-	<script type="text/javascript" src="/js/discover.js"></script>
-	<script type="text/javascript" src="/js/explore.js"></script>
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
 	<script type="text/javascript" src="/js/playlists.js"></script>
+	
 	<link href="/css/font-awesome.min.css" type="text/css" rel="stylesheet" />
 	<link href="/css/layout.css" type="text/css" rel="stylesheet" />
+	<link href="/css/form.css" type="text/css" rel="stylesheet" />
 </head>
 <body>
+			
+	<div class="loader"></div>
 
 	<div id="player">
 		<div class="liner">
-			
-			<div class="loader"></div>
 			
 			<div class="current-track">
 				<span class="track">No track</span> <span class="artist">No artist</span>
@@ -69,18 +69,19 @@
 			<div class="menu-item-wrapper discover heading">
 				<span class="menu-item"><i class="fa fa-star"></i> &nbsp; Discover</span>
 				<div class="menu-item-children">
-					<div class="child-menu-item"><a href="#discover/featured-playlists">Featured playlists</a></div>
-					<div class="child-menu-item"><a href="#discover/new-releases">New releases</a></div>
+					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
+					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
+					<div class="child-menu-item"><a href="#playlists/spotifyusa">Spotify playlists</a></div>
 				</div>
-			</div>
-			
-			<div class="menu-item-wrapper explore hide">
-				<a class="menu-item" data-target="explore" href="#browse"><i class="fa fa-paper-plane"></i> &nbsp; Browse</a>
 			</div>
 			
 			<div class="menu-item-wrapper playlists heading">
 				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
 				<div class="menu-item-children playlist-list"></div>
+			</div>
+			
+			<div class="menu-item-wrapper settings">
+				<a class="menu-item" data-target="settings" href="#settings"><i class="fa fa-cog"></i> &nbsp; Settings</a>
 			</div>
 			
 		</div>
@@ -95,124 +96,188 @@
 				<div class="tracks"></div>
 			</div>
 			
-			<div class="page" id="discover">
-				
-				<div class="subpage featured-playlists hide">
-					
-					<h1>
-						Featured playlists
-					</h1>
-					
-					<div class="clear-both"></div>
-					
-					<div class="content"></div>
-					
-				</div>
-				
-				<div class="subpage new-releases hide">
-					
-					<h1>
-						New releases
-					</h1>
-					
-					<div class="clear-both"></div>
-					
-					<div class="content"></div>
-					
-				</div>
-				
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="new-releases">
+				<h1>New releases</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
 			</div>
 			
-			<div class="page" id="browse">
-				<h1>Browse is coming soon</h1>
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="featured-playlists">
+				<h1>Featured playlists</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
 			</div>
+			
+			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="playlists">
-				<div class="playlist-tracks">
-				</div>
+				<h1>Playlists</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
 			</div>
 			
-			<div class="page" id="explore">
-				
-				<div class="explore-subpage playlist hide">
-					
-					<h1>
-						<span class="name reset-on-load"></span>
-					</h1>
-					
-					<div class="clear-both"></div>
-					
-					<div class="tracks use-tracklist-in-focus">
-					</div>
-					
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="artist">
+		
+				<div class="artwork-panel">
+					<h1><span class="name reset-on-load"></span></h1>
+					<div class="background-image"></div>
 				</div>
 				
-				<div class="explore-subpage artist hide">
-					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
+				<div class="clear-both"></div>
+				
+				<div class="explore-artist-section">
+					<div class="tracks-wrapper">
+						<h2 class="bottom-padding">Top Tracks</h2>
+						<div class="tracks reset-on-load top-tracks"></div>
+					</div>						
+					<div class="related-artists-wrapper">
+						<h2 class="bottom-padding">Related artists</h2>
+						<div class="related-artists reset-on-load"></div>
 					</div>
-					
-					<div class="clear-both"></div>
-					
-					<div class="explore-artist-section">
-						<div class="tracks-wrapper">
-							<h2 class="bottom-padding">Top Tracks</h2>
-							<div class="tracks reset-on-load use-tracklist-in-focus"></div>
-						</div>						
-						<div class="related-artists-wrapper">
-							<h2 class="bottom-padding">Related artists</h2>
-							<div class="related-artists reset-on-load"></div>
-						</div>
-						<div class="clear-both"></div>
-					</div>
-					
-					<div class="explore-artist-section">
-				        <h2 class="bottom-padding">Albums</h2>
-						<div class="albums reset-on-load"></div>
-						<div class="clear-both"></div>
-					</div>
-                    
-				</div>
-				<div class="explore-subpage album hide">
-					
-					<div class="artwork-panel">
-						<h1>
-							<span class="name reset-on-load"></span>
-							by
-							<span class="artist reset-on-load"></span>
-						</h1>
-						<div class="background-image"></div>
-					</div>
-					
-					<div class="clear-both"></div>
-					
-					<div class="tracks reset-on-load"></div>
 					<div class="clear-both"></div>
 				</div>
+				
+				<div class="explore-artist-section">
+					<h2 class="bottom-padding">Albums</h2>
+					<div class="albums reset-on-load"></div>
+					<div class="clear-both"></div>
+				</div>
+				
 			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="album">
+				<div class="artwork-panel">
+					<h1><span class="name reset-on-load"></span> by <span class="artist reset-on-load"></span></h1>
+					<div class="background-image"></div>
+				</div>
+				<div class="clear-both"></div>
+				<div class="tracks reset-on-load"></div>
+				<div class="clear-both"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="playlist">
+				<h1 class="bottom-padding"><span class="name reset-on-load"></span></h1>
+				<div class="clear-both"></div>
+				<div class="tracks use-tracklist-in-focus reset-on-load"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="search">
 				<div id="search-results">
 					<div class="search-results-section artist">
 						<h2>Artists</h2>
-						<div class="results reset-on-load"></div>
+						<div class="artists reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section album">
 						<h2>Albums</h2>
-						<div class="results reset-on-load"></div>
+						<div class="albums reset-on-load"></div>
+						<div class="clear-both"></div>
+					</div>
+					<div class="search-results-section playlist">
+						<h2>Playlists</h2>
+						<div class="playlists reset-on-load"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section track">
 						<h2 class="bottom-padding">Top tracks</h2>
-						<div class="results reset-on-load"></div>
+						<div class="reset-on-load tracks"></div>
 						<div class="clear-both"></div>
 					</div>
 				</div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="settings">
+				<h1>Settings</h1>
+				
+				<br />
+				
+				<div class="clear-both"></div>
+				
+				<h4>Mopidy server</h4>
+				
+				<div class="field">
+					<div class="label">Status</div>
+					<div class="input mopidy connection-status">
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Hostname</div>
+					<div class="input">
+						<input type="text" name="hostname" placeholder="localhost" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Port</div>
+					<div class="input">
+						<input type="text" name="port" placeholder="6680" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Country code</div>
+					<div class="input">
+						<input type="text" name="country" placeholder="NZ" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Locale</div>
+					<div class="input">
+						<input type="text" name="locale" placeholder="en_NZ" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+				
+				<div class="clear-both"></div>
+				<br />
+				
+				<h4>Spotify service</h4>
+				
+				<div class="field">
+					<div class="label">Status</div>
+					<div class="input spotify connection-status">
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Current user</div>
+					<div class="input">
+						<div class="my-profile"></div>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Authentication token</div>
+					<div class="input authentication-token">
+						<span class="token"></span><a class="refresh-token-button"><i class="fa fa-refresh"></i>&nbsp; Refresh</a>
+					</div>
+				</div>
+
+				
+				
 			</div>
 			
 		</div>
@@ -221,6 +286,8 @@
 	<div id="notification">
 		<div class="message"></div>
 	</div>
+	
+	<iframe class="api-iframe" style="position: fixed; bottom: 75px; right: 10px; width: 200px; height: 200px; z-index: 999;" src="">&nbsp;</iframe>
 	
 </body>
 </html>

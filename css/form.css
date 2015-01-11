@@ -1,0 +1,54 @@
+.field {
+	clear: both;
+	padding: 10px 0;
+}
+
+.field .label {
+	float: left;
+	width: 13%;
+	padding-top: 8px;
+	text-align: right;
+	padding-right: 2%;
+}
+
+.field .input {
+	float: left;
+	width: 85%;
+}
+
+.field input {
+	padding: 8px 12px;
+	border: 1px solid #000000;
+	font-family: "Roboto",Helvetica,Arial,sans-serif;
+	font-size: 12px;
+	width: 50%;
+}
+
+.field input[type=text]:focus {
+	border-color: #1cf4c4;
+}
+
+.field .autosave-success {
+	display: none;
+	color: #46D938;
+	padding: 8px;
+	font-size: 18px;
+}
+
+.field .connection-status .status,
+.field .authentication-token > * {
+	padding: 8px 8px 8px 0;
+	display: inline-block;
+}
+
+.field .connection-status.online .status,
+.field .connection-status.online .status.disconnected,
+.field .connection-status.offline .status.connected {
+	display: none;
+}
+
+.field .connection-status.online .status.connected,
+.field .connection-status.offline .status.disconnected {
+	display: block;
+}
+

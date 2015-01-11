@@ -8,55 +8,39 @@
 // extend on configuration
 spotifyAPI.token = '';
 spotifyAPI.token_expiry = '';
-spotifyAPI.artist = "https://api.spotify.com/v1/search?type=artist&limit=10&q=";
-spotifyAPI.track = "https://api.spotify.com/v1/search?type=track&limit=10&q=";
-spotifyAPI.album = "https://api.spotify.com/v1/search?type=album&limit=10&q=";
-
 
 function checkToken(){
-
-	// if we've been parsed an access token (the callback from authentication)
-	if( window.location.hash.indexOf('access_token=') > -1 || window.location.hash == 'refresh-token' ){
-	
-		spotifyAPI.token = window.location.hash.substring( window.location.hash.indexOf('access_token=')+13, window.location.hash.indexOf('&') );
-		spotifyAPI.token_expiry = new Date().getTime() + 3600000;
-		
-		localStorage.token = spotifyAPI.token;
-		localStorage.token_expiry = spotifyAPI.token_expiry;
-		
-        // if we don't have a return URL, go to explore
-        if( localStorage.getItem("returnURL") === null ){
-            window.location.hash = 'explore';
-        }else{
-            var returnURL = localStorage.getItem("returnURL");
-            localStorage.returnURL = null;
-            window.location = returnURL;
-        }
-	};
-	
-	// if we have a token stored locally from a previous session, parse it back to where it belongs
-	if( localStorage.token )
-		spotifyAPI.token = localStorage.token;
 	
 	// if we don't have a token (or it has expired), go get one
-	if( localStorage.getItem("token") === null || localStorage.token_expiry < new Date().getTime() ){
-        
-        // save current URL, before we redirect
-        localStorage.returnURL = window.location.href;
-        
-        var newURL = '';
-        newURL += 'https://accounts.spotify.com/authorize?client_id='+spotifyAPI.clientid;
-        newURL += '&redirect_uri='+spotifyAPI.referrer;
-        newURL += '&scope=playlist-modify-private%20playlist-modify-public&response_type=token';
-        window.location = newURL;
+	if( localStorage.token == null || localStorage.token_expiry < new Date().getTime() ){        
+        getNewToken();
+        return false;
     }
+    
+    return true;
 };
+
+/*
+ * Get a new Spotify API token
+*/
+function getNewToken(){
+	
+    // save current URL, before we redirect
+    localStorage.returnURL = window.location.href;
+
+    var newURL = '';
+    newURL += 'https://accounts.spotify.com/authorize?client_id='+settings.clientid;
+    newURL += '&redirect_uri='+spotifyAPI.referrer;
+    newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
+    
+    // open a new window to handle this authentication
+    window.open(newURL,'spotifyAPIrequest','height=550,width=400');
+}
 
 
 function getPlaylists( albumID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market=NZ',
+		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -64,9 +48,8 @@ function getPlaylists( albumID ){
 };
 
 function getAlbum( albumID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market=NZ',
+		url: 'https://api.spotify.com/v1/albums/'+albumID+'?market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -74,9 +57,8 @@ function getAlbum( albumID ){
 };
 
 function getAlbumsTracks( albumID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/albums/'+albumID+'/tracks?market=NZ',
+		url: 'https://api.spotify.com/v1/albums/'+albumID+'/tracks?market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -84,9 +66,8 @@ function getAlbumsTracks( albumID ){
 };
 
 function getArtistsAlbums( artistID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/artists/'+artistID+'/albums?market=NZ&album_type=album,single',
+		url: 'https://api.spotify.com/v1/artists/'+artistID+'/albums?market='+localStorage.settings_country+'&album_type=album,single',
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -94,9 +75,8 @@ function getArtistsAlbums( artistID ){
 };
 
 function getArtist( artistID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/artists/'+artistID+'?market=NZ',
+		url: 'https://api.spotify.com/v1/artists/'+artistID+'?market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -104,9 +84,8 @@ function getArtist( artistID ){
 };
 
 function getTrack( trackID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/tracks/'+trackID+'?market=NZ',
+		url: 'https://api.spotify.com/v1/tracks/'+trackID+'?market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -115,9 +94,8 @@ function getTrack( trackID ){
 
 // TODO: Add dynamic country code
 function getArtistsTopTracks( artistID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/artists/'+artistID+'/top-tracks?country=NZ',
+		url: 'https://api.spotify.com/v1/artists/'+artistID+'/top-tracks?country='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -125,9 +103,8 @@ function getArtistsTopTracks( artistID ){
 };
 
 function getRelatedArtists( artistID ){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/artists/'+artistID+'/related-artists?limit=10&market=NZ',
+		url: 'https://api.spotify.com/v1/artists/'+artistID+'/related-artists?limit=10&market='+localStorage.settings_country,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -135,25 +112,35 @@ function getRelatedArtists( artistID ){
 };
 
 function getFeaturedPlaylists(){
-	checkToken();
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/browse/featured-playlists?market=NZ&locale=en_NZ&country=NZ',
+		url: 'https://api.spotify.com/v1/browse/featured-playlists?market='+localStorage.settings_country+'&locale='+localStorage.settings_locale+'&country='+localStorage.settings_country,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		timeout: 10000
 	});
 };
 
-function getNewReleases(){
-	checkToken();
+function getUsersPlaylists( userid ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/browse/new-releases?country=NZ',
+		url: 'https://api.spotify.com/v1/users/'+userid+'/playlists',
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
+		},
+		dataType: "json",
+		timeout: 50000
+	});
+};
+
+function getNewReleases(){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/new-releases?country='+localStorage.settings_country,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		timeout: 100000
@@ -161,25 +148,36 @@ function getNewReleases(){
 };
 
 function getPlaylist( userID, playlistID ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+userID+'/playlists/'+playlistID,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		timeout: 10000
 	});
 };
 
+function getMyProfile(){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/me',
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.token
+		},
+		dataType: "json",
+		contentType: "application/json; charset=utf-8",
+		timeout: 10000
+	});	
+};
+
 function getMyPlaylists(){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		contentType: "application/json; charset=utf-8",
@@ -188,12 +186,11 @@ function getMyPlaylists(){
 };
 
 function createPlaylist( name ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
 		type: "POST",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		data: JSON.stringify( { name: name, public: true } ),
 		dataType: "json",
@@ -203,12 +200,11 @@ function createPlaylist( name ){
 };
 
 function addTrackToPlaylist( playlistID, trackURI ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks?uris='+trackURI,
 		type: "POST",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		contentType: "application/json; charset=utf-8",
@@ -217,12 +213,11 @@ function addTrackToPlaylist( playlistID, trackURI ){
 };
 
 function removeTracksFromPlaylist( playlistID, trackURIs ){
-	checkToken();
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
 		type: "DELETE",
 		headers: {
-			'Authorization': 'Bearer ' + spotifyAPI.token
+			'Authorization': 'Bearer ' + localStorage.token
 		},
 		dataType: "json",
 		data: JSON.stringify( { tracks: trackURIs } ),
@@ -230,6 +225,18 @@ function removeTracksFromPlaylist( playlistID, trackURIs ){
 		timeout: 10000
 	});
 };
+
+function getSearchResults( type, query ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.token
+		},
+		timeout: 5000
+	});
+};
+
 
 
 
