@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
+	<script type="text/javascript" src="/js/echonest.js"></script>
 	<script type="text/javascript" src="/js/search.js"></script>
 	<script type="text/javascript" src="/js/navigation.js"></script>
 	<script type="text/javascript" src="/js/playlists.js"></script>
@@ -71,6 +72,7 @@
 				<div class="menu-item-children">
 					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
 					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
+					<div class="child-menu-item"><a href="#popular">Popular</a></div>
 					<div class="child-menu-item"><a href="#playlists/spotifyusa">Spotify playlists</a></div>
 				</div>
 			</div>
@@ -94,6 +96,14 @@
 			<div class="page" id="queue">
 				<h1 class="bottom-padding">Queue</h1>
 				<div class="tracks"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
+			<div class="page" id="popular">
+				<h1>Popular</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -263,9 +273,9 @@
 				</div>
 				
 				<div class="field">
-					<div class="label">Client ID</div>
+					<div class="label">Application Client ID</div>
 					<div class="input">
-						<input type="text" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" class="autosave" />
+						<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -284,6 +294,26 @@
 					</div>
 				</div>
 
+				<div class="clear-both"></div>
+				<br />
+				
+				<h4>Echonest Taste Profile</h4>
+				
+				<div class="field">
+					<div class="label">Status</div>
+					<div class="input echonest connection-status">
+						<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; &nbsp; Connected</div>
+						<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; &nbsp; Disconnected</div>
+					</div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Taste profile ID</div>
+					<div class="input">
+						<input type="text" name="tasteprofileid" placeholder="" class="autosave" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
 				
 				
 			</div>

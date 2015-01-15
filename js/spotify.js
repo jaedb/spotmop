@@ -5,10 +5,6 @@
  * Integration and authentication with Spotify API
  */
 
-// extend on configuration
-spotifyAPI.token = '';
-spotifyAPI.token_expiry = '';
-
 function checkToken(){
 	
 	// if we don't have a token (or it has expired), go get one
@@ -27,10 +23,10 @@ function getNewToken(){
 	
     // save current URL, before we redirect
     localStorage.returnURL = window.location.href;
-
+	
     var newURL = '';
     newURL += 'https://accounts.spotify.com/authorize?client_id='+localStorage.settings_clientid;
-    newURL += '&redirect_uri='+spotifyAPI.referrer;
+    newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/authenticate.html';
     newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
     
     // open a new window to handle this authentication
@@ -92,7 +88,24 @@ function getTrack( trackID ){
 	});
 };
 
-// TODO: Add dynamic country code
+function getTracks( trackIDs ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/tracks/?market='+localStorage.settings_country+'?ids='+trackID,
+		type: "GET",
+		dataType: "json",
+		timeout: 5000
+	});
+};
+
+function getArtists( artistIDs ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/artists/?market='+localStorage.settings_country+'&ids='+artistIDs,
+		type: "GET",
+		dataType: "json",
+		timeout: 5000
+	});
+};
+
 function getArtistsTopTracks( artistID ){
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/artists/'+artistID+'/top-tracks?country='+localStorage.settings_country,
@@ -174,7 +187,7 @@ function getMyProfile(){
 
 function getMyPlaylists(){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
+		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists',
 		type: "GET",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.token
@@ -187,7 +200,7 @@ function getMyPlaylists(){
 
 function createPlaylist( name ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists',
+		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists',
 		type: "POST",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.token
@@ -201,7 +214,7 @@ function createPlaylist( name ){
 
 function addTrackToPlaylist( playlistID, trackURIs ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
+		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks',
 		type: "POST",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.token
@@ -215,7 +228,7 @@ function addTrackToPlaylist( playlistID, trackURIs ){
 
 function removeTracksFromPlaylist( playlistID, trackURIs ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+spotifyAPI.userID+'/playlists/'+playlistID+'/tracks',
+		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks',
 		type: "DELETE",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.token

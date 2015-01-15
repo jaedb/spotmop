@@ -32,6 +32,7 @@ window.addEventListener("storage", storageUpdated, false);
 function storageUpdated(storage){
 	console.log('localStorage contents has been changed');
 	navigate();
+	updatePlaylists();
 }
 
 /* end */
@@ -54,10 +55,6 @@ var mopidy;
  * Kickstart the engine
 */
 $(document).ready( function(evt){
-
-    checkToken();
-    initiateMopidy();
-	navigate();
 	
 	// set defaults for mopidy api
     if( !localStorage.settings_hostname )
@@ -70,6 +67,10 @@ $(document).ready( function(evt){
 		localStorage.settings_locale = 'en_NZ';	
     if( !localStorage.settings_clientid )
 		localStorage.settings_clientid = 'a87fb4dbed30475b8cec38523dff53e2';
+
+    checkToken();
+    initiateMopidy();
+	navigate();
 });
 
 
@@ -274,6 +275,7 @@ function setupInteractivity(){
 		}
 	}).bind('keyup',function(){
 	      shiftKeyHeld = false;
+	      ctrlKeyHeld = false;
 	});
 	
 	// click to select a track
@@ -321,23 +323,6 @@ function setupInteractivity(){
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	
-	/*
-	// double-click to play track from playlist list 
-	$(document).on('doubletap', '#playlist .track-row.track-item', function(evt){
-	
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$('#queue .track-item').removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		// now actually do it
-		var trackID = $(this).data('id');
-		var tracklistURI = $(this).closest('.tracks').data('uri');
-		replaceAndPlay( tracklistURI, trackID );
-	});
-	*/
-	
 	// double-click to play track from a top-tracks list
 	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
 	$(document).on('doubletap', '#artist .tracks .track-row.track-item', function(evt){	
@@ -360,6 +345,19 @@ function setupInteractivity(){
 				mopidy.playback.changeTrack(response[0],1);
 				mopidy.playback.play();
 				updatePlayer();
+				
+				// currently only works for single-artist tracks
+				var artist = track_to_play.attr('data-artists');
+				var trackname = track_to_play.attr('data-name');
+				
+				// add this track to our taste profile
+				updateTasteProfile( track_to_play.attr('data-uri'), track_to_play.attr('data-name'), artist )
+					.success( function(response){
+						console.log(response);
+					})
+					.fail( function(response){
+						console.log(response);
+					});
 			
 				// now add all the other tracks ... (yes, one by one)
 				tracks_following.each( function(index, value){
@@ -479,7 +477,12 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			else
 				var track = tracks[x];
 			
-			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'">';
+			var artistArray = [];
+			for(var a = 0; a < track.artists.length; a++){
+				artistArray.push( track.artists[a].name );
+			}
+			
+			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'" data-name="'+track.name+'" data-artists="'+artistArray+'">';
 				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i><i class="fa fa-refresh  fa-spin"></i></div>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';

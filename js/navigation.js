@@ -68,6 +68,10 @@ function navigate(){
     if(page == 'settings'){
 		renderSettingsPage();
     };
+    
+    if(page == 'popular'){
+		renderPopularPage();
+    };
 
 };
 
@@ -488,6 +492,10 @@ function renderSettingsPage(){
 		$(this).closest('.field').find('.autosave-success').show().delay(1000).fadeOut('slow');
 	});
 	
+	
+	/*
+	 * Spotify service fields
+	*/
 	if( checkToken() ){
 		
 		updateLoader('start');
@@ -501,7 +509,7 @@ function renderSettingsPage(){
 			var html = '';
 			
 			html += '<div class="thumbnail" style="background-image: url('+response.images[0].url+');"></div>';
-			html += '<div class="name">'+response.display_name+'</div>';
+			html += '<div class="name">'+response.display_name+' ('+response.id+')</div>';
 			
 			$('#settings .my-profile').html( html );		
 			$('#settings .token').html( localStorage.token_expiry );
@@ -517,6 +525,76 @@ function renderSettingsPage(){
 	}else{
 		$('#settings .spotify.connection-status').addClass('offline').removeClass('online');
 	}
+	
+	/* 
+	 * Echonest service fields
+	*/
+	if( checkTasteProfile() ){				
+		$('#settings .echonest.connection-status').addClass('online').removeClass('offline');	
+	}else{
+		$('#settings .echonest.connection-status').addClass('offline').removeClass('online');
+	}
+	
+};
+
+
+
+/*
+ * Render the popular songs page
+*/
+function renderPopularPage(){
+	
+	updateLoader('start');
+	
+	getHotTracks().success( function(response){
+		
+		var artistIDs = '';
+		
+		for( var i = 0; i < response.response.songs.length; i++ ){
+			var track = response.response.songs[i];
+			if( i != 0 )
+				artistIDs += ',';
+			artistIDs += getIdFromUri( track.artist_foreign_ids[0].foreign_id );
+		}
+			
+		updateLoader('start');
+		getArtists(artistIDs).success( function(response){
+			
+			// loop each album
+			for(var i = 0; i < response.artists.length; i++){
+			
+				var artist = response.artists[i];
+				
+				imageURL = '';
+				if( artist.images.length > 0 )
+					imageURL = artist.images[1].url;
+				
+				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+artist.name+'</span></a>' );
+			};
+			
+			// make them draggable
+			$('#new-releases .content').find('.album-panel').draggable({
+				distance: 30,
+				revert: true,
+				revertDuration: 0,
+				helper: 'clone',
+				appendTo: 'body',
+				zIndex: 10000
+			});
+			
+			updateLoader('stop');
+		});
+		
+		var html = '';
+		
+		$('#popular .content').html( html );
+		
+		updateLoader('stop');
+		
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching hot songs: '+response.response.responseJSON.error.message );
+	});
 	
 };
 

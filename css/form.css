@@ -24,6 +24,11 @@
 	width: 50%;
 }
 
+.field input[readonly="true"]{
+	border-color: #999999;
+	background: #EEEEEE;
+}
+
 .field input[type=text]:focus {
 	border-color: #1cf4c4;
 }
