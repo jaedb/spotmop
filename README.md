@@ -3,12 +3,41 @@ Spotmop
 
 Spotmop Mopidy HTTP interface
 
+Requirements
+--------
+
+* Mopidy
+* Mopidy-Spotify
+
+Installation
+--------
+
+1. Get Mopidy server running with Mopidy-Spotify plugin
+2. Extract Spotmop to your http root folder (as specified in ~/.config/mopidy/mopidy.conf
+3. Navigate to your server address (typically http://localhost:6680/)
+4. Alternatively, extract Spotmop to any webserver and configure your Mopidy server address on the Settings tab
+
+Features
+--------
+
+* Full web-based interface controls for Mopidy
+* Uses Spotify API to deliver high-quality audio and music information
+* Spotmop can be run completely independently of your Mopidy machine, just set your URL in the settings tab
+
 Screenshots
 -----------
 
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-results.jpg)
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
-![ScreenShot](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-album.jpg)
+![Search Results](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-results.jpg)
+![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
+![Album](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-album.jpg)
+
+To-do
+-----
+
+* Look into more mature framework to deliver templates (AngularJS?)
+* Drag-and-drop for albums and artists
+* Improve performance of ad-hoc track lists (ie artist top tracks, public playlists)
+* Create second playlists area for 'Subscribed' playlists
 
 Credits
 -------
