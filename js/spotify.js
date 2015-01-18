@@ -4,33 +4,60 @@
  * 
  * Integration and authentication with Spotify API
  */
-
+ 
+ 
 function checkToken(){
+
+	// if we don't have an authorization_code, go get one
+	if( localStorage.authorization_code == null ){        
+        return getAuthorizationCode();
 	
 	// if we don't have a token (or it has expired), go get one
-	if( localStorage.token == null || localStorage.token_expiry < new Date().getTime() ){        
-        getNewToken();
-        return false;
+	}else if( localStorage.access_token == null || localStorage.token_expiry < new Date().getTime() ){        
+        return getNewToken();
     }
     
     return true;
 };
 
 /*
- * Get a new Spotify API token
+ * Get a Spotify API authorisation code
 */
-function getNewToken(){
+function getAuthorizationCode(){
 	
     // save current URL, before we redirect
     localStorage.returnURL = window.location.href;
 	
     var newURL = '';
     newURL += 'https://accounts.spotify.com/authorize?client_id='+localStorage.settings_clientid;
-    newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/authenticate.html';
-    newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=token';
+    newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/authenticate.php';
+    newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=code';
     
     // open a new window to handle this authentication
     window.open(newURL,'spotifyAPIrequest','height=550,width=400');
+}
+
+/*
+ * Get a new Spotify API access token
+*/
+function getNewToken(){
+
+	updateLoader('start');
+	
+	return $.ajax({
+		url: '/authenticate.php?refresh_token='+localStorage.refresh_token,
+		type: "GET",
+		dataType: "json",
+		timeout: 5000,
+		success: function(response){
+			localStorage.access_token = response.access_token;
+			localStorage.token_expiry = new Date().getTime() + 3600000;
+			updateLoader('stop');
+		},
+		fail: function(response){
+			notifyUser('bad','There was a problem connecting to Spotify: '+response.responseJSON.error.message);
+		}
+	});
 }
 
 
@@ -129,7 +156,7 @@ function getFeaturedPlaylists(){
 		url: 'https://api.spotify.com/v1/browse/featured-playlists?market='+localStorage.settings_country+'&locale='+localStorage.settings_locale+'&country='+localStorage.settings_country,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		timeout: 10000
@@ -141,7 +168,7 @@ function getUsersPlaylists( userid ){
 		url: 'https://api.spotify.com/v1/users/'+userid+'/playlists',
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		timeout: 50000
@@ -153,7 +180,7 @@ function getNewReleases(){
 		url: 'https://api.spotify.com/v1/browse/new-releases?country='+localStorage.settings_country,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		timeout: 100000
@@ -165,7 +192,7 @@ function getPlaylist( userID, playlistID ){
 		url: 'https://api.spotify.com/v1/users/'+userID+'/playlists/'+playlistID,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		timeout: 10000
@@ -177,7 +204,7 @@ function getMyProfile(){
 		url: 'https://api.spotify.com/v1/me',
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		contentType: "application/json; charset=utf-8",
@@ -190,7 +217,7 @@ function getMyPlaylists(){
 		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists',
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		contentType: "application/json; charset=utf-8",
@@ -203,7 +230,7 @@ function createPlaylist( name ){
 		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists',
 		type: "POST",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		data: JSON.stringify( { name: name, public: true } ),
 		dataType: "json",
@@ -217,7 +244,7 @@ function addTrackToPlaylist( playlistID, trackURIs ){
 		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks',
 		type: "POST",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		data: JSON.stringify( { uris: trackURIs } ),
@@ -231,7 +258,7 @@ function removeTracksFromPlaylist( playlistID, trackURIs ){
 		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks',
 		type: "DELETE",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		dataType: "json",
 		data: JSON.stringify( { tracks: trackURIs } ),
@@ -245,7 +272,7 @@ function getSearchResults( type, query ){
 		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
 		type: "GET",
 		headers: {
-			'Authorization': 'Bearer ' + localStorage.token
+			'Authorization': 'Bearer ' + localStorage.access_token
 		},
 		timeout: 5000
 	});

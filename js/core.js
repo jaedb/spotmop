@@ -31,8 +31,11 @@ window.addEventListener("storage", storageUpdated, false);
 
 function storageUpdated(storage){
 	console.log('localStorage contents has been changed');
-	navigate();
-	updatePlaylists();
+	if( localStorage.readyToRefresh ){
+	console.log('Ready to refresh');
+		navigate();
+		updatePlaylists();
+	}
 }
 
 /* end */
@@ -308,6 +311,15 @@ function setupInteractivity(){
 		$('#queue .track-item').removeClass('current').removeClass('playing');
 		$(this).addClass('current').addClass('playing');
 		
+		// add this track to our taste profile
+		updateTasteProfile( $(this).attr('data-uri'), $(this).attr('data-name'), $(this).attr('data-artists') )
+			.success( function(response){
+				//console.log(response);
+			})
+			.fail( function(response){
+				//console.log(response);
+			});
+		
 		// now actually change what's playing
 		mopidy.tracklist.getTlTracks().then(function( tracks ){
 			mopidy.playback.changeTrack( tracks[trackID], 1 );
@@ -346,18 +358,12 @@ function setupInteractivity(){
 				mopidy.playback.play();
 				updatePlayer();
 				
-				// currently only works for single-artist tracks
-				var artist = track_to_play.attr('data-artists');
-				var trackname = track_to_play.attr('data-name');
-				
 				// add this track to our taste profile
-				updateTasteProfile( track_to_play.attr('data-uri'), track_to_play.attr('data-name'), artist )
-					.success( function(response){
-						console.log(response);
-					})
-					.fail( function(response){
-						console.log(response);
-					});
+				updateTasteProfile(
+						track_to_play.attr('data-uri'),
+						track_to_play.attr('data-name'),
+						track_to_play.attr('data-artists')
+					);
 			
 				// now add all the other tracks ... (yes, one by one)
 				tracks_following.each( function(index, value){
@@ -386,6 +392,13 @@ function setupInteractivity(){
 		
 		var track_to_play_uri = $(this).attr('data-uri');
 		var tracklist_uri = $(this).closest('.tracks').attr('data-uri');
+		
+		// add this track to our taste profile
+		updateTasteProfile(
+				$(this).attr('data-uri'),
+				$(this).attr('data-name'),
+				$(this).attr('data-artists')
+			);
 		
 		// empty the list
 		mopidy.tracklist.clear().then( function(response){

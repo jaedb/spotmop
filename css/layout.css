@@ -763,12 +763,20 @@ a:hover {
 
 /* my profile panel (settings page) */
 
+.field.current-user .label { 
+	padding-top: 12px;
+}
+
+.my-profile {
+	display: inline-block;
+}
+
 .my-profile .thumbnail {
 	border-radius: 20px;
 }
 
 .my-profile .name {
-	padding: 8px 0 0 10px;
+	padding: 12px 15px 0 10px;
 	display: inline-block;
 }
 

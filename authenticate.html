@@ -1,12 +1,13 @@
 <html>
 <head>
 	<script type="text/javascript" src="/js/jquery.js"></script>
-	<script type="text/javascript">	
+	<script type="text/javascript">
+	
 		localStorage.token = window.location.hash.substring(
-			window.location.hash.indexOf('access_token=')+13,
+			window.location.hash.indexOf('code=')+5,
 			window.location.hash.indexOf('&')
 		);
-		localStorage.token_expiry = new Date().getTime() + 3600000;
+		localStorage.authorizationCode = new Date().getTime() + 3600000;
 		
 		$.ajax({
 			url: 'https://api.spotify.com/v1/me',
@@ -19,9 +20,9 @@
 			timeout: 10000,
 			success: function(response){
 				localStorage.userID = response.id;
-				window.close();
+				//window.close();
 			}
-		});	
+		});
 	</script>
 </head>
 <body>

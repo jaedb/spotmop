@@ -50,7 +50,7 @@ function createTasteProfile(){
 		data: {
 				api_key: 'YVW64VSEPEV93M4EG',
 				format: 'json',
-				type: 'song',
+				type: 'general',
 				name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
 			},
 		timeout: 10000
@@ -70,14 +70,41 @@ function updateTasteProfile( uri, name, artist ){
 		data: {
 				api_key: 'YVW64VSEPEV93M4EG',
 				id: localStorage.settings_tasteprofileid,
-				data: JSON.stringify([{
-						"item":{
-							"item_id": 'item-'+ uri,
-							"song_name": '"'+name+'"',
-							"artist_name": '"'+artist+'"'
-						}
-					}])
+				data: JSON.stringify([
+						{
+							'action': 'update',
+							'item':{
+								'item_id': 'item-'+ uri,
+								'song_name': name,
+								'artist_name': artist
+							}
+						}/*,{
+							'action': 'play',
+							'item':{
+								'item_id': 'item-'+ uri
+							}
+						}*/
+					])
 			},
+		timeout: 10000
+	});	
+};
+
+/*
+ * Add data to our taste profile
+ * @var uri = uri of item we're adding (to create a unique id)
+ * @var artist = string
+ * @var name = string
+*/
+function getRelatedArtists(){
+	
+	var url = 'http://developer.echonest.com/api/v4/tasteprofile/read?api_key=YVW64VSEPEV93M4EG';
+	url += '&id='+localStorage.settings_tasteprofileid;
+	url += '&format=json&bucket=audio_summary&bucket=artist_hotttnesss';
+
+	return $.ajax({
+		url: url,
+		method: "GET",
 		timeout: 10000
 	});	
 };
