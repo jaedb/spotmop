@@ -4,27 +4,6 @@
  */
 
 
-/*
- * Get an item's ID out of a provided URI
- * Returns string
-*/
-function getIdFromUri( uri ){
-	
-	// get the id (3rd part of the URI)
-	if( typeof uri === 'undefined' )
-		return false;
-	
-	var uriArray = uri.split(':');
-	
-	// see if we're a playlist URI
-	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
-		return uriArray[4];
-	
-	var id = uriArray[2];
-	return id;
-};
-
-
 /* currently not in need */
 
 window.addEventListener("storage", storageUpdated, false);
@@ -256,16 +235,6 @@ function setupInteractivity(){
 	
 	
 	
-	// --- ADDING TRACKS TO QUEUE --- //
-			
-	$(document).find('#menu .menu-item-wrapper.queue').droppable({
-		drop: function(evt, ui){
-			addTrackToQueue( $(ui.helper).data('uri') );
-		}
-	});
-	
-	
-	
 	// --- TRACK SELECTION EVENTS --- //
 		
 	var shiftKeyHeld = false;
@@ -301,40 +270,6 @@ function setupInteractivity(){
 			$(this).addClass('highlighted');
 		}
 	});
-	
-	// double-click to play track from queue
-	$(document).on('doubletap', '#queue .track-row.track-item', function(evt){
-		
-		var trackID = $(this).data('id');
-		
-		// immediately update dom, for 'snappy' ux
-		$('#queue .track-item').removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		// add this track to our taste profile
-		updateTasteProfile( $(this).attr('data-uri'), $(this).attr('data-name'), $(this).attr('data-artists') )
-			.success( function(response){
-				//console.log(response);
-			})
-			.fail( function(response){
-				//console.log(response);
-			});
-		
-		// now actually change what's playing
-		mopidy.tracklist.getTlTracks().then(function( tracks ){
-			mopidy.playback.changeTrack( tracks[trackID], 1 );
-			mopidy.playback.play();
-			updatePlayer();
-		},consoleError);
-	});
-	
-	// double-click to play track from album list (explore/search result)
-	$(document).on('doubletap', '#album .track-row.track-item', function(evt){	
-		var trackID = $(this).data('id');		
-		var tracklistURI = $('#album .tracks').data('uri');
-		replaceAndPlay( tracklistURI, trackID );
-	});
-	
 	
     
 	// --- PLAYER CONTROLS EVENTS --- //
@@ -542,28 +477,34 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	container.find('.track-row.track-item')
 		.drop(function(event,dd){
 			
-			console.log(tracksDragging);
-			
 			var target = $(event.target);
+			var tracksDraggingURIs = [];
 			
-			// dropping on playlist
+			tracksDragging.each( function(index,value){
+				tracksDraggingURIs.push( $(value).data('uri') );
+			});
+			
+			
+			// -- dropping on playlist -- //
+			
 			if( target.parent().hasClass('playlist-item') ){
 				
 				var playlistURI = target.parent().data('uri');
-				var trackURIs = [];
 				
-				tracksDragging.each( function(index,value){
-					trackURIs.push( $(value).data('uri') );
-				});
-				
-				addTrackToPlaylist( getIdFromUri( playlistURI ), trackURIs )
+				addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
 					.success( function( response ){
-						updateLoader('stop');
-						notifyUser('good','Track(s) added to playlist');			
+						updateLoader('stop');		
 					}).fail( function( response ){
 						updateLoader('stop');
-						notifyUser('error', 'Error adding tracks to playlists: '+response.responseJSON.error.message );
 					});
+			
+			
+			// -- dropping on queue -- //
+			
+			}else if( target.parent().hasClass('queue') ){
+				for( var i = 0; i < tracksDraggingURIs.length; i++){
+					addTrackToQueue( tracksDraggingURIs[i] );
+				}
 			}
 			
 			$('body').removeClass('dragging');
@@ -574,10 +515,54 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	// double click to play
 	container.find('.track-row.track-item')
 		.dblclick(function(event){
-			if( $(this).closest('.page').attr('id') == 'artist' )
+			
+			// -- play from artist top tracks -- //
+			
+			if( $(this).closest('.page').attr('id') == 'artist' ){
 				playFromCompilation( $(this) );
-			else
+			
+			
+			// -- play from album -- //
+			
+			}else if( $(this).closest('.page').attr('id') == 'album' ){
+			
+				var trackID = $(this).data('id');		
+				var tracklistURI = $('#album .tracks').data('uri');
+				replaceAndPlay( tracklistURI, trackID );
+			
+			
+			// -- play from queue -- //
+			
+			}else if( $(this).closest('.page').attr('id') == 'queue' ){
+			
+				var trackID = $(this).data('id');
+				
+				// immediately update dom, for 'snappy' ux
+				$('#queue .track-item').removeClass('current').removeClass('playing');
+				$(this).addClass('current').addClass('playing');
+				
+				// add this track to our taste profile
+				updateTasteProfile( $(this).attr('data-uri'), $(this).attr('data-name'), $(this).attr('data-artists') )
+					.success( function(response){
+						//console.log(response);
+					})
+					.fail( function(response){
+						//console.log(response);
+					});
+				
+				// now actually change what's playing
+				mopidy.tracklist.getTlTracks().then(function( tracks ){
+					mopidy.playback.changeTrack( tracks[trackID], 1 );
+					mopidy.playback.play();
+					updatePlayer();
+				},consoleError);
+			
+			
+			// -- play from playlist -- //
+			
+			}else{
 				playFromPlaylist( $(this) );
+			}
 		}
 	);
 	
@@ -586,6 +571,27 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	return true;
 };
 
+
+
+/*
+ * Get an item's ID out of a provided URI
+ * Returns string
+*/
+function getIdFromUri( uri ){
+	
+	// get the id (3rd part of the URI)
+	if( typeof uri === 'undefined' )
+		return false;
+	
+	var uriArray = uri.split(':');
+	
+	// see if we're a playlist URI
+	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
+		return uriArray[4];
+	
+	var id = uriArray[2];
+	return id;
+};
 
 
 /*
@@ -658,35 +664,6 @@ function replaceAndPlay( tracklistURI, trackID ){
 			},consoleError);
 		});
 	},consoleError);
-}
-
-
-/*
- * Replace current queue and play selected track
- * @var trackURIs = array of track URIs
- * @var trackID is integer of track number we want to play
-*/
-function replaceAndPlayTracks( trackURIs, trackID ){
-	
-	// clear current tracklist
-	mopidy.tracklist.clear().then(function(){
-		
-		// loop all the URIs
-		for( var i = 0; i < trackURIs.length; i++ ){
-			
-			// add each track to the tracklist
-			mopidy.tracklist.add(null, i, trackURIs[i]).then( function(response){
-				//console.log( response );
-			});
-			
-			// if we're the track we want to play
-			if( i == trackID ){
-                playTrackByID( trackID );
-				$('.loader').fadeOut();
-			}
-			
-		};
-	});
 }
 
 
