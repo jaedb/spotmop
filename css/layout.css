@@ -754,8 +754,9 @@ a:hover {
 /* bars (progress and volume */
 
 .slider {
-	height: 2px;
-	background: #888888;
+	height: 22px;
+	margin-top: -12px;
+	background: url('../images/progress-background.png') 0 0 repeat-x;
     cursor: hand;
     cursor: pointer;
 	position: relative;
@@ -763,7 +764,7 @@ a:hover {
 
 .slider .ui-slider-range {
 	height: 100%;
-	background: #1cf4c4;
+	background: url('../images/progress-background-active.png') 0 0 repeat-x;
 	width: 1px;
 	position: absolute;
 	top: 0;

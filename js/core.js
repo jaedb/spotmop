@@ -872,7 +872,7 @@ function updateVolume(){
 // update the title in the window tab
 function updateWindowTitle(){
     
-    var documentIcon = '\u25FC ';
+    var documentIcon = '\u25A0 ';
     
 	if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){
     
@@ -880,6 +880,10 @@ function updateWindowTitle(){
         
         // inject icon
         if( coreArray['state'] == 'playing' )
+            documentIcon = '\u25B6 ';
+        
+        // inject icon
+        else if( coreArray['state'] == 'playing' )
             documentIcon = '\u25B6 ';
 
         // update window title
