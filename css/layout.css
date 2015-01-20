@@ -305,23 +305,33 @@ a:hover {
 }
 
 #menu .menu-item-children {
-	padding: 6px 6px 0 26px;
+	padding: 6px 6px 0 22px;
 	font-size: 12px;
 	line-height: 1.2em;
 }
 
 #menu .menu-item-children .child-menu-item {
-	padding: 4px 0;
+	padding: 0;
 }
 
 #menu .menu-item-children .child-menu-item a {
 	text-decoration: none;
 	color: #444444;
+	display: inline-block;
+	padding: 4px 6px;
+	border: none;
+	border-radius: 3px;
 }
 
 #menu .menu-item-children .child-menu-item.current a,
 #menu .menu-item-children .child-menu-item a:hover {
 	color: #000000;
+	background: #FFFFFF;
+}
+
+.dragging #menu .menu-item-children .playlist-item a:hover {
+	background: rgba(0,0,0,0.8);
+	color: #FFFFFF;
 }
 
 #menu .new-playlist-button {
@@ -493,6 +503,16 @@ a:hover {
 
 /* when dragging */
 
+.drag-tracer {
+	position: fixed;
+	padding: 6px 10px;
+	background: rgba(0,0,0,0.8);
+	color: #FFFFFF;
+	z-index: 9;
+	display: none;
+}
+
+/*
 .track-row.ui-draggable-dragging,
 .album-panel.ui-draggable-dragging {
 	background: #333333 !important;
@@ -524,6 +544,7 @@ a:hover {
 	display: none;
 }
 
+*/
 
 /*
  * Percentage bars (mainly for track popularity)

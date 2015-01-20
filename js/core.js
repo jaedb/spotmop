@@ -335,98 +335,6 @@ function setupInteractivity(){
 		replaceAndPlay( tracklistURI, trackID );
 	});
 	
-	// double-click to play track from a top-tracks list
-	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '#artist .tracks .track-row.track-item', function(evt){	
-		
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$(this).siblings().removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		var track_to_play = $(this);
-		var tracks_following = $(this).nextAll();
-		
-		// empty the list
-		mopidy.tracklist.clear().then( function(response){;
-			
-			// add the track we need to play first
-			mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
-				
-				mopidy.playback.changeTrack(response[0],1);
-				mopidy.playback.play();
-				updatePlayer();
-				
-				// add this track to our taste profile
-				updateTasteProfile(
-						track_to_play.attr('data-uri'),
-						track_to_play.attr('data-name'),
-						track_to_play.attr('data-artists')
-					);
-			
-				// now add all the other tracks ... (yes, one by one)
-				tracks_following.each( function(index, value){
-					chainedEventsCount++;
-					mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
-						chainedEventsCount--;
-						if( chainedEventsCount == 0)
-							$('.loader').fadeOut();
-					},consoleError);
-				});
-			},consoleError);
-		},consoleError);
-	});
-	
-	
-	
-	// double-click to play track from a top-tracks list
-	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '#playlist .tracks .track-row.track-item', function(evt){	
-		
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$(this).siblings().removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		var track_to_play_uri = $(this).attr('data-uri');
-		var tracklist_uri = $(this).closest('.tracks').attr('data-uri');
-		
-		// add this track to our taste profile
-		updateTasteProfile(
-				$(this).attr('data-uri'),
-				$(this).attr('data-name'),
-				$(this).attr('data-artists')
-			);
-		
-		// empty the list
-		mopidy.tracklist.clear().then( function(response){
-			
-			// run a lookup on this playlist
-			mopidy.library.lookup(tracklist_uri).then(function(tracks){
-				
-				// add all the tracks to the queue
-				mopidy.tracklist.add( tracks ).then(function(response){
-					
-					$('.loader').fadeOut();
-					
-					// loop the tracks returned (Tl_Track object)
-					for(var i = 0; i < response.length; i++){
-						
-						// if this track uri matches the one we clicked on, then play it chris!
-						if( response[i].track.uri == track_to_play_uri ){
-							mopidy.playback.changeTrack(response[i],1);
-							mopidy.playback.play();
-							updatePlayer();
-						}
-					}
-				},consoleError);
-			},consoleError);
-		},consoleError);
-		
-	});
-	
 	
     
 	// --- PLAYER CONTROLS EVENTS --- //
@@ -455,8 +363,92 @@ function setupInteractivity(){
 };
 
 
+function playFromCompilation( trackRow ){
+
+	$('.loader').show();
+	
+	// immediately update dom, for 'snappy' ux
+	trackRow.siblings().removeClass('current').removeClass('playing');
+	trackRow.addClass('current').addClass('playing');
+	
+	var track_to_play = trackRow;
+	var tracks_following = trackRow.nextAll();
+	
+	// empty the list
+	mopidy.tracklist.clear().then( function(response){;
+		
+		// add the track we need to play first
+		mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
+			
+			mopidy.playback.changeTrack(response[0],1);
+			mopidy.playback.play();
+			updatePlayer();
+			
+			// add this track to our taste profile
+			updateTasteProfile(
+					track_to_play.attr('data-uri'),
+					track_to_play.attr('data-name'),
+					track_to_play.attr('data-artists')
+				);
+		
+			// now add all the other tracks ... (yes, one by one)
+			tracks_following.each( function(index, value){
+				chainedEventsCount++;
+				mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
+					chainedEventsCount--;
+					if( chainedEventsCount == 0)
+						$('.loader').fadeOut();
+				},consoleError);
+			});
+		},consoleError);
+	},consoleError);
+}
 
 
+
+function playFromPlaylist( trackRow ){
+
+	$('.loader').show();
+	
+	// immediately update dom, for 'snappy' ux
+	trackRow.siblings().removeClass('current').removeClass('playing');
+	trackRow.addClass('current').addClass('playing');
+	
+	var track_to_play_uri = trackRow.attr('data-uri');
+	var tracklist_uri = trackRow.closest('.tracks').attr('data-uri');
+	
+	// add this track to our taste profile
+	updateTasteProfile(
+			trackRow.attr('data-uri'),
+			trackRow.attr('data-name'),
+			trackRow.attr('data-artists')
+		);
+	
+	// empty the list
+	mopidy.tracklist.clear().then( function(response){
+		
+		// run a lookup on this playlist
+		mopidy.library.lookup(tracklist_uri).then(function(tracks){
+			
+			// add all the tracks to the queue
+			mopidy.tracklist.add( tracks ).then(function(response){
+				
+				$('.loader').fadeOut();
+				
+				// loop the tracks returned (Tl_Track object)
+				for(var i = 0; i < response.length; i++){
+					
+					// if this track uri matches the one we clicked on, then play it chris!
+					if( response[i].track.uri == track_to_play_uri ){
+						mopidy.playback.changeTrack(response[i],1);
+						mopidy.playback.play();
+						updatePlayer();
+					}
+				}
+			},consoleError);
+		},consoleError);
+	},consoleError);
+}
 
 
 
@@ -491,11 +483,14 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				var track = tracks[x];
 			
 			var artistArray = [];
-			for(var a = 0; a < track.artists.length; a++){
-				artistArray.push( track.artists[a].name );
+			
+			if( typeof(track.artists) !== 'undefined' ){
+				for(var a = 0; a < track.artists.length; a++){
+					artistArray.push( track.artists[a].name );
+				}
 			}
 			
-			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'" data-name="'+track.name+'" data-artists="'+artistArray+'">';
+			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'" data-name="'+track.name+'" data-artists="'+artistArray+'" id="'+getIdFromUri(track.uri)+'">';
 				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i><i class="fa fa-refresh  fa-spin"></i></div>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
@@ -505,8 +500,13 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				else if ( track.album )
 					html += '<a href="#album/'+track.album.uri+'" data-uri="'+track.album.uri+'">'+track.album.name+'</a>';
 				html += '</div>';
-				html += '<div class="col w10 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
-				html += '<div class="col w5 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+'%;"></div></div></div>';
+				
+				if( typeof track.duration_ms !== 'undefined' )
+					html += '<div class="col w10 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
+					
+				if( typeof track.popularity !== 'undefined' )
+					html += '<div class="col w5 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+
+					'%;"></div></div></div>';
 				html += '<div class="clear-both"></div>';
 			html += '</div>';
 		}
@@ -517,15 +517,69 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	if( tracklistUri !== 'undefined' )
 		container.data('uri', tracklistUri);
 	
-	// draggable to drop them onto playlists
-	container.find('.track-row.track-item').draggable({
-        distance: 30,
-		revert: true,
-		revertDuration: 0,
-		helper: 'clone',
-		appendTo: 'body',
-  		zIndex: 10000
-	});
+	var tracksDragging;
+	
+	// drag start
+	container.find('.track-row.track-item')
+        .drag(function(event,dd){
+			
+			$('body').addClass('dragging');
+			tracksDragging = $(this).siblings('.highlighted').andSelf();
+			
+			$( '.drag-tracer' )
+				.show()
+				.css({
+					top: event.clientY-10,
+					left: event.clientX+10
+				})
+				.html('Dragging '+tracksDragging.length+' track(s)');
+		},{
+			distance: 20
+		}
+	);
+	
+	// drop from drag event
+	container.find('.track-row.track-item')
+		.drop(function(event,dd){
+			
+			console.log(tracksDragging);
+			
+			var target = $(event.target);
+			
+			// dropping on playlist
+			if( target.parent().hasClass('playlist-item') ){
+				
+				var playlistURI = target.parent().data('uri');
+				var trackURIs = [];
+				
+				tracksDragging.each( function(index,value){
+					trackURIs.push( $(value).data('uri') );
+				});
+				
+				addTrackToPlaylist( getIdFromUri( playlistURI ), trackURIs )
+					.success( function( response ){
+						updateLoader('stop');
+						notifyUser('good','Track(s) added to playlist');			
+					}).fail( function( response ){
+						updateLoader('stop');
+						notifyUser('error', 'Error adding tracks to playlists: '+response.responseJSON.error.message );
+					});
+			}
+			
+			$('body').removeClass('dragging');
+			$( '.drag-tracer' ).fadeOut('fast');
+		}
+	);
+	
+	// double click to play
+	container.find('.track-row.track-item')
+		.dblclick(function(event){
+			if( $(this).closest('.page').attr('id') == 'artist' )
+				playFromCompilation( $(this) );
+			else
+				playFromPlaylist( $(this) );
+		}
+	);
 	
 	highlightPlayingTrack();
 	
@@ -687,6 +741,7 @@ function notifyUser( type, message, persistent ){
 	
 	var notification = $('#notification');
 	
+	notification.css('bottom', $('#player').outerHeight());
 	notification.find('.message').html( message );
 	notification.removeClass('error').removeClass('notice').removeClass('warning').removeClass('good').addClass(type);
 	notification.slideDown('fast');
@@ -907,7 +962,8 @@ function updatePlayQueue(){
         $queue.html('');
 
         renderTracksTable( $("#queue .tracks"), tracks, null );
-
+		
+		/*
         // draggable queue tracks
         $("#queue .tracks").sortable({
             items: '.track-row:not(.headings)',
@@ -918,7 +974,7 @@ function updatePlayQueue(){
                 // move this item on the playlist, to the new position
                 mopidy.tracklist.move( $(ui.item).data('id'), $(ui.item).data('id')+1, newPosition );
             }
-        });
+        });*/
 
 		updateLoader();
 

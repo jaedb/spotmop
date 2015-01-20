@@ -95,7 +95,6 @@ function updateTasteProfile( uri, name, artist ){
  * @var uri = uri of item we're adding (to create a unique id)
  * @var artist = string
  * @var name = string
-*/
 function getRelatedArtists(){
 	
 	var url = 'http://developer.echonest.com/api/v4/tasteprofile/read?api_key=YVW64VSEPEV93M4EG';
@@ -109,3 +108,4 @@ function getRelatedArtists(){
 	});	
 };
 	
+*/

@@ -218,6 +218,9 @@ function renderArtistPage( id ){
 			
 			getRelatedArtists( artist.id ).success(function( relatedArtists ){
 				
+				if( relatedArtists.artists <= 0 )
+					return false;
+				
 				// empty out previous related artists
 				$('#artist .related-artists').html('');
 				updateLoader('stop');

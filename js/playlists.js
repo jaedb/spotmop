@@ -93,27 +93,6 @@ function updatePlaylists(){
 				lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			}
 			
-			// draggable to drop them onto playlists
-			$(document).find('#menu .playlist-list .playlist-item').droppable({
-				drop: function(evt, ui){
-					var tracks = $(ui.helper.context).siblings('.highlighted').andSelf();
-					var trackURIs = [];
-					
-					tracks.each( function(index,value){
-						trackURIs.push( $(value).data('uri') );
-					});
-					
-					addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), trackURIs )
-						.success( function( response ){
-							updateLoader('stop');
-							notifyUser('good','Track(s) added to playlist');			
-						}).fail( function( response ){
-							updateLoader('stop');
-							notifyUser('error', 'Error adding tracks to playlists: '+response.responseJSON.error.message );
-						});
-				}
-			});
-			
 		}).fail( function( response ){
 			updateLoader('stop');
 	        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );

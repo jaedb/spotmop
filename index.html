@@ -5,6 +5,8 @@
 	<script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/jquery-ui.min.js"></script>
 	<script type="text/javascript" src="/js/jquery.finger.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.event.drag.js"></script>
+	<script type="text/javascript" src="/js/jquery.event.drop.js"></script>
 	<script type="text/javascript" src="/js/core.js"></script>
 	<script type="text/javascript" src="/js/spotify.js"></script>
 	<script type="text/javascript" src="/js/echonest.js"></script>
@@ -19,6 +21,8 @@
 <body>
 			
 	<div class="loader"></div>
+	
+	<div class="drag-tracer">Dragging</div>
 
 	<div id="player">
 		<div class="liner">
@@ -72,9 +76,9 @@
 				<div class="menu-item-children">
 					<div class="child-menu-item"><a href="#featured-playlists">Featured playlists</a></div>
 					<div class="child-menu-item"><a href="#new-releases">New releases</a></div>
-					<div class="child-menu-item"><a href="#popular">Popular</a></div>
-					<div class="child-menu-item"><a href="#discover">Discover</a></div>
-					<div class="child-menu-item"><a href="#playlists/spotifyusa">Spotify playlists</a></div>
+					<div class="child-menu-item hide"><a href="#popular">Popular</a></div>
+					<div class="child-menu-item hide"><a href="#discover">Discover</a></div>
+					<div class="child-menu-item"><a href="#playlists/spotify">Spotify playlists</a></div>
 				</div>
 			</div>
 			
