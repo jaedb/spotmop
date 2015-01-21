@@ -500,6 +500,11 @@ a:hover {
 	background: #F2F2F2;
 }
 
+.dragging .track-row:hover {
+	border-top: 2px solid #000000;
+	background: transparent;
+}
+
 
 /* when dragging */
 
