@@ -502,6 +502,9 @@ a:hover {
 
 .dragging .track-row:hover {
 	border-top: 2px solid #000000;
+}
+
+.dragging .track-row:not(.highlighted):hover {
 	background: transparent;
 }
 

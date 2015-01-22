@@ -239,10 +239,31 @@ function createPlaylist( name ){
 	});
 };
 
-function addTrackToPlaylist( playlistID, trackURIs ){
+function addTrackToPlaylist( playlistID, trackURIs, position ){
+
+	var position_parameter = '';
+		
+	if( typeof(position) !== 'undefined' )
+		position_parameter += '?position='+position;	
+		
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks'+position_parameter,
+		type: "POST",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		data: JSON.stringify( { uris: trackURIs } ),
+		contentType: "application/json; charset=utf-8",
+		timeout: 10000
+	});
+};
+
+function replaceTracksInPlaylist( playlistID, trackURIs ){
+		
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks',
-		type: "POST",
+		type: "PUT",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.access_token
 		},

@@ -152,6 +152,10 @@ function setupInteractivity(){
             }
         });
 	
+    
+	// --- PLAYER SHUFFLE / REPEAT --- //
+	
+	// TODO
 	
 	
 	// --- REMOVING TRACKS --- //
@@ -485,9 +489,45 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			});
 			
 			
-			// -- dropping on playlist -- //
+			// -- dropping within playlist -- //
 			
-			if( target.parent().hasClass('playlist-item') ){
+			if( target.closest('.page').attr('id') == 'playlist' ){
+				
+				tracksDragging.insertBefore( target.closest('.track-item') );
+				
+				var newTrackOrder = [];
+				
+				// loop the (now re-ordered) track rows
+				$('.page#playlist').find('.track-item').each( function( index, value ){
+					newTrackOrder.push( $(value).data('uri') );
+				});
+				
+				replaceTracksInPlaylist( getIdFromUri( target.closest('.tracks').data('uri') ), newTrackOrder );
+				
+			
+			// -- dropping within queue tracklist -- //
+			
+			}else if( target.closest('.page').attr('id') == 'queue' ){
+				
+				var row = target.closest('.track-item');
+				var spliceStart = tracksDragging.first().index();
+				var spliceEnd = tracksDragging.last().index() + 1; // +1 because splice is the first track NOT selected
+				var destinationPosition = row.index();
+				
+				// if we're dragging downwards, offset change in position
+				// mopidy removes tracks, then repositions so destination position gets upset
+				if( destinationPosition > spliceEnd )
+					destinationPosition = destinationPosition - ( spliceEnd - spliceStart );
+				
+				mopidy.tracklist.move( spliceStart, spliceEnd, destinationPosition );
+				
+				updatePlayQueue();
+			
+			
+			
+			// -- dropping on playlist menu item -- //
+			
+			}else if( target.parent().hasClass('playlist-item') ){
 				
 				var playlistURI = target.parent().data('uri');
 				
@@ -499,7 +539,7 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					});
 			
 			
-			// -- dropping on queue -- //
+			// -- dropping on queue menu item -- //
 			
 			}else if( target.parent().hasClass('queue') ){
 				for( var i = 0; i < tracksDraggingURIs.length; i++){
