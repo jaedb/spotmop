@@ -53,8 +53,15 @@ $(document).ready( function(evt){
     checkToken();
     initiateMopidy();
 	navigate();
+	
+	if( is_touch_device() )
+		$('body').addClass('touch-device');
+	
 });
 
+function is_touch_device() {
+	return !!('ontouchstart' in window);
+}
 
 /*
  * Initiate a mopidy connection
@@ -458,103 +465,106 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	
 	var tracksDragging;
 	
-	// drag start
-	container.find('.track-row.track-item')
-        .drag(function(event,dd){
-			
-			$('body').addClass('dragging');
-			tracksDragging = $(this).siblings('.highlighted').andSelf();
-			
-			$( '.drag-tracer' )
-				.show()
-				.css({
-					top: event.clientY-10,
-					left: event.clientX+10
-				})
-				.html('Dragging '+tracksDragging.length+' track(s)');
-		},{
-			distance: 20
-		}
-	);
-	
-	// drop from drag event
-	container.find('.track-row.track-item')
-		.drop(function(event,dd){
-			
-			var target = $(event.target);
-			var tracksDraggingURIs = [];
-			
-			tracksDragging.each( function(index,value){
-				tracksDraggingURIs.push( $(value).data('uri') );
-			});
-			
-			
-			// -- dropping within playlist -- //
-			
-			if( target.closest('.page').attr('id') == 'playlist' ){
+	if( !is_touch_device() ){
+		
+		// drag start
+		container.find('.track-row.track-item')
+			.drag(function(event,dd){
 				
-				tracksDragging.insertBefore( target.closest('.track-item') );
+				$('body').addClass('dragging');
+				tracksDragging = $(this).siblings('.highlighted').andSelf();
 				
-				var newTrackOrder = [];
+				$( '.drag-tracer' )
+					.show()
+					.css({
+						top: event.clientY-10,
+						left: event.clientX+10
+					})
+					.html('Dragging '+tracksDragging.length+' track(s)');
+			},{
+				distance: 20
+			}
+		);
+		
+		// drop from drag event
+		container.find('.track-row.track-item')
+			.drop(function(event,dd){
 				
-				// loop the (now re-ordered) track rows
-				$('.page#playlist').find('.track-item').each( function( index, value ){
-					newTrackOrder.push( $(value).data('uri') );
+				var target = $(event.target);
+				var tracksDraggingURIs = [];
+				
+				tracksDragging.each( function(index,value){
+					tracksDraggingURIs.push( $(value).data('uri') );
 				});
 				
-				replaceTracksInPlaylist( getIdFromUri( target.closest('.tracks').data('uri') ), newTrackOrder );
 				
-			
-			// -- dropping within queue tracklist -- //
-			
-			}else if( target.closest('.page').attr('id') == 'queue' ){
+				// -- dropping within playlist -- //
 				
-				var row = target.closest('.track-item');
-				var spliceStart = tracksDragging.first().index();
-				var spliceEnd = tracksDragging.last().index() + 1; // +1 because splice is the first track NOT selected
-				var destinationPosition = row.index();
-				
-				// if we're dragging downwards, offset change in position
-				// mopidy removes tracks, then repositions so destination position gets upset
-				if( destinationPosition > spliceEnd )
-					destinationPosition = destinationPosition - ( spliceEnd - spliceStart );
-				
-				mopidy.tracklist.move( spliceStart, spliceEnd, destinationPosition );
-				
-				updatePlayQueue();
-			
-			
-			
-			// -- dropping on playlist menu item -- //
-			
-			}else if( target.parent().hasClass('playlist-item') ){
-				
-				var playlistURI = target.parent().data('uri');
-				
-				addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
-					.success( function( response ){
-						updateLoader('stop');		
-					}).fail( function( response ){
-						updateLoader('stop');
+				if( target.closest('.page').attr('id') == 'playlist' ){
+					
+					tracksDragging.insertBefore( target.closest('.track-item') );
+					
+					var newTrackOrder = [];
+					
+					// loop the (now re-ordered) track rows
+					$('.page#playlist').find('.track-item').each( function( index, value ){
+						newTrackOrder.push( $(value).data('uri') );
 					});
-			
-			
-			// -- dropping on queue menu item -- //
-			
-			}else if( target.parent().hasClass('queue') ){
-				for( var i = 0; i < tracksDraggingURIs.length; i++){
-					addTrackToQueue( tracksDraggingURIs[i] );
+					
+					replaceTracksInPlaylist( getIdFromUri( target.closest('.tracks').data('uri') ), newTrackOrder );
+					
+				
+				// -- dropping within queue tracklist -- //
+				
+				}else if( target.closest('.page').attr('id') == 'queue' ){
+					
+					var row = target.closest('.track-item');
+					var spliceStart = tracksDragging.first().index();
+					var spliceEnd = tracksDragging.last().index() + 1; // +1 because splice is the first track NOT selected
+					var destinationPosition = row.index();
+					
+					// if we're dragging downwards, offset change in position
+					// mopidy removes tracks, then repositions so destination position gets upset
+					if( destinationPosition > spliceEnd )
+						destinationPosition = destinationPosition - ( spliceEnd - spliceStart );
+					
+					mopidy.tracklist.move( spliceStart, spliceEnd, destinationPosition );
+					
+					updatePlayQueue();
+				
+				
+				
+				// -- dropping on playlist menu item -- //
+				
+				}else if( target.parent().hasClass('playlist-item') ){
+					
+					var playlistURI = target.parent().data('uri');
+					
+					addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
+						.success( function( response ){
+							updateLoader('stop');		
+						}).fail( function( response ){
+							updateLoader('stop');
+						});
+				
+				
+				// -- dropping on queue menu item -- //
+				
+				}else if( target.parent().hasClass('queue') ){
+					for( var i = 0; i < tracksDraggingURIs.length; i++){
+						addTrackToQueue( tracksDraggingURIs[i] );
+					}
 				}
+				
+				$('body').removeClass('dragging');
+				$( '.drag-tracer' ).fadeOut('fast');
 			}
-			
-			$('body').removeClass('dragging');
-			$( '.drag-tracer' ).fadeOut('fast');
-		}
-	);
+		);
+	
+	} // end touch device
 	
 	// double click to play
-	container.find('.track-row.track-item')
-		.dblclick(function(event){
+	container.find('.track-row.track-item').on('doubletap dblclick', function(event){
 			
 			// -- play from artist top tracks -- //
 			

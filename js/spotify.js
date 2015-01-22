@@ -14,7 +14,8 @@ function checkToken(){
 	
 	// if we don't have a token (or it has expired), go get one
 	}else if( localStorage.access_token == null || localStorage.token_expiry < new Date().getTime() ){        
-        return getNewToken();
+        getNewToken();
+        return true;
     }
     
     return true;
@@ -48,6 +49,7 @@ function getNewToken(){
 		url: '/authenticate.php?refresh_token='+localStorage.refresh_token,
 		type: "GET",
 		dataType: "json",
+		async: false,
 		timeout: 5000,
 		success: function(response){
 			localStorage.access_token = response.access_token;

@@ -94,9 +94,11 @@ function updatePlaylists(){
 			}
 			
 		}).fail( function( response ){
+		
 			updateLoader('stop');
-	        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
-	        $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
+        	notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message);
+        	$('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
+	        
 	    });
 	};
 	
