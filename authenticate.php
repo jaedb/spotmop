@@ -138,6 +138,8 @@ if( isset($_GET['code']) ){
 */
 if( isset($_GET['refresh_token']) ){	
 	
+	echo '<h3>Refreshing authentication token ...</h3>';
+	
 	echo refreshToken($_GET['refresh_token']);
 	die();
 }
