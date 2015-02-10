@@ -57,6 +57,10 @@ a {
 	border-bottom: 1px dotted #000000;
 }
 
+.black {
+	color: #000000;
+}
+
 .red {
 	color: red;
 }
@@ -222,6 +226,11 @@ a:hover {
 
 #notification.notice {
 	background: rgba(250,236,85,0.9);
+	color: #000000;
+}
+
+#notification.good {
+	background: rgba(53,204,53,0.9);
 }
 
 
@@ -296,23 +305,33 @@ a:hover {
 }
 
 #menu .menu-item-children {
-	padding: 6px 6px 0 26px;
+	padding: 6px 6px 0 22px;
 	font-size: 12px;
 	line-height: 1.2em;
 }
 
 #menu .menu-item-children .child-menu-item {
-	padding: 4px 0;
+	padding: 0;
 }
 
 #menu .menu-item-children .child-menu-item a {
 	text-decoration: none;
 	color: #444444;
+	display: inline-block;
+	padding: 4px 6px;
+	border: none;
+	border-radius: 3px;
 }
 
 #menu .menu-item-children .child-menu-item.current a,
 #menu .menu-item-children .child-menu-item a:hover {
 	color: #000000;
+	background: #FFFFFF;
+}
+
+.dragging #menu .menu-item-children .playlist-item a:hover {
+	background: rgba(0,0,0,0.8);
+	color: #FFFFFF;
 }
 
 #menu .new-playlist-button {
@@ -481,9 +500,28 @@ a:hover {
 	background: #F2F2F2;
 }
 
+.dragging .track-row:hover {
+	border-top: 2px solid #000000;
+	margin-top: -3px;
+}
+
+.dragging .track-row:not(.highlighted):hover {
+	background: transparent;
+}
+
 
 /* when dragging */
 
+.drag-tracer {
+	position: fixed;
+	padding: 6px 10px;
+	background: rgba(0,0,0,0.8);
+	color: #FFFFFF;
+	z-index: 9;
+	display: none;
+}
+
+/*
 .track-row.ui-draggable-dragging,
 .album-panel.ui-draggable-dragging {
 	background: #333333 !important;
@@ -515,6 +553,7 @@ a:hover {
 	display: none;
 }
 
+*/
 
 /*
  * Percentage bars (mainly for track popularity)
@@ -724,8 +763,9 @@ a:hover {
 /* bars (progress and volume */
 
 .slider {
-	height: 2px;
-	background: #888888;
+	height: 22px;
+	margin-top: -12px;
+	background: url('../images/progress-background.png') 0 0 repeat-x;
     cursor: hand;
     cursor: pointer;
 	position: relative;
@@ -733,7 +773,7 @@ a:hover {
 
 .slider .ui-slider-range {
 	height: 100%;
-	background: #1cf4c4;
+	background: url('../images/progress-background-active.png') 0 0 repeat-x;
 	width: 1px;
 	position: absolute;
 	top: 0;
@@ -754,12 +794,20 @@ a:hover {
 
 /* my profile panel (settings page) */
 
+.field.current-user .label { 
+	padding-top: 12px;
+}
+
+.my-profile {
+	display: inline-block;
+}
+
 .my-profile .thumbnail {
 	border-radius: 20px;
 }
 
 .my-profile .name {
-	padding: 8px 0 0 10px;
+	padding: 12px 15px 0 10px;
 	display: inline-block;
 }
 

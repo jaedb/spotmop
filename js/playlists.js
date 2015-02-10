@@ -38,7 +38,7 @@ function setupNewPlaylistButton(){
 				$(document).find('#menu .playlist-list .playlist-item[data-uri="'+playlist.uri+'"]').droppable({
 					drop: function(evt, ui){
 						addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success(function(evt){
-							notifyUser('notify','Track added to playlist');	
+							notifyUser('good','Track added to playlist');
 						});
 					}
 				});
@@ -71,11 +71,10 @@ function setupRefreshPlaylistButton(){
 */
 
 function updatePlaylists(){
-
-	$('.loader').show();
 	
 	// Get the users playlists and place them in the client
 	if( checkToken() ){
+		updateLoader('start');
 		getMyPlaylists().success( function( playlists ){
 			
 			var lists = $('.menu-item-wrapper.playlists .playlist-list');
@@ -83,7 +82,7 @@ function updatePlaylists(){
 			
 			// clear out the previous playlists
 			lists.html('');
-			$('.loader').fadeOut();
+			updateLoader('stop');
 			
 			// loop each playlist
 			for( var i = 0; i < playlists.items.length; i++ ){
@@ -94,17 +93,12 @@ function updatePlaylists(){
 				lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			}
 			
-			// draggable to drop them onto playlists
-			$(document).find('#menu .playlist-list .playlist-item').droppable({
-				drop: function(evt, ui){
-					addTrackToPlaylist( getIdFromUri( $(evt.target).data('uri') ), $(ui.helper).data('uri') ).success();
-				}
-			});
-			
 		}).fail( function( response ){
-			$('.loader').fadeOut();
-	        notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
-	        $('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
+		
+			updateLoader('stop');
+        	notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message);
+        	$('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
+	        
 	    });
 	};
 	

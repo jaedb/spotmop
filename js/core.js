@@ -4,34 +4,17 @@
  */
 
 
-/*
- * Get an item's ID out of a provided URI
- * Returns string
-*/
-function getIdFromUri( uri ){
-	
-	// get the id (3rd part of the URI)
-	if( typeof uri === 'undefined' )
-		return false;
-	
-	var uriArray = uri.split(':');
-	
-	// see if we're a playlist URI
-	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
-		return uriArray[4];
-	
-	var id = uriArray[2];
-	return id;
-};
-
-
 /* currently not in need */
 
 window.addEventListener("storage", storageUpdated, false);
 
 function storageUpdated(storage){
 	console.log('localStorage contents has been changed');
-	navigate();
+	if( localStorage.readyToRefresh ){
+	console.log('Ready to refresh');
+		navigate();
+		updatePlaylists();
+	}
 }
 
 /* end */
@@ -47,7 +30,6 @@ var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(consol
 var playlists;
 var chainedEventsCount = 0;
 var mopidy;
-var mopidyConnectionChecker = setInterval(function(){ if(!coreArray['mopidyOnline']) initiateMopidy(); }, 5000);
 
 
 /*
@@ -55,40 +37,39 @@ var mopidyConnectionChecker = setInterval(function(){ if(!coreArray['mopidyOnlin
  * Kickstart the engine
 */
 $(document).ready( function(evt){
+	
+	// set defaults for mopidy api
+    if( !localStorage.settings_hostname )
+		localStorage.settings_hostname = 'localhost';	
+    if( !localStorage.settings_port )
+		localStorage.settings_port = '6680';	
+    if( !localStorage.settings_country )
+		localStorage.settings_country = 'NZ';	
+    if( !localStorage.settings_locale )
+		localStorage.settings_locale = 'en_NZ';	
+    if( !localStorage.settings_clientid )
+		localStorage.settings_clientid = 'a87fb4dbed30475b8cec38523dff53e2';
+
     checkToken();
     initiateMopidy();
 	navigate();
 	
-    if( !localStorage.settings_hostname )
-		localStorage.settings_hostname = 'localhost';
+	if( is_touch_device() )
+		$('body').addClass('touch-device');
 	
-    if( !localStorage.settings_port )
-		localStorage.settings_port = '6680';
-	
-    if( !localStorage.settings_country )
-		localStorage.settings_country = 'NZ';
-	
-    if( !localStorage.settings_locale )
-		localStorage.settings_locale = 'en_NZ';
 });
 
+function is_touch_device() {
+	return !!('ontouchstart' in window);
+}
 
 /*
  * Initiate a mopidy connection
 */
 function initiateMopidy(){
-
-	var everySecond;
-	var mopidyHostname = 'localhost';
-	var mopidyPort = '6680';
 	
-	if( localStorage.hostname )
-		mopidyHostname = localStorage.hostname;
-	
-	if( localStorage.port )
-		mopidyPort = localStorage.port;
-		
-	var websocketURL = "ws://"+ mopidyHostname +":"+ mopidyPort +"/mopidy/ws";
+	var everySecond;		
+	var websocketURL = "ws://"+ localStorage.settings_hostname +":"+ localStorage.settings_port +"/mopidy/ws";
 	
 	mopidy = new Mopidy({
 		webSocketUrl: websocketURL
@@ -101,7 +82,7 @@ function initiateMopidy(){
     mopidy.on("event:playbackStateChanged", function(obj){		updatePlayer(); });	
     
     mopidy.on("state:online", function(){
-
+	
         // set play queue as consuming (once played, remove the track)
         mopidy.tracklist.consume = true;
 		coreArray['mopidyOnline'] = true;
@@ -178,6 +159,10 @@ function setupInteractivity(){
             }
         });
 	
+    
+	// --- PLAYER SHUFFLE / REPEAT --- //
+	
+	// TODO
 	
 	
 	// --- REMOVING TRACKS --- //
@@ -261,16 +246,6 @@ function setupInteractivity(){
 	
 	
 	
-	// --- ADDING TRACKS TO QUEUE --- //
-			
-	$(document).find('#menu .menu-item-wrapper.queue').droppable({
-		drop: function(evt, ui){
-			addTrackToQueue( $(ui.helper).data('uri') );
-		}
-	});
-	
-	
-	
 	// --- TRACK SELECTION EVENTS --- //
 		
 	var shiftKeyHeld = false;
@@ -283,6 +258,7 @@ function setupInteractivity(){
 		}
 	}).bind('keyup',function(){
 	      shiftKeyHeld = false;
+	      ctrlKeyHeld = false;
 	});
 	
 	// click to select a track
@@ -305,126 +281,6 @@ function setupInteractivity(){
 			$(this).addClass('highlighted');
 		}
 	});
-	
-	// double-click to play track from queue
-	$(document).on('doubletap', '#queue .track-row.track-item', function(evt){
-		
-		var trackID = $(this).data('id');
-		
-		// immediately update dom, for 'snappy' ux
-		$('#queue .track-item').removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		// now actually change what's playing
-		mopidy.tracklist.getTlTracks().then(function( tracks ){
-			mopidy.playback.changeTrack( tracks[trackID], 1 );
-			mopidy.playback.play();
-			updatePlayer();
-		},consoleError);
-	});
-	
-	// double-click to play track from album list (explore/search result)
-	$(document).on('doubletap', '#album .track-row.track-item', function(evt){	
-		var trackID = $(this).data('id');		
-		var tracklistURI = $('#album .tracks').data('uri');
-		replaceAndPlay( tracklistURI, trackID );
-	});
-	
-	/*
-	// double-click to play track from playlist list 
-	$(document).on('doubletap', '#playlist .track-row.track-item', function(evt){
-	
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$('#queue .track-item').removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		// now actually do it
-		var trackID = $(this).data('id');
-		var tracklistURI = $(this).closest('.tracks').data('uri');
-		replaceAndPlay( tracklistURI, trackID );
-	});
-	*/
-	
-	// double-click to play track from a top-tracks list
-	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '#artist .tracks .track-row.track-item', function(evt){	
-		
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$(this).siblings().removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		var track_to_play = $(this);
-		var tracks_following = $(this).nextAll();
-		
-		// empty the list
-		mopidy.tracklist.clear().then( function(response){;
-			
-			// add the track we need to play first
-			mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
-				
-				mopidy.playback.changeTrack(response[0],1);
-				mopidy.playback.play();
-				updatePlayer();
-			
-				// now add all the other tracks ... (yes, one by one)
-				tracks_following.each( function(index, value){
-					chainedEventsCount++;
-					mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
-						chainedEventsCount--;
-						if( chainedEventsCount == 0)
-							$('.loader').fadeOut();
-					},consoleError);
-				});
-			},consoleError);
-		},consoleError);
-	});
-	
-	
-	
-	// double-click to play track from a top-tracks list
-	// TODO: This runs slow because we have to do individual track URI lookups and add them one-by-one
-	$(document).on('doubletap', '#playlist .tracks .track-row.track-item', function(evt){	
-		
-		$('.loader').show();
-		
-		// immediately update dom, for 'snappy' ux
-		$(this).siblings().removeClass('current').removeClass('playing');
-		$(this).addClass('current').addClass('playing');
-		
-		var track_to_play_uri = $(this).attr('data-uri');
-		var tracklist_uri = $(this).closest('.tracks').attr('data-uri');
-		
-		// empty the list
-		mopidy.tracklist.clear().then( function(response){
-			
-			// run a lookup on this playlist
-			mopidy.library.lookup(tracklist_uri).then(function(tracks){
-				
-				// add all the tracks to the queue
-				mopidy.tracklist.add( tracks ).then(function(response){
-					
-					$('.loader').fadeOut();
-					
-					// loop the tracks returned (Tl_Track object)
-					for(var i = 0; i < response.length; i++){
-						
-						// if this track uri matches the one we clicked on, then play it chris!
-						if( response[i].track.uri == track_to_play_uri ){
-							mopidy.playback.changeTrack(response[i],1);
-							mopidy.playback.play();
-							updatePlayer();
-						}
-					}
-				},consoleError);
-			},consoleError);
-		},consoleError);
-		
-	});
-	
 	
     
 	// --- PLAYER CONTROLS EVENTS --- //
@@ -453,8 +309,92 @@ function setupInteractivity(){
 };
 
 
+function playFromCompilation( trackRow ){
+
+	$('.loader').show();
+	
+	// immediately update dom, for 'snappy' ux
+	trackRow.siblings().removeClass('current').removeClass('playing');
+	trackRow.addClass('current').addClass('playing');
+	
+	var track_to_play = trackRow;
+	var tracks_following = trackRow.nextAll();
+	
+	// empty the list
+	mopidy.tracklist.clear().then( function(response){;
+		
+		// add the track we need to play first
+		mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
+			
+			mopidy.playback.changeTrack(response[0],1);
+			mopidy.playback.play();
+			updatePlayer();
+			
+			// add this track to our taste profile
+			updateTasteProfile(
+					track_to_play.attr('data-uri'),
+					track_to_play.attr('data-name'),
+					track_to_play.attr('data-artists')
+				);
+		
+			// now add all the other tracks ... (yes, one by one)
+			tracks_following.each( function(index, value){
+				chainedEventsCount++;
+				mopidy.tracklist.add( null, null, $(value).data('uri') ).then( function(response){
+					chainedEventsCount--;
+					if( chainedEventsCount == 0)
+						$('.loader').fadeOut();
+				},consoleError);
+			});
+		},consoleError);
+	},consoleError);
+}
 
 
+
+function playFromPlaylist( trackRow ){
+
+	$('.loader').show();
+	
+	// immediately update dom, for 'snappy' ux
+	trackRow.siblings().removeClass('current').removeClass('playing');
+	trackRow.addClass('current').addClass('playing');
+	
+	var track_to_play_uri = trackRow.attr('data-uri');
+	var tracklist_uri = trackRow.closest('.tracks').attr('data-uri');
+	
+	// add this track to our taste profile
+	updateTasteProfile(
+			trackRow.attr('data-uri'),
+			trackRow.attr('data-name'),
+			trackRow.attr('data-artists')
+		);
+	
+	// empty the list
+	mopidy.tracklist.clear().then( function(response){
+		
+		// run a lookup on this playlist
+		mopidy.library.lookup(tracklist_uri).then(function(tracks){
+			
+			// add all the tracks to the queue
+			mopidy.tracklist.add( tracks ).then(function(response){
+				
+				$('.loader').fadeOut();
+				
+				// loop the tracks returned (Tl_Track object)
+				for(var i = 0; i < response.length; i++){
+					
+					// if this track uri matches the one we clicked on, then play it chris!
+					if( response[i].track.uri == track_to_play_uri ){
+						mopidy.playback.changeTrack(response[i],1);
+						mopidy.playback.play();
+						updatePlayer();
+					}
+				}
+			},consoleError);
+		},consoleError);
+	},consoleError);
+}
 
 
 
@@ -488,7 +428,15 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			else
 				var track = tracks[x];
 			
-			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'">';
+			var artistArray = [];
+			
+			if( typeof(track.artists) !== 'undefined' ){
+				for(var a = 0; a < track.artists.length; a++){
+					artistArray.push( track.artists[a].name );
+				}
+			}
+			
+			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'" data-name="'+track.name+'" data-artists="'+artistArray+'" id="'+getIdFromUri(track.uri)+'">';
 				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i><i class="fa fa-refresh  fa-spin"></i></div>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
@@ -498,8 +446,13 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				else if ( track.album )
 					html += '<a href="#album/'+track.album.uri+'" data-uri="'+track.album.uri+'">'+track.album.name+'</a>';
 				html += '</div>';
-				html += '<div class="col w10 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
-				html += '<div class="col w5 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+'%;"></div></div></div>';
+				
+				if( typeof track.duration_ms !== 'undefined' )
+					html += '<div class="col w10 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
+					
+				if( typeof track.popularity !== 'undefined' )
+					html += '<div class="col w5 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+
+					'%;"></div></div></div>';
 				html += '<div class="clear-both"></div>';
 			html += '</div>';
 		}
@@ -510,21 +463,185 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	if( tracklistUri !== 'undefined' )
 		container.data('uri', tracklistUri);
 	
-	// draggable to drop them onto playlists
-	container.find('.track-row.track-item').draggable({
-        distance: 30,
-		revert: true,
-		revertDuration: 0,
-		helper: 'clone',
-		appendTo: 'body',
-  		zIndex: 10000
-	});
+	var tracksDragging;
+	
+	if( !is_touch_device() ){
+		
+		// drag start
+		container.find('.track-row.track-item')
+			.drag(function(event,dd){
+				
+				$('body').addClass('dragging');
+				tracksDragging = $(this).siblings('.highlighted').andSelf();
+				
+				$( '.drag-tracer' )
+					.show()
+					.css({
+						top: event.clientY-10,
+						left: event.clientX+10
+					})
+					.html('Dragging '+tracksDragging.length+' track(s)');
+			},{
+				distance: 20
+			}
+		);
+		
+		// drop from drag event
+		container.find('.track-row.track-item')
+			.drop(function(event,dd){
+				
+				var target = $(event.target);
+				var tracksDraggingURIs = [];
+				
+				tracksDragging.each( function(index,value){
+					tracksDraggingURIs.push( $(value).data('uri') );
+				});
+				
+				
+				// -- dropping within playlist -- //
+				
+				if( target.closest('.page').attr('id') == 'playlist' ){
+					
+					tracksDragging.insertBefore( target.closest('.track-item') );
+					
+					var newTrackOrder = [];
+					
+					// loop the (now re-ordered) track rows
+					$('.page#playlist').find('.track-item').each( function( index, value ){
+						newTrackOrder.push( $(value).data('uri') );
+					});
+					
+					replaceTracksInPlaylist( getIdFromUri( target.closest('.tracks').data('uri') ), newTrackOrder );
+					
+				
+				// -- dropping within queue tracklist -- //
+				
+				}else if( target.closest('.page').attr('id') == 'queue' ){
+					
+					var row = target.closest('.track-item');
+					var spliceStart = tracksDragging.first().index();
+					var spliceEnd = tracksDragging.last().index() + 1; // +1 because splice is the first track NOT selected
+					var destinationPosition = row.index();
+					
+					// if we're dragging downwards, offset change in position
+					// mopidy removes tracks, then repositions so destination position gets upset
+					if( destinationPosition > spliceEnd )
+						destinationPosition = destinationPosition - ( spliceEnd - spliceStart );
+					
+					mopidy.tracklist.move( spliceStart, spliceEnd, destinationPosition );
+					
+					updatePlayQueue();
+				
+				
+				
+				// -- dropping on playlist menu item -- //
+				
+				}else if( target.parent().hasClass('playlist-item') ){
+					
+					var playlistURI = target.parent().data('uri');
+					
+					addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
+						.success( function( response ){
+							updateLoader('stop');		
+						}).fail( function( response ){
+							updateLoader('stop');
+						});
+				
+				
+				// -- dropping on queue menu item -- //
+				
+				}else if( target.parent().hasClass('queue') ){
+					for( var i = 0; i < tracksDraggingURIs.length; i++){
+						addTrackToQueue( tracksDraggingURIs[i] );
+					}
+				}
+				
+				$('body').removeClass('dragging');
+				$( '.drag-tracer' ).fadeOut('fast');
+			}
+		);
+	
+	} // end touch device
+	
+	// double click to play
+	container.find('.track-row.track-item').on('doubletap dblclick', function(event){
+			
+			// -- play from artist top tracks -- //
+			
+			if( $(this).closest('.page').attr('id') == 'artist' ){
+				playFromCompilation( $(this) );
+			
+			
+			// -- play from album -- //
+			
+			}else if( $(this).closest('.page').attr('id') == 'album' ){
+			
+				var trackID = $(this).data('id');		
+				var tracklistURI = $('#album .tracks').data('uri');
+				replaceAndPlay( tracklistURI, trackID );
+			
+			
+			// -- play from queue -- //
+			
+			}else if( $(this).closest('.page').attr('id') == 'queue' ){
+			
+				var trackID = $(this).data('id');
+				
+				// immediately update dom, for 'snappy' ux
+				$('#queue .track-item').removeClass('current').removeClass('playing');
+				$(this).addClass('current').addClass('playing');
+				
+				// add this track to our taste profile
+				updateTasteProfile( $(this).attr('data-uri'), $(this).attr('data-name'), $(this).attr('data-artists') )
+					.success( function(response){
+						//console.log(response);
+					})
+					.fail( function(response){
+						//console.log(response);
+					});
+				
+				// now actually change what's playing
+				mopidy.tracklist.getTlTracks().then(function( tracks ){
+					mopidy.playback.changeTrack( tracks[trackID], 1 );
+					mopidy.playback.play();
+					updatePlayer();
+				},consoleError);
+			
+			
+			// -- play from playlist -- //
+			
+			}else{
+				playFromPlaylist( $(this) );
+			}
+		}
+	);
 	
 	highlightPlayingTrack();
 	
 	return true;
 };
 
+
+
+/*
+ * Get an item's ID out of a provided URI
+ * Returns string
+*/
+function getIdFromUri( uri ){
+	
+	// get the id (3rd part of the URI)
+	if( typeof uri === 'undefined' )
+		return false;
+	
+	var uriArray = uri.split(':');
+	
+	// see if we're a playlist URI
+	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
+		return uriArray[4];
+	
+	var id = uriArray[2];
+	return id;
+};
 
 
 /*
@@ -601,35 +718,6 @@ function replaceAndPlay( tracklistURI, trackID ){
 
 
 /*
- * Replace current queue and play selected track
- * @var trackURIs = array of track URIs
- * @var trackID is integer of track number we want to play
-*/
-function replaceAndPlayTracks( trackURIs, trackID ){
-	
-	// clear current tracklist
-	mopidy.tracklist.clear().then(function(){
-		
-		// loop all the URIs
-		for( var i = 0; i < trackURIs.length; i++ ){
-			
-			// add each track to the tracklist
-			mopidy.tracklist.add(null, i, trackURIs[i]).then( function(response){
-				//console.log( response );
-			});
-			
-			// if we're the track we want to play
-			if( i == trackID ){
-                playTrackByID( trackID );
-				$('.loader').fadeOut();
-			}
-			
-		};
-	});
-}
-
-
-/*
  * Play a track from the current tracklist, by ID
  * Requires tracks to be queued, and an ID to be provided
  * @var trackID = integer, 0-based index of tracklist
@@ -680,8 +768,9 @@ function notifyUser( type, message, persistent ){
 	
 	var notification = $('#notification');
 	
+	notification.css('bottom', $('#player').outerHeight());
 	notification.find('.message').html( message );
-	notification.removeClass('error').removeClass('notice').removeClass('warning').addClass(type);
+	notification.removeClass('error').removeClass('notice').removeClass('warning').removeClass('good').addClass(type);
 	notification.slideDown('fast');
 	
 	if( !persistent )
@@ -833,7 +922,7 @@ function updateVolume(){
 // update the title in the window tab
 function updateWindowTitle(){
     
-    var documentIcon = '\u25FC ';
+    var documentIcon = '\u25A0 ';
     
 	if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){
     
@@ -841,6 +930,10 @@ function updateWindowTitle(){
         
         // inject icon
         if( coreArray['state'] == 'playing' )
+            documentIcon = '\u25B6 ';
+        
+        // inject icon
+        else if( coreArray['state'] == 'playing' )
             documentIcon = '\u25B6 ';
 
         // update window title
@@ -900,7 +993,8 @@ function updatePlayQueue(){
         $queue.html('');
 
         renderTracksTable( $("#queue .tracks"), tracks, null );
-
+		
+		/*
         // draggable queue tracks
         $("#queue .tracks").sortable({
             items: '.track-row:not(.headings)',
@@ -911,7 +1005,7 @@ function updatePlayQueue(){
                 // move this item on the playlist, to the new position
                 mopidy.tracklist.move( $(ui.item).data('id'), $(ui.item).data('id')+1, newPosition );
             }
-        });
+        });*/
 
 		updateLoader();
 

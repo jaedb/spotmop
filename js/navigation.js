@@ -68,6 +68,14 @@ function navigate(){
     if(page == 'settings'){
 		renderSettingsPage();
     };
+    
+    if(page == 'popular'){
+		renderPopularPage();
+    };
+    
+    if(page == 'discover'){
+		renderDiscoverPage();
+    };
 
 };
 
@@ -126,9 +134,11 @@ $(document).ready( function(evt){
 */
 function renderArtistPage( id ){
     
-	// get the artist object
-	if( checkToken() ){
+	
+	$.when( checkToken() ).then( function(){
     	updateLoader('start');
+		
+		// get the artist object
 		getArtist( id ).success( function( artist ){
 	    
 	    	updateLoader('stop');
@@ -208,6 +218,9 @@ function renderArtistPage( id ){
 			
 			getRelatedArtists( artist.id ).success(function( relatedArtists ){
 				
+				if( relatedArtists.artists <= 0 )
+					return false;
+				
 				// empty out previous related artists
 				$('#artist .related-artists').html('');
 				updateLoader('stop');
@@ -237,9 +250,7 @@ function renderArtistPage( id ){
 			notifyUser('error', 'Error fetching artist: '+response.responseJSON.error.message );
 		});
 	
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 };
 
 
@@ -249,7 +260,7 @@ function renderArtistPage( id ){
 */
 function renderUsersPlaylistsPage( userID ){
 	
-	if( checkToken() ){
+	$.when( checkToken() ).then( function(){
     	updateLoader('start');
 		getUsersPlaylists(userID).then( function(response){
 			
@@ -275,9 +286,7 @@ function renderUsersPlaylistsPage( userID ){
 			updateLoader('stop');
 			notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message );
 		});
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 }
 
 
@@ -288,7 +297,7 @@ function renderUsersPlaylistsPage( userID ){
 */
 function renderNewReleasesPage(){
 	
-	if( checkToken() ){
+	$.when( checkToken() ).then( function(){
     	updateLoader('start');
 		getNewReleases().then( function(response){
 			
@@ -327,9 +336,7 @@ function renderNewReleasesPage(){
 			else
 				notifyUser('error', 'Error fetching new releases, and no error response from API' );
 		});
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 }
 
 
@@ -341,7 +348,7 @@ function renderFeaturedPlaylistsPage(){
 
 	$(document).find('#featured-playlists').show();
 
-	if( checkToken() ){
+	$.when( checkToken() ).then( function(){
     	updateLoader('start');
 		getFeaturedPlaylists().success(function( playlists ) {
 			
@@ -367,9 +374,7 @@ function renderFeaturedPlaylistsPage(){
 			updateLoader('stop');
 			notifyUser('error', 'Error fetching featured playlists: '+response.responseJSON.error.message );
 		});
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 }
 
 
@@ -382,7 +387,7 @@ function renderFeaturedPlaylistsPage(){
 */
 function renderAlbumPage( id ){
     
-	if( checkToken() ){
+	$.when( checkToken() ).then( function(){
     	updateLoader('start');
 		getAlbum( id ).success(function( album ){
 				
@@ -406,9 +411,7 @@ function renderAlbumPage( id ){
 			updateLoader('stop');
 			notifyUser('error', 'Error fetching album: '+response.responseJSON.error.message );
 		});
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 }
 
 
@@ -420,7 +423,8 @@ function renderPlaylistPage( uri ){
 	var userid = uri.split(':')[2];
 	var playlistid = uri.split(':')[4];
 	
-	if( checkToken() ){
+	$.when( checkToken() ).done( function(){
+		
     	updateLoader('start');
 		getPlaylist( userid, playlistid ).success(function( playlist ){
 	
@@ -451,9 +455,7 @@ function renderPlaylistPage( uri ){
 			updateLoader('stop');
 			notifyUser('error', 'Error fetching playlist: '+response.responseJSON.error.message );
 		});
-	}else{
-		notifyUser('error', 'Please check your Spotify service connection' );
-	}
+	});
 	
 };
 
@@ -463,10 +465,14 @@ function renderPlaylistPage( uri ){
 */
 function renderSettingsPage(){
 	
-    if( coreArray['mopidyOnline'] )
+    if( coreArray['mopidyOnline'] ){
 		$('#settings .mopidy.connection-status').addClass('online').removeClass('offline');
-	else
+	}else{
 		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
+		$('#settings .mopidy.connection-status .reconnect').on('click', function(evt){
+			initiateMopidy();
+		});
+	}
 	
 	// load values into the fields (if it's not the default/placeholder)
 	$('#settings input.autosave').each( function(index, value){
@@ -484,7 +490,12 @@ function renderSettingsPage(){
 		$(this).closest('.field').find('.autosave-success').show().delay(1000).fadeOut('slow');
 	});
 	
-	if( checkToken() ){
+	
+	/*
+	 * Spotify service fields
+	*/
+	
+	$.when( checkToken() ).then( function(){
 		
 		updateLoader('start');
 				
@@ -494,25 +505,120 @@ function renderSettingsPage(){
 			
 			updateLoader('stop');
 			
+			localStorage.userID = response.id;
+			
 			var html = '';
 			
 			html += '<div class="thumbnail" style="background-image: url('+response.images[0].url+');"></div>';
-			html += '<div class="name">'+response.display_name+'</div>';
+			html += '<div class="name">'+response.display_name+' ('+response.id+')</div>';
 			
-			$('#settings .my-profile').html( html );		
-			$('#settings .token').html( localStorage.token_expiry );
+			$('#settings .my-profile').html( html );
 			
-			$('#settings .refresh-token-button').on('click', function(evt){
-				getNewToken();
+			$('#settings .log-out-button').on('click', function(evt){
+				localStorage.removeItem('authorization_code');
+				localStorage.removeItem('refresh_token');
+				localStorage.removeItem('access_token');
+				localStorage.removeItem('token_expiry');
+				checkToken();
+			});
+		});
+	});
+	
+	/* 
+	 * Echonest service fields
+	*/
+	if( checkTasteProfile() ){				
+		$('#settings .echonest.connection-status').addClass('online').removeClass('offline');	
+	}else{
+		$('#settings .echonest.connection-status').addClass('offline').removeClass('online');
+	}
+	
+};
+
+
+
+/*
+ * Render the popular songs page
+*/
+function renderPopularPage(){
+	
+	updateLoader('start');
+	
+	getHotTracks().success( function(response){
+		
+		var artistIDs = '';
+		
+		for( var i = 0; i < response.response.songs.length; i++ ){
+			var track = response.response.songs[i];
+			if( i != 0 )
+				artistIDs += ',';
+			artistIDs += getIdFromUri( track.artist_foreign_ids[0].foreign_id );
+		}
+			
+		updateLoader('start');
+		getArtists(artistIDs).success( function(response){
+			
+			// loop each album
+			for(var i = 0; i < response.artists.length; i++){
+			
+				var artist = response.artists[i];
+				
+				imageURL = '';
+				if( artist.images.length > 0 )
+					imageURL = artist.images[1].url;
+				
+				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+artist.name+'</span></a>' );
+			};
+			
+			// make them draggable
+			$('#new-releases .content').find('.album-panel').draggable({
+				distance: 30,
+				revert: true,
+				revertDuration: 0,
+				helper: 'clone',
+				appendTo: 'body',
+				zIndex: 10000
 			});
 			
-		}).fail( function( response ){
 			updateLoader('stop');
-			notifyUser('error', 'Error fetching user profile: '+response.responseJSON.error.message );
 		});
-	}else{
-		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
-	}
+		
+		var html = '';
+		
+		$('#popular .content').html( html );
+		
+		updateLoader('stop');
+		
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching hot songs: '+response.response.responseJSON.error.message );
+	});
+	
+};
+
+
+
+/*
+ * Render the popular songs page
+*/
+function renderDiscoverPage(){
+	
+	updateLoader('start');
+	
+	getRelatedArtists().success( function(response){
+		
+		console.log(response);
+		
+		var html = '';
+		
+		$('#popular .content').html( html );
+		
+		updateLoader('stop');
+		
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching discover content: '+response.response.responseJSON.error.message );
+	});
 	
 };
 

@@ -27,9 +27,9 @@ Features
 Screenshots
 -----------
 
-![Search Results](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-results.jpg)
 ![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
-![Album](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-album.jpg)
+![Playlist with drag-and-drop functionality](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
+![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
 
 To-do
 -----
