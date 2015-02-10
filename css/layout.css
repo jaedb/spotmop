@@ -384,7 +384,7 @@ a:hover {
 	padding: 0 8px;
 }
 
-.artwork-panel .background-image {
+.background-image {
 	background: 50% 50% no-repeat #EEEEEE;
 	background-size: cover;
 	position: absolute;
