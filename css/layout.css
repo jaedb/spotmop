@@ -716,16 +716,15 @@ a:hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
+	padding: 10px 0 15px;
 }
 
 #player .current-track .track {
 	display: inline-block;
-	padding: 5px 0 2px;
 }
 
 #player .current-track .artist {
 	display: inline-block;
-	padding: 5px 0 2px;
 	opacity: 0.5;
 }
 
