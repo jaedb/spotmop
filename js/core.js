@@ -596,10 +596,6 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			
 				var trackID = $(this).data('id');
 				
-				// immediately update dom, for 'snappy' ux
-				$('#queue .track-item').removeClass('current').removeClass('playing');
-				$(this).addClass('current').addClass('playing');
-				
 				// add this track to our taste profile
 				updateTasteProfile( $(this).attr('data-uri'), $(this).attr('data-name'), $(this).attr('data-artists') )
 					.success( function(response){
