@@ -470,9 +470,18 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 		// drag start
 		container.find('.track-row.track-item')
 			.drag(function(event,dd){
-				
+			
 				$('body').addClass('dragging');
 				tracksDragging = $(this).siblings('.highlighted').andSelf();
+				/*
+				console.log($(event.target));
+				
+				if( event.target ){
+					if( $(event.target).parent().hasClass('playlist-item').hasClass('child-menu-item') ){
+						$('.playlist-item.child-menu-item').removeClass('hover');
+						$(event.target).parent().addClass('hover');
+					}
+				}*/
 				
 				$( '.drag-tracer' )
 					.show()

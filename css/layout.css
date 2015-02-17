@@ -329,7 +329,8 @@ a:hover {
 	background: #FFFFFF;
 }
 
-.dragging #menu .menu-item-children .playlist-item a:hover {
+.dragging #menu .menu-item-children .playlist-item a:hover,
+.dragging #menu .menu-item-children .playlist-item.hover a {
 	background: rgba(0,0,0,0.8);
 	color: #FFFFFF;
 }
