@@ -30,6 +30,7 @@ function navigate(){
 	// hide/show relevant content
 	$('.menu-item-wrapper').removeClass('current');
 	$('.menu-item-wrapper.'+page).addClass('current');
+	$('#menu .playlist-item.child-menu-item').removeClass('current');
 	
 	$('.page#'+page).show();
     
@@ -439,6 +440,10 @@ function renderPlaylistPage( uri ){
 	var userid = uri.split(':')[2];
 	var playlistid = uri.split(':')[4];
 	
+	// hide the tools until we know whether we're following or not
+	$('#playlist .tools').addClass('hide');
+	
+	// first, check the token
 	$.when( checkToken() ).done( function(){
 		
     	updateLoader('start');
@@ -455,11 +460,14 @@ function renderPlaylistPage( uri ){
 			// check following status
 			isFollowingPlaylist( userid, getIdFromUri(playlist.uri) ).complete( function(response){
 				if( response.responseJSON == 'true' ){
-					$('#playlist .tools').show().addClass('following');
+					$('#playlist .tools').removeClass('hide').addClass('following');
 				}else{
-					$('#playlist .tools').show().removeClass('following');
+					$('#playlist .tools').removeClass('hide').removeClass('following');
 				};
 			});
+			
+			// if this playlist uri matches a menu item, highlight it
+			$('#menu .playlist-item.child-menu-item[data-uri="'+playlist.uri+'"]').addClass('current');
 			
 			imageURL = '';
 			if( playlist.images.length > 0 )

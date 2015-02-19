@@ -33,6 +33,11 @@ function startSearch( query ){
 			$('#search .artists').append( '<a class="artist-panel" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');" href="#artist/'+artist.uri+'"><span class="name animate">'+artist.name+'</span></a>' );
 		}
 		
+		if( artists.length <= 0 )
+			$('#search .search-results-section.artist').hide();
+		else
+			$('#search .search-results-section.artist').show();
+		
 	});
 	
 	// albums
@@ -52,6 +57,11 @@ function startSearch( query ){
 			$('#search .albums').append( '<a class="album-panel" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');" href="#album/'+album.uri+'"><span class="name animate">'+album.name+'</span></a>' );
 		}
 		
+		if( albums.length <= 0 )
+			$('#search .search-results-section.album').hide();
+		else
+			$('#search .search-results-section.album').show();
+		
 	});
 	
 	// tracks
@@ -59,6 +69,11 @@ function startSearch( query ){
 	getSearchResults( 'track', query ).success( function(response){
 		updateLoader('stop');
 		renderTracksTable( $('#search .tracks'), response.tracks.items );
+		
+		if( response.tracks.items.length <= 0 )
+			$('#search .search-results-section.track').hide();
+		else
+			$('#search .search-results-section.track').show();
 	});
 	
 	// playlists
@@ -77,6 +92,11 @@ function startSearch( query ){
 			
 			$('#search .playlists').append( '<a class="album-panel" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');" href="#playlist/'+playlist.uri+'"><span class="name animate">'+playlist.name+'</span></a>' );
 		}
+		
+		if( playlists.length <= 0 )
+			$('#search .search-results-section.playlist').hide();
+		else
+			$('#search .search-results-section.playlist').show();
 	});
 	
 };
