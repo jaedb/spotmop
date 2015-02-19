@@ -306,6 +306,37 @@ function setupInteractivity(){
 			
 		updatePlayer();
 	}); 	
+	
+	// ---- PLAYLIST INTERACTIONS --- //
+	$('#playlist .follow-playlist').on('click', function(evt){
+		var playlist_id = $('#playlist .tracks').attr('data-id');
+		var owner_id = $('#playlist .tracks').attr('data-userid');
+		
+		updateLoader('start');
+		
+		followPlaylist( owner_id, playlist_id )
+			.complete( function(response){
+				updateLoader('stop');
+				console.log(response);
+				updatePlaylists();
+				$('#playlist .tools').addClass('following');
+			});
+	});
+	
+	$('#playlist .unfollow-playlist').on('click', function(evt){
+		var playlist_id = $('#playlist .tracks').attr('data-id');
+		var owner_id = $('#playlist .tracks').attr('data-userid');
+		
+		updateLoader('start');
+		
+		unFollowPlaylist( owner_id, playlist_id )
+			.complete( function(response){
+				updateLoader('stop');
+				console.log(response);
+				updatePlaylists();
+				$('#playlist .tools').removeClass('following');
+			});
+	});
 };
 
 

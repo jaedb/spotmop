@@ -91,15 +91,13 @@ function updateTasteProfile( uri, name, artist ){
 };
 
 /*
- * Add data to our taste profile
- * @var uri = uri of item we're adding (to create a unique id)
- * @var artist = string
- * @var name = string
-function getRelatedArtists(){
+ * Get the taste profile items
+ * Returns all the items that this user has starred
+*/
+function getTasteProfileItems(){
 	
 	var url = 'http://developer.echonest.com/api/v4/tasteprofile/read?api_key=YVW64VSEPEV93M4EG';
 	url += '&id='+localStorage.settings_tasteprofileid;
-	url += '&format=json&bucket=audio_summary&bucket=artist_hotttnesss';
 
 	return $.ajax({
 		url: url,
@@ -107,5 +105,36 @@ function getRelatedArtists(){
 		timeout: 10000
 	});	
 };
-	
+
+/*
+ * Get a set of related tracks, based on our taste profile
+ * Returns echonest json, so this will need analysis before feeding to Spotify
+ * NOTE: This isn't getting anything useful ... just the taste profile items. D'oh!
 */
+function getSimilarArtists( artistID ){
+	
+	var url = 'http://developer.echonest.com/api/v4/artist/similar?api_key=YVW64VSEPEV93M4EG';
+	url += '&id='+artistID;
+
+	return $.ajax({
+		url: url,
+		method: "GET",
+		timeout: 10000
+	});	
+};
+
+/*
+ * Get a set of similar songs, based on the provided EchoNest songID
+ * Returns Echonest response
+*/
+function getSimilarSongs( songID ){
+	
+	var url = 'http://developer.echonest.com/api/v4/song/similar?api_key=YVW64VSEPEV93M4EG';
+	url += '&id='+songID;
+
+	return $.ajax({
+		url: url,
+		method: "GET",
+		timeout: 10000
+	});	
+};

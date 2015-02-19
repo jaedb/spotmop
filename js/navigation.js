@@ -452,6 +452,15 @@ function renderPlaylistPage( uri ){
 			$('#playlist .tracks').attr( 'data-uri', playlist.uri );
 			$('#playlist .tracks').attr( 'data-userid', userid );
 			
+			// check following status
+			isFollowingPlaylist( userid, getIdFromUri(playlist.uri) ).complete( function(response){
+				if( response.responseJSON == 'true' ){
+					$('#playlist .tools').show().addClass('following');
+				}else{
+					$('#playlist .tools').show().removeClass('following');
+				};
+			});
+			
 			imageURL = '';
 			if( playlist.images.length > 0 )
 				imageURL = playlist.images[0].url;
@@ -625,9 +634,23 @@ function renderDiscoverPage(){
 	
 	updateLoader('start');
 	
-	getRelatedArtists().success( function(response){
+	// get our taste profile
+	getTasteProfileItems().success( function(response){
 		
 		console.log(response);
+		
+		var items = response.response.catalog.items;
+		var artist_ids = '';
+		
+		// loop each song
+		for( var i = 0; i < 5; i++ ){
+			var item = items[i];
+			if( typeof(item.artist_id) !== 'undefined' ){
+				getSimilarArtists( item.artist_id ).success( function(response){
+					console.log(response.response);
+				});
+			}
+		}
 		
 		var html = '';
 		

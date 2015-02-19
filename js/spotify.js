@@ -119,7 +119,7 @@ function getTrack( trackID ){
 
 function getTracks( trackIDs ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/tracks/?market='+localStorage.settings_country+'?ids='+trackID,
+		url: 'https://api.spotify.com/v1/tracks/?ids='+trackIDs,
 		type: "GET",
 		dataType: "json",
 		timeout: 5000
@@ -293,6 +293,42 @@ function removeTracksFromPlaylist( playlistID, trackURIs ){
 function getSearchResults( type, query ){
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		timeout: 5000
+	});
+};
+
+function followPlaylist( owner_id, playlist_id ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/'+owner_id+'/playlists/'+playlist_id+'/followers',
+		type: "PUT",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		data: JSON.stringify( { public: true } ),
+		contentType: "application/json; charset=utf-8",
+		timeout: 5000
+	});
+};
+
+function unFollowPlaylist( owner_id, playlist_id ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/'+owner_id+'/playlists/'+playlist_id+'/followers',
+		type: "DELETE",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		timeout: 5000
+	});
+};
+
+function isFollowingPlaylist( owner_id, playlist_id ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/users/'+owner_id+'/playlists/'+playlist_id+'/followers/contains?ids='+localStorage.userID,
 		type: "GET",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.access_token

@@ -48,6 +48,20 @@ h3.bottom-padding {
 	padding-bottom: 10px;
 }
 
+h1 .tools {
+	font-size: 12px;
+}
+
+h1 .tools > .button {
+	display: inline-block;
+	margin: 2px 6px;
+}
+
+h1 .tools.following .follow,
+h1 .tools:not(.following) .unfollow {
+	display: none;
+}
+
 a {
 	color: inherit;
 }
@@ -242,7 +256,7 @@ a:hover {
 
 
 #pages {
-	padding-bottom: 80px;
+	padding-bottom: 120px;
 	width: 85%;
 	float: right;
 	z-index: 1;
@@ -261,7 +275,7 @@ a:hover {
 	font-size: 14px;
 	top: 0;
 	left: 0;
-	bottom: 75px;
+	bottom: 99px;
 }
 
 #menu .menu-bar {
