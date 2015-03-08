@@ -829,17 +829,22 @@ a:hover {
 
 #player .expander-button {
     position: absolute;
-    top: 20px;
-    right: 40px;
+    top: 5px;
+    right: 20px;
     cursor: hand;
     cursor: pointer;
     z-index: 9;
+    padding: 10px;
 }
 
 #player .fullscreen-content {
     display: none;
     height: 0px;
     overflow: hidden;
+}
+
+#player .skinny-content {
+    position: relative;
 }
 
 #player a:hover {

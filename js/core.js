@@ -187,6 +187,10 @@ function setupInteractivity(){
         
         // collapse
         if( $('.fullscreen-content').is(":visible") ){
+            
+           $(this).css({ WebkitTransform: 'rotate(0deg)'});
+           $(this).css({ '-moz-transform': 'rotate(0deg)'});
+            
             $('.fullscreen-content').animate(
                 {
                     'height': '0'
@@ -198,8 +202,8 @@ function setupInteractivity(){
         // reveal
         }else{
             
-            // load the queue
-            
+           $(this).css({ WebkitTransform: 'rotate(-180deg)'});
+           $(this).css({ '-moz-transform': 'rotate(-180deg)'});
             
             // animate up
             $('.fullscreen-content').css('display','block').animate(
