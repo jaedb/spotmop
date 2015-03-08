@@ -485,17 +485,16 @@ a:hover {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    position: relative;
+    padding-left: 20px;
 }
 
 .track-row .icon-container {
     font-size: 6px;
     text-align: center;
     padding-top: 14px !important;
+    position: relative;
 }
-
-.track-row .icon-container .fa-play {           display: none; font-size: 8px; }
-.track-row .icon-container .fa-circle {         display: inline; }
-.track-row .icon-container .fa-refresh {        display: none; font-size: 9px; }
 
 .track-row .col {
 	padding: 10px 0;
@@ -511,12 +510,25 @@ a:hover {
     font-weight: 600;
 }
 
-.track-row.current .icon-container .fa-play {    display: inline; }
-.track-row.current .icon-container .fa-circle {    display: none; }
+.track-row .fa-play,
+.track-row .fa-refresh {
+    display: none; 
+    font-size: 8px; 
+    position: absolute; 
+    top: 13px; 
+    left: 8px;
+}
 
-.track-row.loading .icon-container .fa-play {    display: none; }
-.track-row.loading .icon-container .fa-circle {    display: none; }
-.track-row.loading .icon-container .fa-refresh {    display: inline-block; }
+.track-row.current .fa-play {    display: inline; }
+.track-row.loading .fa-play {    display: none; }
+.track-row.loading .fa-refresh {    display: inline-block; }
+
+.track-row .context-menu-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 12px 15px;
+}
 
 .track-row.current .icon {
 	background-position: -20px -20px;
@@ -591,7 +603,7 @@ a:hover {
 
 .percentage {
 	margin-top: 6px;
-	width: 70%;
+	width: 55%;
 	height: 5px;
 	position: relative;
 	background: #DDDDDD;
@@ -638,6 +650,101 @@ a:hover {
 	float: left;
 }
 
+
+/*
+ * Popup panel
+ * Provides context menus (add track to playlist, etc)
+ */
+
+.popup {
+    display: none;
+    z-index: 9;
+}
+
+.popup .frame {
+    z-index: 9;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 240px;
+    margin: -140px 0 0 -170px;
+    padding: 20px;
+    background: #EEEEEE;
+}
+
+.popup .background {
+    z-index: 9;
+    position: fixed;
+    background: rgba(0,0,0,0.7);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.popup .content {
+    overflow-y: auto;
+}
+
+.popup .close-popup {
+    position: absolute;
+    top: -24px;
+    right: 0px;
+    cursor: hand;
+    cursor: pointer;
+    color: #FFFFFF;
+    opacity: 0.5;
+}
+
+.popup .close-popup .fa {
+    font-size: 16px;
+}
+
+.popup .close-popup:hover {
+    opacity: 1;
+}
+
+.popup .playlist-item {
+    display: block;
+    width: 44%;
+    float: left;
+    padding: 8px 3%;
+}
+
+.popup .playlist-item:hover {
+    background: #FFFFFF;
+    cursor: hand;
+    cursor: pointer;
+}
+
+
+/*
+ * Track context menus
+ * Primarily for touch devices
+*/
+
+.track-row .context-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: #000000;
+    z-index: 8;
+    width: 150px;
+}
+
+.track-row .context-menu .action {
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid #222222;
+}
+
+.track-row .context-menu .action:hover {
+    background: #333333;
+}
 
 
 /*
@@ -719,6 +826,21 @@ a:hover {
  * Player panel
  * Sticky to page footer
 */
+
+#player .expander-button {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    cursor: hand;
+    cursor: pointer;
+    z-index: 9;
+}
+
+#player .fullscreen-content {
+    display: none;
+    height: 0px;
+    overflow: hidden;
+}
 
 #player a:hover {
 	border-color: #FFFFFF;

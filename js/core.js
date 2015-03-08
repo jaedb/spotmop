@@ -125,6 +125,91 @@ function initiateMopidy(){
 /* ================================================================================================ */
 
 function setupInteractivity(){
+    
+
+    // ---- CONTEXT MENUS ---- //
+    
+    $(document).on('click','.track-row .context-menu-icon', function(evt){
+        evt.stopPropagation(); 
+        
+        var menu = $(this).closest('.track-row').find('.context-menu');
+        
+        $(document).find('.context-menu').addClass('hide');
+        
+        menu.css('top', $(this).closest('.track-row').innerHeight()).toggleClass('hide');
+    });
+    
+    // hide all context menus
+    $(document).on('click', function(evt){
+        $(document).find('.context-menu').addClass('hide');
+    });
+        
+    // click of one of the actions
+    $(document).on('click', '.context-menu .action', function(evt){
+        
+        $(document).find('.context-menu').addClass('hide');
+        
+        var track = $(this).closest('.track-row');
+        
+        // add to queue
+        if( $(this).data('action') == 'add-to-queue' ){
+            addTrackToQueue( track.attr('data-uri') );
+            notifyUser('good','Added track to queue');
+        };
+        
+        // add to playlist (we need to prompt which playlist)
+        if( $(this).data('action') == 'add-to-playlist' ){
+            popupContextMenu( 'select-playlist', track.attr('data-uri') );
+        };
+        
+        // add to playlist (we need to prompt which playlist)
+        if( $(this).data('action') == 'remove-from-playlist' ){
+            removeTracksFromPlaylist(
+                $(this).closest('.tracks').attr('data-id'),
+                [{ 'uri': track.attr('data-uri') }]
+            ).success( function(response){
+                track.remove();
+                notifyUser('good','Removed track from playlist');
+            })
+            .fail( function(response){
+                notifyUser('bad','There was an error');
+            });
+        };
+        
+    });
+    
+    
+    // --- PLAYER EXPANDER --- //
+    
+    $('#player .expander-button').on('click', function(evt){
+        
+        var destinationHeight = $(window).height() - $('#player').outerHeight();
+        
+        // collapse
+        if( $('.fullscreen-content').is(":visible") ){
+            $('.fullscreen-content').animate(
+                {
+                    'height': '0'
+                }, 200, function(){
+                    $(this).css('display','none');   
+                }
+            ); 
+            
+        // reveal
+        }else{
+            
+            // load the queue
+            
+            
+            // animate up
+            $('.fullscreen-content').css('display','block').animate(
+                {
+                    'height': destinationHeight
+                }, 200
+            ); 
+        }
+    });
+    
 	
 	// --- PLAYER SEEK EVENTS --- //
    
@@ -186,8 +271,8 @@ function setupInteractivity(){
 			updatePlayer();
 		}
 		
-		// delete
-		if( evt.keyCode == 46 && !$('input').is(':focus') ){
+		// delete/backspace
+		if( ( evt.keyCode == 46 || evt.keyCode == 8 ) && !$('input').is(':focus') ){
 		
 			// disarm the key functionality in any case, for UX consistency
 			evt.preventDefault();
@@ -466,12 +551,14 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					artistArray.push( track.artists[a].name );
 				}
 			}
+            
+            var contextMenuHTML = '';
 			
 			html += '<div class="track-row row track-item" data-id="'+x+'" data-uri="'+track.uri+'" data-name="'+track.name+'" data-artists="'+artistArray+'" id="'+getIdFromUri(track.uri)+'">';
-				html += '<div class="col w5 icon-container"><i class="fa fa-circle"></i><i class="fa fa-play"></i><i class="fa fa-refresh  fa-spin"></i></div>';
+				html += '<i class="fa fa-play"></i>';
                 html += '<div class="col w25 title">'+track.name+'</div>';
 				html += '<div class="col w30 artist">'+joinArtistNames(track.artists)+'</div>';
-				html += '<div class="col w25">';
+				html += '<div class="col w30">';
 				if( album )
 					html += '<a href="#album/'+album.uri+'" data-uri="'+album.uri+'">'+album.name+'</a>';
 				else if ( track.album )
@@ -479,11 +566,13 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 				html += '</div>';
 				
 				if( typeof track.duration_ms !== 'undefined' )
-					html += '<div class="col w10 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
+					html += '<div class="col w5 duration">'+millisecondsToMinutes(track.duration_ms)+'</div>';
 					
 				if( typeof track.popularity !== 'undefined' )
-					html += '<div class="col w5 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+
+					html += '<div class="col w10 popularity"><div class="percentage"><div class="bar" style="width: '+track.popularity+
 					'%;"></div></div></div>';
+					
+				html += '<div class="context-menu-icon"><i class="fa fa-ellipsis-v"></i><div class="context-menu hide"><div class="action" data-action="add-to-queue">Add to queue</div><div class="action" data-action="add-to-playlist">Add to playlist</div><div class="action" data-action="remove-from-playlist">Remove from playlist</div></div></div>';
 				html += '<div class="clear-both"></div>';
 			html += '</div>';
 		}
@@ -493,9 +582,13 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	
 	if( tracklistUri !== 'undefined' )
 		container.data('uri', tracklistUri);
-	
+    
+    
+    // ---- DRAGGING ---- //
+    
 	var tracksDragging;
 	
+    // for non-touch devices, let's do some drag-and-dropping
 	if( !is_touch_device() ){
 		
 		// drag start
@@ -582,8 +675,10 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					
 					addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
 						.success( function( response ){
+                            notifyUser('good','Added track(s) to playlist');
 							updateLoader('stop');		
 						}).fail( function( response ){
+                            notifyUser('bad','There was an error');
 							updateLoader('stop');
 						});
 				
@@ -603,7 +698,9 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 	
 	} // end touch device
 	
-	// double click to play
+    
+    // ---- DOUBLE-CLICK/TAP TO PLAY ---- //
+    
 	container.find('.track-row.track-item').on('doubletap dblclick', function(event){
 			
 			// -- play from artist top tracks -- //
@@ -869,6 +966,61 @@ function addTrackToQueue( uri ){
 		updatePlayQueue();
 		updateLoader();
 	});
+};
+
+
+
+
+/* =================================================== CONTEXT MENUS / POPUPS ====== */
+/* ================================================================================= */
+
+
+function popupContextMenu( context, trackURI ){
+    
+    $(document).find('.popup .popup-content').hide();
+    
+    var contentContainer = $(document).find('.popup .popup-content.'+context);
+    contentContainer.show();
+    
+    $(document).find('.popup').fadeIn('fast');
+    $(document).find('.popup .frame')
+        .css(
+                {
+                    'margin-top': '-138px',
+                    'opacity': '0',
+                    'display': 'block'
+                }
+        )
+        .animate(
+                {
+                    'margin-top': '-130px',
+                    'opacity': '1'
+                },
+                100
+            );
+    
+    // select a playlist, so we need to load the playlists
+    if( context == 'select-playlist' ){
+        var playlists = JSON.parse( localStorage.playlists );
+        
+        // clear out any previous data
+        contentContainer.find('.content-area').html('');
+        
+        for( var i = 0; i < playlists.length; i++ ){
+            var playlist = playlists[i];
+            contentContainer.find('.content-area').append('<div class="playlist-item" data-id="'+getIdFromUri(playlist.uri)+'">'+playlist.name+'</div>');
+        }
+        
+        $('.popup .select-playlist').on('click','.playlist-item', function(evt){
+            addTrackToPlaylist( $(this).attr('data-id'), new Array(trackURI) );
+            $(document).find('.popup').fadeOut();  
+            notifyUser('good','Added track to playlist');
+        });
+    }
+    
+    $(document).find('.popup .close-popup').on('click', function(evt){
+        $(document).find('.popup').fadeOut();  
+    });
 };
 
 

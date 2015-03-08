@@ -78,7 +78,7 @@ function updatePlaylists(){
 		getMyPlaylists().success( function( playlists ){
 			
 			var lists = $('.menu-item-wrapper.playlists .playlist-list');
-			coreArray['playlists'] = playlists.items;
+			localStorage.playlists = JSON.stringify( playlists.items );
 			
 			// clear out the previous playlists
 			lists.html('');
