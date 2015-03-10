@@ -34,10 +34,6 @@ function navigate(){
 	
 	$('.page#'+page).show();
     
-    if( page == 'queue' ){
-        updatePlayQueue();
-    }
-    
     if(page == 'search'){
 		startSearch( hash[1] );
     };

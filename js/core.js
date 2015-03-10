@@ -197,13 +197,19 @@ function setupInteractivity(){
                 }, 200, function(){
                     $(this).css('display','none');   
                 }
-            ); 
+            );
+            
+            localStorage.playerExpanded = false;
             
         // reveal
         }else{
+
+            $(this).css({ WebkitTransform: 'rotate(-180deg)'});
+            $(this).css({ '-moz-transform': 'rotate(-180deg)'});
             
-           $(this).css({ WebkitTransform: 'rotate(-180deg)'});
-           $(this).css({ '-moz-transform': 'rotate(-180deg)'});
+            localStorage.playerExpanded = true;
+
+            renderTracksTable( $('.fullscreen-content .tracks'), JSON.parse(localStorage.currentQueue) );
             
             // animate up
             $('.fullscreen-content').css('display','block').animate(
@@ -283,10 +289,10 @@ function setupInteractivity(){
 			
             // --- removing from queue --- //
             
-			if( coreArray['currentPage'] == 'queue' ){
+			if( localStorage.playerExpanded ){
 				
 				var uris = [];
-				var trackDOMs = $('#queue').find('.track-row.highlighted');
+				var trackDOMs = $('#player').find('.track-row.highlighted');
 
 				// loop each track, and remove it from the tracklist / play queue
 				trackDOMs.each( function(index, value){
@@ -397,6 +403,7 @@ function setupInteractivity(){
 	}); 	
 	
 	// ---- PLAYLIST INTERACTIONS --- //
+    
 	$('#playlist .follow-playlist').on('click', function(evt){
 		var playlist_id = $('#playlist .tracks').attr('data-id');
 		var owner_id = $('#playlist .tracks').attr('data-userid');
@@ -723,8 +730,8 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			
 			
 			// -- play from queue -- //
-			
-			}else if( $(this).closest('.page').attr('id') == 'queue' ){
+                
+			}else if( typeof(localStorage.playerExpanded) !== 'undefined' && localStorage.playerExpanded ){
 			
 				var trackID = $(this).data('id');
 				
@@ -743,7 +750,6 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					mopidy.playback.play();
 					updatePlayer();
 				},consoleError);
-			
 			
 			// -- play from playlist -- //
 			
@@ -1167,7 +1173,7 @@ function updatePlayQueue(){
 	updateLoader('start');
 	
 	if( typeof( mopidy.tracklist ) === 'undefined' ){
-        renderTracksTable( $("#queue .tracks"), null, null );
+        renderTracksTable( $("#player .tracks"), null, null );
 		updateLoader('stop');
 		return false;
 	}
@@ -1177,27 +1183,14 @@ function updatePlayQueue(){
 		updateLoader('stop');
 		
         // add the tracks for further use
-        coreArray['tracklist'] = tracks;
+        localStorage.currentQueue = JSON.stringify(tracks);
 
-        var $queue = $("#queue .tracks");
+        var $queue = $("#player .tracks");
 
         // Clear tracklist
         $queue.html('');
 
-        renderTracksTable( $("#queue .tracks"), tracks, null );
-		
-		/*
-        // draggable queue tracks
-        $("#queue .tracks").sortable({
-            items: '.track-row:not(.headings)',
-            axis: 'y',
-            stop: function(evt, ui){
-                var newPosition = ui.item.index() - 1;
-
-                // move this item on the playlist, to the new position
-                mopidy.tracklist.move( $(ui.item).data('id'), $(ui.item).data('id')+1, newPosition );
-            }
-        });*/
+        renderTracksTable( $("#player .tracks"), tracks, null );
 
 		updateLoader();
 

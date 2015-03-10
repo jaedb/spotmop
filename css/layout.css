@@ -841,6 +841,35 @@ a:hover {
     display: none;
     height: 0px;
     overflow: hidden;
+    width: 100%;
+    margin: -10px;
+    padding: 10px;
+    
+    background: -moz-linear-gradient(top,  rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 68%, rgba(0,0,0,0.) 100%);
+    background: -webkit-linear-gradient(top,  rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.5) 68%,rgba(0,0,0,0) 100%);
+}
+
+#player .fullscreen-content h2 {
+    padding: 20px 100px 10px;
+}
+
+#player .fullscreen-content .tracks {
+    padding: 20px 100px 20px 100px;
+    overflow-y: auto;
+}
+
+#player .fullscreen-content .track-row {
+    border-color: rgba(255,255,255,0.02);
+    color: #FFFFFF;
+}
+
+#player .fullscreen-content .track-row:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+#player .fullscreen-content .track-row.highlighted,
+#player .fullscreen-content .track-row.highlighted:hover {
+    background: rgba(255,255,255,0.1);
 }
 
 #player .skinny-content {
