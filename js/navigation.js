@@ -19,7 +19,7 @@ function navigate(){
     hash = hash.replace('#','');
     hash = hash.split('/');
     var page = hash[0];
-	coreArray['currentPage'] = page;
+	localStorage.currentPage = page;
 	
 	if( page == '' )
 		return false;

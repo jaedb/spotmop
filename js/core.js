@@ -687,9 +687,9 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
 						.success( function( response ){
                             notifyUser('good','Added track(s) to playlist');
-							updateLoader('stop');		
+							updateLoader('stop');
 						}).fail( function( response ){
-                            notifyUser('bad','There was an error');
+                            notifyUser('error','There was an error');
 							updateLoader('stop');
 						});
 				
@@ -700,6 +700,7 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 					for( var i = 0; i < tracksDraggingURIs.length; i++){
 						addTrackToQueue( tracksDraggingURIs[i] );
 					}
+                    notifyUser('good','Added track(s) to queue');
 				}
 				
 				$('body').removeClass('dragging');
