@@ -34,6 +34,10 @@ function navigate(){
 	
 	$('.page#'+page).show();
     
+    if( page == 'queue' ){
+        updatePlayQueue();
+    }
+    
     if(page == 'search'){
 		startSearch( hash[1] );
     };
@@ -436,7 +440,7 @@ function renderPlaylistPage( uri ){
 	var userid = uri.split(':')[2];
 	var playlistid = uri.split(':')[4];
 	
-	// hide the tools until we know whether we're following or not
+	// hide the tools until we've loaded the playlist
 	$('#playlist .tools').addClass('hide');
 	
 	// first, check the token
@@ -456,11 +460,23 @@ function renderPlaylistPage( uri ){
 			// check following status
 			isFollowingPlaylist( userid, getIdFromUri(playlist.uri) ).complete( function(response){
 				if( response.responseJSON == 'true' ){
-					$('#playlist .tools').removeClass('hide').addClass('following');
+					$('#playlist .tools .following .unfollow-playlist').removeClass('hide');
+					$('#playlist .tools .following .follow-playlist').addClass('hide');
 				}else{
-					$('#playlist .tools').removeClass('hide').removeClass('following');
+					$('#playlist .tools .following .unfollow-playlist').addClass('hide');
+					$('#playlist .tools .following .follow-playlist').removeClass('hide');
 				};
+				
+				// now we have all we need, show the tools
+				$('#playlist .tools').removeClass('hide');
 			});
+			
+			// check ownership status
+			if( localStorage.userID == userid ){
+				$('#playlist .tools .owner').removeClass('hide');
+			}else{
+				$('#playlist .tools .owner').addClass('hide');
+			};
 			
 			// if this playlist uri matches a menu item, highlight it
 			$('#menu .playlist-item.child-menu-item[data-uri="'+playlist.uri+'"]').addClass('current');

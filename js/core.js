@@ -209,7 +209,7 @@ function setupInteractivity(){
             
             localStorage.playerExpanded = true;
 
-            renderTracksTable( $('.fullscreen-content .tracks'), JSON.parse(localStorage.currentQueue) );
+            updatePlayQueue();
             
             // animate up
             $('.fullscreen-content').css('display','block').animate(
@@ -289,10 +289,10 @@ function setupInteractivity(){
 			
             // --- removing from queue --- //
             
-			if( localStorage.playerExpanded ){
+			if( localStorage.currentPage == 'queue' ){
 				
 				var uris = [];
-				var trackDOMs = $('#player').find('.track-row.highlighted');
+				var trackDOMs = $('#queue').find('.track-row.highlighted');
 
 				// loop each track, and remove it from the tracklist / play queue
 				trackDOMs.each( function(index, value){
@@ -309,7 +309,7 @@ function setupInteractivity(){
 			
             // --- removing from playlist --- //
 			
-			if( coreArray['currentPage'] == 'playlist' ){
+			if( localStorage.currentPage == 'playlist' ){
 				
 				updateLoader('start');
 				
@@ -731,8 +731,8 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 			
 			// -- play from queue -- //
                 
-			}else if( typeof(localStorage.playerExpanded) !== 'undefined' && localStorage.playerExpanded ){
-			
+			}else if( $(this).closest('.page').attr('id') == 'queue' ){
+                
 				var trackID = $(this).data('id');
 				
 				// add this track to our taste profile
@@ -1173,7 +1173,7 @@ function updatePlayQueue(){
 	updateLoader('start');
 	
 	if( typeof( mopidy.tracklist ) === 'undefined' ){
-        renderTracksTable( $("#player .tracks"), null, null );
+        renderTracksTable( $("#queue .tracks"), null, null );
 		updateLoader('stop');
 		return false;
 	}
@@ -1185,12 +1185,12 @@ function updatePlayQueue(){
         // add the tracks for further use
         localStorage.currentQueue = JSON.stringify(tracks);
 
-        var $queue = $("#player .tracks");
+        var $queue = $("#queue .tracks");
 
         // Clear tracklist
         $queue.html('');
 
-        renderTracksTable( $("#player .tracks"), tracks, null );
+        renderTracksTable( $("#queue .tracks"), tracks, null );
 
 		updateLoader();
 

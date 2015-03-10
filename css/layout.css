@@ -56,7 +56,8 @@ h1 .tools {
 	padding-left: 5px;
 }
 
-h1 .tools > .button {
+h1 .tools .button,
+h1 .tools .faux-button {
 	display: inline-block;
 	margin: 0 2px;
 	border: 0;
@@ -66,15 +67,10 @@ h1 .tools > .button {
 	background: #EEEEEE;
 }
 
-h1 .tools > .button.unfollow,
-h1 .tools > .button:hover {
+h1 .tools .button.unfollow-playlist,
+h1 .tools .button:hover {
 	color: #FFFFFF;
 	background: #1cf4c4;
-}
-
-h1 .tools.following .follow,
-h1 .tools:not(.following) .unfollow {
-	display: none;
 }
 
 a {
@@ -856,6 +852,7 @@ a:hover {
 #player .fullscreen-content .tracks {
     padding: 20px 100px 20px 100px;
     overflow-y: auto;
+    max-height: 100%;
 }
 
 #player .fullscreen-content .track-row {
