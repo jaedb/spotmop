@@ -74,12 +74,14 @@ function updatePlaylists(){
 	
 	// Get the users playlists and place them in the client
 	if( checkToken() ){
-		updateLoader('start');
+		
+		// get "my" playlists from Spotify (excludes collaborative due to API limitations)
+		updateLoader('start');		
 		getMyPlaylists().success( function( playlists ){
 			
 			var lists = $('.menu-item-wrapper.playlists .playlist-list');
 			localStorage.playlists = JSON.stringify( playlists.items );
-			
+						
 			// clear out the previous playlists
 			lists.html('');
 			updateLoader('stop');
@@ -92,6 +94,23 @@ function updatePlaylists(){
 				// add list to the playlists bar
 				lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
 			}
+	    
+		    // let's now load the custom playlists
+		    // TODO: This is under development and isn't fully supported by Spotify API
+		    /*
+			if( typeof( localStorage.customPlaylists ) !== 'undefined' && localStorage.customPlaylists !== 'null' ){
+				
+				var lists = $('.menu-item-wrapper.playlists .playlist-list');
+				var customPlaylists = JSON.parse(localStorage.customPlaylists);
+				
+				$.each( customPlaylists, function(key, playlist){		
+					
+					// add list to the playlists bar
+					lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');				
+				});
+				
+			}
+			*/
 			
 		}).fail( function( response ){
 		
@@ -100,7 +119,42 @@ function updatePlaylists(){
         	$('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
 	        
 	    });
+		
 	};
+	
+};
+
+
+/*
+ * Add an existing playlist
+ * Spotify API doesn't permit collaborative playlists, so this is a workaround
+ * Uses localStorage to retain playlist info
+*/
+function AddCustomPlaylist( userID, playlistID ){
+	
+	updateLoader('start');
+	
+	// go get the playlist as a spotify object
+	getPlaylist( userID, playlistID )
+		.success( function( response ){
+			updateLoader('stop');
+			
+			var customPlaylists = [];
+			
+			if( typeof( localStorage.customPlaylists ) !== 'undefined' && localStorage.customPlaylists !== 'null' ){
+				customPlaylists = JSON.parse(localStorage.customPlaylists);
+			}
+			
+			customPlaylists.push( response );
+			
+			localStorage.customPlaylists = JSON.stringify(customPlaylists);
+			
+        	notifyUser('good', 'Custom playlist added');
+		})
+		.fail( function( response ){
+			updateLoader('stop');
+        	notifyUser('error', 'Error adding custom playlist: '+response.responseJSON.error.message);
+		});
 	
 };
 

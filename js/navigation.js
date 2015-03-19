@@ -22,16 +22,15 @@ function navigate(){
 	localStorage.currentPage = page;
 	
 	if( page == '' )
-		return false;
+		page = 'featured-playlists';
 		
 	$('.page').hide();
 	$('#'+page+' .reset-on-load').html('');
 	
 	// hide/show relevant content
-	$('.menu-item-wrapper').removeClass('current');
-	$('.menu-item-wrapper.'+page).addClass('current');
-	$('#menu .playlist-item.child-menu-item').removeClass('current');
-	
+	$('#menu .current').removeClass('current');
+    $('#menu a[href="'+window.location.hash+'"]').parent().addClass('current');
+    
 	$('.page#'+page).show();
     
     if( page == 'queue' ){

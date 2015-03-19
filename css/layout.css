@@ -312,6 +312,21 @@ a:hover {
 	color: #000000;
 }
 
+#menu .menu-item-wrapper .menu-item {
+    padding: 3px 6px;
+    border-radius: 3px;
+}
+
+#menu .menu-item-wrapper a.menu-item:hover {
+    background: #FFFFFF;
+    border: none;
+}
+
+.dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"]:hover {
+    background: #000000;
+    color: #FFFFFF;
+}
+
 #menu .menu-item-wrapper .menu-item > i {
 	font-size: 0.85em;
 }
@@ -833,42 +848,6 @@ a:hover {
     padding: 10px;
 }
 
-#player .fullscreen-content {
-    display: none;
-    height: 0px;
-    overflow: hidden;
-    width: 100%;
-    margin: -10px;
-    padding: 10px;
-    
-    background: -moz-linear-gradient(top,  rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 68%, rgba(0,0,0,0.) 100%);
-    background: -webkit-linear-gradient(top,  rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.5) 68%,rgba(0,0,0,0) 100%);
-}
-
-#player .fullscreen-content h2 {
-    padding: 20px 100px 10px;
-}
-
-#player .fullscreen-content .tracks {
-    padding: 20px 100px 20px 100px;
-    overflow-y: auto;
-    max-height: 100%;
-}
-
-#player .fullscreen-content .track-row {
-    border-color: rgba(255,255,255,0.02);
-    color: #FFFFFF;
-}
-
-#player .fullscreen-content .track-row:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-#player .fullscreen-content .track-row.highlighted,
-#player .fullscreen-content .track-row.highlighted:hover {
-    background: rgba(255,255,255,0.1);
-}
-
 #player .skinny-content {
     position: relative;
 }
@@ -877,7 +856,7 @@ a:hover {
 	border-color: #FFFFFF;
 }
 
-#player .controls {
+#player .skinny-content .controls {
 	position: absolute;
 	top: -3px;
 	left: 0;
@@ -940,6 +919,57 @@ a:hover {
 	padding: 10px 0 15px 110px;
 	margin: 0 30px;
 }
+
+
+/* full screen (expanded player) */
+
+#player .fullscreen-content {
+    display: none;
+    height: 0px;
+    overflow: hidden;
+    width: 100%;
+    margin: -10px;
+    padding: 10px;
+    text-align: center;
+    
+    background: -moz-linear-gradient(top,  rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 68%, rgba(0,0,0,0.) 100%);
+    background: -webkit-linear-gradient(top,  rgba(0,0,0,0.5) 0%,rgba(0,0,0,0.5) 68%,rgba(0,0,0,0) 100%);
+}
+
+#player .fullscreen-content .liner {
+	padding-top: 14%;
+}
+
+#player .fullscreen-content .artwork {
+	width: 300px;
+	height: 300px;
+	display: inline-block;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
+#player .fullscreen-content .current-track {
+	padding: 30px;
+	font-size: 20px;
+}
+
+#player .fullscreen-content .controls {
+	text-align: center;
+}
+
+#player .fullscreen-content .controls .play-pause {
+	font-size: 38px;
+	padding: 12px;
+}
+
+#player .fullscreen-content .controls .previous,
+#player .fullscreen-content .controls .next {
+	vertical-align: middle;
+	margin-top: -20px;
+	font-size: 18px;
+}
+
+
 
 
 /* bars (progress and volume */

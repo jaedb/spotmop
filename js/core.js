@@ -201,6 +201,8 @@ function setupInteractivity(){
             
             localStorage.playerExpanded = false;
             
+            $('#player .skinny-content .current-track').animate({opacity: 1},200);
+            
         // reveal
         }else{
 
@@ -208,13 +210,16 @@ function setupInteractivity(){
             $(this).css({ '-moz-transform': 'rotate(-180deg)'});
             
             localStorage.playerExpanded = true;
-
-            updatePlayQueue();
+            
+            $('#player .skinny-content .current-track').animate(
+                {opacity: 0},
+                200);
             
             // animate up
-            $('.fullscreen-content').css('display','block').animate(
+            $('.fullscreen-content').css({display: 'block',opacity: 0}).animate(
                 {
-                    'height': destinationHeight
+                    height: destinationHeight,
+                    opacity: 1
                 }, 200
             ); 
         }
@@ -1060,11 +1065,16 @@ var doUpdatePlayer = function(track){
 			$('#player .artist').html( joinArtistNames(track.artists) );
 			$('#player .track').html(track.name).data('uri', track.uri);
 			
+			$('#player .fullscreen-content .artist').html( joinArtistNames(track.artists) );
+			$('#player .fullscreen-content .track').html(track.name).data('uri', track.uri);
+
+			
 			// get the spotify album object and load image
 			if( typeof( track.album ) !== 'undefined' ){
 				getAlbum( getIdFromUri( track.album.uri ) ).success( function( spotifyAlbum ){
 					$('#player').attr('style','background-image: url('+spotifyAlbum.images[0].url+');');
 					$('#player .thumbnail').attr('href','#explore/album/'+ track.album.uri );
+					$('#player .fullscreen-content .artwork').attr('style','background-image: url('+spotifyAlbum.images[0].url+');');
 				});
 			};
 			
@@ -1074,6 +1084,9 @@ var doUpdatePlayer = function(track){
 	}else{
 		$('#player .artist').html();
 		$('#player .track').html();
+		
+		$('#player .fullscreen-content .artist').html();
+		$('#player .fullscreen-content .track').html();
 	}
     
 	updateWindowTitle();
