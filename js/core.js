@@ -126,6 +126,24 @@ function initiateMopidy(){
 
 function setupInteractivity(){
     
+    
+    
+    // --- CONFIRMATION BUTTONS --- //
+    
+	$(document).on('click','.confirmation:not(.disabled)', function(evt){	
+		if( !$(this).hasClass('confirming') ){
+			evt.preventDefault();
+			evt.stopPropagation();
+			$(this).addClass('confirming');
+		}
+	});
+	
+	$(document).on('click', function(evt){	
+		$(document).find('.confirmation.confirming').removeClass('confirming');
+	});
+        
+    
+    
 
     // ---- CONTEXT MENUS ---- //
     
@@ -542,10 +560,16 @@ function playFromPlaylist( trackRow ){
  * Render track list table
  * @var container = element to inject tracks into
  * @var tracks = array of Tracks objects
- * @var tracklist = TrackList array
+ * @var tracklistUri = uri for tracklist (ie playlist)
+ * @var album = uri for album
+ * @var append = boolean to append to tracklist container
 */
-function renderTracksTable( container, tracks, tracklistUri, album ){
+function renderTracksTable( container, tracks, tracklistUri, album, append ){
 	
+    // append = default to false
+    if( typeof(append) === 'undefined' )
+        var append = false;
+    
 	var html = '';
 	
 	if( typeof(tracks) === 'undefined' || tracks == null || tracks.length <= 0 ){
@@ -594,7 +618,10 @@ function renderTracksTable( container, tracks, tracklistUri, album ){
 		}
 	}
 	
-	container.html( html );
+    if( append )
+	   container.append( html );
+    else
+	   container.html( html );
 	
 	if( tracklistUri !== 'undefined' )
 		container.data('uri', tracklistUri);

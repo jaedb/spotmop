@@ -222,6 +222,16 @@ a:hover {
 	border-color: #000000;
 }
 
+/*
+ * Confirmation buttons
+ * Click once to prompt, twice to confirm
+ */
+ 
+.confirmation:not(.confirming) .confirmation-text,
+.confirmation.confirming .text {
+	display: none;
+}
+
 
 /*
  * Notification popup

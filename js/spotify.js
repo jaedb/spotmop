@@ -62,6 +62,17 @@ function getNewToken(){
 	});
 }
 
+function getFromSpotify( url ){
+	return $.ajax({
+		url: url,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 10000
+	});
+};
 
 function getPlaylists( albumID ){
 	return $.ajax({

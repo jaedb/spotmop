@@ -21,6 +21,9 @@ function navigate(){
     var page = hash[0];
 	localStorage.currentPage = page;
 	
+	// reset the pagination link
+	coreArray['playlistNextTracksLink'] = null;
+	
 	if( page == '' )
 		page = 'featured-playlists';
 		
@@ -449,6 +452,9 @@ function renderPlaylistPage( uri ){
 		getPlaylist( userid, playlistid ).success(function( playlist ){
 	
 			updateLoader('stop');
+            
+            // save the next link to local storage
+			coreArray['playlistNextTracksLink'] = playlist.tracks.next;
 				
 			// inject artist name
 			$('#playlist .name').html( playlist.name );
@@ -532,6 +538,29 @@ function renderSettingsPage(){
 			localStorage.setItem( 'settings_'+$(this).attr('name'), $(this).val() );
 			
 		$(this).closest('.field').find('.autosave-success').show().delay(1000).fadeOut('slow');
+	});
+	
+	
+	/*
+	 * System reset button
+	 */
+	$(document).on('click', '.reset-all-settings.confirming', function(evt){
+		evt.preventDefault();
+		localStorage.clear();
+		window.location.reload();
+	});
+	
+	
+	/*
+	 * Spotmop version code
+	 * Syntax: branch number (latest commit hash, short)
+	 */
+	$.ajax({
+		url: '/version.php',
+		type: 'GET',
+		success: function(response){
+			$(document).find('.spotmop-version').html( response );
+		}
 	});
 	
 	

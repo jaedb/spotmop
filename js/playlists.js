@@ -10,6 +10,35 @@ $(document).ready( function(evt){
 	
 	setupNewPlaylistButton();
 	setupRefreshPlaylistButton();
+    
+    var readyToLoad = true;
+    
+    // listen for scroll to bottom, then we can load the additional tracks
+    $(window).scroll(function(){
+        if( readyToLoad && ( $(window).scrollTop() + $(window).height() > $(document).height() - 40 ) ){
+            
+            // first, check the token
+            $.when( checkToken() ).done( function(){
+                
+                // if the next link is not null (like it would be if there were no more tracks)                
+                if( coreArray['playlistNextTracksLink'] ){
+                	
+                    readyToLoad = false;
+
+                    updateLoader('start');
+
+                    getFromSpotify( coreArray['playlistNextTracksLink'] ).success(function( tracks ){
+                        updateLoader('stop');
+                        renderTracksTable( $('.page#playlist .tracks'), tracks.items, null, null, true );
+                        coreArray['playlistNextTracksLink'] = tracks.next;
+                        readyToLoad = true;
+                    });
+                    
+                }
+                
+            });
+        }
+    });
 
 });
 
