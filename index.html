@@ -126,7 +126,13 @@
 			
 			<div class="menu-item-wrapper playlists heading">
 				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
-				<div class="menu-item-children playlist-list"></div>
+				<div class="menu-item-children playlist-list owned"></div>
+                <div class="toggle-collapse following-playlists-list collapsed">
+                    <i class="fa fa-caret-down"></i>&nbsp;
+                    <i class="fa fa-caret-right"></i>&nbsp;
+                    Following
+                </div>
+				<div class="menu-item-children playlist-list following" style="display: none;"></div>
 			</div>
 			
 			<div class="menu-item-wrapper settings">

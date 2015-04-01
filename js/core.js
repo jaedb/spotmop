@@ -126,7 +126,9 @@ function initiateMopidy(){
 
 function setupInteractivity(){
     
-    
+    $(window).resize( function(evt){
+       updateInterface(); 
+    });
     
     // --- CONFIRMATION BUTTONS --- //
     
@@ -142,6 +144,13 @@ function setupInteractivity(){
 		$(document).find('.confirmation.confirming').removeClass('confirming');
 	});
         
+    
+    // ---- TOGGLE COLLAPSE FOLLOWING PLAYLISTS --- //
+    
+    $(document).on('click','.toggle-collapse.following-playlists-list', function(evt){
+        $(this).closest('.menu-item-wrapper').find('.menu-item-children.playlist-list.following').slideToggle(200);
+        $(this).toggleClass('collapsed');
+    });
     
     
 
@@ -229,9 +238,13 @@ function setupInteractivity(){
             
             localStorage.playerExpanded = true;
             
+            // fade out the current track text in the skinny content
             $('#player .skinny-content .current-track').animate(
                 {opacity: 0},
                 200);
+            
+            // re-check heights etc for fullscreen elements (thumbnail, etc)
+            updateInterface()
             
             // animate up
             $('.fullscreen-content').css({display: 'block',opacity: 0}).animate(
@@ -997,6 +1010,31 @@ function updateInterface(){
 	$(document).find('.album-panel, .artist-panel').each( function(index, value){
 		$(value).css('height', $(value).outerWidth() +'px');
 	});
+    
+    
+    /*
+     * Fullscreen player
+     * Let's figure out how big to make the thumbnail
+     * Based on available space (essentially driven by destinationHeight value)
+    */
+
+    var destinationHeight = $(window).height() - $('#player .skinny-content').outerHeight() + 20;
+    var thumbnailSize = 300;
+    thumbnailSize = destinationHeight * 0.6;
+
+    // set the dimensions of the fullscreen content elements (thumbnail, controls, etc)
+    $('.fullscreen-content .artwork').css(
+        {
+            width: thumbnailSize +'px',
+            height: thumbnailSize +'px',
+            marginTop: thumbnailSize * 0.1 +'px'
+        });
+
+    // set the dimensions of the fullscreen content elements (thumbnail, controls, etc)
+    $('.fullscreen-content .current-track').css(
+        {
+            padding: thumbnailSize * 0.1 +'px'
+        });
 }
 
 
@@ -1099,9 +1137,9 @@ var doUpdatePlayer = function(track){
 			// get the spotify album object and load image
 			if( typeof( track.album ) !== 'undefined' ){
 				getAlbum( getIdFromUri( track.album.uri ) ).success( function( spotifyAlbum ){
-					$('#player').attr('style','background-image: url('+spotifyAlbum.images[0].url+');');
+					$('#player').css({backgroundImage: 'url('+spotifyAlbum.images[0].url+')'});
 					$('#player .thumbnail').attr('href','#explore/album/'+ track.album.uri );
-					$('#player .fullscreen-content .artwork').attr('style','background-image: url('+spotifyAlbum.images[0].url+');');
+					$('#player .fullscreen-content .artwork').css({backgroundImage: 'url('+spotifyAlbum.images[0].url+')'});
 				});
 			};
 			

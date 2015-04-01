@@ -119,9 +119,14 @@ function updatePlaylists(){
 			for( var i = 0; i < playlists.items.length; i++ ){
 			
 				var playlist = playlists.items[i];
-				
+				var playlistButtonHTML = '<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>';
+                
 				// add list to the playlists bar
-				lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');
+                if( playlist.owner['id'] == localStorage.userID ){
+				    lists.filter('.owned').append(playlistButtonHTML);
+                }else{
+				    lists.filter('.following').append(playlistButtonHTML);
+                }
 			}
 	    
 		    // let's now load the custom playlists
