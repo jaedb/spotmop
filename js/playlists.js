@@ -163,7 +163,8 @@ function updatePlaylists(){
  * Add an existing playlist
  * Spotify API doesn't permit collaborative playlists, so this is a workaround
  * Uses localStorage to retain playlist info
-*/
+ *
+ * CURRENTLY IN DEVELOPMENT, POSSIBLY WON'T WORK WITH SPOTIFY API
 function AddCustomPlaylist( userID, playlistID ){
 	
 	updateLoader('start');
@@ -191,6 +192,7 @@ function AddCustomPlaylist( userID, playlistID ){
 		});
 	
 };
+*/
 
 
 

@@ -444,14 +444,15 @@ function setupInteractivity(){
 		var playlist_id = $('#playlist .tracks').attr('data-id');
 		var owner_id = $('#playlist .tracks').attr('data-userid');
 		
+		$('#playlist .tools .follow-playlist').addClass('hide');
+		$('#playlist .tools .unfollow-playlist').removeClass('hide');
+		
 		updateLoader('start');
 		
 		followPlaylist( owner_id, playlist_id )
 			.complete( function(response){
 				updateLoader('stop');
-				console.log(response);
 				updatePlaylists();
-				$('#playlist .tools').addClass('following');
 			});
 	});
 	
@@ -459,14 +460,14 @@ function setupInteractivity(){
 		var playlist_id = $('#playlist .tracks').attr('data-id');
 		var owner_id = $('#playlist .tracks').attr('data-userid');
 		
+		$('#playlist .tools .unfollow-playlist').addClass('hide');
+		$('#playlist .tools .follow-playlist').removeClass('hide');
 		updateLoader('start');
 		
 		unFollowPlaylist( owner_id, playlist_id )
 			.complete( function(response){
 				updateLoader('stop');
-				console.log(response);
 				updatePlaylists();
-				$('#playlist .tools').removeClass('following');
 			});
 	});
 };

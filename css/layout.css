@@ -391,13 +391,23 @@ a:hover {
 	padding: 6px 6px 0 22px;
 }
 
+#menu .toggle-collapse.following-playlists-list:hover {
+	cursor: hand;
+	cursor: pointer;
+	color: #000000;
+}
+
+#menu .toggle-collapse.following-playlists-list .fa-caret-right {
+	margin-left: -3px;
+}
+
 #menu .toggle-collapse.following-playlists-list:not(.collapsed) .fa-caret-right,
 #menu .toggle-collapse.following-playlists-list.collapsed .fa-caret-down {
     display: none;
 }
 
 #menu .menu-item-children.playlist-list.following {
-    padding-left: 26px;
+    padding-left: 42px;
 }
 
 #menu .new-playlist-button {
