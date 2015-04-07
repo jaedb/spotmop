@@ -208,51 +208,58 @@ function setupInteractivity(){
     
     // --- PLAYER EXPANDER --- //
     
-    $('#player .expander-button').on('click', function(evt){
+    $('#player').on('click', function(evt){
         
-        var destinationHeight = $(window).height() - $('#player').outerHeight();
-        
-        // collapse
-        if( $('.fullscreen-content').is(":visible") ){
-            
-           $(this).css({ WebkitTransform: 'rotate(0deg)'});
-           $(this).css({ '-moz-transform': 'rotate(0deg)'});
-            
-            $('.fullscreen-content').animate(
-                {
-                    'height': '0'
-                }, 200, function(){
-                    $(this).css('display','none');   
-                }
-            );
-            
-            localStorage.playerExpanded = false;
-            
-            $('#player .skinny-content .current-track').animate({opacity: 1},200);
-            
-        // reveal
-        }else{
+        // only continue if target is not a button
+        if( $(evt.target).closest('.button').length <= 0 &&
+           !$(evt.target).hasClass('button') &&
+           $(evt.target).closest('.slider').length <= 0 &&
+           !$(evt.target).hasClass('slider') ){
 
-            $(this).css({ WebkitTransform: 'rotate(-180deg)'});
-            $(this).css({ '-moz-transform': 'rotate(-180deg)'});
-            
-            localStorage.playerExpanded = true;
-            
-            // fade out the current track text in the skinny content
-            $('#player .skinny-content .current-track').animate(
-                {opacity: 0},
-                200);
-            
-            // re-check heights etc for fullscreen elements (thumbnail, etc)
-            updateInterface()
-            
-            // animate up
-            $('.fullscreen-content').css({display: 'block',opacity: 0}).animate(
-                {
-                    height: destinationHeight,
-                    opacity: 1
-                }, 200
-            ); 
+            var destinationHeight = $(window).height() - $('#player').outerHeight();
+
+            // collapse
+            if( $('.fullscreen-content').is(":visible") ){
+
+               $('#player .expander-button .fa').css({ WebkitTransform: 'rotate(0deg)'});
+               $('#player .expander-button .fa').css({ '-moz-transform': 'rotate(0deg)'});
+
+                $('.fullscreen-content').animate(
+                    {
+                        'height': '0'
+                    }, 200, function(){
+                        $(this).css('display','none');   
+                    }
+                );
+
+                localStorage.playerExpanded = false;
+
+                $('#player .skinny-content .current-track').animate({opacity: 1},200);
+
+            // reveal
+            }else{
+
+                $('#player .expander-button .fa').css({ WebkitTransform: 'rotate(-180deg)'});
+                $('#player .expander-button .fa').css({ '-moz-transform': 'rotate(-180deg)'});
+
+                localStorage.playerExpanded = true;
+
+                // fade out the current track text in the skinny content
+                $('#player .skinny-content .current-track').animate(
+                    {opacity: 0},
+                    200);
+
+                // re-check heights etc for fullscreen elements (thumbnail, etc)
+                updateInterface()
+
+                // animate up
+                $('.fullscreen-content').css({display: 'block',opacity: 0}).animate(
+                    {
+                        height: destinationHeight,
+                        opacity: 1
+                    }, 200
+                ); 
+            }
         }
     });
     
