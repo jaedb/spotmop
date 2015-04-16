@@ -14,8 +14,8 @@ $(document).ready( function(evt){
     var readyToLoad = true;
     
     // listen for scroll to bottom, then we can load the additional tracks
-    $(window).scroll(function(){
-        if( readyToLoad && ( $(window).scrollTop() + $(window).height() > $(document).height() - 40 ) ){
+    $('#pages').scroll(function( evt ){
+        if( readyToLoad && ( $('#pages').scrollTop() + 40 >= ( $('#pages > .liner').innerHeight() - $('#pages').innerHeight() ) ) ){
             
             // first, check the token
             $.when( checkToken() ).done( function(){

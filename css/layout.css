@@ -8,10 +8,6 @@ html {
 	font-size: 12px;
 }
 
-html {
-	overflow-y: scroll;
-}
-
 * {
 	border: 0;
 	padding: 0;
@@ -146,7 +142,7 @@ a {
 	display: block;
 	position: fixed;
 	top: 15px;
-	right: 15px;
+	right: 30px;
 	z-index: 99;
 }
 
@@ -277,11 +273,14 @@ a:hover {
 
 
 #pages {
-	padding-bottom: 120px;
-	width: 85%;
-	float: right;
+	width: 80%;
 	z-index: 1;
-	position: relative;
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 100px;
+	overflow-x: hidden;
+	overflow-y: scroll;
 }
 
 #pages .page {
@@ -290,7 +289,7 @@ a:hover {
 }
 
 #menu {
-	width: 15%;
+	width: 20%;
 	z-index: 2;
 	position: fixed;
 	font-size: 14px;
@@ -909,6 +908,10 @@ a:hover {
 	opacity: 1;
 }
 
+#player .button.active {
+    color: #1cf4c4;
+}
+
 #player .current-track {
 	text-align: center;
 	font-size: 16px;
@@ -946,6 +949,11 @@ a:hover {
 	cursor: hand;
 	cursor: pointer;
 	display: inline-block;
+}
+
+#player .button.mute.active .fa-volume-down,
+#player .button.mute:not(.active) .fa-volume-off {
+    display: none;
 }
 
 #player .progress > .liner,
@@ -1032,6 +1040,10 @@ a:hover {
     top: -4px;
     right: -6px;
 	display: none;
+}
+
+.volume.disabled .slider .ui-slider-range {
+    background-image: url('../images/progress-background-disabled.png');
 }
 
 

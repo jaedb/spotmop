@@ -30,6 +30,7 @@ var consoleError = function(){ $('.loader').fadeOut(); console.error.bind(consol
 var playlists;
 var chainedEventsCount = 0;
 var mopidy;
+var mopidyOnline;
 
 
 /*
@@ -80,17 +81,19 @@ function initiateMopidy(){
     mopidy.on("event:trackPlaybackEnded" ,function(track){	    updatePlayer(); });
     mopidy.on("event:volumeChanged" ,function(vol){				updateVolume(); });
     mopidy.on("event:playbackStateChanged", function(obj){		updatePlayer(); });	
+    mopidy.on("event:muteChanged", function(mute){		        updateMute( mute ); });	
     
     mopidy.on("state:online", function(){
-	
+        
         // set play queue as consuming (once played, remove the track)
         mopidy.tracklist.consume = true;
-		coreArray['mopidyOnline'] = true;
+        mopidyOnline = true;
 		
 		$(document).find('.mopidy.connection-status').removeClass('offline').addClass('online');
 		
         updatePlayer();
         updateVolume();
+        updateMute();
         updatePlaylists();
         updatePlayQueue();
 	
@@ -102,18 +105,16 @@ function initiateMopidy(){
 				highlightPlayingTrack();
 			}, consoleError);
 		},1000);
-    
-		setupInteractivity();
-        
     });
 
     // On state offline
     mopidy.on("state:offline", function(){
 		$(document).find('.mopidy.connection-status').removeClass('online').addClass('offline');
 		clearInterval( everySecond );
-		coreArray['mopidyOnline'] = false;
+        mopidyOnline = false;
     });
-	
+    
+	setupInteractivity()
 }
 
 
@@ -214,7 +215,8 @@ function setupInteractivity(){
         if( $(evt.target).closest('.button').length <= 0 &&
            !$(evt.target).hasClass('button') &&
            $(evt.target).closest('.slider').length <= 0 &&
-           !$(evt.target).hasClass('slider') ){
+           !$(evt.target).hasClass('slider') &&
+           !$(evt.target).is('a') ){
 
             var destinationHeight = $(window).height() - $('#player').outerHeight();
 
@@ -274,7 +276,7 @@ function setupInteractivity(){
             slide: function(event, ui){
 		
                 // prevent undefined errors
-                if( typeof(coreArray['currentTrack']) !== 'undefined'){
+                if( mopidyOnline && typeof(coreArray['currentTrack']) !== 'undefined'){
                     mopidy.playback.seek( coreArray['currentTrack'].length * ui.value / 100 ).then( function(result){
                         updatePlayPosition();
                     });
@@ -291,16 +293,40 @@ function setupInteractivity(){
             from: 0,
             to: 100,
             slide: function(event, ui){
-                mopidy.playback.setVolume( ui.value ).then( function(result){
-                    updateVolume();
-                },consoleError);
+                if( mopidyOnline ){
+                    mopidy.playback.setVolume( ui.value ).then( function(result){
+                        updateVolume();
+                    },consoleError);
+                }
             }
         });
 	
     
-	// --- PLAYER SHUFFLE / REPEAT --- //
+	// --- PLAYER TRACKLIST CONTROLS (mute/shuffle/random) --- //
 	
-	// TODO
+    
+    $('.controls').on('click', '.button.mute', function(evt){
+        if( mopidyOnline ){
+            if( $(this).hasClass('active') )
+                ToggleMute( false );
+            else
+                ToggleMute( true );
+        }
+    });
+	
+    
+    $('.controls').on('click', '.button.random', function(evt){
+        
+        $(this).toggleClass('active');
+        
+    });
+	
+    
+    $('.controls').on('click', '.button.repeat', function(evt){
+        
+        $(this).toggleClass('active');
+        
+    });
 	
 	
 	// --- REMOVING TRACKS --- //
@@ -312,16 +338,17 @@ function setupInteractivity(){
 		
 			// disarm the key functionality in any case, for UX consistency
 			evt.preventDefault();
-			
-			if(coreArray['state'] == "playing"){
-				mopidy.playback.pause();
-			}else if(coreArray['state'] == "stopped"){
-				mopidy.playback.play();
-			}else{
-				mopidy.playback.resume();
+            
+			if( mopidyOnline ){
+                if(coreArray['state'] == "playing"){
+                    mopidy.playback.pause();
+                }else if(coreArray['state'] == "stopped"){
+                    mopidy.playback.play();
+                }else{
+                    mopidy.playback.resume();
+                }
+			     updatePlayer();
 			}
-			
-			updatePlayer();
 		}
 		
 		// delete/backspace
@@ -343,11 +370,12 @@ function setupInteractivity(){
 				});
 				
 				// remove all the tracks from the list
-				mopidy.tracklist.remove({uri: uris}).then( function(result){
-					updatePlayQueue();
-					trackDOMs.each( function(index,value){ $(value).remove(); } );
-				},consoleError);
-
+                if( mopidyOnline ){
+                    mopidy.tracklist.remove({uri: uris}).then( function(result){
+                        updatePlayQueue();
+                        trackDOMs.each( function(index,value){ $(value).remove(); } );
+                    },consoleError);
+                }
 			}
 			
             // --- removing from playlist --- //
@@ -424,25 +452,30 @@ function setupInteractivity(){
 	// --- PLAYER CONTROLS EVENTS --- //
 	
 	$('#player .button[data-action="previous-track"]').on('click', function(evt){
-		mopidy.playback.previous();
-		updatePlayer();
+        if( mopidyOnline ){
+            mopidy.playback.previous();
+            updatePlayer();
+        }
 	});
 	
 	$('#player .button[data-action="next-track"]').on('click', function(evt){
-		mopidy.playback.next();
-		updatePlayer();
+        if( mopidyOnline ){
+            mopidy.playback.next();
+            updatePlayer();
+        }
 	});
 	
 	$('#player .button[data-action="play-pause"]').on('click', function(evt){
-		if(coreArray['state'] == "playing"){
-			mopidy.playback.pause();
-		}else if(coreArray['state'] == "stopped"){
-			mopidy.playback.play();
-		}else{
-			mopidy.playback.resume();
-		}
-			
-		updatePlayer();
+        if( mopidyOnline ){
+            if(coreArray['state'] == "playing"){
+                mopidy.playback.pause();
+            }else if(coreArray['state'] == "stopped"){
+                mopidy.playback.play();
+            }else{
+                mopidy.playback.resume();
+            }
+            updatePlayer();
+        }
 	}); 	
 	
 	// ---- PLAYLIST INTERACTIONS --- //
@@ -661,15 +694,17 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 			
 				$('body').addClass('dragging');
 				tracksDragging = $(this).siblings('.highlighted').andSelf();
-				/*
-				console.log($(event.target));
-				
-				if( event.target ){
-					if( $(event.target).parent().hasClass('playlist-item').hasClass('child-menu-item') ){
-						$('.playlist-item.child-menu-item').removeClass('hover');
-						$(event.target).parent().addClass('hover');
+                
+                // unhighlight all menu items
+                $('.playlist-item.child-menu-item').removeClass('hover');
+            
+                // when we're hovering an event, if it's a playlist item, then add .hover
+				var target = $(event.target);
+				if( typeof(target) !== 'undefined' ){
+					if( target.parent().hasClass('playlist-item') ){
+						target.parent().addClass('hover');
 					}
-				}*/
+				}
 				
 				$( '.drag-tracer' )
 					.show()
@@ -1058,6 +1093,34 @@ function addTrackToQueue( uri ){
 };
 
 
+/**
+ * Toggle mute
+ *
+ * @param $toggle = boolean, true means to mute, false means to unmute
+ **/
+function ToggleMute( toggle ){
+    mopidy.playback.setMute( toggle );
+}
+
+
+/**
+ * Update mute
+ *
+ * Fired when we have detected a change in mute state
+ * We now need to update the interface accordingly
+ **/
+function updateMute(){
+    
+    mopidy.playback.getMute().done( function(mute){
+        if( mute ){
+            $('#player .volume').addClass('disabled');
+            $('#player .button.mute').addClass('active');
+        }else{
+            $('#player .volume').removeClass('disabled');
+            $('#player .button.mute').removeClass('active');
+        }
+    });
+}
 
 
 /* =================================================== CONTEXT MENUS / POPUPS ====== */

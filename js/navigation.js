@@ -515,7 +515,7 @@ function renderPlaylistPage( uri ){
 */
 function renderSettingsPage(){
 	
-    if( coreArray['mopidyOnline'] ){
+    if( mopidyOnline ){
 		$('#settings .mopidy.connection-status').addClass('online').removeClass('offline');
 	}else{
 		$('#settings .mopidy.connection-status').addClass('offline').removeClass('online');
