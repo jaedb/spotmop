@@ -703,23 +703,22 @@ a:hover {
 
 .popup {
     display: none;
-    z-index: 9;
+    z-index: 99;
 }
 
 .popup .frame {
-    z-index: 9;
+    z-index: 99;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 300px;
-    height: 240px;
-    margin: -140px 0 0 -170px;
+    top: 50px;
+    right: 50px;
+    bottom: 50px;
+    left: 50px;
     padding: 20px;
     background: #EEEEEE;
 }
 
 .popup .background {
-    z-index: 9;
+    z-index: 99;
     position: fixed;
     background: rgba(0,0,0,0.7);
     top: 0;
@@ -752,9 +751,9 @@ a:hover {
 
 .popup .playlist-item {
     display: block;
-    width: 44%;
+    width: 21%;
     float: left;
-    padding: 8px 3%;
+    padding: 25px 2%;
 }
 
 .popup .playlist-item:hover {

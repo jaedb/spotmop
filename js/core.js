@@ -1135,21 +1135,6 @@ function popupContextMenu( context, trackURI ){
     contentContainer.show();
     
     $(document).find('.popup').fadeIn('fast');
-    $(document).find('.popup .frame')
-        .css(
-                {
-                    'margin-top': '-138px',
-                    'opacity': '0',
-                    'display': 'block'
-                }
-        )
-        .animate(
-                {
-                    'margin-top': '-130px',
-                    'opacity': '1'
-                },
-                100
-            );
     
     // select a playlist, so we need to load the playlists
     if( context == 'select-playlist' ){
