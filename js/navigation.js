@@ -327,7 +327,7 @@ function renderNewReleasesPage(){
 				$('#new-releases .content').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+album.name+'</span></a>' );
 				
 				// add clear-both at end of row
-				if( (i+1) % 6 == 0 )
+				if( (i+1) % 5 == 0 )
 					$('#new-releases .content').append('<div class="clear-both"></div>');
 			};
 			
@@ -383,7 +383,7 @@ function renderFeaturedPlaylistsPage(){
 				$('#featured-playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate hide">'+playlist.name+'</span></a>' );
 				
 				// add clear-both at end of row
-				if( (i+1) % 6 == 0 )
+				if( (i+1) % 5 == 0 )
 					$('#featured-playlists .content').append('<div class="clear-both"></div>');
 			};
 			

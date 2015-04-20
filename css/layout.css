@@ -808,6 +808,7 @@ a:hover {
 	color: #000000;
 	width: 100%;
     border-bottom: 2px solid #000000;
+    font-size: 13px;
 }
 
 .search-field input:focus {
@@ -838,13 +839,13 @@ a:hover {
 
 .artist-panel,
 .album-panel {
-	width: 13.65%;
-	height: 140px;
+	width: 16.0%;
+	height: 160px;
 	background: #EEEEEE 50% 50% no-repeat;
 	background-size: cover;
 	display: block;
 	float: left;
-	margin: 1.5%;
+	margin: 2%;
 	position: relative;
 	border: none;
 }
