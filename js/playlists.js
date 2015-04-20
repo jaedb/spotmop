@@ -131,20 +131,18 @@ function updatePlaylists(){
 	    
 		    // let's now load the custom playlists
 		    // TODO: This is under development and isn't fully supported by Spotify API
-		    /*
 			if( typeof( localStorage.customPlaylists ) !== 'undefined' && localStorage.customPlaylists !== 'null' ){
 				
-				var lists = $('.menu-item-wrapper.playlists .playlist-list');
+				var lists = $('.menu-item-wrapper.playlists .playlist-list.owned');
 				var customPlaylists = JSON.parse(localStorage.customPlaylists);
 				
 				$.each( customPlaylists, function(key, playlist){		
-					
+					console.log(playlist);
 					// add list to the playlists bar
 					lists.append('<div class="playlist-item child-menu-item" data-uri="'+playlist.uri+'"><a href="#playlist/'+playlist.uri+'">'+playlist.name+'</a></div>');				
 				});
 				
 			}
-			*/
 			
 		}).fail( function( response ){
 		
@@ -159,12 +157,13 @@ function updatePlaylists(){
 };
 
 
-/*
+/**
  * Add an existing playlist
- * Spotify API doesn't permit collaborative playlists, so this is a workaround
+ * Spotify API doesn't permit fetching of collaborative playlists, so this is a workaround
  * Uses localStorage to retain playlist info
  *
  * CURRENTLY IN DEVELOPMENT, POSSIBLY WON'T WORK WITH SPOTIFY API
+ **/
 function AddCustomPlaylist( userID, playlistID ){
 	
 	updateLoader('start');
@@ -184,6 +183,11 @@ function AddCustomPlaylist( userID, playlistID ){
 			
 			localStorage.customPlaylists = JSON.stringify(customPlaylists);
 			
+			// add the new playlist to the DOM
+			$(document)
+				.find('.menu-item-wrapper.playlists .playlist-list.owned')
+				.append('<div class="playlist-item child-menu-item" data-uri="'+response.uri+'"><a href="#playlist/'+response.uri+'">'+response.name+'</a></div>');
+			
         	notifyUser('good', 'Custom playlist added');
 		})
 		.fail( function( response ){
@@ -192,7 +196,6 @@ function AddCustomPlaylist( userID, playlistID ){
 		});
 	
 };
-*/
 
 
 
