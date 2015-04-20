@@ -166,35 +166,40 @@ function updatePlaylists(){
  **/
 function AddCustomPlaylist( userID, playlistID ){
 	
-	updateLoader('start');
+	// currently we can only add if we're the owner
+	if( userID != localStorage.userID ){		
+		notifyUser('error', 'Currently you can only add your own playlists');		
+	}else{
 	
-	// go get the playlist as a spotify object
-	getPlaylist( userID, playlistID )
-		.success( function( response ){
-			updateLoader('stop');
-			
-			var customPlaylists = [];
-			
-			if( typeof( localStorage.customPlaylists ) !== 'undefined' && localStorage.customPlaylists !== 'null' ){
-				customPlaylists = JSON.parse(localStorage.customPlaylists);
-			}
-			
-			customPlaylists.push( response );
-			
-			localStorage.customPlaylists = JSON.stringify(customPlaylists);
-			
-			// add the new playlist to the DOM
-			$(document)
-				.find('.menu-item-wrapper.playlists .playlist-list.owned')
-				.append('<div class="playlist-item child-menu-item" data-uri="'+response.uri+'"><a href="#playlist/'+response.uri+'">'+response.name+'</a></div>');
-			
-        	notifyUser('good', 'Custom playlist added');
-		})
-		.fail( function( response ){
-			updateLoader('stop');
-        	notifyUser('error', 'Error adding custom playlist: '+response.responseJSON.error.message);
-		});
+		updateLoader('start');
 	
+		// go get the playlist as a spotify object
+		getPlaylist( userID, playlistID )
+			.success( function( response ){
+				updateLoader('stop');
+
+				var customPlaylists = [];
+
+				if( typeof( localStorage.customPlaylists ) !== 'undefined' && localStorage.customPlaylists !== 'null' ){
+					customPlaylists = JSON.parse(localStorage.customPlaylists);
+				}
+
+				customPlaylists.push( response );
+
+				localStorage.customPlaylists = JSON.stringify(customPlaylists);
+
+				// add the new playlist to the DOM
+				$(document)
+					.find('.menu-item-wrapper.playlists .playlist-list.owned')
+					.append('<div class="playlist-item child-menu-item" data-uri="'+response.uri+'"><a href="#playlist/'+response.uri+'">'+response.name+'</a></div>');
+
+				notifyUser('good', 'Custom playlist added');
+			})
+			.fail( function( response ){
+				updateLoader('stop');
+				notifyUser('error', 'Error adding custom playlist: '+response.responseJSON.error.message);
+			});
+	}
 };
 
 
