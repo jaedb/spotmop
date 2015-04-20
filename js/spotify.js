@@ -33,6 +33,7 @@ function getAuthorizationCode(){
     newURL += 'https://accounts.spotify.com/authorize?client_id='+localStorage.settings_clientid;
     newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/authenticate.php';
     newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=code';
+    newURL += '&show_dialog=true';
     
     // open a new window to handle this authentication
     window.open(newURL,'spotifyAPIrequest','height=550,width=400');
