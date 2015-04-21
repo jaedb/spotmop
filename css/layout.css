@@ -331,7 +331,8 @@ a:hover {
     border: none;
 }
 
-.dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"]:hover {
+.dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"]:hover,
+.dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"].hover {
     background: #000000;
     color: #FFFFFF;
 }

@@ -697,12 +697,23 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
                 
                 // unhighlight all menu items
                 $('.playlist-item.child-menu-item').removeClass('hover');
+                $('.menu-item').removeClass('hover');
             
-                // when we're hovering an event, if it's a playlist item, then add .hover
+                // when we're hovering an event, if it's droppable then add .hover
 				var target = $(event.target);
 				if( typeof(target) !== 'undefined' ){
+					
+					// hovering playlist
 					if( target.parent().hasClass('playlist-item') ){
 						target.parent().addClass('hover');
+						
+					// hovering queue
+					}else if( target.hasClass('playlist-item') ){
+						target.parent().addClass('hover');
+					
+					// hovering queue nested element
+					}else if( target.closest('.menu-item[data-target="queue"]').length > 0 ){
+						target.closest('.menu-item[data-target="queue"]').addClass('hover');
 					}
 				}
 				
@@ -772,7 +783,7 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 					
 					var playlistURI = target.parent().data('uri');
 					
-					addTrackToPlaylist( getIdFromUri( playlistURI ), tracksDraggingURIs )
+					addTrackToPlaylist( getUserIdFromUri( playlistURI ), getIdFromUri( playlistURI ), tracksDraggingURIs )
 						.success( function( response ){
                             notifyUser('good','Added track(s) to playlist');
 							updateLoader('stop');
@@ -851,6 +862,27 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 	highlightPlayingTrack();
 	
 	return true;
+};
+
+
+
+/*
+ * Get an item's UserID out of a provided Playlist URI
+ * Returns string
+*/
+function getUserIdFromUri( uri ){
+	
+	// get the id (3rd part of the URI)
+	if( typeof uri === 'undefined' )
+		return false;
+	
+	var uriArray = uri.split(':');
+	
+	// see if we're a playlist URI
+	if( typeof uriArray[3] !== 'undefined' && uriArray[3] == 'playlist' )
+		return uriArray[2];
+	
+	return false;
 };
 
 
@@ -1149,7 +1181,7 @@ function popupContextMenu( context, trackURI ){
         }
         
         $('.popup .select-playlist').on('click','.playlist-item', function(evt){
-            addTrackToPlaylist( $(this).attr('data-id'), new Array(trackURI) );
+            addTrackToPlaylist( $(this).attr('data-userid'), $(this).attr('data-id'), new Array(trackURI) );
             $(document).find('.popup').fadeOut();  
             notifyUser('good','Added track to playlist');
         });

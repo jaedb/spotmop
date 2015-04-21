@@ -191,7 +191,7 @@ function AddCustomPlaylist( userID, playlistID ){
 				// add the new playlist to the DOM
 				$(document)
 					.find('.menu-item-wrapper.playlists .playlist-list.owned')
-					.append('<div class="playlist-item child-menu-item" data-uri="'+response.uri+'"><a href="#playlist/'+response.uri+'">'+response.name+'</a></div>');
+					.append('<div class="playlist-item child-menu-item" data-uri="'+response.uri+'" data-userid="'+response.owner.id+'"><a href="#playlist/'+response.uri+'">'+response.name+'</a></div>');
 
 				notifyUser('good', 'Custom playlist added');
 			})

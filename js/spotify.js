@@ -32,8 +32,8 @@ function getAuthorizationCode(){
     var newURL = '';
     newURL += 'https://accounts.spotify.com/authorize?client_id='+localStorage.settings_clientid;
     newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/authenticate.php';
-    newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private&response_type=code';
-    newURL += '&show_dialog=true';
+    newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private';
+    newURL += '&response_type=code&show_dialog=true';
     
     // open a new window to handle this authentication
     window.open(newURL,'spotifyAPIrequest','height=550,width=400');
@@ -253,15 +253,15 @@ function createPlaylist( name ){
 	});
 };
 
-function addTrackToPlaylist( playlistID, trackURIs, position ){
-
+function addTrackToPlaylist( userID, playlistID, trackURIs, position ){
+	
 	var position_parameter = '';
 		
 	if( typeof(position) !== 'undefined' )
 		position_parameter += '?position='+position;	
 		
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/users/'+localStorage.userID+'/playlists/'+playlistID+'/tracks'+position_parameter,
+		url: 'https://api.spotify.com/v1/users/'+userID+'/playlists/'+playlistID+'/tracks'+position_parameter,
 		type: "POST",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.access_token
