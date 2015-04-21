@@ -114,7 +114,7 @@ function initiateMopidy(){
         mopidyOnline = false;
     });
     
-	setupInteractivity()
+	setupInteractivity();
 }
 
 
@@ -846,8 +846,7 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 				
 				// now actually change what's playing
 				mopidy.tracklist.getTlTracks().then(function( tracks ){
-					mopidy.playback.changeTrack( tracks[trackID], 1 );
-					mopidy.playback.play();
+					mopidy.playback.play( tracks[trackID] );
 					updatePlayer();
 				},consoleError);
 			
