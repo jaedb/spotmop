@@ -590,8 +590,7 @@ function playFromPlaylist( trackRow ){
 					
 					// if this track uri matches the one we clicked on, then play it chris!
 					if( response[i].track.uri == track_to_play_uri ){
-						mopidy.playback.changeTrack(response[i],1);
-						mopidy.playback.play();
+						mopidy.playback.play(response[i]);
 						updatePlayer();
 					}
 				}
