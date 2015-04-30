@@ -588,13 +588,15 @@ a:hover {
 	background: #F2F2F2;
 }
 
-.dragging .track-row:hover {
-	border-top: 2px solid #000000;
-	margin-top: -3px;
-}
-
 .dragging .track-row:not(.highlighted):hover {
 	background: transparent;
+}
+
+.track-row.shuffle-destination-indicator {
+	height: 3px;
+	border: 0;
+	margin-top: -3px;
+	background: #000000;
 }
 
 

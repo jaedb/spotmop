@@ -713,6 +713,14 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 					// hovering queue nested element
 					}else if( target.closest('.menu-item[data-target="queue"]').length > 0 ){
 						target.closest('.menu-item[data-target="queue"]').addClass('hover');
+					
+					// hovering tracklist (to shuffle order)
+					}else if( target.closest('.track-row.track-item').length > 0 ){
+						// remove any previous indicators
+						$(document).find('.track-row.shuffle-destination-indicator').remove();
+						
+						// inject indicator before the track we're hovering over
+						target.closest('.track-row.track-item').before('<div class="track-row shuffle-destination-indicator"></div>');
 					}
 				}
 				
@@ -738,6 +746,9 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 				tracksDragging.each( function(index,value){
 					tracksDraggingURIs.push( $(value).data('uri') );
 				});
+			
+				// remove any shuffle destination indicators
+				$(document).find('.track-row.shuffle-destination-indicator').remove();
 				
 				
 				// -- dropping within playlist -- //
