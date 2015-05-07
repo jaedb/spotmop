@@ -9,6 +9,20 @@ Requirements
 * Mopidy
 * Mopidy-Spotify
 
+Changelog
+--------
+
+*1.5*
+* Upgrade to track selection events, now uses proper syntax and command structure.
+* Cross-browser drag-and-drop sorting of tracks in playlists and queue.
+* Pretty full-screen player (inspired by Spotcommander)
+* Add custom playlists (you still need write permission as a Spotify user)
+
+*1.2*
+* Stability improvements
+* Various browser bugs (drag and drop for Chrome)
+* Base-level responsive formatting
+
 Installation
 --------
 
