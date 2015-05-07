@@ -465,6 +465,13 @@ function setupInteractivity(){
         }
 	});
 	
+	$('#player .button[data-action="stop"]').on('click', function(evt){
+        if( mopidyOnline ){
+            mopidy.playback.stop();
+            updatePlayer();
+        }
+	});
+	
 	$('#player .button[data-action="play-pause"]').on('click', function(evt){
         if( mopidyOnline ){
             if(coreArray['state'] == "playing"){
@@ -557,7 +564,9 @@ function playFromCompilation( trackRow ){
 
 
 function playFromPlaylist( trackRow ){
-
+	
+	console.log('playing from playlist');
+	
 	$('.loader').show();
 	
 	// immediately update dom, for 'snappy' ux
@@ -566,6 +575,11 @@ function playFromPlaylist( trackRow ){
 	
 	var track_to_play_uri = trackRow.attr('data-uri');
 	var tracklist_uri = trackRow.closest('.tracks').attr('data-uri');
+	
+	var track_uris = new Array();
+	trackRow.siblings('.track-item').each( function(key,value){
+		track_uris.push( $(value).attr('data-uri') );
+	});
 	
 	// add this track to our taste profile
 	updateTasteProfile(
@@ -576,7 +590,7 @@ function playFromPlaylist( trackRow ){
 	
 	// empty the list
 	mopidy.tracklist.clear().then( function(response){
-		
+			
 		// run a lookup on this playlist
 		mopidy.library.lookup(tracklist_uri).then(function(tracks){
 			
@@ -593,7 +607,7 @@ function playFromPlaylist( trackRow ){
 						mopidy.playback.play(response[i]);
 						updatePlayer();
 					}
-				}
+				};
 			},consoleError);
 		},consoleError);
 	},consoleError);

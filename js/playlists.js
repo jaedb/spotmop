@@ -100,7 +100,7 @@ function setupRefreshPlaylistButton(){
 */
 
 function updatePlaylists(){
-	
+
 	// Get the users playlists and place them in the client
 	if( checkToken() ){
 		
@@ -145,7 +145,8 @@ function updatePlaylists(){
 			}
 			
 		}).fail( function( response ){
-		
+			// DEBUG: for some reason the tablet doesn't fetch a new token when it's been expired?
+			// alert(response.responseJSON.code);
 			updateLoader('stop');
         	notifyUser('error', 'Error fetching playlists: '+response.responseJSON.error.message);
         	$('#menu .playlist-list').html('<div class="refresh-playlist-button"><i class="fa fa-refresh"></i></div>');
