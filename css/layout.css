@@ -854,8 +854,8 @@ a:hover {
 	margin-bottom: 50px;
 }
 
-.artist-panel .name,
-.album-panel .name {
+.artist-panel .info,
+.album-panel .info {
 	position: absolute;
 	bottom: -40px;
 	right: 0;
@@ -866,13 +866,19 @@ a:hover {
 	border-top: 3px solid transparent;
 }
 
+.artist-panel .info .details,
+.album-panel .info .details {
+	color: #AAAAAA;
+	display: block;
+}
+
 .artist-panel:hover,
 .album-panel:hover {
 	opacity: 0.8;
 }
 
-.artist-panel:hover .name,
-.album-panel:hover .name {
+.artist-panel:hover .info,
+.album-panel:hover .info {
 	border-color: #1cf4c4;
 }
 

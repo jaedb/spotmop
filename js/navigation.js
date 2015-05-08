@@ -174,7 +174,7 @@ function renderArtistPage( id ){
 					if( album.images.length > 0 )
 						imageURL = album.images[1].url;
 					
-					$('#artist .albums').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+album.name+'</span></a>' );
+					$('#artist .albums').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
 				
 					// add clear-both at end of row
 					if( (i+1) % 5 == 0 )
@@ -284,7 +284,7 @@ function renderUsersPlaylistsPage( userID ){
 				if( playlist.images.length > 0 )
 					imageURL = playlist.images[0].url;
 				
-				$('#playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+playlist.name+'</span></a>' );
+				$('#playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+playlist.tracks.total+' tracks</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -324,7 +324,7 @@ function renderNewReleasesPage(){
 				if( album.images.length > 0 )
 					imageURL = album.images[1].url;
 				
-				$('#new-releases .content').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+album.name+'</span></a>' );
+				$('#new-releases .content').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -380,7 +380,7 @@ function renderFeaturedPlaylistsPage(){
 				if( playlists.length > 0 )
 					imageURL = playlist.images[0].url;
 				
-				$('#featured-playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate hide">'+playlist.name+'</span></a>' );
+				$('#featured-playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+playlist.tracks.total+' tracks</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -640,7 +640,7 @@ function renderPopularPage(){
 				if( artist.images.length > 0 )
 					imageURL = artist.images[1].url;
 				
-				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+artist.name+'</span></a>' );
+				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+artist.name+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
