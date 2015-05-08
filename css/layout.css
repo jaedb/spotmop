@@ -851,22 +851,29 @@ a:hover {
 	margin: 2%;
 	position: relative;
 	border: none;
+	margin-bottom: 50px;
 }
 
 .artist-panel .name,
 .album-panel .name {
 	position: absolute;
-	bottom: 0;
+	bottom: -40px;
 	right: 0;
 	left: 0;
-	background: #000000;
-	padding: 10px;
-    color: #FFFFFF;
+	height: 30px;
+	padding-top: 10px;
+    color: #000000;
+	border-top: 3px solid transparent;
+}
+
+.artist-panel:hover,
+.album-panel:hover {
+	opacity: 0.8;
 }
 
 .artist-panel:hover .name,
 .album-panel:hover .name {
-	background: #333333;
+	border-color: #1cf4c4;
 }
 
 

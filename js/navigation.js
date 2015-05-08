@@ -177,7 +177,7 @@ function renderArtistPage( id ){
 					$('#artist .albums').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+album.name+'</span></a>' );
 				
 					// add clear-both at end of row
-					if( (i+1) % 6 == 0 )
+					if( (i+1) % 5 == 0 )
 						$('#artist .albums').append('<div class="clear-both"></div>');
 				};
 				
@@ -287,7 +287,7 @@ function renderUsersPlaylistsPage( userID ){
 				$('#playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+playlist.name+'</span></a>' );
 				
 				// add clear-both at end of row
-				if( (i+1) % 6 == 0 )
+				if( (i+1) % 5 == 0 )
 					$('#playlists .content').append('<div class="clear-both"></div>');
 			};
 			
@@ -643,7 +643,7 @@ function renderPopularPage(){
 				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="name animate">'+artist.name+'</span></a>' );
 				
 				// add clear-both at end of row
-				if( (i+1) % 6 == 0 )
+				if( (i+1) % 5 == 0 )
 					$('#popular .content').append('<div class="clear-both"></div>');
 			};
 			
