@@ -205,5 +205,22 @@ function AddCustomPlaylist( userID, playlistID ){
 
 
 
+/**
+ * Identify if a playlist is my playlist
+ *
+ * @param playlist SpotifyApi Playlist object (JSON)
+ * @return boolean
+ **/
+function IsMyPlaylist( playlist ){
+
+	var user = localStorage.userID;
+	var owner = playlist.owner.id;
+	
+	if( user == owner )
+		return true;
+	
+	return false;
+}
+
 
 

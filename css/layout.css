@@ -305,8 +305,6 @@ a:hover {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	border-right: 1px solid #DDDDDD;
-	background: #F4F4F4;
 }
 
 #menu .menu-item-wrapper {
@@ -326,15 +324,16 @@ a:hover {
     border-radius: 3px;
 }
 
-#menu .menu-item-wrapper a.menu-item:hover {
-    background: #FFFFFF;
+#menu .menu-item-wrapper a.menu-item:hover,
+#menu .menu-item-wrapper.current a.menu-item {
+    background: #EEEEEE;
     border: none;
 }
 
 .dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"]:hover,
 .dragging #menu .menu-item-wrapper a.menu-item[data-target="queue"].hover {
     background: #000000;
-    color: #FFFFFF;
+    color: #EEEEEE;
 }
 
 #menu .menu-item-wrapper .menu-item > i {
@@ -376,7 +375,7 @@ a:hover {
 #menu .menu-item-children .child-menu-item.current a,
 #menu .menu-item-children .child-menu-item a:hover {
 	color: #000000;
-	background: #FFFFFF;
+	background: #EEEEEE;
 }
 
 .dragging #menu .menu-item-children .playlist-item a:hover,
@@ -479,6 +478,28 @@ a:hover {
 #artist .tracks-wrapper {
 	float: left;
 	width: 70%;
+}
+
+#album .artwork-panel {
+	margin: 0 20px 0 0;
+	width: 200px;
+	height: 200px;
+	position: relative;
+	float: left;
+}
+
+#album h1 {
+	padding-top: 20px;
+}
+
+#album h1 .artist {
+	padding-top: 5px;
+	display: inline-block;
+	color: #999999;
+}
+
+#album .tracks {
+	padding-top: 20px;
 }
 
 
@@ -806,7 +827,7 @@ a:hover {
 
 .search-field input {
 	padding: 7px 0;
-	background: #F4F4F4;
+	background: #FFFFFF;
 	font-family: 'Roboto', Helvetica, Arial, sans-serif;
 	color: #000000;
 	width: 100%;

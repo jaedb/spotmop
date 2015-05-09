@@ -56,6 +56,10 @@ function navigate(){
 		renderPlaylistPage( hash[1] );
     };
     
+    if(page == 'my-playlists'){
+		renderUsersPlaylistsPage( null, true );
+    };
+    
     if(page == 'featured-playlists'){
 		renderFeaturedPlaylistsPage( hash[1] );
     };
@@ -265,14 +269,23 @@ function renderArtistPage( id ){
  * Render a user's playlists page
  * Shows a user's playlists
 */
-function renderUsersPlaylistsPage( userID ){
+function renderUsersPlaylistsPage( userID, myPlaylists ){
 	
 	$.when( checkToken() ).then( function(){
     	updateLoader('start');
+		
+		if( typeof(myPlaylists) !== 'undefined' && myPlaylists )
+			userID = localStorage.userID;
+			
 		getUsersPlaylists(userID).then( function(response){
 			
+			var container = $(document).find('#playlists .content');
+			
+			if( typeof(myPlaylists) !== 'undefined' && myPlaylists )
+				container = $(document).find('#my-playlists .content');
+			
 			// empty out previous albums
-			$(document).find('#playlists .content').html('');
+			container.html('');
 			updateLoader('stop');
 			
 			// loop each playlist
@@ -283,12 +296,16 @@ function renderUsersPlaylistsPage( userID ){
 				imageURL = '';
 				if( playlist.images.length > 0 )
 					imageURL = playlist.images[0].url;
+					
+				var details = playlist.tracks.total +' tracks';
+				if( IsMyPlaylist( playlist ) )
+					details += ' <i class="fa fa-user"></i>';
 				
-				$('#playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+playlist.tracks.total+' tracks</span></span></a>' );
+				container.append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+details+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
-					$('#playlists .content').append('<div class="clear-both"></div>');
+					container.append('<div class="clear-both"></div>');
 			};
 			
 	

@@ -126,7 +126,7 @@
 			</div>
 			
 			<div class="menu-item-wrapper playlists heading">
-				<span class="menu-item" data-target="playlists"><i class="fa fa-folder"></i> &nbsp; Playlists <span class="new-playlist-button"> &nbsp;+&nbsp; </span></span>
+				<a class="menu-item" data-target="my-playlists" href="#my-playlists"><i class="fa fa-folder"></i> &nbsp; Playlists</a>
 				<div class="menu-item-children playlist-list owned"></div>
                 <div class="toggle-collapse following-playlists-list collapsed">
                 	<span class="menu-item">
@@ -188,6 +188,14 @@
 			
 			<!-- PAGE DIVIDER -->
 			
+			<div class="page" id="my-playlists">
+				<h1>My Playlists</h1>
+				<div class="clear-both"></div>
+				<div class="content"></div>
+			</div>
+			
+			<!-- PAGE DIVIDER -->
+			
 			<div class="page" id="playlists">
 				<h1>Playlists</h1>
 				<div class="clear-both"></div>
@@ -228,10 +236,8 @@
 			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="album">
-				<div class="artwork-panel">
-					<h1><span class="name reset-on-load"></span> by <span class="artist reset-on-load"></span></h1>
-					<div class="background-image"></div>
-				</div>
+				<div class="artwork-panel"><div class="background-image"></div></div>
+				<h1><span class="name reset-on-load"></span><br /><span class="artist reset-on-load"></span></h1>
 				<div class="clear-both"></div>
 				<div class="tracks reset-on-load"></div>
 				<div class="clear-both"></div>
@@ -408,6 +414,8 @@
 						</a>
 					</div>
 				</div>
+				
+				<br /><br />
 				
 			</div>
 			
