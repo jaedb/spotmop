@@ -9,9 +9,7 @@
 window.addEventListener("storage", storageUpdated, false);
 
 function storageUpdated(storage){
-	console.log('localStorage contents has been changed');
 	if( localStorage.readyToRefresh ){
-	console.log('Ready to refresh');
 		navigate();
 		updatePlaylists();
 	}
@@ -524,6 +522,8 @@ function playFromCompilation( trackRow ){
 
 	$('.loader').show();
 	
+	console.log('playing from compilation');
+	
 	// immediately update dom, for 'snappy' ux
 	trackRow.siblings().removeClass('current').removeClass('playing');
 	trackRow.addClass('current').addClass('playing');
@@ -537,8 +537,7 @@ function playFromCompilation( trackRow ){
 		// add the track we need to play first
 		mopidy.tracklist.add( null, track_to_play.index(), track_to_play.attr('data-uri') ).then(function(response){
 			
-			mopidy.playback.changeTrack(response[0],1);
-			mopidy.playback.play();
+			mopidy.playback.play(response[0]);
 			updatePlayer();
 			
 			// add this track to our taste profile
@@ -809,7 +808,7 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 					
 					addTrackToPlaylist( getUserIdFromUri( playlistURI ), getIdFromUri( playlistURI ), tracksDraggingURIs )
 						.success( function( response ){
-                            notifyUser('good','Added track(s) to playlist');
+                            notifyUser('good','Adding track(s) to playlist...');
 							updateLoader('stop');
 						}).fail( function( response ){
                             notifyUser('error','There was an error');
@@ -823,7 +822,7 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 					for( var i = 0; i < tracksDraggingURIs.length; i++){
 						addTrackToQueue( tracksDraggingURIs[i] );
 					}
-                    notifyUser('good','Added track(s) to queue');
+                    notifyUser('good','Adding track(s) to queue...');
 				}
 				
 				$('body').removeClass('dragging');

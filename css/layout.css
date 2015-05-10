@@ -20,8 +20,9 @@ h1 {
 }
 
 h2 {
-	font-size: 16px;
-	font-weight: 500;
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
 }
 
 h3 {
@@ -482,14 +483,14 @@ a:hover {
 
 #album .artwork-panel {
 	margin: 0 20px 0 0;
-	width: 200px;
-	height: 200px;
+	width: 140px;
+	height: 140px;
 	position: relative;
 	float: left;
 }
 
 #album h1 {
-	padding-top: 20px;
+	padding-top: 30px;
 }
 
 #album h1 .artist {
@@ -501,6 +502,20 @@ a:hover {
 #album .tracks {
 	padding-top: 20px;
 }
+
+
+/**
+ * Album and Playlist sections
+ **/
+
+.page .albums,
+.page .artists,
+.page .playlists,
+#playlists .content {
+	margin-left: -2%;
+	margin-right: -2%;
+}
+
 
 
 
