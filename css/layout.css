@@ -511,7 +511,9 @@ a:hover {
 .page .albums,
 .page .artists,
 .page .playlists,
-#playlists .content {
+#playlists .content,
+#featured-playlists .content,
+#new-releases .content {
 	margin-left: -2%;
 	margin-right: -2%;
 }
