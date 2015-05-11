@@ -77,6 +77,7 @@ function initiateMopidy(){
     mopidy.on("event:trackPlaybackResumed" ,function(track){	updatePlayer(); });
     mopidy.on("event:trackPlaybackStarted" ,function(track){	updatePlayer(); });
     mopidy.on("event:trackPlaybackEnded" ,function(track){	    updatePlayer(); });
+    mopidy.on("event:tracklistChanged" ,function(track){	    if(localStorage.currentPage == 'queue') updatePlayQueue(); });
     mopidy.on("event:volumeChanged" ,function(vol){				updateVolume(); });
     mopidy.on("event:playbackStateChanged", function(obj){		updatePlayer(); });	
     mopidy.on("event:muteChanged", function(mute){		        updateMute( mute ); });	
