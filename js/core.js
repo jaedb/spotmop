@@ -874,10 +874,18 @@ function renderTracksTable( container, tracks, tracklistUri, album, append ){
 					updatePlayer();
 				},consoleError);
 			
+			
 			// -- play from playlist -- //
 			
-			}else{
+			}else if( $(this).closest('.page').attr('id') == 'playlist' ){
+			
 				playFromPlaylist( $(this) );
+			
+			
+			// -- unknown source, so just play this single track -- //
+			
+			}else{
+				playSingleTrack( $(this) );
 			}
 		}
 	);
@@ -977,23 +985,21 @@ function millisecondsToMinutes( ms ){
 
 
 
-/*
+/**
  * Replace current queue and play selected track
  * @var newTracks is json object of tracks
  * @var trackID is integer of track number we want to play
-*/
+ **/
 function replaceAndPlay( tracklistURI, trackID ){
-	console.log('replace and play tracklisturi '+ tracklistURI);
+
 	// run a mopidy lookup on the uri (to get compatibile Track objects)
 	mopidy.library.lookup(tracklistURI).then(function(result){
 		
-		console.log('looked up');
 		// clear current tracklist
 		mopidy.tracklist.clear().then(function(){
 			
 			// add the fetched list of mopidy Track objects
 			mopidy.tracklist.add(result).then(function(){
-				console.log('added');
                 
                 // play the track chris!
 				playTrackByID( trackID );
@@ -1004,28 +1010,43 @@ function replaceAndPlay( tracklistURI, trackID ){
 }
 
 
-/*
+/**
  * Play a track from the current tracklist, by ID
  * Requires tracks to be queued, and an ID to be provided
  * @var trackID = integer, 0-based index of tracklist
-*/
+ **/
 
 function playTrackByID( trackID ){
 
     // fetch this list of Track objects from the source
     mopidy.tracklist.getTlTracks().then(function( tracks ){
-		
-        // change play cursor to trackID of the tracklist
-        mopidy.playback.changeTrack( tracks[trackID], 1 ).then( function(evt){
-			
-            mopidy.playback.play();
-            
-        });
-        
-        updatePlayer();
-        
+	
+		// use the new API method (well, changeTrack was depreciated)
+		mopidy.playback.play( tracks[trackID] );
     },consoleError); 
 };
+
+
+/**
+ * Play a single track
+ *
+ * This is used as a backup, if we don't have a compatible tracklist or playlist list to work with
+ **/
+function playSingleTrack( trackRow ){
+	
+	// clear current tracklist
+	mopidy.tracklist.clear().then(function(){
+		
+		// add the double-clicked item immediately
+		mopidy.tracklist.add( null,null,trackRow.attr('data-uri') ).then(function(){
+			
+			// and play 'em
+			mopidy.playback.play();
+			$('.loader').fadeOut();
+		},consoleError);
+	});
+}; 
+
 
 /*
  * Build a hash url to inject into the hash location

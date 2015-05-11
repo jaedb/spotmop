@@ -72,18 +72,12 @@ function updateTasteProfile( uri, name, artist ){
 				id: localStorage.settings_tasteprofileid,
 				data: JSON.stringify([
 						{
-							'action': 'update',
-							'item':{
-								'item_id': 'item-'+ uri,
-								'song_name': name,
-								'artist_name': artist
-							}
-						}/*,{
 							'action': 'play',
+							// this is the item that we want to add to the taste profile
 							'item':{
-								'item_id': 'item-'+ uri
+								'track_id': uri		// using project rosetta stone, EchoNest should know this Spotify track_id
 							}
-						}*/
+						}
 					])
 			},
 		timeout: 10000
