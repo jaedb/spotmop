@@ -1,0 +1,40 @@
+<html>
+<head>
+	<title>Angular</title>
+	<script type="text/javascript" src="/vendor/angular.js"></script>
+	<script type="text/javascript" src="/vendor/angular-route.js"></script>
+	<script type="text/javascript" src="/app/app.js"></script>
+	<script type="text/javascript" src="/app/common/controllers.js"></script>	
+	<script type="text/javascript" src="/app/discover/controllers.js"></script>	
+	<script type="text/javascript" src="/app/queue/controllers.js"></script>	
+    <base href="/">
+</head>
+<body>
+	
+	<h1>Angular</h1>
+	
+	<div ng-app="App">
+		
+		<h4>Title: <span ng-bind="title"></span></h4>
+		
+		<div ng-controller="MainMenu">
+			<ul>
+				<li ng-repeat="item in items">
+					<a href="{{ item.Link }}">{{ item.Title }}</a>
+					<ul>
+						<li ng-repeat="item in item.Children">
+							<a href="{{ item.Link }}">{{ item.Title }}</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		
+		<div class="body">
+			<div ng-view></div>
+		</div>
+		
+	</div>
+	
+</body>
+</html>
