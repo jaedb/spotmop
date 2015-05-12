@@ -35,6 +35,13 @@ function navigate(){
     $('#menu a[href="#'+page+'"]').parent().addClass('current');
 	
 	$('.page#'+page).show();
+	
+	// if we have a force refresh hash, just do it, no questions asked
+	if( hash == 'force-token' ){
+        $.when( getNewToken() ).then( function(evt){
+			window.location = '/';
+		});
+	}
     
     if( page == 'queue' ){
         updatePlayQueue();

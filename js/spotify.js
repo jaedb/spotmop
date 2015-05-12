@@ -7,13 +7,6 @@
  
 function checkToken(){
 	
-    var hash = window.location.hash;
-    hash = hash.replace('#','');
-	
-	// if we have a force refresh hash, just do it, no questions asked
-	if( hash == 'force-token' )
-		getNewToken();
-	
 	// if we don't have an authorization_code, go get one
 	if( localStorage.authorization_code == null ){        
         return getAuthorizationCode();
