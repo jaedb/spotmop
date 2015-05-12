@@ -702,13 +702,14 @@ function renderDiscoverPage(){
 	$(document).find('.page#discover .sub-page.category').hide();
 	$(document).find('.page#discover .sub-page.index').show();
 	
+	var container = $(document).find('.page#discover .sub-page.index .content');
+	container.html('');
+	var html = '';
+	
 	updateLoader('start');
 	
 	// get the categories
 	getCategories().success( function(response){
-		
-		var container = $(document).find('.page#discover .sub-page.index .content');
-		var html = '';
 		
 		// loop all the categories
 		$(response.categories.items).each( function(key, category){
@@ -749,14 +750,16 @@ function renderDiscoverCategory( categoryID ){
 	$(document).find('.page#discover .sub-page.index').hide();
 	$(document).find('.page#discover .sub-page.category').show();
 	
+	var container = $(document).find('.page#discover .sub-page.category .content');
+	var html = '';
+	container.html('');
+	
 	updateLoader('start');
 	
 	// get the single category
 	getCategory( categoryID ).success( function(response){
 		
 		$(document).find('.page#discover .sub-page.category .title').html( response.name );
-		var container = $(document).find('.page#discover .sub-page.category .content');
-		var html = '';
 		
 		// now get his playlists
 		getCategoryPlaylists( categoryID ).success( function(response){
