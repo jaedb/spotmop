@@ -159,15 +159,25 @@
 			<div class="page" id="popular">
 				<h1>Popular</h1>
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<div class="content square-panel-wrapper"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
 			
 			<div class="page" id="discover">
-				<h1>Discover</h1>
+				<div class="sub-page index">
+					<h1>Discover</h1>
+					<div class="clear-both"></div>
+					<div class="content square-panel-wrapper"></div>
+				</div>
+				<div class="sub-page category">
+					<h1 class="title"><!-- dynamic title --></h1>
+					<div class="clear-both"></div>
+					<div class="content square-panel-wrapper"><!-- dynamic content --></div>
+				</div>
+				
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<br />
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -175,7 +185,7 @@
 			<div class="page" id="new-releases">
 				<h1>New releases</h1>
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<div class="content square-panel-wrapper"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -183,7 +193,7 @@
 			<div class="page" id="featured-playlists">
 				<h1>Featured playlists</h1>
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<div class="content square-panel-wrapper"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -191,7 +201,7 @@
 			<div class="page" id="my-playlists">
 				<h1>My Playlists</h1>
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<div class="content square-panel-wrapper"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -199,7 +209,7 @@
 			<div class="page" id="playlists">
 				<h1>Playlists</h1>
 				<div class="clear-both"></div>
-				<div class="content"></div>
+				<div class="content square-panel-wrapper"></div>
 			</div>
 			
 			<!-- PAGE DIVIDER -->
@@ -227,7 +237,7 @@
 				
 				<div class="explore-artist-section">
 					<h2 class="bottom-padding">Albums</h2>
-					<div class="albums reset-on-load"></div>
+					<div class="albums reset-on-load square-panel-wrapper"></div>
 					<div class="clear-both"></div>
 				</div>
 				
@@ -268,17 +278,17 @@
 				<div id="search-results">
 					<div class="search-results-section artist">
 						<h2>Artists</h2>
-						<div class="artists reset-on-load"></div>
+						<div class="artists reset-on-load square-panel-wrapper"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section album">
 						<h2>Albums</h2>
-						<div class="albums reset-on-load"></div>
+						<div class="albums reset-on-load square-panel-wrapper"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section playlist">
 						<h2>Playlists</h2>
-						<div class="playlists reset-on-load"></div>
+						<div class="playlists reset-on-load square-panel-wrapper"></div>
 						<div class="clear-both"></div>
 					</div>
 					<div class="search-results-section track">
@@ -367,6 +377,9 @@
 					<div class="input">
 						<span class="my-profile"></span>
 						<a class="log-out-button"><i class="fa fa-close"></i>&nbsp; Log out</a>
+						&nbsp;
+						&nbsp;
+						<a href="/#force-token"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
 					</div>
 				</div>
 

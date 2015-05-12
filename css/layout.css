@@ -74,7 +74,7 @@ a {
 	color: inherit;
 }
 
-.explore-subpage .clickable:not(.album-panel):not(.artist-panel):hover,
+.explore-subpage .clickable:not(.square-panel):hover,
 .track-row .clickable:hover {
 	border-bottom: 1px dotted #000000;
 }
@@ -160,7 +160,8 @@ a {
 .animate,
 .button,
 button,
-input[type='submit'] {
+input[type='submit'],
+.square-panel {
     -webkit-transition: all 0.2s ease-in-out;
        -moz-transition: all 0.2s ease-in-out;
          -o-transition: all 0.2s ease-in-out;
@@ -508,12 +509,7 @@ a:hover {
  * Album and Playlist sections
  **/
 
-.page .albums,
-.page .artists,
-.page .playlists,
-#playlists .content,
-#featured-playlists .content,
-#new-releases .content {
+.square-panel-wrapper {
 	margin-left: -2%;
 	margin-right: -2%;
 }
@@ -878,8 +874,7 @@ a:hover {
 	margin: 0 -5px;
 }
 
-.artist-panel,
-.album-panel {
+.square-panel {
 	width: 16.0%;
 	height: 160px;
 	background: #EEEEEE 50% 50% no-repeat;
@@ -892,8 +887,7 @@ a:hover {
 	margin-bottom: 50px;
 }
 
-.artist-panel .info,
-.album-panel .info {
+.square-panel .info {
 	position: absolute;
 	bottom: -40px;
 	right: 0;
@@ -904,20 +898,32 @@ a:hover {
 	border-top: 3px solid transparent;
 }
 
-.artist-panel .info .details,
-.album-panel .info .details {
+.square-panel .info .details {
 	color: #AAAAAA;
 	display: block;
 }
 
-.artist-panel:hover,
-.album-panel:hover {
+.square-panel:hover {
 	opacity: 0.8;
 }
 
-.artist-panel:hover .info,
-.album-panel:hover .info {
+.square-panel:hover .info {
 	border-color: #1cf4c4;
+}
+
+.square-panel.category-panel {
+	margin-bottom: 20px;
+}
+
+.square-panel.category-panel .title {
+	position: absolute;
+	bottom: 30px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 600;
 }
 
 

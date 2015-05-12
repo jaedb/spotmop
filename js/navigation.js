@@ -32,9 +32,16 @@ function navigate(){
 	
 	// hide/show relevant content
 	$('#menu .current').removeClass('current');
-    $('#menu a[href="'+window.location.hash+'"]').parent().addClass('current');
-    
+    $('#menu a[href="#'+page+'"]').parent().addClass('current');
+	
 	$('.page#'+page).show();
+	
+	// if we have a force refresh hash, just do it, no questions asked
+	if( hash == 'force-token' ){
+        $.when( getNewToken() ).then( function(evt){
+			window.location = '/';
+		});
+	}
     
     if( page == 'queue' ){
         updatePlayQueue();
@@ -81,7 +88,10 @@ function navigate(){
     };
     
     if(page == 'discover'){
-		renderDiscoverPage();
+		if( typeof(hash[1]) !== 'undefined' )
+			renderDiscoverCategory( hash[1] );
+		else
+			renderDiscoverPage();
     };
 
 };
@@ -178,7 +188,7 @@ function renderArtistPage( id ){
 					if( album.images.length > 0 )
 						imageURL = album.images[1].url;
 					
-					$('#artist .albums').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
+					$('#artist .albums').append( '<a class="album-panel square-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
 				
 					// add clear-both at end of row
 					if( (i+1) % 5 == 0 )
@@ -301,7 +311,7 @@ function renderUsersPlaylistsPage( userID, myPlaylists ){
 				if( IsMyPlaylist( playlist ) )
 					details += ' <i class="fa fa-user"></i>';
 				
-				container.append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+details+'</span></span></a>' );
+				container.append( '<a class="album-panel square-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+details+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -341,7 +351,7 @@ function renderNewReleasesPage(){
 				if( album.images.length > 0 )
 					imageURL = album.images[1].url;
 				
-				$('#new-releases .content').append( '<a class="album-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
+				$('#new-releases .content').append( '<a class="album-panel square-panel" href="#album/'+album.uri+'" data-uri="'+album.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+album.name+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -397,7 +407,7 @@ function renderFeaturedPlaylistsPage(){
 				if( playlists.length > 0 )
 					imageURL = playlist.images[0].url;
 				
-				$('#featured-playlists .content').append( '<a class="album-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+playlist.tracks.total+' tracks</span></span></a>' );
+				$('#featured-playlists .content').append( '<a class="album-panel square-panel" href="#playlist/'+playlist.uri+'" data-uri="'+playlist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+playlist.name+'</span><span class="details">'+playlist.tracks.total+' tracks</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -657,7 +667,7 @@ function renderPopularPage(){
 				if( artist.images.length > 0 )
 					imageURL = artist.images[1].url;
 				
-				$('#popular .content').append( '<a class="album-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+artist.name+'</span></span></a>' );
+				$('#popular .content').append( '<a class="album-panel square-panel" href="#artist/'+artist.uri+'" data-uri="'+artist.uri+'" style="background-image: url('+imageURL+');"><span class="info animate"><span class="name">'+artist.name+'</span></span></a>' );
 				
 				// add clear-both at end of row
 				if( (i+1) % 5 == 0 )
@@ -691,37 +701,97 @@ function renderPopularPage(){
 };
 
 
-
-/*
- * Render the popular songs page
-*/
+/**
+ * Produce a list of categories available
+ **/
 function renderDiscoverPage(){
+	
+	$(document).find('.page#discover .sub-page.category').hide();
+	$(document).find('.page#discover .sub-page.index').show();
+	
+	var container = $(document).find('.page#discover .sub-page.index .content');
+	container.html('');
+	var html = '';
 	
 	updateLoader('start');
 	
-	// get our taste profile
-	getTasteProfileItems().success( function(response){
+	// get the categories
+	getCategories().success( function(response){
 		
-		console.log(response);
+		// loop all the categories
+		$(response.categories.items).each( function(key, category){
+			
+			var image = '';
+			if( category.icons.length > 0 )
+				image = category.icons[0].url;
+			
+			var link = '#discover/'+category.id;
+			
+			html += '<a class="category-panel square-panel" style="background-image: url('+image+');" href="'+link+'">';
+				html += '<div class="title">'+category.name+'</div>';
+			html += '</a>';
+		});
 		
-		var items = response.response.catalog.items;
-		var artist_ids = '';
-		
-		// loop each song
-		for( var i = 0; i < 5; i++ ){
-			var item = items[i];
-			if( typeof(item.artist_id) !== 'undefined' ){
-				getSimilarArtists( item.artist_id ).success( function(response){
-					console.log(response.response);
-				});
-			}
-		}
-		
-		var html = '';
-		
-		$('#popular .content').html( html );
+		container.html( html );
 		
 		updateLoader('stop');
+		
+	}).fail( function( response ){
+		updateLoader('stop');
+		notifyUser('error', 'Error fetching discover content: '+response.response.responseJSON.error.message );
+	});
+	
+};
+
+
+
+
+/**
+ * Render a category item
+ *
+ * This basically gives us a list of playlists
+ * @param categoryID = string
+ **/
+function renderDiscoverCategory( categoryID ){
+	
+	$(document).find('.page#discover .sub-page.index').hide();
+	$(document).find('.page#discover .sub-page.category').show();
+	
+	var container = $(document).find('.page#discover .sub-page.category .content');
+	var html = '';
+	container.html('');
+	
+	updateLoader('start');
+	
+	// get the single category
+	getCategory( categoryID ).success( function(response){
+		
+		$(document).find('.page#discover .sub-page.category .title').html( response.name );
+		
+		// now get his playlists
+		getCategoryPlaylists( categoryID ).success( function(response){
+		
+			// loop all the playlists
+			$(response.playlists.items).each( function(key, playlist){
+				
+				var image = '';
+				if( playlist.images.length > 0 )
+					image = playlist.images[0].url;
+				
+				var link = '#playlist/'+playlist.uri;
+				
+				html += '<a class="playlist-panel square-panel" style="background-image: url('+image+');" href="'+link+'">';
+					html += '<span class="info animate">';
+						html += '<span class="name">'+playlist.name+'</span>'
+						html += '<span class="details">'+playlist.tracks.total+' tracks</span>';
+					html += '</span>';
+				html += '</a>';
+			});
+			
+			container.html( html );
+			
+			updateLoader('stop');
+		});
 		
 	}).fail( function( response ){
 		updateLoader('stop');

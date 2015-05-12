@@ -5,9 +5,8 @@
  * Integration and authentication with Spotify API
  */
  
- 
 function checkToken(){
-
+	
 	// if we don't have an authorization_code, go get one
 	if( localStorage.authorization_code == null ){        
         return getAuthorizationCode();
@@ -165,15 +164,14 @@ function getRelatedArtists( artistID ){
 	});
 };
 
-function getFeaturedPlaylists(){
+function getSearchResults( type, query ){
 	return $.ajax({
-		url: 'https://api.spotify.com/v1/browse/featured-playlists?market='+localStorage.settings_country+'&locale='+localStorage.settings_locale+'&country='+localStorage.settings_country,
+		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
 		type: "GET",
 		headers: {
 			'Authorization': 'Bearer ' + localStorage.access_token
 		},
-		dataType: "json",
-		timeout: 10000
+		timeout: 5000
 	});
 };
 
@@ -186,18 +184,6 @@ function getUsersPlaylists( userid ){
 		},
 		dataType: "json",
 		timeout: 50000
-	});
-};
-
-function getNewReleases(){
-	return $.ajax({
-		url: 'https://api.spotify.com/v1/browse/new-releases?country='+localStorage.settings_country,
-		type: "GET",
-		headers: {
-			'Authorization': 'Bearer ' + localStorage.access_token
-		},
-		dataType: "json",
-		timeout: 100000
 	});
 };
 
@@ -225,6 +211,75 @@ function getMyProfile(){
 		timeout: 10000
 	});	
 };
+
+
+/* =========================================================================== DISCOVER / BROWSE ========= */
+/* ======================================================================================================= */
+
+function getFeaturedPlaylists(){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/featured-playlists?market='+localStorage.settings_country+'&locale='+localStorage.settings_locale+'&country='+localStorage.settings_country,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 10000
+	});
+};
+
+function getNewReleases(){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/new-releases?country='+localStorage.settings_country,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 100000
+	});
+};
+
+function getCategories(){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/categories?locale='+localStorage.settings_locale,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 100000
+	});
+};
+
+function getCategory( categoryID ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/categories/'+categoryID,
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 100000
+	});
+};
+
+function getCategoryPlaylists( categoryID ){
+	return $.ajax({
+		url: 'https://api.spotify.com/v1/browse/categories/'+categoryID+'/playlists?limit=50',
+		type: "GET",
+		headers: {
+			'Authorization': 'Bearer ' + localStorage.access_token
+		},
+		dataType: "json",
+		timeout: 100000
+	});
+};
+
+
+
+/* =========================================================================== PLAYLIST MANAGEMENT ======= */
+/* ======================================================================================================= */
 
 function getMyPlaylists(){
 	return $.ajax({
@@ -302,17 +357,6 @@ function removeTracksFromPlaylist( playlistID, trackURIs ){
 	});
 };
 
-function getSearchResults( type, query ){
-	return $.ajax({
-		url: 'https://api.spotify.com/v1/search?type='+type+'&limit=10&q='+query,
-		type: "GET",
-		headers: {
-			'Authorization': 'Bearer ' + localStorage.access_token
-		},
-		timeout: 5000
-	});
-};
-
 function followPlaylist( owner_id, playlist_id ){
 	return $.ajax({
 		url: 'https://api.spotify.com/v1/users/'+owner_id+'/playlists/'+playlist_id+'/followers',
@@ -348,7 +392,6 @@ function isFollowingPlaylist( owner_id, playlist_id ){
 		timeout: 5000
 	});
 };
-
 
 
 
