@@ -1126,7 +1126,7 @@ function updateLoader( event ){
 function updateInterface(){
 	
 	// make album and playlist panels square
-	$(document).find('.album-panel, .artist-panel').each( function(index, value){
+	$(document).find('.square-panel').each( function(index, value){
 		$(value).css('height', $(value).outerWidth() +'px');
 	});
     
