@@ -2,4 +2,16 @@
 
 	<h3>New Releases page</h3>
 	
+	<div class="playlist-items">
+		
+		<div class="item-container" ng-repeat="item in items">
+			<div>{{ item.name }}</div>
+		</div>
+	
+		<div ng-hide="items.length">
+			No items
+		</div>
+	
+	</div>
+	
 </div>

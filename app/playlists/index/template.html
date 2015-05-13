@@ -2,12 +2,10 @@
 
 	<h3>Playlists</h3>
 	
-	<a ng-click="GetPlaylists()">Fetch</a>
-	
 	<div class="playlist-items">
 		
 		<div class="item-container" ng-repeat="item in items">
-			<div>{{ item.title }}</div>
+			<div>{{ item.name }}</div>
 		</div>
 	
 		<div ng-hide="items.length">

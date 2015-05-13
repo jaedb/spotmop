@@ -8,7 +8,8 @@ var app = angular.module('App', [
 	
 	// list all our required dependencies
 	'ngRoute',
-	'ngResource'
+	'ngResource',
+	'ngStorage'
 ]);
 
 
@@ -60,36 +61,27 @@ app.config(function($locationProvider, $routeProvider) {
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Mopidy", function($q, $rootScope, $resource, $http ){
+app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$http', function($q, $rootScope, $resource, $http ){
 	
-	var consoleError = function(){ console.error.bind(console); };
-	
-	var dataFactory = {
-		Online: false,
-		Queue: {
-			Tracks: null,
-			CurrentTrack: null
-		}
-	};
-	
+	var consoleError = function(){ console.error.bind(console); };	
 	var mopidy = new Mopidy({
 		webSocketUrl: "ws://192.168.0.112:6680/mopidy/ws"
 	});
 	
 	// when mopidy goes online
 	mopidy.on("state:online", function(){
-		
-		// set the flag
-		dataFactory.Online = true;
-		
-		// fetch the queue
-		mopidy.tracklist.getTracks().then( function( response ){
-			dataFactory.Queue.Tracks = response;
-		}, consoleError );
+		Online = true;
 	});
 	
-    return dataFactory;
-});
+	// setup the returned object
+    return {
+		Online: false,		
+		Tracklist: [],		
+		getTracklist: function(){
+			return mopidy.tracklist.getTracklist();
+		}
+	};
+}]);
 
 
 /**
@@ -101,20 +93,53 @@ app.factory("Mopidy", function($q, $rootScope, $resource, $http ){
  **/
 app.factory("Spotify", function( $resource, $http ){
 	
-    var urlBase = 'http://jsonplaceholder.typicode.com/posts/';
-    var dataFactory = {
-		AccessToken: null
-	};
+    var urlBase = 'https://api.spotify.com/v1/';
 	
+	/*
     dataFactory.MyPlaylists = function(){
         return $http.get(urlBase);
     };
 
     dataFactory.insertCustomer = function( cust ){
         return $http.post(urlBase, cust);
-    };
+    };*/
 	
-    return dataFactory;
+	// setup response object
+    return {
+		
+		Online: false,
+		
+		MyPlaylists: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'users/jaedb/playlists',
+				headers: {
+					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+				}
+			});
+		},
+		
+		FeaturedPlaylists: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'browse/featured-playlists',
+				headers: {
+					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+				}
+			});
+		},
+		
+		NewReleases: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'browse/new-releases',
+				headers: {
+					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+				}
+			});
+		}
+		
+	};
 });
 
 

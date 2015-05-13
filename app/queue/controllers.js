@@ -1,14 +1,15 @@
 
 // build the main menu
-app.controller('QueueController', function( $scope, Mopidy ){
+app.controller('QueueController', ['$scope', 'Mopidy', function( $scope, Mopidy ){
 	
-	// set the default queue items
-	$scope.items = [{uri: 'asdf'}];
+	$scope.Tracklist = Mopidy.Tracklist;
 	
-	$scope.Tracks = function(){
-		Mopidy.getTracklist;
-	}
+	$scope.UpdateTracks = function(){
+		//Mopidy.getTracklist();
+		//console.log( Mopidy );
+		Mopidy.getTracklist();
+		console.log( 'updating tracks');
+		//$scope.Tracks.push({ uri: 'Another' });
+	};
 	
-	console.log( Mopidy.Tracks );
-	
-});
+}]);

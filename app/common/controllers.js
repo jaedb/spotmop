@@ -1,6 +1,6 @@
 
 // build the main menu
-app.controller('MainMenu', function( $scope ){
+app.controller('MainMenu', ['$scope', function( $scope ){
 	
 	var items = $scope.items = [
 		{
@@ -26,5 +26,14 @@ app.controller('MainMenu', function( $scope ){
 			Link: 'playlists'
 		}
 	];
+	
+}]);
+
+
+// handle services
+app.controller('Services', function( $scope, Mopidy, Spotify ){
+	
+	$scope.MopidyStatus = Mopidy.Online;	
+	$scope.SpotifyStatus = Spotify.Online;
 	
 });
