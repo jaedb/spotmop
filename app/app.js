@@ -65,11 +65,15 @@ app.config(function($locationProvider, $routeProvider) {
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$http', function($q, $rootScope, $resource, $http ){
+app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$localStorage', '$http', function($q, $rootScope, $resource, $localStorage, $http ){
 	
-	var consoleError = function(){ console.error.bind(console); };	
+	// fetch the settings
+	var Settings = $localStorage.Settings.Mopidy;
+	
+	var consoleError = function(){ console.error.bind(console); };
+	
 	var mopidy = new Mopidy({
-		webSocketUrl: "ws://pi.barnsley.nz:6680/mopidy/ws"
+		webSocketUrl: "ws://"+Settings.Hostname+":"+Settings.Port+"/mopidy/ws"
 	});
 	
 	// when mopidy goes online
