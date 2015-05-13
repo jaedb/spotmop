@@ -114,7 +114,7 @@ app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$localStorage', '$http'
  * @return dataFactory array
  **/
 app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resource, $localStorage, $http ){
-	
+	console.log( $localStorage );
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
 		$localStorage.Spotify = {};
@@ -137,7 +137,7 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 	if( !$localStorage.Spotify.AuthorizationCode )
 		getAuthorizationCode();
 
-	if( $localStorage.Spotify.AccessToken === 'null' || $localStorage.Spotify.AccessTokenExpiry < new Date().getTime() )
+	if( !$localStorage.Spotify.AccessToken || $localStorage.Spotify.AccessTokenExpiry < new Date().getTime() )
 		getNewToken();
 	
 	// Get a Spotify API authorisation code
@@ -149,7 +149,7 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 		
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.Spotify.ClientID;
-		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/app/services/spotify/authenticate.php';
+		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify.php?authorization';
 		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private';
 		newURL += '&response_type=code&show_dialog=true';
 		
@@ -167,7 +167,7 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 			async: false,
 			timeout: 5000,
 			success: function(response){
-			console.log(response);
+				console.log(response);
 				$localStorage.Spotify.AccessToken = response.access_token;
 				$localStorage.Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
 			},
@@ -185,6 +185,8 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
     return {
 			
 		Online: false,
+		
+		getNewToken: getNewToken(),
 		
 		MyPlaylists: function(){
 			return $http({
