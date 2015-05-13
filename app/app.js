@@ -13,6 +13,20 @@ var app = angular.module('App', [
 ]);
 
 
+app.controller('AppController', ['$scope', '$localStorage', function( $scope, $localStorage ){
+
+	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
+		$localStorage.Settings = {};
+		
+	if( typeof($localStorage.Settings.Mopidy) === 'undefined' || typeof($localStorage.Settings.Mopidy) === 'null' )
+		$localStorage.Settings.Mopidy = {
+			Hostname: 'localhost',
+			Port: '6680',
+			CountryCode: 'NZ',
+			Locale: 'en_NZ'
+		};
+
+}]);
 
 
 /* =========================================================================== ROUTING ======== */
@@ -120,7 +134,7 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 	if( typeof($localStorage.Spotify.ClientID) === 'undefined' )
 		$localStorage.Spotify.ClientID = 'a87fb4dbed30475b8cec38523dff53e2';
 	
-	if( $localStorage.Spotify.AuthorizationCode === 'null' )
+	if( !$localStorage.Spotify.AuthorizationCode )
 		getAuthorizationCode();
 
 	if( $localStorage.Spotify.AccessToken === 'null' || $localStorage.Spotify.AccessTokenExpiry < new Date().getTime() )
