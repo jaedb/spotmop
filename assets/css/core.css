@@ -1,3 +1,90 @@
+/**
+ * Core styles
+ * 
+ * Spotmop
+ **/
+
+@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
+
+body,
 html {
-	font-family: Helvetica;
+	background: ##FFFFFF;
+	color: #000000;
+	font-family: 'Roboto', Helvetica, Arial, sans-serif;
+	font-size: 12px;
 }
+
+* {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+#sidebar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 80px;
+	width: 20%;
+}
+
+#body {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 80%;
+	bottom: 80px;
+}
+
+#sidebar > .inner,
+#body > .inner {
+	padding: 20px;
+}
+
+
+
+
+/* ================================================================================ SIDEBAR ======= */
+/* ================================================================================================ */
+
+
+.main-menu a {
+	padding: 2px 6px;
+	display: inline-block;
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.main-menu a:hover {
+	background: #EEEEEE;
+}
+
+.main-menu li {
+	padding-top: 2px;
+	list-style-type: none;
+}
+
+.main-menu > li > a {
+	font-size: 16px;
+}
+
+.main-menu li > ul {
+	padding-left: 15px;
+}
+
+
+
+
+
+
+
+
+
+
+

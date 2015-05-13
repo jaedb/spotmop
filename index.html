@@ -28,32 +28,44 @@
 	
 	<div ng-app="App">
 		
-		<h4>Title: <span ng-bind="title"></span></h4>
-		
-		<div ng-controller="MainMenu">
-			<ul>
-				<li ng-repeat="item in items">
-					<a href="{{ item.Link }}">{{ item.Title }}</a>
-					<ul>
-						<li ng-repeat="item in item.Children">
+		<div id="sidebar">
+			<div class="inner">
+
+				<div ng-controller="MainMenu">
+					<ul class="main-menu">
+						<li ng-repeat="item in items">
 							<a href="{{ item.Link }}">{{ item.Title }}</a>
+							<ul>
+								<li ng-repeat="item in item.Children">
+									<a href="{{ item.Link }}">{{ item.Title }}</a>
+								</li>
+							</ul>
 						</li>
 					</ul>
-				</li>
-			</ul>
+				</div>
+
+				<div ng-controller="Services">
+					<div class="spotify">
+						Spotify: <span ng-bind="SpotifyStatus"></span>
+					</div>
+					<div class="mopidy">
+						Mopidy: <span ng-bind="MopidyStatus"></span>
+					</div>
+				</div>
+
+			</div>
 		</div>
 		
-		<div ng-controller="Services">
-			<div class="spotify">
-				Spotify: <span ng-bind="SpotifyStatus"></span>
-			</div>
-			<div class="mopidy">
-				Mopidy: <span ng-bind="MopidyStatus"></span>
+		<div id="body">
+			<div class="inner">
+				<div ng-view></div>
 			</div>
 		</div>
 		
-		<div class="body">
-			<div ng-view></div>
+		<div id="player">
+			<div class="inner">
+
+			</div>
 		</div>
 		
 	</div>
