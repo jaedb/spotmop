@@ -1,9 +1,13 @@
 <div>
 
 	<h3>Queue</h3>
-	<a ng-click="UpdateQueue()">Add</a>
-	<div class="queue-items" ng-repeat="item in items">
-		<div>{{ item.Title }}</div>
+	
+	<a ng-click="UpdateQueue()">Update</a>
+	
+	<h3>{{ items.length }}</h3>
+	
+	<div class="queue-items" ng-repeat="item in Tracks">
+		<div>{{ item.uri }}</div>
 	</div>
 	
 </div>

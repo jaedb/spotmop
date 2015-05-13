@@ -7,7 +7,7 @@ app.controller('PlaylistsController', function( $scope, Spotify ){
 	
 	//
 	$scope.GetPlaylists = function GetPlaylists(){
-		Spotify.getCustomers()
+		Spotify.MyPlaylists()
 			.success(function (custs) {
 				$scope.items = custs;
 			})
