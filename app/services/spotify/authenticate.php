@@ -113,7 +113,15 @@ if( isset($_GET['code']) ){
 		<body>
 		<h3>Completing authorization ...</h3>
 		<script type="text/javascript">
-			localStorage.authorization_code = '<?php echo $_GET['code']; ?>';
+		
+			// get our existing storage container
+			var Spotify = JSON.parse( localStorage.ngStorage-Spotify );
+			
+			Spotify.AuthorizationCode = '<?php echo $_GET['code']; ?>';
+				
+			// and re-save
+			localStorage.ngStorage-Spotify = JSON.stringify( Spotify );
+			
 		</script>
 	<?php
 	
@@ -124,11 +132,18 @@ if( isset($_GET['code']) ){
 	?>
 			<script type="text/javascript">
 				var response = <?php echo ( $response ) ? $response : '""' ?>;
-
-				localStorage.refresh_token = response.refresh_token;
-				localStorage.access_token = response.access_token;
-				localStorage.token_expiry = new Date().getTime() + 3600000;
-				localStorage.readyToRefresh = true;
+				
+				// get our existing storage container
+				var Spotify = JSON.parse( localStorage.getItem('ngStorage-Spotify') );
+				
+				// update
+				Spotify.RefreshToken = response.refresh_token;
+				Spotify.AccessToken = response.access_token;
+				Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
+				Spotify.ReadyToRefresh = true;
+				
+				// and re-save
+				localStorage.setItem('ngStorage-Spotify', JSON.stringify( Spotify ));
 
 				window.close();
 			</script>

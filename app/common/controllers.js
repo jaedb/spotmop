@@ -24,6 +24,10 @@ app.controller('MainMenu', ['$scope', function( $scope ){
 		{
 			Title: 'Playlists',
 			Link: 'playlists'
+		},
+		{
+			Title: 'Settings',
+			Link: 'settings'
 		}
 	];
 	

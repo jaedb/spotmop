@@ -44,6 +44,10 @@ app.config(function($locationProvider, $routeProvider) {
 		.when('/playlists', {
 			templateUrl : '/app/playlists/index/template.html',
 			controller  : 'PlaylistsController'
+		})
+		.when('/settings', {
+			templateUrl : '/app/settings/index/template.html',
+			controller  : 'SettingsController'
 		});
 });
 
@@ -65,7 +69,7 @@ app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$http', function($q, $r
 	
 	var consoleError = function(){ console.error.bind(console); };	
 	var mopidy = new Mopidy({
-		webSocketUrl: "ws://192.168.0.112:6680/mopidy/ws"
+		webSocketUrl: "ws://pi.barnsley.nz:6680/mopidy/ws"
 	});
 	
 	// when mopidy goes online
@@ -91,18 +95,45 @@ app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$http', function($q, $r
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Spotify", function( $resource, $http ){
+app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resource, $localStorage, $http ){
 	
-    var urlBase = 'https://api.spotify.com/v1/';
+	// set container for spotify storage
+	if( typeof($localStorage.Spotify) === 'undefined' )
+		$localStorage.Spotify = {};
+		
+	if( typeof($localStorage.Spotify.AccessToken) === 'undefined' )
+		$localStorage.Spotify.AccessToken = null;
+		
+	if( typeof($localStorage.Spotify.AccessTokenExpiry) === 'undefined' )
+		$localStorage.Spotify.AccessTokenExpiry = null;
+		
+	if( typeof($localStorage.Spotify.ClientID) === 'undefined' )
+		$localStorage.Spotify.ClientID = 'a87fb4dbed30475b8cec38523dff53e2';
+	
+	//if( $localStorage.Spotify.AccessToken === 'null' ){
+		getAuthorizationCode();
+	//}
 	
 	/*
-    dataFactory.MyPlaylists = function(){
-        return $http.get(urlBase);
-    };
-
-    dataFactory.insertCustomer = function( cust ){
-        return $http.post(urlBase, cust);
-    };*/
+	 * Get a Spotify API authorisation code
+	*/
+	function getAuthorizationCode(){
+		
+		// save current URL, before we redirect
+		localStorage.returnURL = window.location.href;
+		
+		var newURL = '';
+		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.Spotify.ClientID;
+		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/app/services/spotify/authenticate.php';
+		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private';
+		newURL += '&response_type=code&show_dialog=true';
+		
+		// open a new window to handle this authentication
+		window.open(newURL,'spotifyAPIrequest','height=550,width=400');
+	}
+	
+	// specify the base URL for the API endpoints
+    var urlBase = 'https://api.spotify.com/v1/';
 	
 	// setup response object
     return {
@@ -114,7 +145,7 @@ app.factory("Spotify", function( $resource, $http ){
 				method: 'GET',
 				url: urlBase+'users/jaedb/playlists',
 				headers: {
-					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
 		},
@@ -124,7 +155,7 @@ app.factory("Spotify", function( $resource, $http ){
 				method: 'GET',
 				url: urlBase+'browse/featured-playlists',
 				headers: {
-					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
 		},
@@ -134,13 +165,13 @@ app.factory("Spotify", function( $resource, $http ){
 				method: 'GET',
 				url: urlBase+'browse/new-releases',
 				headers: {
-					Authorization: 'Bearer BQCeuK6tk1VoJ8FRU4-e5_GHoTRNDz_6Ntd7ulRLLUvOgZqI_dHm1SYjSsUnkz2TilA3bC1HfbAg-kpxrNVIqQGeudit4lzXOtZCvGFRKk5U5VzlaS9rjWytIYPqYMI3ek7zYTbu1P6g-F_nnnlFZYVPnqxD9Uzx_odfIP_AW_FcY-FGECHg_-JpOe6GJjRqTzWcMh3wbFJYtGTEQ71nxl8hDmny048o95OPZSAfnsHvJgH8'
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
 		}
 		
 	};
-});
+}]);
 
 
 
