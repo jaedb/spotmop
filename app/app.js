@@ -161,7 +161,7 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 	// these expire, so require frequent refreshing
 	function getNewToken(){		
 		return $.ajax({
-			url: '/app/services/spotify/authenticate.php?refresh_token='+$localStorage.Spotify.RefreshToken,
+			url: '/spotify.php?refresh_token='+$localStorage.Spotify.RefreshToken,
 			type: "GET",
 			dataType: "json",
 			async: false,
