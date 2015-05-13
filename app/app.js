@@ -104,19 +104,26 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 	if( typeof($localStorage.Spotify.AccessToken) === 'undefined' )
 		$localStorage.Spotify.AccessToken = null;
 		
+	if( typeof($localStorage.Spotify.RefreshToken) === 'undefined' )
+		$localStorage.Spotify.RefreshToken = null;
+		
+	if( typeof($localStorage.Spotify.AuthorizationCode) === 'undefined' )
+		$localStorage.Spotify.AuthorizationCode = null;
+		
 	if( typeof($localStorage.Spotify.AccessTokenExpiry) === 'undefined' )
 		$localStorage.Spotify.AccessTokenExpiry = null;
 		
 	if( typeof($localStorage.Spotify.ClientID) === 'undefined' )
 		$localStorage.Spotify.ClientID = 'a87fb4dbed30475b8cec38523dff53e2';
 	
-	//if( $localStorage.Spotify.AccessToken === 'null' ){
+	if( $localStorage.Spotify.AuthorizationCode === 'null' )
 		getAuthorizationCode();
-	//}
+
+	if( $localStorage.Spotify.AccessToken === 'null' || $localStorage.Spotify.AccessTokenExpiry < new Date().getTime() )
+		getNewToken();
 	
-	/*
-	 * Get a Spotify API authorisation code
-	*/
+	// Get a Spotify API authorisation code
+	// This is only needed once for this account on this device. It is used to acquire access tokens (which expire)
 	function getAuthorizationCode(){
 		
 		// save current URL, before we redirect
@@ -132,12 +139,33 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 		window.open(newURL,'spotifyAPIrequest','height=550,width=400');
 	}
 	
+	// get a new access token
+	// these expire, so require frequent refreshing
+	function getNewToken(){		
+		return $.ajax({
+			url: '/app/services/spotify/authenticate.php?refresh_token='+$localStorage.Spotify.RefreshToken,
+			type: "GET",
+			dataType: "json",
+			async: false,
+			timeout: 5000,
+			success: function(response){
+			console.log(response);
+				$localStorage.Spotify.AccessToken = response.access_token;
+				$localStorage.Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
+			},
+			fail: function(response){
+				notifyUser('bad','There was a problem connecting to Spotify: '+response.responseJSON.error.message);
+			}
+		});
+	}
+	
+	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
 	
 	// setup response object
     return {
-		
+			
 		Online: false,
 		
 		MyPlaylists: function(){

@@ -12,13 +12,18 @@ function getToken($code){
 	if (FALSE === $ch)
 		throw new Exception('Failed to initialize');
 
+	$redirectURL = 'http://'.$_SERVER["SERVER_NAME"];
+	$redirectURL .= '/app/services/spotify/authenticate.php';
+		
 	$post_data = array(
 			'client_id' => 'a87fb4dbed30475b8cec38523dff53e2',
 			'client_secret' => 'd7c89d0753ef4068bba1678c6cf26ed6',
 			'grant_type' => 'authorization_code',
 			'code' => $code,
-			'redirect_uri' => 'http://'.$_SERVER["SERVER_NAME"].substr($_SERVER["SCRIPT_NAME"],strrpos($_SERVER["SCRIPT_NAME"],"/"))
+			'redirect_uri' => $redirectURL
 		);
+		
+		print_r($post_data);
 	
 	curl_setopt($ch, CURLOPT_URL,"https://accounts.spotify.com/api/token");
 	curl_setopt($ch, CURLOPT_POST, 1);
@@ -33,7 +38,7 @@ function getToken($code){
 	$response = curl_exec($ch);
 	
 	if(curl_errno($ch)){
-		echo 'CURL Rrror: '. curl_error($ch);
+		echo 'CURL Error: '. curl_error($ch);
 	}
 	
 	curl_close($ch);
@@ -115,12 +120,12 @@ if( isset($_GET['code']) ){
 		<script type="text/javascript">
 		
 			// get our existing storage container
-			var Spotify = JSON.parse( localStorage.ngStorage-Spotify );
+			var Spotify = JSON.parse( localStorage.getItem('ngStorage-Spotify') );
 			
 			Spotify.AuthorizationCode = '<?php echo $_GET['code']; ?>';
 				
 			// and re-save
-			localStorage.ngStorage-Spotify = JSON.stringify( Spotify );
+			localStorage.setItem('ngStorage-Spotify', JSON.stringify( Spotify ));
 			
 		</script>
 	<?php
@@ -135,7 +140,7 @@ if( isset($_GET['code']) ){
 				
 				// get our existing storage container
 				var Spotify = JSON.parse( localStorage.getItem('ngStorage-Spotify') );
-				
+				console.log(response);
 				// update
 				Spotify.RefreshToken = response.refresh_token;
 				Spotify.AccessToken = response.access_token;
