@@ -12,9 +12,19 @@ var app = angular.module('App', [
 	'ngStorage'
 ]);
 
+/**
+ * Global controller
+ **/
+app.controller('AppController', ['$scope', '$rootScope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $rootScope, $localStorage, MopidyService, Spotify ){
 
-app.controller('AppController', ['$scope', '$localStorage', function( $scope, $localStorage ){
+	$scope.Mopidy = {};
+	$scope.Mopidy.Online = MopidyService.getState();
 
+	$scope.$on('mopidy:online', function(evt){
+		$scope.Mopidy.Online = 'online yo';
+	});
+	
+	
 	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
 		$localStorage.Settings = {};
 		
@@ -25,7 +35,7 @@ app.controller('AppController', ['$scope', '$localStorage', function( $scope, $l
 			CountryCode: 'NZ',
 			Locale: 'en_NZ'
 		};
-
+	
 }]);
 
 
@@ -79,7 +89,7 @@ app.config(function($locationProvider, $routeProvider) {
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$localStorage', '$http', function($q, $rootScope, $resource, $localStorage, $http ){
+app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', '$http', function($q, $rootScope, $resource, $localStorage, $http ){
 	
 	// fetch the settings
 	var Settings = $localStorage.Settings.Mopidy;
@@ -90,14 +100,22 @@ app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$localStorage', '$http'
 		webSocketUrl: "ws://"+Settings.Hostname+":"+Settings.Port+"/mopidy/ws"
 	});
 	
+	var state = 'offline';
+	
 	// when mopidy goes online
 	mopidy.on("state:online", function(){
-		Online = true;
+		$rootScope.$broadcast('mopidy:online', true);
+		$rootScope.$apply();
 	});
 	
 	// setup the returned object
-    return {
-		Online: false,		
+    return {	
+		getState: function(){
+			return state;
+		},	
+		setState: function( value ){
+			state = value;
+		},
 		Tracklist: [],		
 		getTracklist: function(){
 			return mopidy.tracklist.getTracklist();
@@ -113,7 +131,7 @@ app.factory("Mopidy", ['$q', '$rootScope', '$resource', '$localStorage', '$http'
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resource, $localStorage, $http ){
+app.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
 	
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
@@ -167,7 +185,6 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 			async: false,
 			timeout: 5000,
 			success: function(response){
-			console.log(response);
 				$localStorage.Spotify.AccessToken = response.access_token;
 				$localStorage.Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
 			},
@@ -183,8 +200,6 @@ app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resour
 	
 	// setup response object
     return {
-			
-		Online: false,
 		
 		MyPlaylists: function(){
 			return $http({

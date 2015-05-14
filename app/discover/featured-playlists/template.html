@@ -2,13 +2,21 @@
 
 	<h3>Featured Playlists</h3>
 	
-	<div class="playlist-items">
+	<div class="playlist-items square-panels">
 		
-		<div class="item-container" ng-repeat="item in items">
-			<div>{{ item.name }}</div>
+		<div class="item-container" ng-repeat="playlist in playlists">
+			<a href="/playlist/{{ playlist.id }}" class="square-panel playlist">
+				<div class="image-container animate" ng-repeat="image in playlist.images | limitTo:1">
+					<img class="image" src="{{ image.url }}" />
+				</div>
+				<div class="info animate">
+					<div class="name">{{ playlist.name }}</div>
+					<div class="secondary tracks">{{ playlist.tracks.total }} tracks</div>
+				</div>
+			</a>
 		</div>
 	
-		<div ng-hide="items.length">
+		<div ng-hide="playlists.length">
 			No items
 		</div>
 	

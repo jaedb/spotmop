@@ -5,11 +5,13 @@ app.controller('MainMenu', ['$scope', function( $scope ){
 	var items = $scope.items = [
 		{
 			Title: 'Queue',
-			Link: 'queue'
+			Link: 'queue',
+			Icon: 'list'
 		},
 		{
 			Title: 'Discover',
 			Link: 'discover',
+			Icon: 'star',
 			Children: [
 				{ 
 					Title: 'Featured playlists',
@@ -23,11 +25,13 @@ app.controller('MainMenu', ['$scope', function( $scope ){
 		},
 		{
 			Title: 'Playlists',
-			Link: 'playlists'
+			Link: 'playlists',
+			Icon: 'folder-open'
 		},
 		{
 			Title: 'Settings',
-			Link: 'settings'
+			Link: 'settings',
+			Icon: 'cog'
 		}
 	];
 	
@@ -35,9 +39,23 @@ app.controller('MainMenu', ['$scope', function( $scope ){
 
 
 // handle services
-app.controller('Services', function( $scope, Mopidy, Spotify ){
+app.controller('Services', function( $rootScope, $scope, AppState ){
+	/*
+	$scope.MopidyOnline = false;	
+	$scope.SpotifyOnline = AppState.Spotify;
 	
-	$scope.MopidyStatus = Mopidy.Online;	
-	$scope.SpotifyStatus = Spotify.Online;
+	$scope.$on('Mopidy:ConnectionChange', function(event, data){
+		$scope.MopidyOnline = data;
+	});
+	*/
+	
 	
 });
+
+
+
+
+
+
+
+

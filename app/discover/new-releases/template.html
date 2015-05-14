@@ -2,13 +2,21 @@
 
 	<h3>New Releases page</h3>
 	
-	<div class="playlist-items">
+	<div class="album-items square-panels">
 		
-		<div class="item-container" ng-repeat="item in items">
-			<div>{{ item.name }}</div>
+		<div class="item-container" ng-repeat="album in albums">
+			<a href="/album/{{ album.id }}" class="square-panel album">
+				<div class="image-container animate" ng-repeat="image in album.images | limitTo:1">
+					<img class="image" src="{{ image.url }}" />
+				</div>
+				<div class="info animate">
+					<div class="name">{{ album.name }}</div>
+					<div class="secondary tracks"> tracks</div>
+				</div>
+			</a>
 		</div>
 	
-		<div ng-hide="items.length">
+		<div ng-hide="albums.length">
 			No items
 		</div>
 	

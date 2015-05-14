@@ -1,6 +1,6 @@
 
 // build the main menu
-app.controller('SettingsController', ['$scope', '$localStorage', 'Mopidy', 'Spotify', function( $scope, $localStorage, Mopidy, Spotify ){
+app.controller('SettingsController', ['$scope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $localStorage, MopidyService, Spotify ){
 	
 	// load data (either blanks, or from local storage)
 	$scope.MopidySettings = $localStorage.Settings.Mopidy;

@@ -3,11 +3,11 @@
 app.controller('DiscoverFeaturedPlaylistsController', ['$scope', 'Spotify', function( $scope, Spotify ){
 	
 	// set the default items
-	$scope.items = [];
+	$scope.playlists = [];
 	
 	Spotify.FeaturedPlaylists()
 		.success(function( response ) {
-			$scope.items = response.playlists.items;
+			$scope.playlists = response.playlists.items;
 		})
 		.error(function (error) {
 			$scope.status = 'Unable to load featured playlists: ' + error.message;

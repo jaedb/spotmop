@@ -3,11 +3,11 @@
 app.controller('PlaylistsController', ['$scope', 'Spotify', function( $scope, Spotify ){
 	
 	// set the default items
-	$scope.items = [];
+	$scope.playlists = [];
 	
 	Spotify.MyPlaylists()
 		.success(function( response ) {
-			$scope.items = response.items;
+			$scope.playlists = response.items;
 		})
 		.error(function (error) {
 			$scope.status = 'Unable to load your playlists: ' + error.message;

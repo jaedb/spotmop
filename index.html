@@ -22,54 +22,58 @@
 	
 	<script type="text/javascript" src="/app/queue/controllers.js"></script>	
 	
+	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/forms.css" />
 	
 </head>
 <body ng-app="App" ng-controller="AppController">
 	
-	<div>
-		
-		<div id="sidebar">
-			<div class="inner">
+	<div id="sidebar">
+		<div class="inner">
 
-				<div ng-controller="MainMenu">
-					<ul class="main-menu">
-						<li ng-repeat="item in items">
-							<a href="{{ item.Link }}">{{ item.Title }}</a>
-							<ul>
-								<li ng-repeat="item in item.Children">
-									<a href="{{ item.Link }}">{{ item.Title }}</a>
-								</li>
-							</ul>
-						</li>
-					</ul>
+			<div ng-controller="MainMenu">
+				<ul class="main-menu">
+					<li ng-repeat="item in items">
+						<a href="{{ item.Link }}">
+							<i class="fa fa-{{ item.Icon }}"></i>
+							{{ item.Title }}
+						</a>
+						<ul ng-show="item.Children.length">
+							<li ng-repeat="item in item.Children">
+								<a href="{{ item.Link }}">{{ item.Title }}</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+
+				<h3 ng-bind="Mopidy.Online"></h3>
+				{{ Test }}
+				<div class="spotify">
+					Spotify:
+					<span ng-show="SpotifyOnline">Online</span>
+					<span ng-hide="SpotifyOnline">Offline</span>
 				</div>
-
-				<div ng-controller="Services">
-					<div class="spotify">
-						Spotify: <span ng-bind="SpotifyStatus"></span>
-					</div>
-					<div class="mopidy">
-						Mopidy: <span ng-bind="MopidyStatus"></span>
-					</div>
+				<div class="mopidy">
+					Mopidy:
+					<span ng-show="MopidyOnline">Online</span>
+					<span ng-hide="MopidyOnline">Offline</span>
 				</div>
+			</div>
 
-			</div>
+	</div>
+	
+	<div id="body">
+		<div class="inner">
+			<div ng-view></div>
 		</div>
-		
-		<div id="body">
-			<div class="inner">
-				<div ng-view></div>
-			</div>
-		</div>
-		
-		<div id="player">
-			<div class="inner">
+	</div>
+	
+	<div id="player">
+		<div class="inner">
 
-			</div>
 		</div>
-		
 	</div>
 	
 </body>

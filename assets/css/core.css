@@ -54,7 +54,7 @@ html {
 
 
 .main-menu a {
-	padding: 2px 6px;
+	padding: 3px 6px;
 	display: inline-block;
 	border-radius: 3px;
 	text-decoration: none;
@@ -74,14 +74,114 @@ html {
 	font-size: 16px;
 }
 
+.main-menu > li > a i {
+	font-size: 12px;
+	width: 1.5em;
+	vertical-align: top;
+	margin-top: 4px;
+}
+
 .main-menu li > ul {
-	padding-left: 15px;
+	padding-left: 23px;
+	padding-bottom: 5px;
+}
+
+.main-menu li > ul a {
+	color: #555555;
 }
 
 
 
 
 
+/* ====================================================================== GLOBAL ELEMENTS ========= */
+/* ================================================================================================ */
+
+
+/**
+ * Animations
+ * Add .animation to any element to animate :hover and :focus sudo-styles
+ **/
+ 
+.animate,
+.button,
+button,
+input[type='submit'] {
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+/* prevent animations when page is loading */
+.loading .animate,
+.loading .button,
+.loading button,
+.loading input[type='submit'] {
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+
+
+
+
+/* ====================================================================== STANDARD ELEMENTS ======= */
+/* ================================================================================================ */
+
+
+/**
+ * Square panels
+ * The basis for all playlist, album and artist thumbnails
+ **/
+ 
+ .square-panels {
+	margin-left: -2%;
+	margin-right: -2%;
+}
+ 
+.square-panel {
+	width: 16%;
+	margin: 2% 2% 50px;
+	height: 160px;
+	display: block;
+	float: left;
+	background-size: cover;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	text-decoration: none;
+	color: inherit;
+}
+
+.square-panel .image-container img {
+	max-width: 100%;
+}
+
+.square-panel:hover .image-container {
+	opacity: 0.75;
+}
+
+.square-panel .info {
+	padding-top: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	border-top: 3px solid transparent;
+	margin-top: -3px;
+	position: relative;
+	height: 50px;
+}
+
+.square-panel:hover .info {
+	border-color: #1cf4c4;
+}
+
+.square-panel .info .secondary {
+	padding-top: 2px;
+	color: #AAAAAA;
+}
 
 
 

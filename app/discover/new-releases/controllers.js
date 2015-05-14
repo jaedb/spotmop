@@ -3,14 +3,14 @@
 app.controller('DiscoverNewReleasesController', ['$scope', 'Spotify', function( $scope, Spotify ){
 	
 	// set the default items
-	$scope.items = [];
+	$scope.albums = [];
 	
 	Spotify.NewReleases()
 		.success(function( response ) {
-			$scope.items = response.albums.items;
+			$scope.albums = response.albums.items;
 		})
-		.error(function (error) {
-			$scope.status = 'Unable to load new releases: ' + error.message;
+		.error(function( error ){
+			$scope.status = 'Unable to load new releases';
 		});
 	
 }]);
