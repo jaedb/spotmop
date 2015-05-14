@@ -4,8 +4,8 @@
  */
 'use strict';
 
-angular.module('mopify.services.mopidy', [
-    "mopify.services.settings",
+angular.module('spotmop.services.mopidy', [
+    "spotmop.services.settings",
     'llNotifier'
 ])
 

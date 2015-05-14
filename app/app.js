@@ -4,53 +4,22 @@
 /* ============================================================================================ */
 
 // create our application
-var app = angular.module('App', [
+angular.module('spotmop', [
 	
 	// list all our required dependencies
 	'ngRoute',
 	'ngResource',
-	'ngStorage'
-]);
-
-/**
- * Global controller
- **/
-app.controller('AppController', ['$scope', '$rootScope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $rootScope, $localStorage, MopidyService, Spotify ){
-
-
-	$scope.Mopidy = {};
-	$scope.Mopidy.Online = false;
-	$scope.Mopidy.CurrentTracklist = {};
+	'ngStorage',
 	
-	// listen for connection changes to the Mopidy API
-	$scope.$on('mopidy:connectionChanged', function( data ){
-		$scope.Mopidy.Online = data;
-	});	
-	
-	// listen for track changes
-	$scope.$on('mopidy:tracklistChanged', function( data ){
-		$scope.Mopidy.CurrentTracklist = data;
-	});	
-	
-	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
-		$localStorage.Settings = {};
-		
-	if( typeof($localStorage.Settings.Mopidy) === 'undefined' || typeof($localStorage.Settings.Mopidy) === 'null' )
-		$localStorage.Settings.Mopidy = {
-			Hostname: 'localhost',
-			Port: '6680',
-			CountryCode: 'NZ',
-			Locale: 'en_NZ'
-		};
-	
-}]);
+	'spotmop.queue'
+])
 
 
 /* =========================================================================== ROUTING ======== */
 /* ============================================================================================ */
 
 // setup all the pages we require
-app.config(function($locationProvider, $routeProvider) {
+.config(function($locationProvider, $routeProvider) {
 	
 	// use the HTML5 History API
 	$locationProvider.html5Mode(true);
@@ -80,81 +49,34 @@ app.config(function($locationProvider, $routeProvider) {
 			templateUrl : '/app/settings/index/template.html',
 			controller  : 'SettingsController'
 		});
-});
+})
 
 
+
+/**
+ * Global controller
+ **/
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, Spotify ){
+
+
+	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
+		$localStorage.Settings = {};
+		
+	if( typeof($localStorage.Settings.Mopidy) === 'undefined' || typeof($localStorage.Settings.Mopidy) === 'null' )
+		$localStorage.Settings.Mopidy = {
+			Hostname: 'localhost',
+			Port: '6680',
+			CountryCode: 'NZ',
+			Locale: 'en_NZ'
+		};
+	
+})
 
 
 /* =========================================================================== RESOURCES ====== */
 /* ============================================================================================ */
 
 
-/**
- * Create a Mopidy service
- *
- * This holds all of the Spotify API calls, and returns the response (or promise)
- * back to the caller.
- * @return dataFactory array
- **/
-app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', '$http', '$timeout', function($q, $rootScope, $resource, $localStorage, $http, $timeout ){
-	
-	// fetch the settings
-	var Settings = $localStorage.Settings.Mopidy;
-	
-	var consoleError = function(){ console.error.bind(console); };
-	
-	$rootScope.mopidy = new Mopidy({
-		webSocketUrl: "ws://"+Settings.Hostname+":"+Settings.Port+"/mopidy/ws"
-	});
-	
-	var state = 'offline';
-	
-	// when mopidy goes online
-	$rootScope.mopidy.on("state:online", function(){
-		
-		// include timeout, this prevents $apply already in progress (if this event is fired on app init)
-		$timeout(function() {
-			$rootScope.$broadcast('mopidy:connectionChanged', true);
-			$rootScope.$apply;
-		}, 0);
-	});
-	
-	// when mopidy goes offline
-	$rootScope.mopidy.on("state:offline", function(){
-		
-		// include timeout, this prevents $apply already in progress (if this event is fired on app init)
-		$timeout(function() {
-			$rootScope.$broadcast('mopidy:connectionChanged', false);
-			$rootScope.$apply;
-		}, 0);
-	});
-	
-	// when mopidy goes offline
-	$rootScope.mopidy.on("event:tracklistChanged", function(){
-		
-		$rootScope.mopidy.tracklist.getTracklist().then( function( tracklist ){
-			// include timeout, this prevents $apply already in progress (if this event is fired on app init)
-			$timeout(function() {
-				$rootScope.$broadcast('mopidy:tracklistChanged', tracklist);
-				$rootScope.$apply;
-			}, 0);
-		});
-	});
-	
-	// setup the returned object
-    return {	
-		getState: function(){
-			return state;
-		},	
-		setState: function( value ){
-			state = value;
-		},
-		Tracklist: [],		
-		getTracklist: function(){
-			return mopidy.tracklist.getTracklist();
-		}
-	};
-}]);
 
 
 /**
@@ -164,7 +86,7 @@ app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', 
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
+.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
 	console.log( $localStorage );
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )

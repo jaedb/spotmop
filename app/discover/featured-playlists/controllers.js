@@ -1,6 +1,21 @@
+'use strict';
 
-// build the main menu
-app.controller('DiscoverFeaturedPlaylistsController', ['$scope', 'Spotify', function( $scope, Spotify ){
+angular.module('spotmop.discover.featuredplaylists', [
+    'ngRoute'
+])
+
+/**
+ * Every controller start with defining its own routes.
+ */
+.config(function($routeProvider) {
+	/*
+    $routeProvider.when("/account/settings", {
+        templateUrl: "account/settings/settings.tmpl.html",
+        controller: "SettingsController"
+    });*/
+})
+	
+.controller('DiscoverFeaturedPlaylistsController', ['$scope', 'Spotify', function( $scope, Spotify ){
 	
 	// set the default items
 	$scope.playlists = [];

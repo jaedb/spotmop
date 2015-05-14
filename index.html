@@ -12,14 +12,13 @@
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
 	
 	<script type="text/javascript" src="/app/app.js"></script>
-	<script type="text/javascript" src="/app/common/controllers.js"></script>	
+	<script type="text/javascript" src="/app/services/mopidy/mopidy.service.js"></script>
 	
 	<script type="text/javascript" src="/app/discover/index/controllers.js"></script>	
 	<script type="text/javascript" src="/app/discover/featured-playlists/controllers.js"></script>	
 	<script type="text/javascript" src="/app/discover/new-releases/controllers.js"></script>	
 	<script type="text/javascript" src="/app/playlists/index/controllers.js"></script>	
 	<script type="text/javascript" src="/app/settings/index/controllers.js"></script>	
-	
 	<script type="text/javascript" src="/app/queue/controllers.js"></script>	
 	
 	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
@@ -27,9 +26,39 @@
 	<link rel="stylesheet" type="text/css" href="/assets/css/forms.css" />
 	
 </head>
-<body ng-app="App" ng-controller="AppController">
+<body ng-app="spotmop" ng-controller="ApplicationController">
 	
-	<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
+	<div id="sidebar">
+		<div class="inner">
+			
+			<ul class="main-menu">
+				<li ng-repeat="item in items">
+					<a href="{{ item.Link }}">
+						<i class="fa fa-{{ item.Icon }}"></i>
+						{{ item.Title }}
+					</a>
+					<ul ng-show="item.Children.length">
+						<li ng-repeat="item in item.Children">
+							<a href="{{ item.Link }}">{{ item.Title }}</a>
+						</li>
+					</ul>
+				</li>
+			</ul>
+
+			<div class="spotify">
+				Spotify:
+				<span ng-show="SpotifyOnline">Online</span>
+				<span ng-hide="SpotifyOnline">Offline</span>
+			</div>
+
+			<div class="mopidy">
+				Mopidy:
+				<span ng-show="Mopidy.Online">Online</span>
+				<span ng-hide="Mopidy.Online">Offline</span>
+			</div>
+
+		</div>
+	</div>
 	
 	<div id="body">
 		<div class="inner">

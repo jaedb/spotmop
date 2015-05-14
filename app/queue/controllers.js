@@ -1,15 +1,21 @@
 
-// build the main menu
-app.controller('QueueController', ['$scope', 'MopidyService', function( $scope, MopidyService ){
+angular.module('spotmop.queue', [
+    'ngRoute'
+])
+
+/**
+ * Every controller start with defining its own routes.
+ */
+.config(function($routeProvider) {
+	/*
+    $routeProvider.when("/account/settings", {
+        templateUrl: "account/settings/settings.tmpl.html",
+        controller: "SettingsController"
+    });*/
+})
 	
-	$scope.Tracklist = Mopidy.Tracklist;
+.controller('QueueController', function QueueController( $scope ){
 	
-	$scope.UpdateTracks = function(){
-		//Mopidy.getTracklist();
-		//console.log( Mopidy );
-		MopidyService.getTracklist();
-		console.log( 'updating tracks');
-		//$scope.Tracks.push({ uri: 'Another' });
-	};
+	$scope.Tracklist = false;
 	
-}]);
+});
