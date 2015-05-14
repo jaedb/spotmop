@@ -18,10 +18,19 @@ var app = angular.module('App', [
 app.controller('AppController', ['$scope', '$rootScope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $rootScope, $localStorage, MopidyService, Spotify ){
 
 
-	$scope.$on('mopidy:online', function(evt){
-		$scope.Mopidy.Online = 'online yo';
-	});
+	$scope.Mopidy = {};
+	$scope.Mopidy.Online = false;
+	$scope.Mopidy.CurrentTracklist = {};
 	
+	// listen for connection changes to the Mopidy API
+	$scope.$on('mopidy:connectionChanged', function( data ){
+		$scope.Mopidy.Online = data;
+	});	
+	
+	// listen for track changes
+	$scope.$on('mopidy:tracklistChanged', function( data ){
+		$scope.Mopidy.CurrentTracklist = data;
+	});	
 	
 	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
 		$localStorage.Settings = {};
@@ -87,23 +96,49 @@ app.config(function($locationProvider, $routeProvider) {
  * back to the caller.
  * @return dataFactory array
  **/
-app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', '$http', function($q, $rootScope, $resource, $localStorage, $http ){
+app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', '$http', '$timeout', function($q, $rootScope, $resource, $localStorage, $http, $timeout ){
 	
 	// fetch the settings
 	var Settings = $localStorage.Settings.Mopidy;
 	
 	var consoleError = function(){ console.error.bind(console); };
 	
-	var mopidy = new Mopidy({
+	$rootScope.mopidy = new Mopidy({
 		webSocketUrl: "ws://"+Settings.Hostname+":"+Settings.Port+"/mopidy/ws"
 	});
 	
 	var state = 'offline';
 	
 	// when mopidy goes online
-	mopidy.on("state:online", function(){
-		$rootScope.$broadcast('mopidy:online', true);
-		$rootScope.$apply();
+	$rootScope.mopidy.on("state:online", function(){
+		
+		// include timeout, this prevents $apply already in progress (if this event is fired on app init)
+		$timeout(function() {
+			$rootScope.$broadcast('mopidy:connectionChanged', true);
+			$rootScope.$apply;
+		}, 0);
+	});
+	
+	// when mopidy goes offline
+	$rootScope.mopidy.on("state:offline", function(){
+		
+		// include timeout, this prevents $apply already in progress (if this event is fired on app init)
+		$timeout(function() {
+			$rootScope.$broadcast('mopidy:connectionChanged', false);
+			$rootScope.$apply;
+		}, 0);
+	});
+	
+	// when mopidy goes offline
+	$rootScope.mopidy.on("event:tracklistChanged", function(){
+		
+		$rootScope.mopidy.tracklist.getTracklist().then( function( tracklist ){
+			// include timeout, this prevents $apply already in progress (if this event is fired on app init)
+			$timeout(function() {
+				$rootScope.$broadcast('mopidy:tracklistChanged', tracklist);
+				$rootScope.$apply;
+			}, 0);
+		});
 	});
 	
 	// setup the returned object

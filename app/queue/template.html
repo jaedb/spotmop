@@ -6,8 +6,8 @@
 	
 	<h3>{{ Tracklist.length }}</h3>
 	
-	<div class="queue-items" ng-repeat="item in Tracklist">
-		<div>{{ item.uri }}</div>
+	<div class="queue-items" ng-repeat="track in Mopidy.CurrentTracklist">
+		<div>{{ track.uri }}</div>
 	</div>
 	
 </div>

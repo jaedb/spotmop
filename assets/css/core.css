@@ -26,23 +26,34 @@ html {
 /* ================================================================================================ */
 
 #sidebar {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
-	bottom: 80px;
+	bottom: 100px;
 	width: 20%;
+	overflow-y: auto;
 }
 
 #body {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	right: 0;
 	width: 80%;
-	bottom: 80px;
+	bottom: 100px;
+	overflow-y: scroll;
+}
+
+#player {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 100px;
 }
 
 #sidebar > .inner,
-#body > .inner {
+#body > .inner,
+#player > .inner {
 	padding: 20px;
 }
 
@@ -139,13 +150,11 @@ input[type='submit'] {
  
  .square-panels {
 	margin-left: -2%;
-	margin-right: -2%;
 }
  
 .square-panel {
 	width: 16%;
-	margin: 2% 2% 50px;
-	height: 160px;
+	margin: 2%;
 	display: block;
 	float: left;
 	background-size: cover;
@@ -182,6 +191,12 @@ input[type='submit'] {
 	padding-top: 2px;
 	color: #AAAAAA;
 }
+
+
+
+
+/* ====================================================================== PLAYER ================== */
+/* ================================================================================================ */
 
 
 
