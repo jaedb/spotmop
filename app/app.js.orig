@@ -17,6 +17,8 @@ var app = angular.module('App', [
  **/
 app.controller('AppController', ['$scope', '$rootScope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $rootScope, $localStorage, MopidyService, Spotify ){
 
+	$scope.Mopidy = {};
+	$scope.Mopidy.Online = MopidyService.getState();
 
 	$scope.$on('mopidy:online', function(evt){
 		$scope.Mopidy.Online = 'online yo';
@@ -129,8 +131,13 @@ app.factory("MopidyService", ['$q', '$rootScope', '$resource', '$localStorage', 
  * back to the caller.
  * @return dataFactory array
  **/
+<<<<<<< HEAD
 app.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
+	
+=======
+app.factory("Spotify", ['$resource', '$localStorage', '$http', function( $resource, $localStorage, $http ){
 	console.log( $localStorage );
+>>>>>>> 75c50b9c7be4afb4a032f1ade610864490580282
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
 		$localStorage.Spotify = {};
@@ -183,6 +190,10 @@ app.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', fun
 			async: false,
 			timeout: 5000,
 			success: function(response){
+<<<<<<< HEAD
+=======
+				console.log(response);
+>>>>>>> 75c50b9c7be4afb4a032f1ade610864490580282
 				$localStorage.Spotify.AccessToken = response.access_token;
 				$localStorage.Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
 			},
