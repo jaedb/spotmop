@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spotmop.discover.newreleases', [
+angular.module('spotmop.discover.new', [
     'ngRoute'
 ])
 
@@ -8,19 +8,18 @@ angular.module('spotmop.discover.newreleases', [
  * Every controller start with defining its own routes.
  */
 .config(function($routeProvider) {
-	/*
-    $routeProvider.when("/account/settings", {
-        templateUrl: "account/settings/settings.tmpl.html",
-        controller: "SettingsController"
-    });*/
+    $routeProvider.when("/discover/new", {
+        templateUrl: "app/discover/new/template.html",
+        controller: "NewController"
+    });
 })
 	
-.controller('DiscoverNewReleasesController', ['$scope', 'Spotify', function( $scope, Spotify ){
+.controller('NewController', function NewController( $scope, SpotifyService ){
 	
 	// set the default items
 	$scope.albums = [];
 	
-	Spotify.NewReleases()
+	SpotifyService.newReleases()
 		.success(function( response ) {
 			$scope.albums = response.albums.items;
 		})
@@ -28,4 +27,4 @@ angular.module('spotmop.discover.newreleases', [
 			$scope.status = 'Unable to load new releases';
 		});
 	
-}]);
+});

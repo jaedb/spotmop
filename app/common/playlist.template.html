@@ -1,0 +1,14 @@
+<div>
+
+	<h1>{{ playlist.name }}</h1>
+	
+	<div class="playlist-items tracklist">
+		
+		<div ng-repeat="track in playlist.tracks.items" ng-controller="TrackController" ng-include="'/app/common/track.template.html'"></div>
+	
+		<div ng-hide="playlist.tracks.items.length" class="no-items">
+			No items
+		</div>
+	
+	</div>
+</div>

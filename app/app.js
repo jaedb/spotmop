@@ -11,7 +11,16 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	
-	'spotmop.queue'
+	'spotmop.queue',
+	'spotmop.settings',
+	'spotmop.playlists',
+	
+	'spotmop.playlist',
+	'spotmop.track',
+	
+	'spotmop.discover',
+	'spotmop.discover.featured',
+	'spotmop.discover.new'
 ])
 
 
@@ -23,32 +32,6 @@ angular.module('spotmop', [
 	
 	// use the HTML5 History API
 	$locationProvider.html5Mode(true);
-	
-	$routeProvider
-		.when('/queue', {
-			templateUrl : '/app/queue/template.html',
-			controller  : 'QueueController'
-		})
-		.when('/discover', {
-			templateUrl : '/app/discover/index/template.html',
-			controller  : 'DiscoverController'
-		})
-		.when('/discover/featured-playlists', {
-			templateUrl : '/app/discover/featured-playlists/template.html',
-			controller  : 'DiscoverFeaturedPlaylistsController'
-		})
-		.when('/discover/new-releases', {
-			templateUrl : '/app/discover/new-releases/template.html',
-			controller  : 'DiscoverNewReleasesController'
-		})
-		.when('/playlists', {
-			templateUrl : '/app/playlists/index/template.html',
-			controller  : 'PlaylistsController'
-		})
-		.when('/settings', {
-			templateUrl : '/app/settings/index/template.html',
-			controller  : 'SettingsController'
-		});
 })
 
 
@@ -56,8 +39,40 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, Spotify ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, SpotifyService ){
 
+	$scope.MainMenu = [
+		{
+			Title: 'Queue',
+			Link: 'queue',
+			Icon: 'list'
+		},
+		{
+			Title: 'Discover',
+			Link: 'discover',
+			Icon: 'star',
+			Children: [
+				{ 
+					Title: 'Featured playlists',
+					Link: 'discover/featured'
+				},
+				{ 
+					Title: 'New releases',
+					Link: 'discover/new'
+				}
+			]
+		},
+		{
+			Title: 'Playlists',
+			Link: 'playlists',
+			Icon: 'folder-open'
+		},
+		{
+			Title: 'Settings',
+			Link: 'settings',
+			Icon: 'cog'
+		}
+	];
 
 	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
 		$localStorage.Settings = {};
@@ -86,8 +101,8 @@ angular.module('spotmop', [
  * back to the caller.
  * @return dataFactory array
  **/
-.factory("Spotify", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
-	console.log( $localStorage );
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
+
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
 		$localStorage.Spotify = {};
@@ -149,6 +164,22 @@ angular.module('spotmop', [
 		});
 	}
 	
+	/**
+	 * Get an element from a URI
+	 * @param element = string, the element we wish to extract
+	 * @param uri = string
+	 **/
+	function getFromURI( element, uri ){
+		var exploded = uri.split(':');
+		
+		if( element == 'userid' && exploded[1] == 'user' )
+			return exploded[2];
+			
+		if( element == 'playlistid' && exploded[3] == 'playlist' )
+			return exploded[4];
+			
+		return null;
+	}
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
@@ -158,7 +189,7 @@ angular.module('spotmop', [
 		
 		getNewToken: getNewToken(),
 		
-		MyPlaylists: function(){
+		myPlaylists: function(){
 			return $http({
 				method: 'GET',
 				url: urlBase+'users/jaedb/playlists',
@@ -168,7 +199,7 @@ angular.module('spotmop', [
 			});
 		},
 		
-		FeaturedPlaylists: function(){
+		featuredPlaylists: function(){
 			return $http({
 				method: 'GET',
 				url: urlBase+'browse/featured-playlists',
@@ -178,7 +209,7 @@ angular.module('spotmop', [
 			});
 		},
 		
-		NewReleases: function(){
+		newReleases: function(){
 			return $http({
 				method: 'GET',
 				url: urlBase+'browse/new-releases',
@@ -186,8 +217,52 @@ angular.module('spotmop', [
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
-		}
+		},
 		
+		discoverCategories: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'browse/categories',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		getCategory: function( categoryid ){
+			return $http({
+				method: 'GET',
+				url: urlBase+'browse/categories/'+categoryid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		getCategoryPlaylists: function( categoryid ){
+			return $http({
+				method: 'GET',
+				url: urlBase+'browse/categories/'+categoryid+'/playlists?limit=50',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		getPlaylist: function( playlisturi ){
+		
+			// get the user and playlist ids from the uri
+			var userid = getFromURI( 'userid', playlisturi );
+			var playlistid = getFromURI( 'playlistid', playlisturi );
+		
+			return $http({
+				method: 'GET',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		}
 	};
 }]);
 

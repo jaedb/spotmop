@@ -8,19 +8,18 @@ angular.module('spotmop.playlists', [
  * Every controller start with defining its own routes.
  */
 .config(function($routeProvider) {
-	/*
-    $routeProvider.when("/account/settings", {
-        templateUrl: "account/settings/settings.tmpl.html",
-        controller: "SettingsController"
-    });*/
+    $routeProvider.when("/playlists", {
+        templateUrl: "app/playlists/template.html",
+        controller: "PlaylistsController"
+    });
 })
 	
-.controller('PlaylistsController', ['$scope', 'Spotify', function( $scope, Spotify ){
+.controller('PlaylistsController', function PlaylistsController( $scope, SpotifyService ){
 	
 	// set the default items
 	$scope.playlists = [];
 	
-	Spotify.MyPlaylists()
+	SpotifyService.myPlaylists()
 		.success(function( response ) {
 			$scope.playlists = response.items;
 		})
@@ -33,4 +32,4 @@ angular.module('spotmop.playlists', [
 			$scope.status = 'Unable to load your playlists: ' + error.message;
 		});
 	
-}]);
+});

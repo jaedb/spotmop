@@ -8,15 +8,14 @@ angular.module('spotmop.settings', [
  * Every controller start with defining its own routes.
  */
 .config(function($routeProvider) {
-	/*
-    $routeProvider.when("/account/settings", {
-        templateUrl: "account/settings/settings.tmpl.html",
+    $routeProvider.when("/settings", {
+        templateUrl: "app/settings/template.html",
         controller: "SettingsController"
-    });*/
+    });
 })
 	
-.controller('SettingsController', ['$scope', '$localStorage', 'MopidyService', 'Spotify', function( $scope, $localStorage, MopidyService, Spotify ){
-	
+.controller('SettingsController', function SettingsController( $scope, $localStorage ){
+
 	// load data (either blanks, or from local storage)
 	$scope.MopidySettings = $localStorage.Settings.Mopidy;
 	
@@ -25,4 +24,4 @@ angular.module('spotmop.settings', [
 		$localStorage.Settings.Mopidy = $scope.MopidySettings;
 	};
 	
-}]);
+});

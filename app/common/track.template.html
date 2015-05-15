@@ -1,0 +1,10 @@
+<div class="track {{ class }}" ng-click="trackClicked()">
+	<div class="col w25 title">{{ track.track.name }}</div>
+	<div class="col w25 artist">
+		<span ng-repeat="artist in track.track.artists">
+			<a href="artist/{{ artist.id }}">{{ artist.name }}</a><span ng-if="!$last">, </span>
+		</span>
+	</div>
+	<div class="col w25 album">{{ track.track.name }}</div>
+	<div class="clear-both"></div>
+</div>

@@ -1,21 +1,19 @@
 <div id="sidebar">
 	<div class="inner">
 
-		<div ng-controller="MainMenu">
-			<ul class="main-menu">
-				<li ng-repeat="item in items">
-					<a href="{{ item.Link }}">
-						<i class="fa fa-{{ item.Icon }}"></i>
-						{{ item.Title }}
-					</a>
-					<ul ng-show="item.Children.length">
-						<li ng-repeat="item in item.Children">
-							<a href="{{ item.Link }}">{{ item.Title }}</a>
-						</li>
-					</ul>
-				</li>
-			</ul>
-		</div>
+		<ul class="main-menu">
+			<li ng-repeat="item in MainMenu">
+				<a href="{{ item.Link }}">
+					<i class="fa fa-{{ item.Icon }}"></i>
+					{{ item.Title }}
+				</a>
+				<ul ng-show="item.Children.length">
+					<li ng-repeat="item in item.Children">
+						<a href="{{ item.Link }}">{{ item.Title }}</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
 
 		<div class="spotify">
 			Spotify:

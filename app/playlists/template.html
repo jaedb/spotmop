@@ -1,11 +1,11 @@
 <div>
 
-	<h3>Playlists</h3>
+	<h1>My Playlists</h1>
 	
 	<div class="playlist-items square-panels">
 		
 		<div class="item-container" ng-repeat="playlist in playlists">
-			<a href="/playlist/{{ playlist.id }}" class="square-panel playlist">
+			<a href="/playlist/{{ playlist.uri }}" class="square-panel playlist">
 				<div class="image-container animate" ng-repeat="image in playlist.images | limitTo:1">
 					<img class="image" src="{{ image.url }}" />
 				</div>
@@ -16,7 +16,7 @@
 			</a>
 		</div>
 	
-		<div ng-hide="playlists.length">
+		<div ng-hide="playlists.length" class="no-items">
 			No items
 		</div>
 	
