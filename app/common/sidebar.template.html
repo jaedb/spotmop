@@ -2,7 +2,7 @@
 	<div class="inner">
 
 		<ul class="main-menu">
-			<li ng-repeat="item in MainMenu">
+			<li ng-repeat="item in mainMenu">
 				<a href="{{ item.Link }}">
 					<i class="fa fa-{{ item.Icon }}"></i>
 					{{ item.Title }}
@@ -14,6 +14,12 @@
 				</ul>
 			</li>
 		</ul>
+		
+		<div ng-bind="test">
+			<div ng-repeat"items in test">
+				<div ng-bind="item.wheel"></div>
+			</div>
+		</div>
 
 		<div class="spotify">
 			Spotify:

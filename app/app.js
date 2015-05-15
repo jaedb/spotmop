@@ -39,9 +39,19 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, SpotifyService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, SpotifyService, $timeout ){
 
-	$scope.MainMenu = [
+	$scope.test = [{wheel: 'bob'}];
+
+	$scope.playlists = [];
+	var getPlaylists = function(){
+		return $scope.playlists;
+	};
+	var setPlaylists = function( playlists ){
+		$scope.playlists = playlists;
+	};
+	
+	$scope.mainMenu = [
 		{
 			Title: 'Queue',
 			Link: 'queue',
@@ -65,7 +75,8 @@ angular.module('spotmop', [
 		{
 			Title: 'Playlists',
 			Link: 'playlists',
-			Icon: 'folder-open'
+			Icon: 'folder-open',
+			Children: getPlaylists()
 		},
 		{
 			Title: 'Settings',
@@ -73,6 +84,7 @@ angular.module('spotmop', [
 			Icon: 'cog'
 		}
 	];
+	
 
 	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
 		$localStorage.Settings = {};
@@ -84,6 +96,31 @@ angular.module('spotmop', [
 			CountryCode: 'NZ',
 			Locale: 'en_NZ'
 		};
+	
+	SpotifyService.myPlaylists()
+		.success(function( response ) {
+			
+			var sanitizedPlaylists = [];
+			
+			$.each( response.items, function( key, value ){
+				sanitizedPlaylists.push({
+					Title: value.name,
+					Link: value.uri
+				});
+			});
+			
+			$scope.test = [{wheel: 'mary'},{wheel: 'phil'}];
+			
+			setPlaylists(sanitizedPlaylists);
+			$timeout( function(){
+				$rootScope.$apply();
+			}, 0);
+			
+			console.log( getPlaylists() );
+		})
+		.error(function( error ){
+			$scope.status = 'Unable to load new releases';
+		});
 	
 })
 
@@ -101,7 +138,7 @@ angular.module('spotmop', [
  * back to the caller.
  * @return dataFactory array
  **/
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', function( $rootScope, $resource, $localStorage, $http ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', function( $rootScope, $resource, $localStorage, $http, $interval ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
@@ -125,11 +162,17 @@ angular.module('spotmop', [
 	if( !$localStorage.Spotify.AuthorizationCode )
 		getAuthorizationCode();
 
-	if( !$localStorage.Spotify.AccessToken || $localStorage.Spotify.AccessTokenExpiry < new Date().getTime() )
-		getNewToken();
+	// on load, get a new token
+	// this means we [easily] know how long it's been since last refreshed
+	getNewToken();
 	
-	// Get a Spotify API authorisation code
-	// This is only needed once for this account on this device. It is used to acquire access tokens (which expire)
+	// setup automatic refreshing too (spotify refreshes every hour)
+	$interval( getNewToken, 3500000 );
+	
+	/**
+	 * Get a Spotify API authorisation code
+	 * This is only needed once for this account on this device. It is used to acquire access tokens (which expire)
+	 **/
 	function getAuthorizationCode(){
 		
 		// save current URL, before we redirect
@@ -145,8 +188,10 @@ angular.module('spotmop', [
 		window.open(newURL,'spotifyAPIrequest','height=550,width=400');
 	}
 	
-	// get a new access token
-	// these expire, so require frequent refreshing
+	/**
+	 * Get a new access token
+	 * These expire, so require frequent refreshing
+	 **/
 	function getNewToken(){		
 		return $.ajax({
 			url: '/spotify.php?refresh_token='+$localStorage.Spotify.RefreshToken,
@@ -186,9 +231,6 @@ angular.module('spotmop', [
 	
 	// setup response object
     return {
-		
-		getNewToken: getNewToken(),
-		
 		myPlaylists: function(){
 			return $http({
 				method: 'GET',
