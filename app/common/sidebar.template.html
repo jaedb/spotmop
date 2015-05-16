@@ -9,17 +9,11 @@
 				</a>
 				<ul ng-show="item.Children.length">
 					<li ng-repeat="item in item.Children">
-						<a href="{{ item.Link }}">{{ item.Title }}</a>
+						<a href="{{ item.Link }}" ng-bind="item.Title"></a>
 					</li>
 				</ul>
 			</li>
 		</ul>
-		
-		<div ng-bind="test">
-			<div ng-repeat"items in test">
-				<div ng-bind="item.wheel"></div>
-			</div>
-		</div>
 
 		<div class="spotify">
 			Spotify:

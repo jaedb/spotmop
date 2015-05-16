@@ -5,7 +5,7 @@
 	<div class="playlist-items square-panels">
 		
 		<div class="item-container" ng-repeat="playlist in playlists.items">
-			<a href="/discover/category/{{ category.id }}/playlist/{{ playlist.uri }}" class="square-panel playlist">
+			<a href="/music/playlist/{{ playlist.uri }}" class="square-panel playlist">
 				<div class="image-container animate" ng-repeat="image in playlist.images | limitTo:1">
 					<img class="image" src="{{ image.url }}" />
 				</div>

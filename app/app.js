@@ -15,8 +15,8 @@ angular.module('spotmop', [
 	'spotmop.settings',
 	'spotmop.playlists',
 	
-	'spotmop.playlist',
-	'spotmop.track',
+	'spotmop.music.playlist',
+	'spotmop.music.tracklist',
 	
 	'spotmop.discover',
 	'spotmop.discover.featured',
@@ -76,7 +76,7 @@ angular.module('spotmop', [
 			Title: 'Playlists',
 			Link: 'playlists',
 			Icon: 'folder-open',
-			Children: getPlaylists()
+			Children: null
 		},
 		{
 			Title: 'Settings',
@@ -102,21 +102,26 @@ angular.module('spotmop', [
 			
 			var sanitizedPlaylists = [];
 			
-			$.each( response.items, function( key, value ){
-				sanitizedPlaylists.push({
-					Title: value.name,
-					Link: value.uri
-				});
+			// loop all of our playlists, and set up a menu item for each
+			$.each( response.items, function( key, playlist ){
+			
+				// we only want to add playlists that this user owns
+				if( playlist.owner.id == 'jaedb' ){
+					sanitizedPlaylists.push({
+						Title: playlist.name,
+						Link: playlist.uri
+					});
+				}
 			});
 			
-			$scope.test = [{wheel: 'mary'},{wheel: 'phil'}];
-			
-			setPlaylists(sanitizedPlaylists);
-			$timeout( function(){
-				$rootScope.$apply();
-			}, 0);
-			
-			console.log( getPlaylists() );
+			// now loop the main menu to find our Playlist menu item
+			for(var i in $scope.mainMenu ){
+				if( $scope.mainMenu[i].Link == 'playlists'){
+					// inject our new menu children
+					$scope.mainMenu[i].Children = sanitizedPlaylists;
+					break; //Stop this loop, we found it!
+				}
+			}
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';

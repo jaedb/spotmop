@@ -16,10 +16,6 @@ angular.module('spotmop.discover', [
 		.when("/discover/category/:categoryid", {
 			templateUrl: "app/discover/category.template.html",
 			controller: "CategoryController"
-		})
-		.when("/discover/category/:categoryid/playlist/:playlisturi", {
-			templateUrl: "app/common/playlist.template.html",
-			controller: "PlaylistController"
 		});
 })
 
