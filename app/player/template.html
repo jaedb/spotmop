@@ -1,12 +1,22 @@
-<div id="player" style="background-image: url({{ Mopidy.CurrentTrack.URI }});">
+<div id="player">
+
+	<div class="background-container animate" ng-repeat="image in currentTrack.album.images | limitTo:1">
+		<img class="image" src="{{ image.url }}" />
+	</div>
+	
 	<div class="inner">
 
 		<span class="expander-button animate">
 			<i class="fa fa-chevron-up"></i>
 		</span>
 
-		<div class="current-track">
-			<span class="track">No track</span> <span class="artist">No artist</span>
+		<div class="track-info">
+			<span class="track" ng-bind="currentTrack.name"></span>
+			<span class="artist">
+				<span ng-repeat="artist in currentTrack.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a>
+				</span>
+			</span>
 		</div>
 
 		<div class="clear-both"></div>

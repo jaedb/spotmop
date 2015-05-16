@@ -1,25 +1,24 @@
 <div>
 
-	<h1>New Releases</h1>
+	<h1 ng-bind="artist.name"></h1>
+	
+	<h4>Albums</h4>
 	
 	<div class="album-items square-panels">
-		
-		<div class="item-container" ng-repeat="album in albums">
+		<div class="item-container" ng-repeat="album in albums.items">
 			<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 				<div class="image-container animate" ng-repeat="image in album.images | limitTo:1">
 					<img class="image" src="{{ image.url }}" />
 				</div>
 				<div class="info animate">
 					<div class="name" ng-bind="album.name"></div>
-					<div class="secondary tracks">XX tracks</div>
 				</div>
 			</a>
 		</div>
+	</div>
 	
-		<div ng-hide="albums.length" class="no-items">
-			No items
-		</div>
-	
+	<div class="playlist-items tracklist">
+		<div ng-repeat="track in playlist.tracks.items" ng-controller="TrackController" ng-include="'/app/common/track.template.html'"></div>
 	</div>
 	
 </div>

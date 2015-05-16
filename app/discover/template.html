@@ -8,7 +8,7 @@
 			<a href="/discover/category/{{ category.id }}" class="square-panel category">
 				<div class="image-container animate" ng-repeat="image in category.icons | limitTo:1">
 					<img class="image" src="{{ image.url }}" />
-					<div class="name animate">{{ category.name }}</div>
+					<div class="name animate" ng-bind="category.name"></div>
 				</div>
 			</a>
 		</div>

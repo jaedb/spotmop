@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spotmop.music.tracklist', [])
+angular.module('spotmop.browse.tracklist', [])
 
 .controller('TracklistController', function TracklistController( $scope ){
 	

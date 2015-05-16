@@ -313,20 +313,20 @@ h4 {
  * At least 75% of the functionality lives here. At least.
  **/
 
-.track {
+.tracklist .track {
 	padding: 10px;
 	border-top: 1px solid #EEEEEE;
 	border-bottom: 1px solid #EEEEEE;
 	margin-bottom: -1px;
 }
 
-.track:hover {
+.tracklist .track:hover {
 	background: #F4F4F4;
 	cursor: pointer;
 }
 
-.track.highlighted,
-.track.highlighted:hover {
+.tracklist .track.highlighted,
+.tracklist .track.highlighted:hover {
 	background: #FFF39C;
 }
  
@@ -336,7 +336,66 @@ h4 {
 /* ====================================================================== PLAYER ================== */
 /* ================================================================================================ */
 
+#player .background-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: -1;
+}
 
+#player .background-container img {
+	min-height: 100%;
+	min-width: 100%;
+}
+
+#player > .inner {
+	background: rgba(0,0,0,0.75);
+	color: #FFFFFF;
+}
+
+#player .button {
+	padding: 5px;
+	margin: 0 5px;
+	font-size: 14px;
+	opacity: 0.75;
+}
+
+#player .button.active,
+#player .button:hover {
+	opacity: 1;
+}
+
+#player .button.active {
+    color: #1cf4c4;
+}
+
+#player .track-info {
+	text-align: center;
+	font-size: 16px;
+	text-transform: uppercase;
+	padding: 10px 0 15px;
+}
+
+#player .track-info .track {
+	display: inline-block;
+}
+
+#player .track-info .artist {
+	display: inline-block;
+	opacity: 0.5;
+}
+
+#player .track-info .artist a{
+	text-decoration: none;
+	color: #FFFFFF;
+	border-bottom: 1px dotted transparent;
+}
+
+#player .track-info .artist a:hover {
+	border-color: #FFFFFF;
+}
 
 
 

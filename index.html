@@ -12,12 +12,13 @@
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
 	
 	<script type="text/javascript" src="/app/app.js"></script>
-	<script type="text/javascript" src="/app/services/mopidy/mopidy.service.js"></script>
+	<script type="text/javascript" src="/app/services/mopidy/service.js"></script>
+	<script type="text/javascript" src="/app/services/spotify/service.js"></script>
 	
-	<script type="text/javascript" src="/app/music/playlist/controller.js"></script>	
-	<script type="text/javascript" src="/app/music/album/controller.js"></script>	
-	<script type="text/javascript" src="/app/music/artist/controller.js"></script>	
-	<script type="text/javascript" src="/app/music/tracklist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/playlist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/album/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/artist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/tracklist/controller.js"></script>	
 	
 	<script type="text/javascript" src="/app/discover/controller.js"></script>	
 	<script type="text/javascript" src="/app/discover/featured/controller.js"></script>	
@@ -26,6 +27,7 @@
 	<script type="text/javascript" src="/app/queue/controller.js"></script>	
 	<script type="text/javascript" src="/app/settings/controller.js"></script>	
 	<script type="text/javascript" src="/app/playlists/controller.js"></script>	
+	<script type="text/javascript" src="/app/player/controller.js"></script>	
 	
 	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
@@ -48,7 +50,7 @@
 		</div>
 	</div>
 	
-	<ng-include src="'/app/common/player.template.html'"></ng-include>
+	<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
 	
 </body>
 </html>

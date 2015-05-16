@@ -1,0 +1,25 @@
+<div>
+
+	<h1 ng-bind="playlist.name"></h1>
+	<h4 ng-bind="playlist.description"></h4>
+	<h4><span ng-bind="tracks.items.length"></span> tracks</h4>
+	
+	<div class="playlist-items tracklist"  ng-controller="TracklistController">		
+	
+		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items">
+			<div class="col w25 title" ng-bind="track.track.name"></div>
+			<div class="col w25 artist">
+				<span ng-repeat="artist in track.track.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+				</span>
+			</div>
+			<div class="col w25 album"><a href="/browse/album/{{ track.track.album.uri }}" ng-bind="track.track.album.name"></a></div>
+			<div class="clear-both"></div>
+		</div>
+
+		<div ng-hide="tracks.items.length" class="no-items">
+			No items
+		</div>	
+		
+	</div>
+</div>

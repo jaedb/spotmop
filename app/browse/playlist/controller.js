@@ -1,12 +1,12 @@
 'use strict';
 
-angular.module('spotmop.music.playlist', [
+angular.module('spotmop.browse.playlist', [
     'ngRoute'
 ])
 
 .config(function($routeProvider) {
-    $routeProvider.when("/music/playlist/:uri", {
-        templateUrl: "app/music/playlist/template.html",
+    $routeProvider.when("/browse/playlist/:uri", {
+        templateUrl: "app/browse/playlist/template.html",
         controller: "PlaylistController"
     });
 })
@@ -14,12 +14,12 @@ angular.module('spotmop.music.playlist', [
 .controller('PlaylistController', function PlaylistController( $scope, SpotifyService, $routeParams ){
 		
 	$scope.playlist = {};
-	$scope.tracklist = {};
+	$scope.tracks = {};
 	
 	SpotifyService.getPlaylist( $routeParams.uri )
 		.success(function( response ) {
 			$scope.playlist = response;
-			$scope.tracklist = response.tracks.items;
+			$scope.tracks = response.tracks;
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';

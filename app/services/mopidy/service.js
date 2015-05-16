@@ -5,11 +5,11 @@
 'use strict';
 
 angular.module('spotmop.services.mopidy', [
-    "spotmop.services.settings",
-    'llNotifier'
+    //"spotmop.services.settings",
+    //'llNotifier'
 ])
 
-.factory("mopidyservice", function($q, $rootScope, $cacheFactory, $location, Settings, notifier){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location /*, Settings, notifier */){
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleError = console.error.bind(console);
 
@@ -67,8 +67,6 @@ angular.module('spotmop.services.mopidy', [
 		return context[func].apply(context, args);
 	}
 
-
-
 	return {
 		mopidy: {},
 		isConnected: false,
@@ -84,8 +82,8 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyip = Settings.get("mopidyip", $location.host());
-            var mopidyport = Settings.get("mopidyport", "6680");
+            var mopidyip = 'pi.barnsley.nz';//Settings.get("mopidyip", $location.host());
+            var mopidyport = '6680';//Settings.get("mopidyport", "6680");
             
 			// Initialize mopidy
             try{
@@ -93,6 +91,9 @@ angular.module('spotmop.services.mopidy', [
     				webSocketUrl: "ws://" + mopidyip + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
     				callingConvention: 'by-position-or-by-name'
     			});
+		
+				// this gives us a handy list of all functions available via mopidy
+				// console.log( this.mopidy );
             }
 			catch(e){
                 notifier.notify({type: "custom", template: "Connecting with Mopidy failed with the following error message: <br>" + e, delay: 15000});
@@ -114,20 +115,20 @@ angular.module('spotmop.services.mopidy', [
 				}
 			});
 
-			$rootScope.$broadcast('mopify:mopidystarted');
+			$rootScope.$broadcast('spotmop:mopidystarted');
 		},
 
 		/*
 		 * Close the connection with mopidy
 		 */
 		stop: function() {
-			$rootScope.$broadcast('mopify:stoppingmopidy');
+			$rootScope.$broadcast('spotmop:stoppingmopidy');
 
 			this.mopidy.close();
 			this.mopidy.off();
 			this.mopidy = null;
 
-			$rootScope.$broadcast('mopify:stoppedmopidy');
+			$rootScope.$broadcast('spotmop:stoppedmopidy');
 		},
 
 		/*
