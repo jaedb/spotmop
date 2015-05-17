@@ -1,7 +1,19 @@
 <div>
-
-	<h1 ng-bind="album.name"></h1>
-	<h4><span ng-bind="album.tracks.items.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span>minutes</h4>
+	
+	<div class="album-intro">
+		<div class="image-container" ng-repeat="image in album.images | filter:image.height=300">
+			<img class="image" src="{{ image.url }}" />
+		</div>
+		<h1 ng-bind="album.name"></h1>
+		<h2>
+			<span ng-repeat="artist in album.artists">
+				<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+			</span>
+		</h2>
+		<h4><span ng-bind="album.tracks.items.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span>minutes</h4>
+	</div>
+	
+	<div class="clear-both"></div>
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >	
 	

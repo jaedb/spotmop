@@ -221,6 +221,14 @@ h4 {
 /* ====================================================================== STANDARD ELEMENTS ======= */
 /* ================================================================================================ */
 
+ 
+.no-items {
+	text-align: center;
+	font-size: 16px;
+	color: #CCCCCC;
+	padding-top: 50px;
+	font-weight: bold;
+}
 
 /**
  * Square panels
@@ -229,14 +237,6 @@ h4 {
  
  .square-panels {
 	margin-left: -2%;
-}
- 
- .square-panels .no-items {
-	text-align: center;
-	font-size: 16px;
-	color: #CCCCCC;
-	padding-top: 50px;
-	font-weight: bold;
 }
  
 .square-panel {
@@ -331,6 +331,23 @@ h4 {
 }
  
 
+/**
+ * Page-specific layouts
+ **/
+
+.album-intro .image-container {
+	width: 200px;
+	float: left;
+	padding-right: 20px;
+}
+
+.album-intro .image-container img {
+	max-width: 100%;
+	max-height: 100%;
+}
+ 
+ 
+ 
 
 
 /* ====================================================================== PLAYER ================== */
