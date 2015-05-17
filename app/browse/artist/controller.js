@@ -11,10 +11,10 @@ angular.module('spotmop.browse.artist', [
     });
 })
 
-.controller('ArtistController', function ArtistController( $scope, SpotifyService, $routeParams ){
+.controller('ArtistController', function ArtistController( $scope, $timeout, SpotifyService, $routeParams ){
 	
 	$scope.artist = {};
-	$scope.tracklist = {};
+	$scope.tracks = {};
 	$scope.albums = {};
 	$scope.relatedArtists = {};
 	
@@ -31,6 +31,15 @@ angular.module('spotmop.browse.artist', [
 	SpotifyService.getAlbums( $routeParams.uri )
 		.success(function( response ) {
 			$scope.albums = response;
+		})
+		.error(function( error ){
+			$scope.status = 'Unable to load new releases';
+		});
+	
+	// get the artist's top tracks
+	SpotifyService.getTopTracks( $routeParams.uri )
+		.success(function( response ) {
+			$scope.tracks = response.tracks;
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';

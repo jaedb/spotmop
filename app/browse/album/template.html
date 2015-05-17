@@ -1,7 +1,7 @@
 <div>
 	
 	<div class="album-intro">
-		<div class="image-container" ng-repeat="image in album.images | filter:image.height=300">
+		<div class="image-container" ng-repeat="image in album.images | filter:image.height=300 | limitTo:1">
 			<img class="image" src="{{ image.url }}" />
 		</div>
 		<h1 ng-bind="album.name"></h1>
@@ -18,21 +18,31 @@
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >	
 	
-		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items" data-uri="{{ track.uri }}">
-			<div class="col w25 title" ng-bind="track.name"></div>
-			<div class="col w25 artist">
+
+		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items">
+			<div class="col w30 title" ng-bind="track.name"></div>
+			<div class="col w30 artist">
 				<span ng-repeat="artist in track.artists">
 					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 				</span>
 			</div>
-			<div class="col w25 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
-			<div class="col w25 duration">{{ track.duration_ms | formatMilliseconds }}</div>
+			<div class="col w30 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
+			<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
+			<div class="col w5 popularity">
+				<div class="bars">
+					<span class="bar" ng-class="{true:'on'}[track.popularity>0]"></span>
+					<span class="bar" ng-class="{true:'on'}[track.popularity>20]"></span>
+					<span class="bar" ng-class="{true:'on'}[track.popularity>40]"></span>
+					<span class="bar" ng-class="{true:'on'}[track.popularity>60]"></span>
+					<span class="bar" ng-class="{true:'on'}[track.popularity>80]"></span>
+				</div>
+			</div>
 			<div class="clear-both"></div>
 		</div>
 
 		<div ng-hide="tracks.items.length" class="no-items">
 			No items
-		</div>	
+		</div>
 		
 	</div>
 	

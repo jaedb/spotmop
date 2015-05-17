@@ -246,6 +246,19 @@ angular.module('spotmop.services.spotify', [])
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
+		},
+		
+		getTopTracks: function( artisturi ){
+		
+			var artistid = getFromURI( 'artistid', artisturi );
+			
+			return $http({
+				method: 'GET',
+				url: urlBase+'artists/'+artistid+'/top-tracks?country=NZ',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
 		}
 	};
 }]);
