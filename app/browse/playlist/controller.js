@@ -17,6 +17,9 @@ angular.module('spotmop.browse.playlist', [
 	$scope.tracks = {};
 	$scope.totalTime = 0;
 	
+	// todo: blur out background images in banners. Make it cross-browser too.
+	console.log( $(document).find('.playlist-intro .image').foggy() );
+	
 	SpotifyService.getPlaylist( $routeParams.uri )
 		.success(function( response ) {
 			$scope.playlist = response;
