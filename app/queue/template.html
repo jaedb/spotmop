@@ -1,8 +1,12 @@
 <div>
 
-	<h1>Queue</h1>
-	
-	<h3><span ng-bind="tracks.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes</h3>
+	<div class="queue-intro">
+		<h1>Queue</h1>
+		<div class="info-text">
+			<span ng-bind="tracks.length"></span> tracks
+			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes
+		</div>
+	</div>
 	
 	<div class="queue-items tracklist"  ng-controller="TracklistController">		
 	

@@ -10,10 +10,10 @@
 				<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 			</span>
 		</h2>
-		<h4><span ng-bind="album.tracks.items.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span>minutes</h4>
+		<div class="info-text"><span ng-bind="album.tracks.items.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes</div>
+		<div class="clear-both"></div>
 	</div>
 	
-	<div class="clear-both"></div>
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >	
 	

@@ -114,7 +114,8 @@ html {
 }
 
 .main-menu > li > a {
-	font-size: 16px;
+	font-size: 17px;
+	font-weight: 300;
 }
 
 .main-menu > li > a i {
@@ -217,11 +218,33 @@ h4 {
 	border-color: inherit;
 }
 
+.info-text {
+	color: #AAAAAA;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
 
 /* ====================================================================== STANDARD ELEMENTS ======= */
 /* ================================================================================================ */
 
- 
+.bars {
+	text-align: right;
+}
+
+.bars .bar {
+	width: 2px;
+	height: 10px;
+	background: #333333;
+	margin: 0 0 -2px 0;
+	display: inline-block;
+	opacity: 1;
+}
+
+.bars .bar:not(.on) {
+	opacity: 0.2;
+}
+
 .no-items {
 	text-align: center;
 	font-size: 16px;
@@ -331,12 +354,37 @@ h4 {
 }
  
 
+
+/* ====================================================================== PAGE-SPECIFIC =========== */
+/* ================================================================================================ */
+
 /**
- * Page-specific layouts
+ * Queue
+ **/
+ 
+.queue-intro {
+	padding-bottom: 20px;
+}
+
+
+/**
+ * Album page
  **/
 
+.album-intro {
+	padding-bottom: 20px;
+}
+
+.album-intro h1 {
+	padding-top: 28px;
+}
+
+.album-intro .info-text {
+	padding-top: 15px;
+}
+
 .album-intro .image-container {
-	width: 200px;
+	width: 150px;
 	float: left;
 	padding-right: 20px;
 }
@@ -346,7 +394,40 @@ h4 {
 	max-height: 100%;
 }
  
- 
+
+/**
+ * Playlist
+ **/
+
+.playlist-intro {
+	position: relative;
+	margin: -20px -20px 20px -20px;
+}
+
+.playlist-intro .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: -1;
+	background-size: cover;
+	background-position: 50% 50%;
+}
+
+.playlist-intro .inner {
+	background: rgba(0,0,0,0.5);
+	color: #FFFFFF;
+	padding: 50px;
+}
+
+.playlist-intro h1 {
+	padding-bottom: 8px;
+}
+
+.playlist-intro .info-text {
+	padding-top: 20px;
+}
  
 
 
