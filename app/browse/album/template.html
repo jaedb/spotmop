@@ -1,11 +1,11 @@
 <div>
 
 	<h1 ng-bind="album.name"></h1>
-	<h4><span ng-bind="album.tracks.items.length"></span> tracks</h4>
+	<h4><span ng-bind="album.tracks.items.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span>minutes</h4>
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >	
 	
-		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items">
+		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items" data-uri="{{ track.uri }}">
 			<div class="col w25 title" ng-bind="track.name"></div>
 			<div class="col w25 artist">
 				<span ng-repeat="artist in track.artists">
@@ -13,6 +13,7 @@
 				</span>
 			</div>
 			<div class="col w25 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
+			<div class="col w25 duration">{{ track.duration_ms | formatMilliseconds }}</div>
 			<div class="clear-both"></div>
 		</div>
 

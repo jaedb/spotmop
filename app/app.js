@@ -41,6 +41,15 @@ angular.module('spotmop', [
 	$locationProvider.html5Mode(true);
 })
 
+.filter('formatMilliseconds', function() {
+	return function(ms) {
+		var seconds = Math.floor((ms / 1000) % 60);
+		if( seconds <= 9 )
+			seconds = '0'+seconds;
+		var minutes = Math.floor((ms / (60 * 1000)) % 60);
+		return minutes + ":" + seconds;
+	}
+})
 
 
 /**

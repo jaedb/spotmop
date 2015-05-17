@@ -401,6 +401,11 @@ h4 {
 /**
  * Playback controls
  **/
+ 
+#player .controls {
+	float: left;
+}
+ 
 #player .playback  {
 	width: 75%;
 	float: left;
@@ -411,5 +416,30 @@ h4 {
 	float: right;
 }
 
+#player .slider {
+	padding: 8px 0;
+	margin-left: 120px;
+	margin-right: 20px;
+	cursor: pointer;
+}
 
+#player .slider  .track {
+	position: relative;
+	height: 2px;
+	background: rgba(255,255,255,0.3);
+}
+
+#player .slider  .track .fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #1cf4c4;
+	
+	-webkit-transition: all 1s;
+	-moz-transition: all 1s;
+	-o-transition: all 1s;
+	transition: all 1s;
+}
+	
 

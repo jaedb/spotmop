@@ -13,8 +13,37 @@ angular.module('spotmop.queue', [
     });
 })
 	
-.controller('QueueController', function QueueController( $scope ){
+.controller('QueueController', function QueueController( $scope, $timeout, MopidyService ){
 	
-	$scope.Tracklist = false;
+	$scope.tracks = {};
+	$scope.totalTime = 0;
 	
+	// get tracklist on load
+	$timeout(updateTracklist, 1000);
+	
+	$scope.$on('mopidy:event:tracklistChanged', function(){
+		updateTracklist();
+	});
+	
+	/**
+	 * Fetch the tracklist
+	 **/
+	function updateTracklist(){
+	
+		MopidyService.getTracklist().then( function(tracklist){
+		
+			// parse the tracklist to the template
+			$scope.tracks = tracklist;
+			
+			// figure out the total time for all tracks
+			var totalTime = 0;
+			$.each( $scope.tracks, function( key, track ){
+				totalTime += track.track.length;
+			});	
+			$scope.totalTime = Math.round(totalTime / 100000);
+		});
+		
+		
+		
+	};
 });

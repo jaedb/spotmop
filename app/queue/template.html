@@ -1,13 +1,26 @@
 <div>
 
-	<h3>Queue</h3>
+	<h1>Queue</h1>
 	
-	<a ng-click="UpdateTracks()">Update</a>
+	<h3><span ng-bind="tracks.length"></span> tracks &nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes</h3>
 	
-	<h3>{{ Tracklist.length }}</h3>
+	<div class="queue-items tracklist"  ng-controller="TracklistController">		
 	
-	<div class="queue-items" ng-repeat="track in Tracklist">
-		<div>{{ track.uri }}</div>
+		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks">
+			<div class="col w25 title" ng-bind="track.track.name"></div>
+			<div class="col w25 artist">
+				<span ng-repeat="artist in track.track.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+				</span>
+			</div>
+			<div class="col w25 album"><a href="/browse/album/{{ track.track.album.uri }}" ng-bind="track.track.album.name"></a></div>
+			<div class="clear-both"></div>
+		</div>
+
+		<div ng-hide="tracks.length" class="no-items">
+			No items
+		</div>	
+		
 	</div>
 	
 </div>
