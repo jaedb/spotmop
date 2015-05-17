@@ -8,19 +8,39 @@ angular.module('spotmop.player', [
 .controller('PlayerController', function PlayerController( $scope, $timeout, MopidyService, SpotifyService ){
 	
 	$scope.currentTrack = {};
+	$scope.muted = false;
+	$scope.playing = false;
+	$scope.playPause = function(){
+		if( $scope.playing )
+			MopidyService.pause();
+		else
+			MopidyService.play();
+		}
+	$scope.next = function(){
+			MopidyService.next();
+		}
+	$scope.previous = function(){
+			MopidyService.previous();
+		}
 	
 	// let's kickstart this beast
-	// we use $timeout to delay start until $digest is completed. Not 100% sure why we need to do this.
+	// we use $timeout to delay start until $digest is completed
 	$timeout(
 		function(){ MopidyService.start(); },0
 	);
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
+		updatePlayerState();
 	});
 	
-	$scope.$on('mopidy:event:tracklistChanged', function(){
+	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
 		updateCurrentTrack();
+		updatePlayerState();
+	});
+	
+	$scope.$on('mopidy:event:playbackStateChanged', function( event, state ){
+		updatePlayerState( state.new_state );
 	});
 	
 	function updateCurrentTrack(){
@@ -29,13 +49,37 @@ angular.module('spotmop.player', [
 			if(track !== null && track !== undefined){
 				if(track.name.indexOf("[loading]") > -1){
 					MopidyService.lookup(track.uri).then(function(result){
-						updatePlayerInformation(result[0]);
+						updatePlayerTrack(result[0]);
 					});
 				}else{
-					updatePlayerInformation(track);
+					updatePlayerTrack(track);
 				}
 			}
 		});
+	};
+	
+	/**
+	 * Update the state of the player
+	 * @param new state (optional)
+	 **/
+	function updatePlayerState( newState ){
+		
+		// if we've been told what the new state is, let's just use that
+		if( typeof( newState ) !== 'undefined' ){
+			if( newState == 'playing' )
+				$scope.playing = true;
+			else
+				$scope.playing = false;
+				
+		// not sure of new state, so let's find out first
+		}else{
+			MopidyService.getState().then( function( newState ){
+				if( newState == 'playing' )
+					$scope.playing = true;
+				else
+					$scope.playing = false;
+			});
+		}
 	};
 	
 	/**
@@ -43,7 +87,8 @@ angular.module('spotmop.player', [
 	 * Loads graphic, length, title, etc into template vars
 	 * @param track Track object
 	 **/
-	function updatePlayerInformation( track ){
+	function updatePlayerTrack( track ){
+	
 		$scope.currentTrack = track;
 		
 		// now we have track info, let's get the spotify artwork	
@@ -54,7 +99,6 @@ angular.module('spotmop.player', [
 			.error(function( error ){
 				$scope.status = 'Unable to load new releases';
 			});
-			
 	};
 	
 });

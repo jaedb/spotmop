@@ -365,6 +365,7 @@ h4 {
 #player .button.active,
 #player .button:hover {
 	opacity: 1;
+	cursor: pointer;
 }
 
 #player .button.active {
@@ -397,6 +398,18 @@ h4 {
 	border-color: #FFFFFF;
 }
 
+/**
+ * Playback controls
+ **/
+#player .playback  {
+	width: 75%;
+	float: left;
+}
+
+#player .volume  {
+	width: 25%;
+	float: right;
+}
 
 
 
