@@ -19,6 +19,7 @@ angular.module('spotmop.queue', [
 	$scope.totalTime = 0;
 	
 	// get tracklist on load
+	// TODO: need to figure out how to do this, without upsetting $digest
 	$timeout(updateTracklist, 1000);
 	
 	$scope.$on('mopidy:event:tracklistChanged', function(){

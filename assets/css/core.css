@@ -243,6 +243,17 @@ h4.section-title {
 }
 
 
+/**
+ * Text colour variations
+ **/
+
+.black-text {		color: #000000; }
+.red-text {			color: red; }
+.green-text {		color: green; }
+
+
+
+
 /* ====================================================================== STANDARD ELEMENTS ======= */
 /* ================================================================================================ */
 
@@ -402,14 +413,17 @@ h4.section-title {
 }
 
 .album-intro .image-container {
-	width: 150px;
 	float: left;
 	padding-right: 20px;
+	position: relative;
 }
 
-.album-intro .image-container img {
-	max-width: 100%;
-	max-height: 100%;
+.album-intro .image {
+	width: 150px;
+	height: 150px;
+	background-color: #EEEEEE;
+	background-size: cover;
+	background-position: 50% 50%;
 }
  
 
@@ -438,6 +452,7 @@ h4.section-title {
 	right: -10px;
 	bottom: -10px;
 	left: -10px;
+	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 100%;
 }
@@ -483,6 +498,7 @@ h4.section-title {
 	right: -10px;
 	bottom: -10px;
 	left: -10px;
+	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 50%;
 }

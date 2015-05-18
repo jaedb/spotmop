@@ -6,13 +6,18 @@
 		
 		<div class="sub-page mopidy">
 			
-			<h4 class="section-title">Mopidy server</h4>
+			<h4 class="section-title">Mopidy</h4>
 			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input mopidy connection-status">
-					<div class="status connected green" ng-hide="!Mopidy.Online"><i class="fa fa-circle"></i> &nbsp; Connected</div>
-					<div class="status disconnected red" ng-hide="Mopidy.Online"><i class="fa fa-circle"></i> &nbsp; Disconnected &nbsp;&nbsp; <a class="reconnect black"><i class="fa fa-refresh"></i>&nbsp; Retry</a></div>
+					<div class="status connected green-text" ng-hide="!mopidyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Connected
+					</div>
+					<div class="status disconnected red-text" ng-hide="mopidyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Disconnected &nbsp;&nbsp;
+						<a class="reconnect black"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
+					</div>
 				</div>
 			</div>
 			
@@ -37,13 +42,17 @@
 		
 		<div class="sub-page spotify">
 			
-			<h4 class="section-title">Mopidy server</h4>
+			<h4 class="section-title">Spotify</h4>
 			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input spotify connection-status">
-					<div class="status connected green" ng-hide="!Mopidy.Offline"><i class="fa fa-circle"></i> &nbsp; Connected</div>
-					<div class="status disconnected red" ng-hide="Mopidy.Offline"><i class="fa fa-circle"></i> &nbsp; Disconnected</div>
+					<div class="status connected green-text" ng-hide="!spotifyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Connected
+					</div>
+					<div class="status disconnected red-text" ng-hide="spotifyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Disconnected
+					</div>
 				</div>
 			</div>
 			
@@ -92,8 +101,8 @@
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input echonest connection-status">
-					<div class="status connected green"><i class="fa fa-circle"></i> &nbsp; Connected</div>
-					<div class="status disconnected red"><i class="fa fa-circle"></i> &nbsp; Disconnected</div>
+					<div class="status connected green-text"><i class="fa fa-circle"></i> &nbsp; Connected</div>
+					<div class="status disconnected red-text"><i class="fa fa-circle"></i> &nbsp; Disconnected</div>
 				</div>
 			</div>
 			
@@ -125,7 +134,7 @@
 				<div class="input readonly">
 					<a class="reset-all-settings confirmation">
 						<span class="text"><i class="fa fa-close"></i>&nbsp; Reset all settings</span>
-						<span class="confirmation-text red"><i class="fa fa-exclamation-circle"></i>&nbsp; Are you sure?</span>
+						<span class="confirmation-text red-text"><i class="fa fa-exclamation-circle"></i>&nbsp; Are you sure?</span>
 					</a>
 				</div>
 			</div>

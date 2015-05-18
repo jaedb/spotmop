@@ -14,11 +14,21 @@ angular.module('spotmop.settings', [
     });
 })
 	
-.controller('SettingsController', function SettingsController( $scope, SettingsService ){
+.controller('SettingsController', function SettingsController( $scope, MopidyService, SpotifyService, SettingsService ){
 	
 	// load our current settings into the template
-	$scope.settings = SettingsService.getSettings();
 	$scope.version;
+	$scope.settings = SettingsService.getSettings();
+	$scope.mopidyOnline = MopidyService.isConnected;
+	$scope.spotifyOnline = true;	// TODO: Figure out how to handle online/offline state
+	
+	$scope.$on('mopidy:state:online', function(){
+		$scope.mopidyOnline = true;
+	});
+	
+	$scope.$on('mopidy:state:offline', function(){
+		$scope.mopidyOnline = false;
+	});
 	
 	SettingsService.getVersion()
 		.success( function(response){
