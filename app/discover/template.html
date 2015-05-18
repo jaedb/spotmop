@@ -1,0 +1,21 @@
+<div>
+
+	<h1>Browse playlists</h1>
+	
+	<div class="category-items square-panels">
+		
+		<div class="item-container" ng-repeat="category in categories">
+			<a href="/discover/category/{{ category.id }}" class="square-panel category">
+				<div class="image-container animate" ng-repeat="image in category.icons | limitTo:1">
+					<img class="image" src="{{ image.url }}" />
+					<div class="name animate" ng-bind="category.name"></div>
+				</div>
+			</a>
+		</div>
+	
+		<div ng-hide="categories.length" class="no-items">
+			No items
+		</div>
+	
+	</div>
+</div>

@@ -1,0 +1,24 @@
+<div>
+
+	<h1 ng-bind="category.name"></h1>
+	
+	<div class="playlist-items square-panels">
+		
+		<div class="item-container" ng-repeat="playlist in playlists.items">
+			<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
+				<div class="image-container animate" ng-repeat="image in playlist.images | limitTo:1">
+					<img class="image" src="{{ image.url }}" />
+				</div>
+				<div class="info animate">
+					<div class="name" ng-bind="playlist.name"></div>
+					<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+				</div>
+			</a>
+		</div>
+	
+		<div ng-hide="playlists.items.length" class="no-items">
+			No items
+		</div>
+	
+	</div>
+</div>

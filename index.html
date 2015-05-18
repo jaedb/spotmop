@@ -10,34 +10,49 @@
 	<script type="text/javascript" src="/vendor/angular-resource.js"></script>
 	<script type="text/javascript" src="/vendor/angular-storage.min.js"></script>
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
+	<script type="text/javascript" src="/vendor/background-check.min.js"></script>
 	
 	<script type="text/javascript" src="/app/app.js"></script>
-	<script type="text/javascript" src="/app/common/controllers.js"></script>	
+	<script type="text/javascript" src="/app/services/settings/service.js"></script>
+	<script type="text/javascript" src="/app/services/mopidy/service.js"></script>
+	<script type="text/javascript" src="/app/services/spotify/service.js"></script>
 	
-	<script type="text/javascript" src="/app/discover/index/controllers.js"></script>	
-	<script type="text/javascript" src="/app/discover/featured-playlists/controllers.js"></script>	
-	<script type="text/javascript" src="/app/discover/new-releases/controllers.js"></script>	
-	<script type="text/javascript" src="/app/playlists/index/controllers.js"></script>	
-	<script type="text/javascript" src="/app/settings/index/controllers.js"></script>	
+	<script type="text/javascript" src="/app/browse/playlist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/album/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/artist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/tracklist/controller.js"></script>	
 	
-	<script type="text/javascript" src="/app/queue/controllers.js"></script>	
+	<script type="text/javascript" src="/app/discover/controller.js"></script>	
+	<script type="text/javascript" src="/app/discover/featured/controller.js"></script>	
+	<script type="text/javascript" src="/app/discover/new/controller.js"></script>	
+	
+	<script type="text/javascript" src="/app/queue/controller.js"></script>	
+	<script type="text/javascript" src="/app/settings/controller.js"></script>	
+	<script type="text/javascript" src="/app/playlists/controller.js"></script>	
+	<script type="text/javascript" src="/app/player/controller.js"></script>	
 	
 	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/forms.css" />
 	
 </head>
-<body ng-app="App" ng-controller="AppController">
+<body ng-app="spotmop" ng-controller="ApplicationController">
 	
-	<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
+	<div id="sidebar">
+		<div class="inner">
+			
+			<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
+
+		</div>
+	</div>
 	
-	<div id="body">
+	<div id="body" class="body">
 		<div class="inner">
 			<div ng-view></div>
 		</div>
 	</div>
 	
-	<ng-include src="'/app/common/player.template.html'"></ng-include>
+	<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
 	
 </body>
 </html>

@@ -1,22 +1,22 @@
 <div>
 
-	<h3>New Releases page</h3>
+	<h1>New Releases</h1>
 	
 	<div class="album-items square-panels">
 		
 		<div class="item-container" ng-repeat="album in albums">
-			<a href="/album/{{ album.id }}" class="square-panel album">
+			<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 				<div class="image-container animate" ng-repeat="image in album.images | limitTo:1">
 					<img class="image" src="{{ image.url }}" />
 				</div>
 				<div class="info animate">
-					<div class="name">{{ album.name }}</div>
-					<div class="secondary tracks"> tracks</div>
+					<div class="name" ng-bind="album.name"></div>
+					<div class="secondary tracks">XX tracks</div>
 				</div>
 			</a>
 		</div>
 	
-		<div ng-hide="albums.length">
+		<div ng-hide="albums.length" class="no-items">
 			No items
 		</div>
 	

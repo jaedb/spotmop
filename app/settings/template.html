@@ -1,0 +1,146 @@
+<div>
+	
+	<h1>Settings</h1>
+	
+	<div class="settings">
+		
+		<div class="sub-page mopidy">
+			
+			<h4 class="section-title">Mopidy</h4>
+			
+			<div class="field">
+				<div class="label">Status</div>
+				<div class="input mopidy connection-status">
+					<div class="status connected green-text" ng-hide="!mopidyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Connected
+					</div>
+					<div class="status disconnected red-text" ng-hide="mopidyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Disconnected &nbsp;&nbsp;
+						<a class="reconnect black"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
+					</div>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Hostname</div>
+				<div class="input">
+					<input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Port</div>
+				<div class="input">
+					<input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="clear-both"></div>		
+		</div>
+		
+		<div class="sub-page spotify">
+			
+			<h4 class="section-title">Spotify</h4>
+			
+			<div class="field">
+				<div class="label">Status</div>
+				<div class="input spotify connection-status">
+					<div class="status connected green-text" ng-hide="!spotifyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Connected
+					</div>
+					<div class="status disconnected red-text" ng-hide="spotifyOnline">
+						<i class="fa fa-circle"></i> &nbsp; Disconnected
+					</div>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Application Client ID</div>
+				<div class="input">
+					<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="settings.spotifyclientid" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Country code</div>
+				<div class="input">
+					<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Locale</div>
+				<div class="input">
+					<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field current-user">
+				<div class="label">Current user</div>
+				<div class="input">
+					<span class="my-profile"></span>
+					<a class="log-out-button"><i class="fa fa-close"></i>&nbsp; Log out</a>
+					&nbsp;
+					&nbsp;
+					<a href="/#force-token"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+				</div>
+			</div>
+
+			<div class="clear-both"></div>			
+		</div>
+		
+		<div class="sub-page echonest">
+		
+			<h4 class="section-title">Echonest Taste Profile</h4>
+			
+			<div class="field">
+				<div class="label">Status</div>
+				<div class="input echonest connection-status">
+					<div class="status connected green-text"><i class="fa fa-circle"></i> &nbsp; Connected</div>
+					<div class="status disconnected red-text"><i class="fa fa-circle"></i> &nbsp; Disconnected</div>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Taste profile ID</div>
+				<div class="input">
+					<input type="text" name="tasteprofileid" placeholder="" class="autosave" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="clear-both"></div>
+			
+		</div>
+		
+		<div class="sub-page system">
+		
+			<h4 class="section-title">System info</h4>				
+			
+			<div class="field">
+				<div class="label">Spotmop version</div>
+				<div class="input readonly">
+					<span class="spotmop-version" ng-bind="version"></span>
+				</div>
+			</div>				
+			
+			<div class="field">
+				<div class="label">Saved settings</div>
+				<div class="input readonly">
+					<a class="reset-all-settings confirmation">
+						<span class="text"><i class="fa fa-close"></i>&nbsp; Reset all settings</span>
+						<span class="confirmation-text red-text"><i class="fa fa-exclamation-circle"></i>&nbsp; Are you sure?</span>
+					</a>
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
+	
+</div>
