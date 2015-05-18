@@ -14,14 +14,15 @@ angular.module('spotmop.settings', [
     });
 })
 	
-.controller('SettingsController', function SettingsController( $scope, $localStorage ){
-
-	// load data (either blanks, or from local storage)
-	$scope.MopidySettings = $localStorage.Settings.Mopidy;
+.controller('SettingsController', function SettingsController( $scope, SettingsService ){
+	
+	// load our current settings into the template
+	$scope.settings = SettingsService.getSettings();
 	
 	// save the fields to the localStorage
-	$scope.SaveFields = function( evt ){
-		$localStorage.Settings.Mopidy = $scope.MopidySettings;
+	// this is fired when an input field is blurred
+	$scope.saveField = function( event ){
+		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
 });

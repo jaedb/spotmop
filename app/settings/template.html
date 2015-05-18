@@ -8,6 +8,8 @@
 			
 			<h4>Mopidy server</h4>
 			
+			<h3 ng-bind="settings.hostname"></h3>
+			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input mopidy connection-status">
@@ -19,7 +21,7 @@
 			<div class="field">
 				<div class="label">Hostname</div>
 				<div class="input">
-					<input type="text" name="hostname" placeholder="localhost" class="autosave" ng-model="MopidySettings.Hostname" ng-blur="SaveFields( $event )" />
+					<input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
 					<i class="fa fa-check autosave-success"></i>
 				</div>
 			</div>
@@ -27,23 +29,7 @@
 			<div class="field">
 				<div class="label">Port</div>
 				<div class="input">
-					<input type="text" name="port" placeholder="6680" class="autosave" ng-model="MopidySettings.Port" ng-blur="SaveFields( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Country code</div>
-				<div class="input">
-					<input type="text" name="country" placeholder="NZ" class="autosave" ng-model="MopidySettings.CountryCode" ng-blur="SaveFields( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Locale</div>
-				<div class="input">
-					<input type="text" name="locale" placeholder="en_NZ" class="autosave" ng-model="MopidySettings.Locale" ng-blur="SaveFields( $event )" />
+					<input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
 					<i class="fa fa-check autosave-success"></i>
 				</div>
 			</div>
@@ -69,7 +55,23 @@
 			<div class="field">
 				<div class="label">Application Client ID</div>
 				<div class="input">
-					<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="SpotifySettings.ClientID" />
+					<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="settings.spotifyclientid" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Country code</div>
+				<div class="input">
+					<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+			
+			<div class="field">
+				<div class="label">Locale</div>
+				<div class="input">
+					<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
 					<i class="fa fa-check autosave-success"></i>
 				</div>
 			</div>

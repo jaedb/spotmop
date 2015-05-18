@@ -9,7 +9,8 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location /*, Settings, notifier */){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, SettingsService /*, Settings, notifier */){
+	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleError = console.error.bind(console);
 
@@ -82,13 +83,13 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyip = 'pi.barnsley.nz';//Settings.get("mopidyip", $location.host());
-            var mopidyport = '6680';//Settings.get("mopidyport", "6680");
-            
+            var mopidyhost = SettingsService.getSetting("mopidyhost", $location.host());
+            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+			
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({
-    				webSocketUrl: "ws://" + mopidyip + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
+    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
     				callingConvention: 'by-position-or-by-name'
     			});
 		
@@ -96,7 +97,8 @@ angular.module('spotmop.services.mopidy', [
 				// console.log( this.mopidy );
             }
 			catch(e){
-                notifier.notify({type: "custom", template: "Connecting with Mopidy failed with the following error message: <br>" + e, delay: 15000});
+                // need to re-initiate notifier
+				//notifier.notify({type: "custom", template: "Connecting with Mopidy failed with the following error message: <br>" + e, delay: 15000});
 
                 // Try to connect without a given url
                 this.mopidy = new Mopidy({

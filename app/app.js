@@ -13,6 +13,7 @@ angular.module('spotmop', [
 	
 	'spotmop.player',
 	
+	'spotmop.services.settings',
 	'spotmop.services.mopidy',
 	'spotmop.services.spotify',
 	
@@ -41,6 +42,7 @@ angular.module('spotmop', [
 	$locationProvider.html5Mode(true);
 })
 
+// setup a filter to convert MS to MM:SS
 .filter('formatMilliseconds', function() {
 	return function(ms) {
 		var seconds = Math.floor((ms / 1000) % 60);
@@ -98,18 +100,6 @@ angular.module('spotmop', [
 			Icon: 'cog'
 		}
 	];
-	
-
-	if( typeof($localStorage.Settings) === 'undefined' || typeof($localStorage.Settings) === 'null' )
-		$localStorage.Settings = {};
-		
-	if( typeof($localStorage.Settings.Mopidy) === 'undefined' || typeof($localStorage.Settings.Mopidy) === 'null' )
-		$localStorage.Settings.Mopidy = {
-			Hostname: 'localhost',
-			Port: '6680',
-			CountryCode: 'NZ',
-			Locale: 'en_NZ'
-		};
 	
 	SpotifyService.myPlaylists()
 		.success(function( response ) {
