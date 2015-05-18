@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.settings', [])
 
-.factory("SettingsService", ['$rootScope', '$localStorage', '$interval', function( $rootScope, $localStorage, $interval ){
+.factory("SettingsService", ['$rootScope', '$localStorage', '$interval', '$http', function( $rootScope, $localStorage, $interval, $http ){
 	
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
@@ -27,6 +27,13 @@ angular.module('spotmop.services.settings', [])
 		
 		getSettings: function(){
 			return $localStorage.settings;
+		},
+		
+		getVersion: function(){
+			return $http({
+				method: 'GET',
+				url: 'app/services/settings/version.php'
+			});	
 		}
 	};
 	

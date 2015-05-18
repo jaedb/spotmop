@@ -18,6 +18,12 @@ angular.module('spotmop.settings', [
 	
 	// load our current settings into the template
 	$scope.settings = SettingsService.getSettings();
+	$scope.version;
+	
+	SettingsService.getVersion()
+		.success( function(response){
+			$scope.version = response;
+		});
 	
 	// save the fields to the localStorage
 	// this is fired when an input field is blurred

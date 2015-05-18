@@ -1,14 +1,12 @@
 <div>
 	
-	<h3>Settings page</h3>
+	<h1>Settings</h1>
 	
 	<div class="settings">
 		
 		<div class="sub-page mopidy">
 			
-			<h4>Mopidy server</h4>
-			
-			<h3 ng-bind="settings.hostname"></h3>
+			<h4 class="section-title">Mopidy server</h4>
 			
 			<div class="field">
 				<div class="label">Status</div>
@@ -34,15 +32,12 @@
 				</div>
 			</div>
 			
-			<div class="clear-both"></div>
-			<br />
-			<br />
-		
+			<div class="clear-both"></div>		
 		</div>
 		
 		<div class="sub-page spotify">
 			
-			<h4>Spotify service</h4>
+			<h4 class="section-title">Mopidy server</h4>
 			
 			<div class="field">
 				<div class="label">Status</div>
@@ -87,15 +82,12 @@
 				</div>
 			</div>
 
-			<div class="clear-both"></div>
-			<br />
-			<br />
-			
+			<div class="clear-both"></div>			
 		</div>
 		
 		<div class="sub-page echonest">
 		
-			<h4>Echonest Taste Profile</h4>
+			<h4 class="section-title">Echonest Taste Profile</h4>
 			
 			<div class="field">
 				<div class="label">Status</div>
@@ -119,12 +111,12 @@
 		
 		<div class="sub-page system">
 		
-			<h4>System info</h4>				
+			<h4 class="section-title">System info</h4>				
 			
 			<div class="field">
 				<div class="label">Spotmop version</div>
 				<div class="input readonly">
-					<span class="spotmop-version"></span>
+					<span class="spotmop-version" ng-bind="version"></span>
 				</div>
 			</div>				
 			
