@@ -17,7 +17,7 @@
 	
 	<div class="playlist-items tracklist"  ng-controller="TracklistController">		
 	
-		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items">
+		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks.items" data-uri="{{ track.track.uri }}">
 			<div class="col w30 title" ng-bind="track.track.name"></div>
 			<div class="col w30 artist">
 				<span ng-repeat="artist in track.track.artists">

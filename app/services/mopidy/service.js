@@ -12,6 +12,7 @@ angular.module('spotmop.services.mopidy', [
 .factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, SettingsService /*, Settings, notifier */){
 	
 	// Create consolelog object for Mopidy to log it's logs on
+    var consoleLog = function () {};
     var consoleError = console.error.bind(console);
 
     /*
@@ -105,236 +106,159 @@ angular.module('spotmop.services.mopidy', [
                     callingConvention: 'by-position-or-by-name'
                 });
             }
-
+			
+			this.mopidy.on(consoleLog);
+			
 			// Convert Mopidy events to Angular events
 			this.mopidy.on(function(ev, args) {
-				$rootScope.$broadcast('mopidy:' + ev, args);
-				if (ev === 'state:online') {
-					self.isConnected = true;
-				}
-				if (ev === 'state:offline') {
-					self.isConnected = false;
-				}
+			  $rootScope.$broadcast('mopidy:' + ev, args);
+			  if (ev === 'state:online') {
+				self.isConnected = true;
+			  }
+			  if (ev === 'state:offline') {
+				self.isConnected = false;
+			  }
 			});
 
 			$rootScope.$broadcast('spotmop:mopidystarted');
-		},
-
-		/*
-		 * Close the connection with mopidy
-		 */
-		stop: function() {
-			$rootScope.$broadcast('spotmop:stoppingmopidy');
-
+		  },
+		  stop: function() {
+			$rootScope.$broadcast('spotmop:mopidystopping');
 			this.mopidy.close();
 			this.mopidy.off();
 			this.mopidy = null;
-
-			$rootScope.$broadcast('spotmop:stoppedmopidy');
-		},
-
-		/*
-	 	 * Restart mopidy
-		 */
-		restart: function() {
+			$rootScope.$broadcast('spotmop:mopidystopped');
+		  },
+		  restart: function() {
 			this.stop();
 			this.start();
-		},
+		  },
+		  getPlaylists: function() {
+			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
+		  },
+		  getPlaylist: function(uri) {
+			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		  },
+		  getLibrary: function() {
+			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
+		  },
+		  getLibraryItems: function(uri) {
+			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: uri });
+		  },
+		  refresh: function(uri) {
+			return wrapMopidyFunc("mopidy.library.refresh", this)({ uri: uri });
+		  },
+		  getDirectory: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		  },
+		  getTrack: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		  },
+		  getAlbum: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		  },
+		  getArtist: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		  },
+		  search: function(query) {
+			return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
+		  },
+		  getCurrentTrack: function() {
+			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
+		  },
+		  getTimePosition: function() {
+			return wrapMopidyFunc("mopidy.playback.getTimePosition", this)();
+		  },
+		  seek: function(timePosition) {
+			return wrapMopidyFunc("mopidy.playback.seek", this)({ time_position: timePosition });
+		  },
+		  getVolume: function() {
+			return wrapMopidyFunc("mopidy.mixer.getVolume", this)();
+		  },
+		  setVolume: function(volume) {
+			return wrapMopidyFunc("mopidy.mixer.setVolume", this)({ volume: volume });
+		  },
+		  getState: function() {
+			return wrapMopidyFunc("mopidy.playback.getState", this)();
+		  },
+		  playTrack: function(track, surroundingTracks) {
+			var self = this;
 
-        getPlaylists: function() {
-            return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
-        },
+			// Check if a playlist change is required. If not just change the track.
+			if (self.currentTlTracks.length > 0) {
+			  var trackUris = _.pluck(surroundingTracks, 'uri');
+			  var currentTrackUris = _.map(self.currentTlTracks, function(tlTrack) {
+				return tlTrack.track.uri;
+			  });
+			  if (_.difference(trackUris, currentTrackUris).length === 0) {
+				// no playlist change required, just play a different track.
+				self.mopidy.playback.stop()
+				  .then(function () {
+					var tlTrackToPlay = _.find(self.currentTlTracks, function(tlTrack) {
+					  return tlTrack.track.uri === track.uri;
+					});
+					self.mopidy.playback.play({ tl_track: tlTrackToPlay });
+				  });
+				return;
+			  }
+			}
 
-        getPlaylist: function(uri) {
-            return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
-        },
+			self.mopidy.playback.stop()
+			  .then(function() {
+				self.mopidy.tracklist.clear();
+			  }, consoleError)
+			  .then(function() {
+				self.mopidy.tracklist.add({ tracks: surroundingTracks });
+			  }, consoleError)
+			  .then(function() {
+				self.mopidy.tracklist.getTlTracks()
+				  .then(function(tlTracks) {
+					self.currentTlTracks = tlTracks;
+					var tlTrackToPlay = _.find(tlTracks, function(tlTrack) {
+					  return tlTrack.track.uri === track.uri;
+					});
+					self.mopidy.playback.play({ tl_track: tlTrackToPlay });
+				  }, consoleError);
+			  } , consoleError);
+		  },
+		  playStream: function(streamUri) {
+			var self = this;
 
-        refresh: function(uri) {
-            return wrapMopidyFunc("mopidy.library.refresh", this)({ uri: uri });
-        },
-
-        getTrack: function(uri) {
-            return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-        },
-
-        getAlbum: function(uri) {
-            return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-        },
-
-        getArtist: function(uri) {
-            return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-        },
-
-        search: function(query) {
-            return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
-        },
-
-        searchTrack: function(artist, title){
-            return wrapMopidyFunc("mopidy.library.search", this)({ title: [ title ], artist: [ artist ]});
-        },
-
-        getCurrentTrack: function() {
-            return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
-        },
-
-        getTimePosition: function() {
-            return wrapMopidyFunc("mopidy.playback.getTimePosition", this)();
-        },
-
-        seek: function(timePosition) {
-            return wrapMopidyFunc("mopidy.playback.seek", this)({ time_position: timePosition });
-        },
-
-        getVolume: function() {
-            return wrapMopidyFunc("mopidy.mixer.getVolume", this)();
-        },
-
-        setVolume: function(volume) {
-            return wrapMopidyFunc("mopidy.mixer.setVolume", this)({ volume: volume });
-        },
-
-        getState: function() {
-            return wrapMopidyFunc("mopidy.playback.getState", this)();
-        },
-
-        lookup: function(uris){
-            if(typeof(uris) === "string")
-                uris = [uris];
-            
-            return wrapMopidyFunc("mopidy.library.lookup", this)({ uris: uris });
-        },
-
-        playTrack: function(track, surroundingTracks) {
-            var self = this;
-
-            
-            if(surroundingTracks === undefined)
-                surroundingTracks = [track];
-
-            // Check if a playlist change is required. If not cust change the track.
-            if (self.currentTlTracks.length > 0) {
-                var trackUris = _.pluck(surroundingTracks, 'uri');
-                var currentTrackUris = _.map(self.currentTlTracks, function(tlTrack) {
-                    return tlTrack.track.uri;
-                });
-
-                if (_.difference(trackUris, currentTrackUris).length === 0) {
-                    // no playlist change required, just play a different track.
-                    self.mopidy.playback.stop().then(function () {
-                        var tlTrackToPlay = _.find(self.currentTlTracks, function(tlTrack) {
-                            return tlTrack.track.uri === track.uri;
-                        });
-
-                        self.mopidy.playback.play({ tl_track: tlTrackToPlay }).then(function() {
-                            $rootScope.$broadcast("mopidy:event:trackPlaybackStarted", tlTrackToPlay);
-                        });
-                    });
-                    return;
-                }
-            }
-
-            // Clear and replace complete tracklist
-            self.mopidy.playback.stop().then(function(){
-                self.mopidy.tracklist.clear().then(function(){
-                    var uris = _.pluck(surroundingTracks, "uri");
-                    self.mopidy.tracklist.add({ uris: uris }).then(function(tltracks){
-                        var tlTrackToPlay = _.find(tltracks, function(tltrack) {
-                            return tltrack.track.uri === track.uri;
-                        });
-
-                        self.mopidy.playback.play({ tl_track: tlTrackToPlay }).then(function() {
-                            $rootScope.$broadcast("mopidy:event:trackPlaybackStarted", tlTrackToPlay);
-                        }, consoleError);
-                    }, consoleError);
-                }, consoleError);
-            }, consoleError);
-
-        },
-
-        playTrackAtIndex: function(index){
-            var self = this;
-
-            self.mopidy.tracklist.getTlTracks().then(function(tlTracks) {
-                index = (index < tlTracks.length) ? index : tlTracks.length - 1;
-                var tlTrackToPlay = tlTracks[index];
-
-                self.mopidy.playback.play({ tl_track: tlTrackToPlay }).then(function() {
-                    $rootScope.$broadcast("mopidy:event:trackPlaybackStarted", tlTrackToPlay);
-                });
-            }, consoleError);
-        },
-
-        clearTracklist: function(){
-            return this.mopidy.tracklist.clear();
-        },
-
-        addToTracklist: function(obj){
-            return wrapMopidyFunc("mopidy.tracklist.add", this)(obj);
-        },
-
-        getTracklist: function(){
-            return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
-        },
-
-        shuffleTracklist: function(){
-            return wrapMopidyFunc("mopidy.tracklist.shuffle", this)();
-        },
-        
-        playNext: function(tltrack){
-            return wrapMopidyFunc("mopidy.tracklist.eotTrack", this)({ tl_track: tltrack });
-        },
-
-        play: function(tltrack) {
-            if(tltrack !== undefined){
-                return wrapMopidyFunc("mopidy.playback.play", this)({ tl_track: tltrack });
-            }
-            else{
-                return wrapMopidyFunc("mopidy.playback.play", this)();
-            }
-        },
-
-        filterTracklist: function(query){
-            return wrapMopidyFunc("mopidy.tracklist.filter", this)({ criteria: query });
-        },
-
-        pause: function() {
-            return wrapMopidyFunc("mopidy.playback.pause", this)();
-        },
-
-        stopPlayback: function(clearCurrentTrack) {
-            return wrapMopidyFunc("mopidy.playback.stop", this)();
-        },
-
-        previous: function() {
-            return wrapMopidyFunc("mopidy.playback.previous", this)();
-        },
-
-        next: function() {
-            return wrapMopidyFunc("mopidy.playback.next", this)();
-        },
-
-        setConsume: function(){
-            return wrapMopidyFunc("mopidy.tracklist.setConsume", this)([ true ]);
-        },
-
-        getRandom: function () {
-            return wrapMopidyFunc("mopidy.tracklist.getRandom", this)();
-        },
-
-        setRandom: function (isRandom) {
-            return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
-        },
-
-        getRepeat: function () {
-            return wrapMopidyFunc("mopidy.tracklist.getRepeat", this)();
-        },
-
-        setRepeat: function (isRepeat) {
-            return wrapMopidyFunc("mopidy.tracklist.setRepeat", this)([ isRepeat ]);
-        },
-        removeFromTracklist: function(dict){
-            return wrapMopidyFunc("mopidy.tracklist.remove", this)({ criteria: dict });
-        }
+			self.stopPlayback(true)
+			  .then(function() {
+				self.mopidy.tracklist.clear();
+			  }, consoleError)
+			  .then(function() {
+				self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
+			  }, consoleError)
+			  .then(function() {
+				self.mopidy.playback.play();
+			  }, consoleError);
+		  },
+		  play: function() {
+			return wrapMopidyFunc("mopidy.playback.play", this)();
+		  },
+		  pause: function() {
+			return wrapMopidyFunc("mopidy.playback.pause", this)();
+		  },
+		  stopPlayback: function(clearCurrentTrack) {
+			return wrapMopidyFunc("mopidy.playback.stop", this)();
+		  },
+		  previous: function() {
+			return wrapMopidyFunc("mopidy.playback.previous", this)();
+		  },
+		  next: function() {
+			return wrapMopidyFunc("mopidy.playback.next", this)();
+		  },
+		  getRandom: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getRandom", this)();
+		  },
+		  setRandom: function (isRandom) {
+			return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
+		  },
+		  getCurrentTrackList: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+		  }
 
 	};
 });
