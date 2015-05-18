@@ -7,7 +7,7 @@
 		<div class="item-container" ng-repeat="playlist in playlists.items">
 			<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 				<div class="image-container animate" ng-repeat="image in playlist.images | limitTo:1">
-					<img class="image" src="{{ image.url }}" />
+					<div class="image animate" style="background-image: url({{ image.url }});"></div>
 				</div>
 				<div class="info animate">
 					<div class="name" ng-bind="playlist.name"></div>
