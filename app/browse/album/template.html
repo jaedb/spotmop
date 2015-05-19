@@ -16,17 +16,16 @@
 	</div>
 	
 	
-	<div class="album-items tracklist" ng-controller="TracklistController" >	
+	<div class="album-items tracklist" ng-controller="TracklistController" >
 	
-
-		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks.items">
+		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks.items" data-uri="{{ track.track.uri }}">
 			<div class="col w30 title" ng-bind="track.name"></div>
 			<div class="col w30 artist">
 				<span ng-repeat="artist in track.artists">
 					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 				</span>
 			</div>
-			<div class="col w30 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
+			<div class="col w30 album"><a href="/browse/album/{{ track.album.uri }}" ng-bind="track.track.album.name"></a></div>
 			<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
 			<div class="col w5 popularity">
 				<div class="bars">

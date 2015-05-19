@@ -15,9 +15,9 @@
 	
 	<h4 class="section-title">Top tracks</h4>
 	
-	<div class="top-track-items tracklist" ng-controller="TracklistController" >	
+	<div class="top-track-items tracklist" ng-controller="TracklistController">
 	
-		<div class="track {{ class }}" ng-click="trackClicked()" ng-repeat="track in tracks">
+		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks" data-uri="{{ track.track.uri }}">
 			<div class="col w30 title" ng-bind="track.name"></div>
 			<div class="col w30 artist">
 				<span ng-repeat="artist in track.artists">
@@ -38,9 +38,9 @@
 			<div class="clear-both"></div>
 		</div>
 
-		<div ng-hide="tracks.length" class="no-items">
+		<div ng-hide="tracks.items.length" class="no-items">
 			No items
-		</div>	
+		</div>
 		
 	</div>
 	
