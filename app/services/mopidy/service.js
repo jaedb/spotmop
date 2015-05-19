@@ -181,9 +181,37 @@ angular.module('spotmop.services.mopidy', [
 		  getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		  },
-		  playTrack: function(track, surroundingTracks) {
+		  playTrack: function(newTracklistUris, trackToPlayIndex) {
 			var self = this;
-
+			
+			// stop playback
+			self.mopidy.playback.stop()
+				.then(function() {
+				
+					// clear the current tracklist
+					self.mopidy.tracklist.clear();
+					
+				}, consoleError)
+				.then(function() {
+				
+					// add the surrounding tracks (ie the whole tracklist in focus)
+					self.mopidy.tracklist.add({ uris: newTracklistUris });
+					
+				}, consoleError)
+				.then(function() {
+					
+					// get the new tracklist
+					self.mopidy.tracklist.getTlTracks()
+						.then(function(tlTracks) {
+						
+							// save tracklist for later
+							self.currentTlTracks = tlTracks;
+							
+							self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
+						}, consoleError);
+				}, consoleError);
+			
+			/*
 			// Check if a playlist change is required. If not just change the track.
 			if (self.currentTlTracks.length > 0) {
 			  var trackUris = _.pluck(surroundingTracks, 'uri');
@@ -220,6 +248,7 @@ angular.module('spotmop.services.mopidy', [
 					self.mopidy.playback.play({ tl_track: tlTrackToPlay });
 				  }, consoleError);
 			  } , consoleError);
+			  */
 		  },
 		  playStream: function(streamUri) {
 			var self = this;

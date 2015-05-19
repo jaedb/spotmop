@@ -390,8 +390,8 @@ h4.section-title {
 	cursor: pointer;
 }
 
-.tracklist .track.highlighted,
-.tracklist .track.highlighted:hover {
+.tracklist .track.selected,
+.tracklist .track.selected:hover {
 	background: #FFF39C;
 }
  

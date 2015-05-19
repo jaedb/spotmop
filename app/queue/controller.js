@@ -31,15 +31,15 @@ angular.module('spotmop.queue', [
 	 **/
 	function updateTracklist(){
 	
-		MopidyService.getTracklist().then( function(tracklist){
+		MopidyService.getCurrentTrackList().then( function(tracks){
 		
 			// parse the tracklist to the template
-			$scope.tracks = tracklist;
+			$scope.tracks = tracks;
 			
 			// figure out the total time for all tracks
 			var totalTime = 0;
 			$.each( $scope.tracks, function( key, track ){
-				totalTime += track.track.length;
+				totalTime += track.length;
 			});	
 			$scope.totalTime = Math.round(totalTime / 100000);
 		});
