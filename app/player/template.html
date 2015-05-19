@@ -1,7 +1,7 @@
 <div id="player">
 
 	<div class="background-container animate" ng-repeat="image in currentTrack.album.images | limitTo:1">
-		<img class="image" src="{{ image.url }}" />
+		<div class="image" style="background-image: url({{ image.url }})"></div>
 	</div>
 	
 	<div class="inner">
