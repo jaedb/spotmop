@@ -315,7 +315,7 @@ h4.section-title {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background-color: #EEEEEE;
+	background-color: #777777;
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -365,7 +365,7 @@ h4.section-title {
  
 .square-panel.category:hover .name {
 	border-color: #1cf4c4;
-	padding-bottom: 22%;
+	padding-bottom: 21%;
 }
 
 
