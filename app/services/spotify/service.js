@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', function( $rootScope, $resource, $localStorage, $http, $interval ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
@@ -36,7 +36,7 @@ angular.module('spotmop.services.spotify', [])
 	// this means we [easily] know how long it's been since last refreshed
 	getNewToken();
 	
-	// setup automatic refreshing too (spotify refreshes every hour)
+	// setup automatic refreshing (tokens last for 3600 seconds, so let's refresh every 3500 seconds)
 	$interval( getNewToken, 3500000 );
 	
 	/**
@@ -72,9 +72,11 @@ angular.module('spotmop.services.spotify', [])
 			success: function(response){
 				$localStorage.Spotify.AccessToken = response.access_token;
 				$localStorage.Spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
+				$rootScope.spotifyOnline = true;
 			},
 			fail: function(response){
 				notifyUser('bad','There was a problem connecting to Spotify: '+response.responseJSON.error.message);
+				$rootScope.spotifyOnline = false;
 			}
 		});
 	}

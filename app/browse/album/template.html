@@ -25,7 +25,7 @@
 					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 				</span>
 			</div>
-			<div class="col w30 album"><a href="/browse/album/{{ track.album.uri }}" ng-bind="track.track.album.name"></a></div>
+			<div class="col w30 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
 			<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
 			<div class="col w5 popularity">
 				<div class="bars">

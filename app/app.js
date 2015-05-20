@@ -101,6 +101,33 @@ angular.module('spotmop', [
 		}
 	];
 	
+	$scope.$on('mopidy:state:online', function(){
+		$rootScope.mopidyOnline = true;
+	});
+	
+	$scope.$on('mopidy:state:offline', function(){
+		$rootScope.mopidyOnline = false;
+	});
+	
+	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
+		MopidyService.getCurrentTrackList()
+			.then(
+				function( tracklist ){
+					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
+				}
+			);
+	});
+		
+	// let's kickstart this beast
+	// we use $timeout to delay start until $digest is completed
+	$timeout(
+		function(){
+			MopidyService.start();
+		},0
+	);
+	
 	SpotifyService.myPlaylists()
 		.success(function( response ) {
 			

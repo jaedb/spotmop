@@ -15,16 +15,18 @@
 			</li>
 		</ul>
 
+		
+		<br /><br /><br />
 		<div class="spotify">
 			Spotify:
-			<span ng-show="SpotifyOnline">Online</span>
-			<span ng-hide="SpotifyOnline">Offline</span>
+			<span ng-show="spotifyOnline" class="green-text">Online</span>
+			<span ng-hide="spotifyOnline" class="red-text">Offline</span>
 		</div>
 
 		<div class="mopidy">
 			Mopidy:
-			<span ng-show="Mopidy.Online">Online</span>
-			<span ng-hide="Mopidy.Online">Offline</span>
+			<span ng-show="mopidyOnline" class="green-text">Online</span>
+			<span ng-hide="mopidyOnline" class="red-text">Offline</span>
 		</div>
 
 	</div>

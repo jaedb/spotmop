@@ -47,12 +47,6 @@ angular.module('spotmop.player', [
 			MopidyService.seek( seekTime );
 		}
 	
-	// let's kickstart this beast
-	// we use $timeout to delay start until $digest is completed
-	$timeout(
-		function(){ MopidyService.start(); },0
-	);
-	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
 		updatePlayerState();

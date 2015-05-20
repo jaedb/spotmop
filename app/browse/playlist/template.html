@@ -5,11 +5,11 @@
 			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
 		</div>
 		<div class="inner">
-			<h1 ng-bind="playlist.name"></h1>
-			<h4 ng-bind="playlist.description" ng-show="playlist.description"></h4>
+			<h1 ng-bind="playlist.name">Loading</h1>
+			<h4 ng-bind="playlist.description" ng-show="playlist.description">Loading</h4>
 			<div class="info-text">
-				<span ng-bind="tracks.items.length"></span> tracks
-				&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes
+				<span ng-bind="tracks.items.length">0</span> tracks
+				&nbsp;|&nbsp; <span ng-bind="totalTime">0</span> minutes
 				&nbsp;|&nbsp; <a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
 			</div>
 		</div>
