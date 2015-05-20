@@ -394,6 +394,10 @@ h4.section-title {
 .tracklist .track.selected:hover {
 	background: #FFF39C;
 }
+
+.tracklist .track.playing {
+	font-weight: bold;
+}
  
 
 

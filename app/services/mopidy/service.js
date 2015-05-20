@@ -290,6 +290,9 @@ angular.module('spotmop.services.mopidy', [
 			},
 			getCurrentTrackList: function () {
 				return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+			},
+			getCurrentTrackListTracks: function () {
+				return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 			}
 
 	};

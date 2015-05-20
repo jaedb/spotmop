@@ -23,6 +23,10 @@ angular.module('spotmop.queue', [
 		updateTracklist( tracks );
 	});
 	
+	$scope.$on('mopidy:event:trackPlaybackStarted', function(event, tracks){
+		highlightCurrentTrack();
+	});
+	
 	// get tracklist on load
 	// TODO: need to figure out how to do this, without upsetting $digest
 	$timeout(fetchTracklist, 1000);
@@ -37,7 +41,7 @@ angular.module('spotmop.queue', [
 	 * Fetch the tracklist
 	 **/
 	function fetchTracklist(){		
-		MopidyService.getCurrentTrackList().then( function(tracks){			
+		MopidyService.getCurrentTrackListTracks().then( function(tracks){			
 			updateTracklist( tracks );
 		});
 	};
@@ -48,19 +52,33 @@ angular.module('spotmop.queue', [
 	function updateTracklist( tracks ){
 		
 		$scope.tracks = tracks;
-		
+		console.log( $scope.tracks );
 		// figure out the total time for all tracks
 		var totalTime = 0;
 		$.each( $scope.tracks, function( key, track ){
-			totalTime += track.length;
+			totalTime += track.track.length;
 		});	
 		$scope.totalTime = Math.round(totalTime / 100000);	
 	
 		// TODO: map the current track with the tracklist, so we can highlight the currently playing track
 		MopidyService.getCurrentTrackListTrack().then( function(currentTlTrack){
 			$scope.currentTlTrack = currentTlTrack;
-			console.log( currentTlTrack );
+			highlightCurrentTrack();
 		});
-		
 	};
+	
+	/**
+	 * Highlight the currently playing TlTrack
+	 **/
+	function highlightCurrentTrack(){
+	
+		// search each of the tracks for the tlid
+		$.each( $scope.tracks, function(key, track){
+		
+			// if we have a match, mark it as currently playing
+			if( track.tlid === $scope.currentTlTrack.tlid ){
+				track.currentlyPlaying = true;
+			}
+		});
+	}
 });
