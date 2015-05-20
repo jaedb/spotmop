@@ -17,15 +17,28 @@ angular.module('spotmop.queue', [
 	
 	$scope.tracks = [];
 	$scope.totalTime = 0;
-	$scope.currentTlTrack;
+	$scope.currentTlTrack = {};
 	
 	$scope.$on('spotmop:tracklistUpdated', function(event, tracks){
 		updateTracklist( tracks );
 	});
 	
-	$scope.$on('mopidy:event:trackPlaybackStarted', function(event, tracks){
-		highlightCurrentTrack();
+	$scope.$on('spotmop:currentTrackChanged', function(){
+		updateCurrentTlTrack();
 	});
+	
+	/**
+	 * Get new currently playing tl track
+	 **/
+	function updateCurrentTlTrack(){
+		MopidyService.getCurrentTrackListTrack()
+			.then(
+				function( currentTlTrack ){
+					$scope.currentTlTrack = currentTlTrack;
+					highlightCurrentTrack();
+				}
+			);
+	}
 	
 	// get tracklist on load
 	// TODO: need to figure out how to do this, without upsetting $digest
@@ -44,6 +57,7 @@ angular.module('spotmop.queue', [
 		MopidyService.getCurrentTrackListTracks().then( function(tracks){			
 			updateTracklist( tracks );
 		});
+		updateCurrentTlTrack();
 	};
 	
 	/**
@@ -52,19 +66,15 @@ angular.module('spotmop.queue', [
 	function updateTracklist( tracks ){
 		
 		$scope.tracks = tracks;
-		console.log( $scope.tracks );
+		
 		// figure out the total time for all tracks
 		var totalTime = 0;
 		$.each( $scope.tracks, function( key, track ){
 			totalTime += track.track.length;
 		});	
 		$scope.totalTime = Math.round(totalTime / 100000);	
-	
-		// TODO: map the current track with the tracklist, so we can highlight the currently playing track
-		MopidyService.getCurrentTrackListTrack().then( function(currentTlTrack){
-			$scope.currentTlTrack = currentTlTrack;
-			highlightCurrentTrack();
-		});
+		
+		highlightCurrentTrack();
 	};
 	
 	/**
@@ -76,8 +86,10 @@ angular.module('spotmop.queue', [
 		$.each( $scope.tracks, function(key, track){
 		
 			// if we have a match, mark it as currently playing
-			if( track.tlid === $scope.currentTlTrack.tlid ){
+			if( $scope.currentTlTrack && track.tlid === $scope.currentTlTrack.tlid ){
 				track.currentlyPlaying = true;
+			}else{
+				track.currentlyPlaying = false;
 			}
 		});
 	}

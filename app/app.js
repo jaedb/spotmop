@@ -119,6 +119,12 @@ angular.module('spotmop', [
 				}
 			);
 	});
+	
+	// listen for current track changes
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
+		$rootScope.$broadcast('spotmop:currentTrackChanged');
+	});
 		
 	// let's kickstart this beast
 	// we use $timeout to delay start until $digest is completed
