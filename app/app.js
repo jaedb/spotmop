@@ -127,7 +127,7 @@ angular.module('spotmop', [
 	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
 	// TODO: Move this into the MopidyService for sanity
 	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
-		MopidyService.getCurrentTrackList()
+		MopidyService.getCurrentTrackListTracks()
 			.then(
 				function( tracklist ){
 					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
