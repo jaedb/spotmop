@@ -6,7 +6,7 @@
 		
 		<div class="item-container" ng-repeat="category in categories">
 			<a href="/discover/category/{{ category.id }}" class="square-panel category">
-				<div class="image-container animate" ng-repeat="image in category.icons | limitTo:1">
+				<div class="image-container" ng-repeat="image in category.icons | limitTo:1">
 					<div class="image animate" style="background-image: url({{ image.url }});"></div>
 					<div class="name animate" ng-bind="category.name"></div>
 				</div>

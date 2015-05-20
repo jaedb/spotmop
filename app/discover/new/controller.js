@@ -14,7 +14,7 @@ angular.module('spotmop.discover.new', [
     });
 })
 	
-.controller('NewController', function NewController( $scope, SpotifyService ){
+.controller('NewController', function NewController( $scope, $rootScope, SpotifyService ){
 	
 	// set the default items
 	$scope.albums = [];
@@ -22,6 +22,7 @@ angular.module('spotmop.discover.new', [
 	SpotifyService.newReleases()
 		.success(function( response ) {
 			$scope.albums = response.albums.items;
+			$rootScope.$broadcast('spotmop:pageUpdated');
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';

@@ -100,7 +100,7 @@ angular.module('spotmop', [
 			Icon: 'cog'
 		}
 	];
-	
+
 	$scope.$on('mopidy:state:online', function(){
 		$rootScope.mopidyOnline = true;
 	});
@@ -108,6 +108,21 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
+	
+	// the page content has been updated
+	$scope.$on('spotmop:pageUpdated', function(){
+		
+		// wait for $digest
+		$timeout( function(){
+			
+			// make all the square panels really square
+			$(document).find('.square-panel').each( function(index, value){
+				$(value).find('.image-container').css('height', $(value).find('.image-container').outerWidth() +'px');
+			});
+		},
+		0);
+	});
+	
 	
 	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
 	// TODO: Move this into the MopidyService for sanity

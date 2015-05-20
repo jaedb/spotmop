@@ -14,7 +14,7 @@ angular.module('spotmop.playlists', [
     });
 })
 	
-.controller('PlaylistsController', function PlaylistsController( $scope, SpotifyService ){
+.controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, SpotifyService ){
 	
 	// set the default items
 	$scope.playlists = [];
@@ -23,6 +23,7 @@ angular.module('spotmop.playlists', [
 		.then(
 			function( response ){ // successful
 				$scope.playlists = response.data.items;
+				$rootScope.$broadcast('spotmop:pageUpdated');
 			},
 			function( response ){ // error
 				console.log( response );

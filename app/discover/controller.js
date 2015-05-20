@@ -19,13 +19,14 @@ angular.module('spotmop.discover', [
 		});
 })
 
-.controller('DiscoverController', function DiscoverController( $scope, SpotifyService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService ){
 	
 	$scope.categories = [];
 	
 	SpotifyService.discoverCategories()
 		.success(function( response ) {
 			$scope.categories = response.categories.items;
+			$rootScope.$broadcast('spotmop:pageUpdated');
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
@@ -33,7 +34,7 @@ angular.module('spotmop.discover', [
 	
 })
 
-.controller('CategoryController', function CategoryController( $scope, SpotifyService, $routeParams ){
+.controller('CategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $routeParams ){
 	
 	$scope.category = {};
 	$scope.playlists = [];
@@ -41,6 +42,7 @@ angular.module('spotmop.discover', [
 	SpotifyService.getCategory( $routeParams.categoryid )
 		.success(function( response ) {
 			$scope.category = response;
+			$rootScope.$broadcast('spotmop:pageUpdated');
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
@@ -49,6 +51,7 @@ angular.module('spotmop.discover', [
 	SpotifyService.getCategoryPlaylists( $routeParams.categoryid )
 		.success(function( response ) {
 			$scope.playlists = response.playlists;
+			$rootScope.$broadcast('spotmop:pageUpdated');
 		})
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
