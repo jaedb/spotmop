@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, SettingsService ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.Spotify) === 'undefined' )
@@ -109,6 +109,8 @@ angular.module('spotmop.services.spotify', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
+	var country = SettingsService.getSetting("spotifycountry", 'NZ');
+	var locale = SettingsService.getSetting("spotifylocale", "en_NZ");
 	
 	// setup response object
     return {
@@ -230,7 +232,7 @@ angular.module('spotmop.services.spotify', [])
 			
 			return $http({
 				method: 'GET',
-				url: urlBase+'artists/'+artistid+'/albums?album_type=album,single',
+				url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
@@ -256,7 +258,7 @@ angular.module('spotmop.services.spotify', [])
 			
 			return $http({
 				method: 'GET',
-				url: urlBase+'artists/'+artistid+'/top-tracks?country=NZ',
+				url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
