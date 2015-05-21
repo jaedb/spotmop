@@ -254,8 +254,7 @@ angular.module('spotmop.services.mopidy', [
 			*/
 			},
 			playTlTrack: function( tlTrack ){
-			
-				// self.mopidy.playback not defined? WTF
+				var self = this;
 				self.mopidy.playback.play({ tl_track: tlTrack });
 			},
 			playStream: function(streamUri) {
