@@ -54,6 +54,8 @@ angular.module('spotmop.browse.tracklist', [
 	// when we DOUBLE click on a track
 	$scope.trackDoubleClicked = function( event ){
 		
+		console.log('double clicked');
+		
 		// get the track row (even if we clicked a child element)
 		var target = $(event.target);
 		if( !target.hasClass('track') )
@@ -69,5 +71,4 @@ angular.module('spotmop.browse.tracklist', [
 		
 		MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
 	}
-	
 });

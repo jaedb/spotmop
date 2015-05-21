@@ -203,6 +203,7 @@ input[type='submit'] {
 h1 {
 	font-size: 26px;
 	font-weight: 200;
+	padding-bottom: 20px;
 }
 
 h2 {
@@ -257,22 +258,6 @@ h4.section-title {
 /* ====================================================================== STANDARD ELEMENTS ======= */
 /* ================================================================================================ */
 
-.bars {
-	text-align: right;
-}
-
-.bars .bar {
-	width: 2px;
-	height: 10px;
-	background: #333333;
-	margin: 0 0 -2px 0;
-	display: inline-block;
-	opacity: 1;
-}
-
-.bars .bar:not(.on) {
-	opacity: 0.2;
-}
 
 .no-items {
 	text-align: center;
@@ -281,6 +266,29 @@ h4.section-title {
 	padding-top: 50px;
 	font-weight: bold;
 }
+
+
+/**
+ * Popularity bars
+ **/
+ 
+.bar-track {	
+	display: inline-block;
+	width: 40px;
+	position: relative;
+	height: 4px;
+	background: #DDDDDD;
+	margin-top: 5px;
+}
+
+.bar-track .bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #666666;
+}
+
 
 /**
  * Square panels
@@ -293,7 +301,7 @@ h4.section-title {
  
 .square-panel {
 	width: 16%;
-	margin: 2% 2% 0 2%;
+	margin: 0 2% 3% 2%;
 	display: block;
 	float: left;
 	background-size: cover;
@@ -445,6 +453,12 @@ h4.section-title {
 	background-size: cover;
 	background-position: 50% 50%;
 }
+
+.album-intro .bar-track {
+	vertical-align: top;
+	margin-top: 5px;
+}
+
  
 
 /**
@@ -521,6 +535,10 @@ h4.section-title {
 	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 50%;
+}
+
+.tracklist.top-track-items {
+	padding-bottom: 30px;
 }
 
 

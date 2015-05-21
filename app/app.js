@@ -10,6 +10,7 @@ angular.module('spotmop', [
 	'ngRoute',
 	'ngResource',
 	'ngStorage',
+	'ngDraggable',
 	
 	'spotmop.player',
 	
@@ -178,7 +179,6 @@ angular.module('spotmop', [
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
 		});
-	
 });
 
 

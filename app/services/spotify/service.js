@@ -172,7 +172,7 @@ angular.module('spotmop.services.spotify', [])
 		newReleases: function(){
 			return $http({
 				method: 'GET',
-				url: urlBase+'browse/new-releases',
+				url: urlBase+'browse/new-releases?country='+ country,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}

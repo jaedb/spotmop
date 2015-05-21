@@ -27,18 +27,14 @@
 			<div class="col w30 album"><a href="/browse/album/{{ track.album.uri }}" ng-bind="track.album.name"></a></div>
 			<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
 			<div class="col w5 popularity">
-				<div class="bars">
-					<span class="bar" ng-class="{true:'on'}[track.popularity>0]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.popularity>20]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.popularity>40]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.popularity>60]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.popularity>80]"></span>
-				</div>
+				<span class="bar-track">
+					<span class="bar" style="width: {{ track.popularity }}%;"></span>
+				</span>
 			</div>
 			<div class="clear-both"></div>
 		</div>
 
-		<div ng-hide="tracks.items.length" class="no-items">
+		<div ng-hide="tracks.length" class="no-items">
 			No items
 		</div>
 		

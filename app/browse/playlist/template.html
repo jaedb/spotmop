@@ -17,7 +17,7 @@
 	
 	<div class="playlist-items tracklist"  ng-controller="TracklistController">		
 	
-		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks.items" data-uri="{{ track.track.uri }}">
+		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks.items" data-uri="{{ track.track.uri }}" ng-drag="true" ng-drag-data="{{ obj }}" ng-drag-success="onDragComplete($data,$event)">
 			<div class="col w30 title" ng-bind="track.track.name"></div>
 			<div class="col w30 artist">
 				<span ng-repeat="artist in track.track.artists">
@@ -27,13 +27,9 @@
 			<div class="col w30 album"><a href="/browse/album/{{ track.track.album.uri }}" ng-bind="track.track.album.name"></a></div>
 			<div class="col w5 duration">{{ track.track.duration_ms | formatMilliseconds }}</div>
 			<div class="col w5 popularity">
-				<div class="bars">
-					<span class="bar" ng-class="{true:'on'}[track.track.popularity>0]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.track.popularity>20]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.track.popularity>40]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.track.popularity>60]"></span>
-					<span class="bar" ng-class="{true:'on'}[track.track.popularity>80]"></span>
-				</div>
+				<span class="bar-track">
+					<span class="bar" style="width: {{ track.track.popularity }}%;"></span>
+				</span>
 			</div>
 			<div class="clear-both"></div>
 		</div>
