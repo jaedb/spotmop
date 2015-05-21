@@ -10,7 +10,6 @@ angular.module('spotmop', [
 	'ngRoute',
 	'ngResource',
 	'ngStorage',
-	'ngDraggable',
 	
 	'spotmop.player',
 	
