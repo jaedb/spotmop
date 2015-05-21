@@ -205,12 +205,12 @@ angular.module('spotmop.services.mopidy', [
 
 						// get the new tracklist
 						self.mopidy.tracklist.getTlTracks()
-					.then(function(tlTracks) {
+						.then(function(tlTracks) {
 
-						// save tracklist for later
-						self.currentTlTracks = tlTracks;
+							// save tracklist for later
+							self.currentTlTracks = tlTracks;
 
-						self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
+							self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
 					}, consoleError);
 				}, consoleError);
 
@@ -252,6 +252,11 @@ angular.module('spotmop.services.mopidy', [
 			}, consoleError);
 			} , consoleError);
 			*/
+			},
+			playTlTrack: function( tlTrack ){
+			
+				// self.mopidy.playback not defined? WTF
+				self.mopidy.playback.play({ tl_track: tlTrack });
 			},
 			playStream: function(streamUri) {
 				var self = this;

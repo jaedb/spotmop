@@ -10,7 +10,7 @@
 	
 	<div class="queue-items tracklist"  ng-controller="TracklistController">		
 	
-		<div class="track {{ class }}" ng-repeat="track in tracks" data-tlid="{{ track.tlid }}" ng-click="trackClicked($event)" ng-class="{ playing: track.currentlyPlaying }">
+		<div class="track {{ class }}" ng-repeat="track in tracks" data-tlid="{{ track.tlid }}" ng-click="trackClicked($event)" ng-dblclick="trackDoubleClicked( $event )" ng-class="{ playing: track.currentlyPlaying }">
 			<div class="col w30 title" ng-bind="track.track.name"></div>
 			<div class="col w30 artist">
 				<span ng-repeat="artist in track.track.artists">

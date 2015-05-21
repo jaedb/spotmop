@@ -61,14 +61,37 @@ angular.module('spotmop.browse.tracklist', [
 		if( !target.hasClass('track') )
 			target = target.closest('.track');
 		
-		var trackToPlayIndex = target.index();
-		var surroundingTracks = target.parent().children('.track');
-		var newTracklistUris = [];
+		// play from queue
+		if( target.closest('.tracklist').hasClass('queue-items') ){
+			
+			// get the queue
+			MopidyService.getCurrentTrackListTracks().then( function( tracklist ){
+				
+				var tlTrack;
+				
+				// find our double-clicked track in the tracklist
+				$.each( tracklist, function(key, track){
+					
+					if( track.tlid == target.attr('data-tlid') ){
+						tlTrack = track;
+					}					
+				});
+				
+				// then play our track
+				MopidyService.playTlTrack( tlTrack );
+			});
 		
-		$.each( surroundingTracks, function(key,value){
-			newTracklistUris.push( $(value).attr('data-uri') );
-		});
-		
-		MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
+		// play from anywhere else
+		}else{
+			var trackToPlayIndex = target.index();
+			var surroundingTracks = target.parent().children('.track');
+			var newTracklistUris = [];
+			
+			$.each( surroundingTracks, function(key,value){
+				newTracklistUris.push( $(value).attr('data-uri') );
+			});
+			
+			MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
+		}
 	}
 });
