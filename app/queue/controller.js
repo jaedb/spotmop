@@ -29,6 +29,7 @@ angular.module('spotmop.queue', [
 	
 	/**
 	 * Get new currently playing tl track
+	 * TODO: Apply this to the directive that handles the currentlyPlaying switch
 	 **/
 	function updateCurrentTlTrack(){
 		MopidyService.getCurrentTrackListTrack()
@@ -81,7 +82,8 @@ angular.module('spotmop.queue', [
 	 * Highlight the currently playing TlTrack
 	 **/
 	function highlightCurrentTrack(){
-	
+		
+		/*
 		// search each of the tracks for the tlid
 		$.each( $scope.tracks, function(key, track){
 		
@@ -92,5 +94,6 @@ angular.module('spotmop.queue', [
 				track.currentlyPlaying = false;
 			}
 		});
+		*/
 	}
 });

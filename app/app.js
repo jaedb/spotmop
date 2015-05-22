@@ -109,6 +109,17 @@ angular.module('spotmop', [
 		$rootScope.mopidyOnline = false;
 	});
 	
+	/**
+	 * Wrap the trackPlaybackStarted broadcast in a new broadcast
+	 * This provides the new track object in the broadcast itself
+	 * TODO: Add listener for track change when paused **
+	 **/
+	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
+		MopidyService.getCurrentTrackListTrack().then( function(tlTrack){
+			$rootScope.$broadcast('spotmop:currentTrackChanged', tlTrack);
+		});
+	});
+	
 	// the page content has been updated
 	$scope.$on('spotmop:pageUpdated', function(){
 		
