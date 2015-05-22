@@ -13,6 +13,8 @@ angular.module('spotmop', [
 	
 	'spotmop.player',
 	
+	'spotmop.directives.track',
+	
 	'spotmop.services.settings',
 	'spotmop.services.mopidy',
 	'spotmop.services.spotify',

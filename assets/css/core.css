@@ -383,6 +383,7 @@ h4.section-title {
  **/
 
 .tracklist .track {
+	display: block;
 	padding: 10px;
 	border-top: 1px solid #EEEEEE;
 	border-bottom: 1px solid #EEEEEE;
@@ -421,6 +422,11 @@ h4.section-title {
  
 .queue-intro {
 	padding-bottom: 20px;
+}
+ 
+.queue-intro .info-text {
+	margin-top: -15px;
+	padding: 0;
 }
 
 
@@ -514,6 +520,10 @@ h4.section-title {
 	position: relative;
 	margin: -20px -20px 20px -20px;
 	padding: 300px 20px 20px;
+}
+
+.artist-intro h1 {
+	padding-bottom: 0;
 }
 
 .artist-intro .image-container {
