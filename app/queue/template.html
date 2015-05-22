@@ -10,17 +10,17 @@
 	
 	<div class="queue-items tracklist"  ng-controller="TracklistController">		
 	
-		<div class="track {{ class }}" ng-repeat="track in tracks" data-tlid="{{ track.tlid }}" ng-click="trackClicked($event)" ng-dblclick="trackDoubleClicked( $event )" ng-class="{ playing: track.currentlyPlaying }">
-			<div class="col w30 title" ng-bind="track.track.name"></div>
-			<div class="col w30 artist">
-				<span ng-repeat="artist in track.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-				</span>
-			</div>
-			<div class="col w30 album"><a href="/browse/album/{{ track.track.album.uri }}" ng-bind="track.track.album.name"></a></div>
-			<div class="col w5 duration">{{ track.track.length | formatMilliseconds }}</div>
-			<div class="clear-both"></div>
-		</div>
+		<track
+		   ng-repeat="track in tracks"
+		   track="track.track"
+		   class="track"
+		   ng-click="trackClicked( $event )"
+		   ng-dblclick="trackDoubleClicked( $event )"
+		   data-uri="{{ track.track.uri }}"
+		   data-tlid="{{ track.tlid }}"
+		   ng-drag="true"
+		   ng-drag-data="{{ obj }}"
+		   ng-drag-success="onDragComplete($data,$event)"></track>
 
 		<div ng-hide="tracks.length" class="no-items">
 			No items

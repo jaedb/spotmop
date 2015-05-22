@@ -24,22 +24,16 @@
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >
 	
-		<div class="track {{ class }}" ng-click="trackClicked( $event )" ng-dblclick="trackDoubleClicked( $event )" ng-repeat="track in tracks.items" data-uri="{{ track.track.uri }}">
-			<div class="col w30 title" ng-bind="track.name"></div>
-			<div class="col w30 artist">
-				<span ng-repeat="artist in track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-				</span>
-			</div>
-			<div class="col w30 album"><a href="/browse/album/{{ album.uri }}" ng-bind="album.name"></a></div>
-			<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
-			<div class="col w5 popularity">
-				<span class="bar-track">
-					<span class="bar" style="width: {{ track.track.popularity }}%;"></span>
-				</span>
-			</div>
-			<div class="clear-both"></div>
-		</div>
+		<track
+		   ng-repeat="track in tracks.items"
+		   track="track"
+		   class="track"
+		   ng-click="trackClicked( $event )"
+		   ng-dblclick="trackDoubleClicked( $event )"
+		   data-uri="{{ track.uri }}"
+		   ng-drag="true"
+		   ng-drag-data="{{ obj }}"
+		   ng-drag-success="onDragComplete($data,$event)"></track>
 
 		<div ng-hide="tracks.items.length" class="no-items">
 			No items
