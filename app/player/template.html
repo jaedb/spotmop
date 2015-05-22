@@ -26,7 +26,7 @@
 			</div>
 			<div class="slider" ng-click="seek($event)">
 				<div class="track">
-					<div class="fill" style="width: {{ playPositionPercent() }}%"></div>
+					<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
 				</div>
 			</div>
 		</div>
@@ -44,7 +44,11 @@
 					<i class="fa fa-volume-down" ng-show="!muted"></i>
 				</span>
 			</div>
-			<div class="slider"></div>
+			<div class="slider" ng-click="setVolume($event)">
+				<div class="track">
+					<div class="fill" style="width: {{ volume }}%"></div>
+				</div>
+			</div>
 		</div>
 
 		<div class="clear-both"></div>

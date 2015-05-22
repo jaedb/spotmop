@@ -11,45 +11,62 @@ angular.module('spotmop.player', [
 	$scope.currentTrack = {};
 	$scope.muted = false;
 	$scope.playing = false;
+	$scope.volume = 100;
 	$scope.playPosition = 0;
 	$scope.playPositionPercent = function(){
-			if( typeof($scope.currentTrack.length) !== 'undefined' )
-				return ( $scope.playPosition / $scope.currentTrack.length * 100 ).toFixed(2);
-		};
+		if( typeof($scope.currentTrack.length) !== 'undefined' )
+			return ( $scope.playPosition / $scope.currentTrack.length * 100 ).toFixed(2);
+	};
 	
 	// core controls
 	$scope.playPause = function(){
-		if( $scope.playing )
-			MopidyService.pause();
-		else
-			MopidyService.play();
-		}
+	if( $scope.playing )
+		MopidyService.pause();
+	else
+		MopidyService.play();
+	}
 	$scope.next = function(){
-			MopidyService.next();
-		}
+		MopidyService.next();
+	}
 	$scope.previous = function(){
-			MopidyService.previous();
-		}
+		MopidyService.previous();
+	}
 	$scope.seek = function( event ){
-			var slider, offset, position, percent, seekTime;
-			if( $(event.target).hasClass('slider') )
-				slider = $(event.target);
-			else
-				slider = $(event.target).closest('.slider');
-			
-			// calculate the actual destination seek time
-			offset = slider.offset();
-			position = event.pageX - offset.left;
-			percent = position / slider.innerWidth();
-			seekTime = Math.round(percent * $scope.currentTrack.length);
-			
-			// tell mopidy to make it so
-			MopidyService.seek( seekTime );
-		}
+		var slider, offset, position, percent, seekTime;
+		if( $(event.target).hasClass('slider') )
+			slider = $(event.target);
+		else
+			slider = $(event.target).closest('.slider');
+		
+		// calculate the actual destination seek time
+		offset = slider.offset();
+		position = event.pageX - offset.left;
+		percent = position / slider.innerWidth();
+		seekTime = Math.round(percent * $scope.currentTrack.length);
+		console.log( 'Seeking to '+percent+'% and '+seekTime+'ms' );
+		// tell mopidy to make it so
+		MopidyService.seek( seekTime );
+	}
+	$scope.setVolume = function( event ){
+		var slider, offset, position, percent;
+		if( $(event.target).hasClass('slider') )
+			slider = $(event.target);
+		else
+			slider = $(event.target).closest('.slider');
+		
+		// calculate the actual destination seek time
+		offset = slider.offset();
+		position = event.pageX - offset.left;
+		percent = position / slider.innerWidth() * 100;
+		
+		$scope.volume = percent;
+		MopidyService.setVolume( percent );
+	};
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
 		updatePlayerState();
+		updateVolume();
 	});
 	
 	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
@@ -63,6 +80,10 @@ angular.module('spotmop.player', [
 	
 	$scope.$on('mopidy:event:seeked', function( event, state ){
 		updatePlayPosition();
+	});
+	
+	$scope.$on('mopidy:event:volumeChanged', function( event, state ){
+		updateVolume();
 	});
 	
 	/**
@@ -148,5 +169,17 @@ angular.module('spotmop.player', [
 		
 		updatePlayPosition();
 	};
+	
+	
+	/**
+	 * Update volume
+	 * Fetches the volume from mopidy and sets to $scope
+	 **/
+	function updateVolume(){
+	
+		MopidyService.getVolume().then(function( volume ){
+			$scope.volume = volume;
+		});
+	}
 	
 });

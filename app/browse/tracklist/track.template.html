@@ -5,7 +5,7 @@
 	</span>
 </div>
 <div class="col w30 album"><a href="/browse/album/{{ track.album.uri }}" ng-bind="track.album.name"></a></div>
-<div class="col w5 duration">{{ track.track.duration_ms | formatMilliseconds }}</div>
+<div class="col w5 duration">{{ track.duration_ms | formatMilliseconds }}</div>
 <div class="col w5 popularity">
 	<span class="bar-track">
 		<span class="bar" style="width: {{ track.popularity }}%;"></span>

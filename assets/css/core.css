@@ -440,6 +440,7 @@ h4.section-title {
 
 .album-intro h1 {
 	padding-top: 28px;
+	padding-bottom: 0;
 }
 
 .album-intro .info-text {
@@ -673,7 +674,9 @@ h4.section-title {
 	left: 0;
 	bottom: 0;
 	background: #1cf4c4;
-	
+}
+
+#player .slider  .track .fill.animate {
 	-webkit-transition: all 1s;
 	-moz-transition: all 1s;
 	-o-transition: all 1s;
