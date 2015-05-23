@@ -60,10 +60,17 @@ angular.module('spotmop', [
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
 
+	/**
+	 * Search
+	 **/
 	$scope.searchSubmit = function( query ){
 		$location.path( '/search/'+query );
 	};
 
+	
+	/**
+	 * Playlists sidebar menus
+	 **/
 	$scope.playlists = [];
 	var getPlaylists = function(){
 		return $scope.playlists;
@@ -72,6 +79,10 @@ angular.module('spotmop', [
 		$scope.playlists = playlists;
 	};
 	
+	
+	/**
+	 * Build main menu
+	 **/
 	$scope.mainMenu = [
 		{
 			Title: 'Queue',
@@ -122,6 +133,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
 		MopidyService.getCurrentTrackListTrack().then( function(tlTrack){
 			$rootScope.$broadcast('spotmop:currentTrackChanged', tlTrack);
+			updateWindowTitle( tlTrack.track );
 		});
 	});
 	
@@ -194,6 +206,33 @@ angular.module('spotmop', [
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
 		});
+		
+	/**
+	 * Update browser title
+	 **/
+	function updateWindowTitle( track ){		
+		var documentIcon = '\u25A0 ';
+		var artistString = '';
+		$.each(track.artists, function(key,value){
+			if( artistString != '' )
+				artistString += ', ';
+			artistString += value.name;
+		});
+		document.title = track.name +' - '+ artistString;
+/*		
+		if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){		
+			var track = coreArray['currentTrack'];			
+			if( coreArray['state'] == 'playing' )
+				documentIcon = '\u25B6 ';
+			else if( coreArray['state'] == 'playing' )
+				documentIcon = '\u25B6 ';
+
+			document.title = documentIcon + track.name +' - '+ joinArtistNames(track.artists,false);
+		}else{
+			document.title = documentIcon + 'No track playing';
+		}
+		*/
+	}
 });
 
 
