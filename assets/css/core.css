@@ -554,6 +554,39 @@ h4.section-title {
 
 
 /**
+ * Search
+ **/
+
+.search-intro .info-text {
+	margin-top: -15px;
+	padding-bottom: 30px;
+}
+
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 32%;
+	float: left;
+}
+.search-results-section.artists,
+.search-results-section.albums {
+	padding-right: 2%;
+}
+
+.search-results-section .square-panel {
+	width: 29%;
+}
+
+.search-results-section .square-panel .image-container {
+	height: 100px;
+}
+
+.search-results-section.tracks {
+	padding-top: 30px;
+}
+
+
+/**
  * Settings
  **/
 

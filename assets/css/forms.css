@@ -67,7 +67,36 @@
 }
 
 
+/**
+ * Search form (sidebar
+ **/
 
+.search-form {
+	margin-top: -5px;
+	padding-bottom: 15px;
+	position: relative;
+}
+
+.search-form input {
+	width: 100%;
+	border-bottom: 2px solid #666666;
+	padding: 5px 28px 5px 0;
+	color: #555555;
+	font-size: 12px;
+}
+
+.search-form input:focus {
+	border-color: #1cf4c4;
+}
+
+.search-form button {
+	position: absolute;
+	top: 5px;
+	right: 0;
+	background: transparent;
+	cursor: pointer;
+	color: #666666;
+}
 
 
 

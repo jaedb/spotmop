@@ -20,6 +20,7 @@ angular.module('spotmop', [
 	'spotmop.queue',
 	'spotmop.settings',
 	'spotmop.playlists',
+	'spotmop.search',
 	
 	'spotmop.browse.artist',
 	'spotmop.browse.album',
@@ -57,7 +58,11 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, SpotifyService, MopidyService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
+
+	$scope.searchSubmit = function( query ){
+		$location.path( '/search/'+query );
+	};
 
 	$scope.playlists = [];
 	var getPlaylists = function(){

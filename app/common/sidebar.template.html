@@ -1,6 +1,11 @@
 <div id="sidebar">
 	<div class="inner">
-
+		
+		<form class="search-form" ng-submit="searchSubmit( query )">
+			<input type="text" ng-model="query" />
+			<button type="submit"><i class="fa fa-search"></i></button>
+		</form>
+		
 		<ul class="main-menu">
 			<li ng-repeat="item in mainMenu">
 				<a href="{{ item.Link }}">
