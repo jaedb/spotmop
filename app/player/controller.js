@@ -5,7 +5,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', function PlayerController( $scope, $timeout, $interval, MopidyService, SpotifyService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, MopidyService, SpotifyService ){
 	
 	// setup template containers
 	$scope.currentTrack = {};
@@ -69,8 +69,8 @@ angular.module('spotmop.player', [
 		updateVolume();
 	});
 	
-	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
-		updateCurrentTrack();
+	$scope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
+		updateCurrentTrack( tlTrack );
 		updatePlayerState();
 	});
 	
@@ -132,44 +132,51 @@ angular.module('spotmop.player', [
 	};
 	
 	/**
-	 * Get current track
-	 * We've been told the current track has changed, so now let's get it
+	 * Update the current track
+	 * This updates all instances of the track with new artwork, seek bar, window title, etc.
+	 * @param tlTrack = the new track object (optional)
 	 **/
-	function updateCurrentTrack(){
-		MopidyService.getCurrentTrack().then(function(track){
-			if(track !== null && track !== undefined){
-				if(track.name.indexOf("[loading]") > -1){
-					MopidyService.lookup(track.uri).then(function(result){
-						updatePlayerTrack(result[0]);
-					});
-				}else{
-					updatePlayerTrack(track);
+	function updateCurrentTrack( tlTrack ){
+		
+		// update all ui uses of the track (window title, player bar, etc)
+		var setCurrentTrack = function( track ){
+		
+			// save for any other use we might dream up
+			$scope.currentTrack = track;
+			
+			// now we have track info, let's get the spotify artwork	
+			SpotifyService.getTrack( track.uri )
+				.success(function( response ) {
+					$scope.currentTrack.album.images = response.album.images;
+				})
+				.error(function( error ){
+					$scope.status = 'Unable to load new releases';
+				});
+			
+			// update ui
+			updatePlayPosition();
+			updateWindowTitle();
+		}
+		
+		// track provided, update pronto garcong!
+		if( typeof( tlTrack ) !== 'undefined' ){
+			setCurrentTrack( tlTrack.tl_track.track );
+			
+		// no track provided, so go fetch it first, then proceed
+		}else{
+			MopidyService.getCurrentTrack().then( function(track){
+				if(track !== null && track !== undefined){
+					if(track.name.indexOf("[loading]") > -1){
+						MopidyService.lookup(track.uri).then(function(result){
+							setCurrentTrack(result[0]);
+						});
+					}else{
+						setCurrentTrack(track);
+					}
 				}
-			}
-		});
-	};
-	
-	/**
-	 * Update the player with new track object.
-	 * Loads graphic, length, title, etc into template vars
-	 * @param track Track object
-	 **/
-	function updatePlayerTrack( track ){
-	
-		$scope.currentTrack = track;
-		
-		// now we have track info, let's get the spotify artwork	
-		SpotifyService.getTrack( track.uri )
-			.success(function( response ) {
-				$scope.currentTrack.album.images = response.album.images;
-			})
-			.error(function( error ){
-				$scope.status = 'Unable to load new releases';
 			});
-		
-		updatePlayPosition();
-	};
-	
+		}
+	};	
 	
 	/**
 	 * Update volume
@@ -180,6 +187,64 @@ angular.module('spotmop.player', [
 		MopidyService.getVolume().then(function( volume ){
 			$scope.volume = volume;
 		});
+	}
+	
+	/*
+	
+	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
+		MopidyService.getCurrentTrackListTracks()
+			.then(
+				function( tracklist ){
+					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
+				}
+			);
+	});
+	*/
+	
+	// listen for current track changes
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
+		$rootScope.$broadcast('spotmop:currentTrackChanged', tlTrack.tl_track);
+	});
+		
+
+	/**
+	 * Update browser title
+	 **/
+	function updateWindowTitle(){
+	
+		var track = $scope.currentTrack;		
+		var documentIcon = '\u25A0 ';
+		var artistString = '';
+		
+		$.each(track.artists, function(key,value){
+			if( artistString != '' )
+				artistString += ', ';
+			artistString += value.name;
+		});
+			
+		if( $scope.playing )
+			documentIcon = '\u25B6 ';
+		else
+			documentIcon = '\u25B6 ';
+			
+		document.title = documentIcon +' '+ track.name +' - '+ artistString;
+		
+/*		
+		if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){		
+			var track = coreArray['currentTrack'];			
+			if( coreArray['state'] == 'playing' )
+				documentIcon = '\u25B6 ';
+			else if( coreArray['state'] == 'playing' )
+				documentIcon = '\u25B6 ';
+
+			document.title = documentIcon + track.name +' - '+ joinArtistNames(track.artists,false);
+		}else{
+			document.title = documentIcon + 'No track playing';
+		}
+		*/
 	}
 	
 });

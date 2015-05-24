@@ -60,6 +60,9 @@ angular.module('spotmop', [
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
 
+	$scope.currentlyPlayingTrack = {};
+
+
 	/**
 	 * Search
 	 **/
@@ -125,18 +128,6 @@ angular.module('spotmop', [
 		$rootScope.mopidyOnline = false;
 	});
 	
-	/**
-	 * Wrap the trackPlaybackStarted broadcast in a new broadcast
-	 * This provides the new track object in the broadcast itself
-	 * TODO: Add listener for track change when paused **
-	 **/
-	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
-		MopidyService.getCurrentTrackListTrack().then( function(tlTrack){
-			$rootScope.$broadcast('spotmop:currentTrackChanged', tlTrack);
-			updateWindowTitle( tlTrack.track );
-		});
-	});
-	
 	// the page content has been updated
 	$scope.$on('spotmop:pageUpdated', function(){
 		
@@ -149,24 +140,6 @@ angular.module('spotmop', [
 			});
 		},
 		0);
-	});
-	
-	
-	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
-		MopidyService.getCurrentTrackListTracks()
-			.then(
-				function( tracklist ){
-					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
-				}
-			);
-	});
-	
-	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
-		$rootScope.$broadcast('spotmop:currentTrackChanged');
 	});
 		
 	// let's kickstart this beast
@@ -206,33 +179,7 @@ angular.module('spotmop', [
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
 		});
-		
-	/**
-	 * Update browser title
-	 **/
-	function updateWindowTitle( track ){		
-		var documentIcon = '\u25A0 ';
-		var artistString = '';
-		$.each(track.artists, function(key,value){
-			if( artistString != '' )
-				artistString += ', ';
-			artistString += value.name;
-		});
-		document.title = track.name +' - '+ artistString;
-/*		
-		if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){		
-			var track = coreArray['currentTrack'];			
-			if( coreArray['state'] == 'playing' )
-				documentIcon = '\u25B6 ';
-			else if( coreArray['state'] == 'playing' )
-				documentIcon = '\u25B6 ';
-
-			document.title = documentIcon + track.name +' - '+ joinArtistNames(track.artists,false);
-		}else{
-			document.title = documentIcon + 'No track playing';
-		}
-		*/
-	}
+	
 });
 
 

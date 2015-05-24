@@ -353,6 +353,13 @@ h4.section-title {
 	color: #AAAAAA;
 }
 
+.square-panel .info .name,
+.square-panel .info .tracks {
+	overflow: hidden;
+	max-height: 2.3em;
+	line-height: 1.15em;
+}
+
 /**
  * Unique instances of square panels
  * ie. Category panels
