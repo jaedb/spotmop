@@ -12,11 +12,13 @@ angular.module('spotmop.browse.playlist', [
 })
 
 .controller('PlaylistController', function PlaylistController( $scope, SpotifyService, $routeParams ){
-		
+	
+	// setup base variables
 	$scope.playlist = {};
 	$scope.tracks = {};
 	$scope.totalTime = 0;
 	
+	// on load, fetch the playlist
 	SpotifyService.getPlaylist( $routeParams.uri )
 		.success(function( response ) {
 			$scope.playlist = response;
@@ -32,4 +34,23 @@ angular.module('spotmop.browse.playlist', [
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
 		});
+	
+	/**
+	 * Delete tracks from this playlist
+	 * @param tracksDOM = jQuery array of dom tracks
+	 * @param tracks = json array of track info (ie {uri: "XX"});
+	 **/
+	$scope.deleteTracks = function( tracksDOM, tracks ){
+		
+		var playlistid = SpotifyService.getFromUri('playlistid',$routeParams.uri);
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( playlistid, tracks )
+			.success(function( response ) {
+				tracksDOM.slideUp('fast', function(evt){ tracksDOM.remove() });
+			})
+			.error(function( error ){
+				console.log( error );
+			});
+	};
 });

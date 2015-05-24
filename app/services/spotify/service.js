@@ -14,6 +14,9 @@ angular.module('spotmop.services.spotify', [])
 	if( typeof($localStorage.Spotify) === 'undefined' )
 		$localStorage.Spotify = {};
 		
+	if( typeof($localStorage.Spotify.UserID) === 'undefined' )
+		$localStorage.Spotify.UserID = null;
+		
 	if( typeof($localStorage.Spotify.AccessToken) === 'undefined' )
 		$localStorage.Spotify.AccessToken = null;
 		
@@ -81,31 +84,7 @@ angular.module('spotmop.services.spotify', [])
 		});
 	}
 	
-	/**
-	 * Get an element from a URI
-	 * @param element = string, the element we wish to extract
-	 * @param uri = string
-	 **/
-	function getFromURI( element, uri ){
-		var exploded = uri.split(':');
-		
-		if( element == 'userid' && exploded[1] == 'user' )
-			return exploded[2];
-			
-		if( element == 'playlistid' && exploded[3] == 'playlist' )
-			return exploded[4];
-			
-		if( element == 'artistid' && exploded[1] == 'artist' )
-			return exploded[2];
-			
-		if( element == 'albumid' && exploded[1] == 'album' )
-			return exploded[2];
-			
-		if( element == 'trackid' && exploded[1] == 'track' )
-			return exploded[2];
-			
-		return null;
-	}
+
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
@@ -115,9 +94,29 @@ angular.module('spotmop.services.spotify', [])
 	// setup response object
     return {
 	
+		/**
+		 * Get an element from a URI
+		 * @param element = string, the element we wish to extract
+		 * @param uri = string
+		 **/
+		getFromUri: function( element, uri ){
+			var exploded = uri.split(':');			
+			if( element == 'userid' && exploded[1] == 'user' )
+				return exploded[2];				
+			if( element == 'playlistid' && exploded[3] == 'playlist' )
+				return exploded[4];				
+			if( element == 'artistid' && exploded[1] == 'artist' )
+				return exploded[2];				
+			if( element == 'albumid' && exploded[1] == 'album' )
+				return exploded[2];				
+			if( element == 'trackid' && exploded[1] == 'track' )
+				return exploded[2];				
+			return null;
+		},
+	
 		getTrack: function( trackuri ){
-		
-			var trackid = getFromURI('trackid', trackuri);
+			
+			var trackid = this.getFromUri('trackid', trackuri);
 			
 			return $http({
 				method: 'GET',
@@ -142,10 +141,10 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getPlaylist: function( playlisturi ){
-		
+			
 			// get the user and playlist ids from the uri
-			var userid = getFromURI( 'userid', playlisturi );
-			var playlistid = getFromURI( 'playlistid', playlisturi );
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 		
 			return $http({
 				method: 'GET',
@@ -160,6 +159,20 @@ angular.module('spotmop.services.spotify', [])
 			return $http({
 				method: 'GET',
 				url: urlBase+'browse/featured-playlists',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		deleteTracksFromPlaylist: function( playlistid, tracks ){
+			return $http({
+				method: 'DELETE',
+				url: urlBase+'users/jaedb/playlists/'+playlistid+'/tracks',
+				//url: urlBase+'users/'+$localStorage.Spotify.userid+'/playlists/'+playlistid+'/tracks',
+				dataType: "json",
+				data: JSON.stringify( { tracks: tracks } ),
+				contentType: "application/json; charset=utf-8",
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
@@ -214,8 +227,8 @@ angular.module('spotmop.services.spotify', [])
 		 **/
 		 
 		getArtist: function( artisturi ){
-		
-			var artistid = getFromURI( 'artistid', artisturi );
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
 				method: 'GET',
@@ -227,8 +240,8 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getAlbums: function( artisturi ){
-		
-			var artistid = getFromURI( 'artistid', artisturi );
+				
+			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
 				method: 'GET',
@@ -240,8 +253,8 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getAlbum: function( albumuri ){
-		
-			var albumid = getFromURI( 'albumid', albumuri );
+			
+			var albumid = this.getFromUri( 'albumid', albumuri );
 			
 			return $http({
 				method: 'GET',
@@ -254,7 +267,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		getTopTracks: function( artisturi ){
 		
-			var artistid = getFromURI( 'artistid', artisturi );
+			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
 				method: 'GET',

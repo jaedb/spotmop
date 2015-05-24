@@ -14,6 +14,13 @@ angular.module('spotmop.browse.tracklist', [
 		},
 		templateUrl: '/app/browse/tracklist/track.template.html',
 		link: function( $scope, element, attrs ){
+			
+			/*
+			// not required because we're bypassing angular by using rude jQuery to handle selection events
+			$scope.$on('spotmop:deleteKeyReleased', function(){
+				if( $scope.
+			});
+			*/
 		}
 	}
 })
@@ -27,6 +34,13 @@ angular.module('spotmop.browse.tracklist', [
 		},
 		templateUrl: '/app/browse/tracklist/tltrack.template.html',
 		link: function( $scope, element, attrs ){
+			
+			/*
+			// not required because we're bypassing angular by using rude jQuery to handle selection events
+			$scope.$on('spotmop:deleteKeyReleased', function(){
+				console.log('dete');
+			});
+			*/
 			
 			// when track changed, let's comapre this track.tlid with the new playing track tlid
 			// TODO: Figure out how to trigger this on load of the queue (because it currently loads without running this)
@@ -47,15 +61,37 @@ angular.module('spotmop.browse.tracklist', [
 	var shiftKeyHeld = false;
 	var ctrlKeyHeld = false;
 	$('body').bind('keydown',function(evt){
-		if (evt.which === 16) {
+		if( evt.which === 16 ){
 			shiftKeyHeld = true;
-		}else if (evt.which === 17) {
+		}else if( evt.which === 17 ){
 			ctrlKeyHeld = true;
 		}
-	}).bind('keyup',function(){
-	      shiftKeyHeld = false;
-	      ctrlKeyHeld = false;
+	}).bind('keyup',function(evt){
+		shiftKeyHeld = false;
+		ctrlKeyHeld = false;
+		if( evt.which === 46 )
+			deleteKeyReleased();
 	});
+	
+	// when we hit DELETE key, broadcast (track directives are listening...)
+	function deleteKeyReleased(){
+		// NOT REQUIRED AS WE'RE JQUERY HACKING THIS
+		// $scope.$broadcast('spotmop:deleteKeyReleased');
+		
+		var tracksDOM = $(document).find('.track.selected');
+		var tracks = [];
+		
+		// construct each track into a json object with the necessary info for both SpotifyService and MopidyService
+		// to be able to perform a delete (from this controller we don't know which service is relevant)
+		$.each( $(document).find('.track'), function(trackKey, track){
+			if( $(track).hasClass('selected') ){
+				tracks.push( {uri: $(track).attr('data-uri'), positions: [trackKey]} );
+			}
+		});
+		
+		// tell our parent (whatever it is, playlist, queue, whatev's) to delete these tracks
+		$scope.$parent.deleteTracks( tracksDOM, tracks );
+	}
 	
 	// when we SINGLE click on a track
 	$scope.trackClicked = function( event ){
