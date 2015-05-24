@@ -11,7 +11,7 @@ angular.module('spotmop.browse.playlist', [
     });
 })
 
-.controller('PlaylistController', function PlaylistController( $scope, SpotifyService, $routeParams ){
+.controller('PlaylistController', function PlaylistController( $scope, $route, SpotifyService, $routeParams ){
 	
 	// setup base variables
 	$scope.playlist = {};
@@ -41,16 +41,22 @@ angular.module('spotmop.browse.playlist', [
 	 * @param tracks = json array of track info (ie {uri: "XX"});
 	 **/
 	$scope.deleteTracks = function( tracksDOM, tracks ){
+	
+		// make sure that the current controller is THIS controller
+		if( $route.current.$$route.controller == 'PlaylistController' ){
+			console.log('deleting from playlist');
 		
-		var playlistid = SpotifyService.getFromUri('playlistid',$routeParams.uri);
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromPlaylist( playlistid, tracks )
-			.success(function( response ) {
-				tracksDOM.slideUp('fast', function(evt){ tracksDOM.remove() });
-			})
-			.error(function( error ){
-				console.log( error );
-			});
+			var playlistid = SpotifyService.getFromUri('playlistid',$routeParams.uri);
+			return;
+			
+			// parse these uris to spotify and delete these tracks
+			SpotifyService.deleteTracksFromPlaylist( playlistid, tracks )
+				.success(function( response ) {
+					tracksDOM.slideUp('fast', function(evt){ tracksDOM.remove() });
+				})
+				.error(function( error ){
+					console.log( error );
+				});
+		}
 	};
 });

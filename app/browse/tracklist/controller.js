@@ -55,7 +55,7 @@ angular.module('spotmop.browse.tracklist', [
 	}
 })
 
-.controller('TracklistController', function TracklistController( $scope, $rootScope, MopidyService ){
+.controller('TracklistController', function TracklistController( $scope, $rootScope, $route, MopidyService ){
 
 	// setup switches to detect shift/control key holds
 	var shiftKeyHeld = false;

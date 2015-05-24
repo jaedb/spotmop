@@ -13,7 +13,7 @@ angular.module('spotmop.queue', [
     });
 })
 	
-.controller('QueueController', function QueueController( $scope, $rootScope, $timeout, MopidyService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $route, $timeout, MopidyService ){
 	
 	$scope.tracks = [];
 	$scope.totalTime = 0;
@@ -101,4 +101,20 @@ angular.module('spotmop.queue', [
 		});
 		*/
 	}
+	
+	
+	
+	/**
+	 * Delete tracks from this playlist
+	 * @param tracksDOM = jQuery array of dom tracks
+	 * @param tracks = json array of track info (ie {uri: "XX"});
+	 **/
+	$scope.deleteTracks = function( tracksDOM, tracks ){
+		
+		// make sure that the current controller is THIS controller
+		if( $route.current.$$route.controller == 'QueueController' ){
+			console.log('deleting from queue');
+		}
+		//console.log( tracksDOM );
+	};
 });
