@@ -19,43 +19,47 @@ angular.module('spotmop.queue', [
 	$scope.totalTime = 0;
 	$scope.currentTlTrack = {};
 	
-	$scope.$on('spotmop:tracklistUpdated', function(event, tracks){
-		updateTracklist( tracks );
+	$scope.$on('spotmop:currentTrackChanged', function( event, tlTrack ){
+		updateCurrentTlTrack( tlTrack );
 	});
 	
-	$scope.$on('spotmop:currentTrackChanged', function(){
-		updateCurrentTlTrack();
+	$scope.$on('mopidy:event:tracklistChanged', function(){
+		fetchTracklist();
 	});
+	
 	
 	/**
 	 * Get new currently playing tl track
 	 * TODO: Apply this to the directive that handles the currentlyPlaying switch
+	 * @param tlTrack = obj (optional)
 	 **/
-	function updateCurrentTlTrack(){
-		MopidyService.getCurrentTrackListTrack()
-			.then(
-				function( currentTlTrack ){
-					$scope.currentTlTrack = currentTlTrack;
-					highlightCurrentTrack();
-				}
-			);
+	function updateCurrentTlTrack( tlTrack ){
+	
+		// we've been parsed a tlTrack, so just save it
+		if( typeof( tlTrack ) !== 'undefined' ){
+			$scope.currentTlTrack = tlTrack;
+		
+		// not provided, let's get it ourselves
+		}else{
+			MopidyService.getCurrentTlTrack()
+				.then(
+					function( tlTrack ){
+						$scope.currentTlTrack = tlTrack;
+						console.log( tlTrack );
+					}
+				);
+		}
 	}
 	
 	// get tracklist on load
 	// TODO: need to figure out how to do this, without upsetting $digest
 	$timeout(fetchTracklist, 1000);
 	
-	/*
-	$scope.$on('mopidy:event:tracklistChanged', function(){
-		updateTracklist();
-	});
-	*/
-	
 	/**
 	 * Fetch the tracklist
 	 **/
 	function fetchTracklist(){		
-		MopidyService.getCurrentTrackListTracks().then( function(tracks){			
+		MopidyService.getCurrentTlTracks().then( function( tracks ){			
 			updateTracklist( tracks );
 		});
 		updateCurrentTlTrack();
@@ -84,6 +88,7 @@ angular.module('spotmop.queue', [
 	function highlightCurrentTrack(){
 		
 		/*
+		THIS IS MOVED TO THE DIRECTIVE FOR TRACK
 		// search each of the tracks for the tlid
 		$.each( $scope.tracks, function(key, track){
 		

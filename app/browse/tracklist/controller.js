@@ -29,6 +29,7 @@ angular.module('spotmop.browse.tracklist', [
 		link: function( $scope, element, attrs ){
 			
 			// when track changed, let's comapre this track.tlid with the new playing track tlid
+			// TODO: Figure out how to trigger this on load of the queue (because it currently loads without running this)
 			$scope.$on('spotmop:currentTrackChanged', function( event, tlTrack ){
 				if( tlTrack.tlid === $scope.track.tlid ){
 					$scope.track.trackCurrentlyPlaying = true;

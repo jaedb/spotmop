@@ -156,6 +156,9 @@ angular.module('spotmop.player', [
 			// update ui
 			updatePlayPosition();
 			updateWindowTitle();
+			
+			// also notify the app that we have a new track (and parse this track)
+			//$rootScope.$broadcast('spotmop:currentTrackChanged
 		}
 		
 		// track provided, update pronto garcong!

@@ -166,7 +166,7 @@ angular.module('spotmop.services.mopidy', [
 			getCurrentTrack: function() {
 				return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
 			},
-			getCurrentTrackListTrack: function() {
+			getCurrentTlTrack: function() {
 				return wrapMopidyFunc("mopidy.playback.getCurrentTlTrack", this)();
 			},
 			getTimePosition: function() {
@@ -295,7 +295,7 @@ angular.module('spotmop.services.mopidy', [
 			getCurrentTrackList: function () {
 				return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
 			},
-			getCurrentTrackListTracks: function () {
+			getCurrentTlTracks: function () {
 				return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 			}
 
