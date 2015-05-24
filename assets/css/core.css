@@ -353,6 +353,13 @@ h4.section-title {
 	color: #AAAAAA;
 }
 
+.square-panel .info .name,
+.square-panel .info .tracks {
+	overflow: hidden;
+	max-height: 2.3em;
+	line-height: 1.15em;
+}
+
 /**
  * Unique instances of square panels
  * ie. Category panels
@@ -383,6 +390,7 @@ h4.section-title {
  **/
 
 .tracklist .track {
+	display: block;
 	padding: 10px;
 	border-top: 1px solid #EEEEEE;
 	border-bottom: 1px solid #EEEEEE;
@@ -422,6 +430,11 @@ h4.section-title {
 .queue-intro {
 	padding-bottom: 20px;
 }
+ 
+.queue-intro .info-text {
+	margin-top: -15px;
+	padding: 0;
+}
 
 
 /**
@@ -434,6 +447,7 @@ h4.section-title {
 
 .album-intro h1 {
 	padding-top: 28px;
+	padding-bottom: 0;
 }
 
 .album-intro .info-text {
@@ -516,6 +530,10 @@ h4.section-title {
 	padding: 300px 20px 20px;
 }
 
+.artist-intro h1 {
+	padding-bottom: 0;
+}
+
 .artist-intro .image-container {
 	position: absolute;
 	top: 0;
@@ -539,6 +557,39 @@ h4.section-title {
 
 .tracklist.top-track-items {
 	padding-bottom: 30px;
+}
+
+
+/**
+ * Search
+ **/
+
+.search-intro .info-text {
+	margin-top: -15px;
+	padding-bottom: 30px;
+}
+
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 32%;
+	float: left;
+}
+.search-results-section.artists,
+.search-results-section.albums {
+	padding-right: 2%;
+}
+
+.search-results-section .square-panel {
+	width: 29%;
+}
+
+.search-results-section .square-panel .image-container {
+	height: 100px;
+}
+
+.search-results-section.tracks {
+	padding-top: 30px;
 }
 
 
@@ -663,7 +714,9 @@ h4.section-title {
 	left: 0;
 	bottom: 0;
 	background: #1cf4c4;
-	
+}
+
+#player .slider  .track .fill.animate {
 	-webkit-transition: all 1s;
 	-moz-transition: all 1s;
 	-o-transition: all 1s;

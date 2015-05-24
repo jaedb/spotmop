@@ -10,7 +10,6 @@ angular.module('spotmop', [
 	'ngRoute',
 	'ngResource',
 	'ngStorage',
-	'ngDraggable',
 	
 	'spotmop.player',
 	
@@ -21,6 +20,7 @@ angular.module('spotmop', [
 	'spotmop.queue',
 	'spotmop.settings',
 	'spotmop.playlists',
+	'spotmop.search',
 	
 	'spotmop.browse.artist',
 	'spotmop.browse.album',
@@ -58,8 +58,22 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, SpotifyService, MopidyService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
 
+	$scope.currentlyPlayingTrack = {};
+
+
+	/**
+	 * Search
+	 **/
+	$scope.searchSubmit = function( query ){
+		$location.path( '/search/'+query );
+	};
+
+	
+	/**
+	 * Playlists sidebar menus
+	 **/
 	$scope.playlists = [];
 	var getPlaylists = function(){
 		return $scope.playlists;
@@ -68,6 +82,10 @@ angular.module('spotmop', [
 		$scope.playlists = playlists;
 	};
 	
+	
+	/**
+	 * Build main menu
+	 **/
 	$scope.mainMenu = [
 		{
 			Title: 'Queue',
@@ -123,24 +141,6 @@ angular.module('spotmop', [
 		},
 		0);
 	});
-	
-	
-	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
-		MopidyService.getCurrentTrackListTracks()
-			.then(
-				function( tracklist ){
-					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
-				}
-			);
-	});
-	
-	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:trackPlaybackStarted', function(){
-		$rootScope.$broadcast('spotmop:currentTrackChanged');
-	});
 		
 	// let's kickstart this beast
 	// we use $timeout to delay start until $digest is completed
@@ -179,6 +179,7 @@ angular.module('spotmop', [
 		.error(function( error ){
 			$scope.status = 'Unable to load new releases';
 		});
+	
 });
 
 

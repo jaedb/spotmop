@@ -263,6 +263,25 @@ angular.module('spotmop.services.spotify', [])
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
 			});
+		},
+		
+		/**
+		 * Search results
+		 * @param type = string (album|artist|track|playlist)
+		 * @param query = string (search term)
+		 * @param limit = int (optional)
+		 **/
+		getSearchResults: function( type, query, limit ){
+		
+			if( typeof( limit ) === 'undefined' ) limit = 10;
+		
+			return $http({
+				method: 'GET',
+				url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
 		}
 	};
 }]);

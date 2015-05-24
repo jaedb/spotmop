@@ -1,0 +1,90 @@
+<div>
+
+	<div class="search-intro">
+		<h1>Search</h1>
+		<div class="info-text">
+			You searched for "<em ng-bind="query"></em>"
+		</div>
+	</div>
+	
+	<div class="search-results-section artists">
+		<h4 class="section-title">Artists</h4>	
+		<div class="artist-items square-panels">
+			<div class="item-container" ng-repeat="artist in artists.items">
+				<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
+					<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
+						<div class="image animate" style="background-image: url({{ image.url }});"></div>
+					</div>
+					<div class="image-container no-image" ng-hide="artist.images.length > 0">
+						<div class="image"></div>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="artist.name"></div>
+					</div>
+				</a>
+			</div>
+		</div>
+		<div class="clear-both"></div>
+	</div>
+	
+	<div class="search-results-section albums">
+		<h4 class="section-title">Albums</h4>	
+		<div class="album-items square-panels">
+			<div class="item-container" ng-repeat="album in albums.items">
+				<a href="/browse/album/{{ album.uri }}" class="square-panel album">
+					<div class="image-container" ng-repeat="image in album.images | limitTo:1">
+						<div class="image animate" style="background-image: url({{ image.url }});"></div>
+					</div>
+					<div class="image-container no-image" ng-hide="album.images.length > 0">
+						<div class="image"></div>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="album.name"></div>
+					</div>
+				</a>
+			</div>
+		</div>
+		<div class="clear-both"></div>
+	</div>	
+	
+	<div class="search-results-section playlists">
+		<h4 class="section-title">Playlists</h4>		
+		<div class="playlist-items square-panels">
+			<div class="item-container" ng-repeat="playlist in playlists.items">
+				<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
+					<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
+						<div class="image animate" style="background-image: url({{ image.url }});"></div>
+					</div>
+					<div class="image-container no-image" ng-hide="playlist.images.length > 0">
+						<div class="image"></div>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="playlist.name"></div>
+						<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+					</div>
+				</a>
+			</div>
+		</div>
+		<div class="clear-both"></div>
+	</div>
+	
+	<div class="clear-both"></div>
+	
+	<div class="search-results-section tracks">
+		<h4 class="section-title">Tracks</h4>	
+		<div class="search-items tracklist"  ng-controller="TracklistController">		
+			<track
+			   ng-repeat="track in tracks.items"
+			   track="track"
+			   class="track"
+			   ng-click="trackClicked( $event )"
+			   ng-dblclick="trackDoubleClicked( $event )"
+			   data-uri="{{ track.track.uri }}"></track>
+
+			<div ng-hide="tracks.items.length" class="no-items">
+				No results
+			</div>			
+		</div>
+	</div>
+	
+</div>

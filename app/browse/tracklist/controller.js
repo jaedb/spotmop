@@ -5,6 +5,41 @@ angular.module('spotmop.browse.tracklist', [
 	'ngRoute'
 ])
 
+
+.directive('track', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			track: '='
+		},
+		templateUrl: '/app/browse/tracklist/track.template.html',
+		link: function( $scope, element, attrs ){
+		}
+	}
+})
+
+
+.directive('tltrack', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			track: '='
+		},
+		templateUrl: '/app/browse/tracklist/tltrack.template.html',
+		link: function( $scope, element, attrs ){
+			
+			// when track changed, let's comapre this track.tlid with the new playing track tlid
+			$scope.$on('spotmop:currentTrackChanged', function( event, tlTrack ){
+				if( tlTrack.tlid === $scope.track.tlid ){
+					$scope.track.trackCurrentlyPlaying = true;
+				}else{
+					$scope.track.trackCurrentlyPlaying = false;
+				}
+			});
+		}
+	}
+})
+
 .controller('TracklistController', function TracklistController( $scope, $rootScope, MopidyService ){
 
 	// setup switches to detect shift/control key holds
