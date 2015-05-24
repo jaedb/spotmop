@@ -1,0 +1,54 @@
+<div>
+
+	<div class="artist-intro">
+		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
+			<div class="image animate" style="background-image: url({{ image.url }});"></div>
+		</div>
+		<div class="inner">
+			<h1 ng-bind="artist.name"></h1>
+			<div class="info-text">
+				<span ng-bind="albums.items.length"></span> albums
+				&nbsp;|&nbsp; <span ng-bind="artist.followers.total"></span> followers
+			</div>
+		</div>
+	</div>
+	
+	<h4 class="section-title">Top tracks</h4>
+	
+	<div class="top-track-items tracklist" ng-controller="TracklistController">
+	
+		<track
+		   ng-repeat="track in tracks"
+		   track="track"
+		   class="track"
+		   ng-click="trackClicked( $event )"
+		   ng-dblclick="trackDoubleClicked( $event )"
+		   data-uri="{{ track.track.uri }}"
+		   ng-drag="true"
+		   ng-drag-data="{{ obj }}"
+		   ng-drag-success="onDragComplete($data,$event)"></track>
+
+		<div ng-hide="tracks.length" class="no-items">
+			No items
+		</div>
+		
+	</div>
+	
+	<h4 class="section-title">Albums</h4>
+	
+	<div class="album-items square-panels">
+		<div class="item-container" ng-repeat="album in albums.items">
+			<a href="/browse/album/{{ album.uri }}" class="square-panel album">
+				<div class="image-container" ng-repeat="image in album.images | limitTo:1">
+					<div class="image animate" style="background-image: url({{ image.url }});"></div>
+				</div>
+				<div class="info animate">
+					<div class="name" ng-bind="album.name"></div>
+				</div>
+			</a>
+		</div>
+	</div>
+		
+	<div class="clear-both"></div>
+	
+</div>

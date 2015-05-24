@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE HTML>
 <html>
 <head>
@@ -441,3 +442,66 @@
 	
 </body>
 </html>
+=======
+<html>
+<head>
+	
+	<title>Angular</title>	
+    <base href="/">
+	
+	<script type="text/javascript" src="/vendor/jquery.min.js"></script>	
+	<script type="text/javascript" src="/vendor/jquery.event.drag.js"></script>	
+	<script type="text/javascript" src="/vendor/jquery.event.drop.js"></script>	
+	<script type="text/javascript" src="/vendor/angular.js"></script>
+	<script type="text/javascript" src="/vendor/angular-route.js"></script>
+	<script type="text/javascript" src="/vendor/angular-resource.js"></script>
+	<script type="text/javascript" src="/vendor/angular-storage.min.js"></script>
+	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
+	<script type="text/javascript" src="/vendor/background-check.min.js"></script>
+	
+	<script type="text/javascript" src="/app/app.js"></script>
+	<script type="text/javascript" src="/app/services/settings/service.js"></script>
+	<script type="text/javascript" src="/app/services/mopidy/service.js"></script>
+	<script type="text/javascript" src="/app/services/spotify/service.js"></script>
+	
+	<script type="text/javascript" src="/app/browse/playlist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/album/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/artist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/tracklist/controller.js"></script>
+	
+	<script type="text/javascript" src="/app/discover/controller.js"></script>	
+	<script type="text/javascript" src="/app/discover/featured/controller.js"></script>	
+	<script type="text/javascript" src="/app/discover/new/controller.js"></script>	
+	
+	<script type="text/javascript" src="/app/queue/controller.js"></script>	
+	<script type="text/javascript" src="/app/settings/controller.js"></script>	
+	<script type="text/javascript" src="/app/playlists/controller.js"></script>	
+	<script type="text/javascript" src="/app/player/controller.js"></script>	
+	<script type="text/javascript" src="/app/search/controller.js"></script>	
+	
+	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
+	<link rel="stylesheet" type="text/css" href="/assets/css/forms.css" />
+	
+</head>
+<body ng-app="spotmop" ng-controller="ApplicationController">
+	
+	<div id="sidebar">
+		<div class="inner">
+			
+			<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
+
+		</div>
+	</div>
+	
+	<div id="body" class="body">
+		<div class="inner">
+			<div ng-view></div>
+		</div>
+	</div>
+	
+	<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
+	
+</body>
+</html>
+>>>>>>> angular/master

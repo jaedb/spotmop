@@ -1,0 +1,38 @@
+<div id="sidebar">
+	<div class="inner">
+		
+		<form class="search-form" ng-submit="searchSubmit( query )">
+			<input type="text" ng-model="query" />
+			<button type="submit"><i class="fa fa-search"></i></button>
+		</form>
+		
+		<ul class="main-menu">
+			<li ng-repeat="item in mainMenu">
+				<a href="{{ item.Link }}">
+					<i class="fa fa-{{ item.Icon }}"></i>
+					{{ item.Title }}
+				</a>
+				<ul ng-show="item.Children.length">
+					<li ng-repeat="item in item.Children">
+						<a href="{{ item.Link }}" ng-bind="item.Title"></a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+
+		
+		<br /><br /><br />
+		<div class="spotify">
+			Spotify:
+			<span ng-show="spotifyOnline" class="green-text">Online</span>
+			<span ng-hide="spotifyOnline" class="red-text">Offline</span>
+		</div>
+
+		<div class="mopidy">
+			Mopidy:
+			<span ng-show="mopidyOnline" class="green-text">Online</span>
+			<span ng-hide="mopidyOnline" class="red-text">Offline</span>
+		</div>
+
+	</div>
+</div>
