@@ -58,10 +58,10 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $route, $routeParams, $localStorage, $timeout, $location, SpotifyService, MopidyService ){
 
-	$scope.currentlyPlayingTrack = {};
-
+	$scope.currentTlTrack = {};
+	$scope.currentTracklist = [];
 
 	/**
 	 * Search
@@ -177,8 +177,64 @@ angular.module('spotmop', [
 			}
 		})
 		.error(function( error ){
-			$scope.status = 'Unable to load new releases';
+			$scope.status = 'Unable to load your playlists';
 		});
+	
+	
+	
+	/**
+	 * Delete key pressed
+	 * TODO: Figure out a way to integrate this into TracklistController
+	 **/
+	
+	$('body').bind('keyup',function(evt){
+		if( evt.which === 46 )
+			deleteKeyReleased();
+	});
+	
+	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
+	function deleteKeyReleased(){
+		
+		var tracksDOM = $(document).find('.track.selected');
+		var tracks = [];
+		
+		
+		// --- DELETE FROM PLAYLIST --- //
+		
+		if( $route.current.$$route.controller == 'PlaylistController' ){
+			
+			// TODO: add check of userid. We want to disallow deletes if the playlist owner.id
+			// does not match the logged in user.id. Currently we just get an error from SpotifyService
+			
+			// construct each track into a json object to delete
+			$.each( $(document).find('.track'), function(trackKey, track){
+				if( $(track).hasClass('selected') ){
+					tracks.push( {uri: $(track).attr('data-uri'), positions: [trackKey]} );
+				}
+			});
+			
+			// parse these uris to spotify and delete these tracks
+			SpotifyService.deleteTracksFromPlaylist( $routeParams.uri, tracks )
+				.success(function( response ) {
+					tracksDOM.remove();
+				})
+				.error(function( error ){
+					console.log( error );
+				});
+		
+			
+		// --- DELETE FROM QUEUE --- //
+			
+		}else if( $route.current.$$route.controller == 'QueueController' ){
+		
+			// fetch each tlid and put into delete array
+			$.each( $(document).find('.track.selected'), function(trackKey, track){
+				tracks.push( parseInt($(track).attr('data-tlid')) );
+			});
+			
+			MopidyService.removeFromTrackList( tracks );
+		}
+	}
 	
 });
 

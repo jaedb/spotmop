@@ -11,7 +11,7 @@
 	<div class="queue-items tracklist"  ng-controller="TracklistController">		
 	
 		<tltrack
-		   ng-repeat="track in tracks"
+		   ng-repeat="track in currentTracklist"
 		   track="track"
 		   class="track"
 		   ng-class="{ playing: track.trackCurrentlyPlaying }"

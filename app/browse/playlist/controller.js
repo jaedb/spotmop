@@ -35,11 +35,12 @@ angular.module('spotmop.browse.playlist', [
 			$scope.status = 'Unable to load new releases';
 		});
 	
+	
 	/**
 	 * Delete tracks from this playlist
 	 * @param tracksDOM = jQuery array of dom tracks
 	 * @param tracks = json array of track info (ie {uri: "XX"});
-	 **/
+	 **
 	$scope.deleteTracks = function( tracksDOM, tracks ){
 	
 		// make sure that the current controller is THIS controller
@@ -58,5 +59,5 @@ angular.module('spotmop.browse.playlist', [
 					console.log( error );
 				});
 		}
-	};
+	};*/
 });

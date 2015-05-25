@@ -1,15 +1,15 @@
 <div id="player">
 
-	<div class="background-container animate" ng-repeat="image in currentTrack.album.images | limitTo:1">
+	<div class="background-container animate" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1">
 		<div class="image" style="background-image: url({{ image.url }})"></div>
 	</div>
 	
 	<div class="inner">
 
 		<div class="track-info">
-			<span class="track" ng-bind="currentTrack.name"></span>
+			<span class="track" ng-bind="currentTlTrack.track.name"></span>
 			<span class="artist">
-				<span ng-repeat="artist in currentTrack.artists">
+				<span ng-repeat="artist in currentTlTrack.track.artists">
 					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a>
 				</span>
 			</span>

@@ -8,14 +8,13 @@ angular.module('spotmop.player', [
 .controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, MopidyService, SpotifyService ){
 	
 	// setup template containers
-	$scope.currentTrack = {};
 	$scope.muted = false;
 	$scope.playing = false;
 	$scope.volume = 100;
 	$scope.playPosition = 0;
 	$scope.playPositionPercent = function(){
-		if( typeof($scope.currentTrack.length) !== 'undefined' )
-			return ( $scope.playPosition / $scope.currentTrack.length * 100 ).toFixed(2);
+		if( typeof($scope.currentTlTrack.track) !== 'undefined' )
+			return ( $scope.playPosition / $scope.currentTlTrack.track.length * 100 ).toFixed(2);
 	};
 	
 	// core controls
@@ -42,7 +41,7 @@ angular.module('spotmop.player', [
 		offset = slider.offset();
 		position = event.pageX - offset.left;
 		percent = position / slider.innerWidth();
-		seekTime = Math.round(percent * $scope.currentTrack.length);
+		seekTime = Math.round(percent * $scope.currentTlTrack.length);
 		console.log( 'Seeking to '+percent+'% and '+seekTime+'ms' );
 		// tell mopidy to make it so
 		MopidyService.seek( seekTime );
@@ -69,11 +68,6 @@ angular.module('spotmop.player', [
 		updateVolume();
 	});
 	
-	$scope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		updateCurrentTrack( tlTrack );
-		updatePlayerState();
-	});
-	
 	$scope.$on('mopidy:event:playbackStateChanged', function( event, state ){
 		updatePlayerState( state.new_state );
 	});
@@ -84,6 +78,20 @@ angular.module('spotmop.player', [
 	
 	$scope.$on('mopidy:event:volumeChanged', function( event, state ){
 		updateVolume();
+	});
+	
+	$scope.$on('mopidy:event:tracklistChanged', function(){
+		MopidyService.getCurrentTlTracks().then( function(tlTracks){
+			$scope.$parent.currentTracklist = tlTracks;
+		});
+	});
+	
+	// listen for current track changes
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
+		$scope.$parent.currentTlTrack = tlTrack.tl_track;
+		updateCurrentTrack( tlTrack.tl_track );
+		updatePlayerState();
 	});
 	
 	/**
@@ -139,15 +147,15 @@ angular.module('spotmop.player', [
 	function updateCurrentTrack( tlTrack ){
 		
 		// update all ui uses of the track (window title, player bar, etc)
-		var setCurrentTrack = function( track ){
+		var setCurrentTrack = function( tlTrack ){
 		
 			// save for any other use we might dream up
-			$scope.currentTrack = track;
+			$scope.$parent.currentTlTrack = tlTrack;
 			
 			// now we have track info, let's get the spotify artwork	
-			SpotifyService.getTrack( track.uri )
+			SpotifyService.getTrack( tlTrack.track.uri )
 				.success(function( response ) {
-					$scope.currentTrack.album.images = response.album.images;
+					$scope.$parent.currentTlTrack.track.album.images = response.album.images;
 				})
 				.error(function( error ){
 					$scope.status = 'Unable to load new releases';
@@ -163,18 +171,18 @@ angular.module('spotmop.player', [
 		
 		// track provided, update pronto garcong!
 		if( typeof( tlTrack ) !== 'undefined' ){
-			setCurrentTrack( tlTrack.tl_track.track );
+			setCurrentTrack( tlTrack );
 			
 		// no track provided, so go fetch it first, then proceed
 		}else{
-			MopidyService.getCurrentTrack().then( function(track){
-				if(track !== null && track !== undefined){
-					if(track.name.indexOf("[loading]") > -1){
-						MopidyService.lookup(track.uri).then(function(result){
+			MopidyService.getCurrentTlTrack().then( function( tlTrack ){
+				if(tlTrack !== null && tlTrack !== undefined){
+					if(tlTrack.track.name.indexOf("[loading]") > -1){
+						MopidyService.lookup(tlTrack.track.uri).then(function(result){
 							setCurrentTrack(result[0]);
 						});
 					}else{
-						setCurrentTrack(track);
+						setCurrentTrack(tlTrack);
 					}
 				}
 			});
@@ -205,12 +213,6 @@ angular.module('spotmop.player', [
 			);
 	});
 	*/
-	
-	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		$rootScope.$broadcast('spotmop:currentTrackChanged', tlTrack.tl_track);
-	});
 		
 
 	/**
@@ -218,7 +220,7 @@ angular.module('spotmop.player', [
 	 **/
 	function updateWindowTitle(){
 	
-		var track = $scope.currentTrack;		
+		var track = $scope.currentTlTrack.track;		
 		var documentIcon = '\u25A0 ';
 		var artistString = '';
 		

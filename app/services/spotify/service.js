@@ -165,10 +165,15 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
-		deleteTracksFromPlaylist: function( playlistid, tracks ){
+		deleteTracksFromPlaylist: function( playlisturi, tracks ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
 			return $http({
 				method: 'DELETE',
-				url: urlBase+'users/jaedb/playlists/'+playlistid+'/tracks',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
 				//url: urlBase+'users/'+$localStorage.Spotify.userid+'/playlists/'+playlistid+'/tracks',
 				dataType: "json",
 				data: JSON.stringify( { tracks: tracks } ),

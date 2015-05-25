@@ -55,7 +55,7 @@ angular.module('spotmop.browse.tracklist', [
 	}
 })
 
-.controller('TracklistController', function TracklistController( $scope, $rootScope, $route, MopidyService ){
+.controller('TracklistController', function TracklistController( $scope, $rootScope, $route, $routeParams, MopidyService, SpotifyService ){
 
 	// setup switches to detect shift/control key holds
 	var shiftKeyHeld = false;
@@ -69,29 +69,7 @@ angular.module('spotmop.browse.tracklist', [
 	}).bind('keyup',function(evt){
 		shiftKeyHeld = false;
 		ctrlKeyHeld = false;
-		if( evt.which === 46 )
-			deleteKeyReleased();
 	});
-	
-	// when we hit DELETE key, broadcast (track directives are listening...)
-	function deleteKeyReleased(){
-		// NOT REQUIRED AS WE'RE JQUERY HACKING THIS
-		// $scope.$broadcast('spotmop:deleteKeyReleased');
-		
-		var tracksDOM = $(document).find('.track.selected');
-		var tracks = [];
-		
-		// construct each track into a json object with the necessary info for both SpotifyService and MopidyService
-		// to be able to perform a delete (from this controller we don't know which service is relevant)
-		$.each( $(document).find('.track'), function(trackKey, track){
-			if( $(track).hasClass('selected') ){
-				tracks.push( {uri: $(track).attr('data-uri'), positions: [trackKey]} );
-			}
-		});
-		
-		// tell our parent (whatever it is, playlist, queue, whatev's) to delete these tracks
-		$scope.$parent.deleteTracks( tracksDOM, tracks );
-	}
 	
 	// when we SINGLE click on a track
 	$scope.trackClicked = function( event ){
