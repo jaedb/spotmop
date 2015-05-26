@@ -120,8 +120,11 @@ angular.module('spotmop', [
 		}
 	];
 
-	$scope.$on('mopidy:state:online', function(){
-		$rootScope.mopidyOnline = true;
+	$scope.$on('spotmop:mopidystarted', function(){
+		$rootScope.mopidyOnline = true;		
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
+			$scope.currentTracklist = tlTracks;
+		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){

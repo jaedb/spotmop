@@ -32,14 +32,14 @@ angular.module('spotmop.queue', [
 	
 		// we've been parsed a tlTrack, so just save it
 		if( typeof( tlTrack ) !== 'undefined' ){
-			$scope.currentTlTrack = tlTrack;
+			$scope.$parent.currentTlTrack = tlTrack;
 		
 		// not provided, let's get it ourselves
 		}else{
 			MopidyService.getCurrentTlTrack()
 				.then(
 					function( tlTrack ){
-						$scope.currentTlTrack = tlTrack;
+						$scope.$parent.currentTlTrack = tlTrack;
 					}
 				);
 		}
@@ -64,7 +64,7 @@ angular.module('spotmop.queue', [
 	 **/
 	function updateTracklist( tracks ){
 		
-		$scope.currentTracklist = tracks;
+		$scope.$parent.currentTracklist = tracks;
 		
 		// figure out the total time for all tracks
 		var totalTime = 0;

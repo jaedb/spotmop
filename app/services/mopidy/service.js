@@ -58,13 +58,17 @@ angular.module('spotmop.services.mopidy', [
      * @param Object thisObj
 	 * @param Array args
      */
-	function executeFunctionByName(functionName, context, args) {
+	function executeFunctionByName(functionName, context, args){
+			
 		var namespaces = functionName.split(".");
 		var func = namespaces.pop();
 
 		for(var i = 0; i < namespaces.length; i++) {
 			context = context[namespaces[i]];
 		}
+		
+		// THIS SHOWS US WHAT MOPIDY FUNCTIONS ARE BEING CALLED
+		console.log( functionName );
 
 		return context[func].apply(context, args);
 	}
@@ -298,7 +302,8 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		removeFromTrackList: function( tlids ){var self = this;
+		removeFromTrackList: function( tlids ){
+			var self = this;
 			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
 				return true;
 			});
