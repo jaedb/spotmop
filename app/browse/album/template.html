@@ -30,10 +30,7 @@
 		   class="track"
 		   ng-click="trackClicked( $event )"
 		   ng-dblclick="trackDoubleClicked( $event )"
-		   data-uri="{{ track.uri }}"
-		   ng-drag="true"
-		   ng-drag-data="{{ obj }}"
-		   ng-drag-success="onDragComplete($data,$event)"></track>
+		   data-uri="{{ track.uri }}"></track>
 
 		<div ng-hide="tracks.items.length" class="no-items">
 			No items

@@ -5,8 +5,6 @@
     <base href="/">
 	
 	<script type="text/javascript" src="/vendor/jquery.min.js"></script>	
-	<script type="text/javascript" src="/vendor/jquery.event.drag.js"></script>	
-	<script type="text/javascript" src="/vendor/jquery.event.drop.js"></script>	
 	<script type="text/javascript" src="/vendor/angular.js"></script>
 	<script type="text/javascript" src="/vendor/angular-route.js"></script>
 	<script type="text/javascript" src="/vendor/angular-resource.js"></script>
@@ -22,6 +20,7 @@
 	<script type="text/javascript" src="/app/browse/playlist/controller.js"></script>	
 	<script type="text/javascript" src="/app/browse/album/controller.js"></script>	
 	<script type="text/javascript" src="/app/browse/artist/controller.js"></script>	
+	<script type="text/javascript" src="/app/browse/user/controller.js"></script>	
 	<script type="text/javascript" src="/app/browse/tracklist/controller.js"></script>
 	
 	<script type="text/javascript" src="/app/discover/controller.js"></script>	
@@ -41,11 +40,11 @@
 </head>
 <body ng-app="spotmop" ng-controller="ApplicationController">
 	
+    <div id="notifications"></div>
+    
 	<div id="sidebar">
-		<div class="inner">
-			
+		<div class="inner">			
 			<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
-
 		</div>
 	</div>
 	
@@ -57,5 +56,7 @@
 	
 	<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
 	
+    <div class="drag-tracer"></div>
+    
 </body>
 </html>

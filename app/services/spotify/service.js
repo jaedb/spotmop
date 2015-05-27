@@ -83,7 +83,6 @@ angular.module('spotmop.services.spotify', [])
 			}
 		});
 	}
-	
 
 	
 	// specify the base URL for the API endpoints
@@ -113,6 +112,38 @@ angular.module('spotmop.services.spotify', [])
 				return exploded[2];				
 			return null;
 		},
+        
+        /**
+         * Users
+         **/
+        
+        getMe: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'me/',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+        },
+        
+        getUser: function( useruri ){
+		
+			var userid = this.getFromUri( 'userid', useruri );
+            
+			return $http({
+				method: 'GET',
+				url: urlBase+'users/'+userid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+        },
+        
+        
+        /**
+         * Track based requests
+         **/
 	
 		getTrack: function( trackuri ){
 			
@@ -126,14 +157,15 @@ angular.module('spotmop.services.spotify', [])
 				}
 			});
 		},
+        
 	
 		/**
 		 * Playlist-oriented requests
-		 **/
-		myPlaylists: function(){
+		 **/        
+		getPlaylists: function( userid ){
 			return $http({
 				method: 'GET',
-				url: urlBase+'users/jaedb/playlists',
+				url: urlBase+'users/'+userid+'/playlists',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
@@ -165,10 +197,34 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
-		deleteTracksFromPlaylist: function( playlistid, tracks ){
+		addTracksToPlaylist: function( playlisturi, tracks ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+			return $http({
+				method: 'POST',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+				//url: urlBase+'users/'+$localStorage.Spotify.userid+'/playlists/'+playlistid+'/tracks',
+				dataType: "json",
+				data: JSON.stringify( { uris: tracks } ),
+				contentType: "application/json; charset=utf-8",
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		deleteTracksFromPlaylist: function( playlisturi, tracks ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
 			return $http({
 				method: 'DELETE',
-				url: urlBase+'users/jaedb/playlists/'+playlistid+'/tracks',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
 				//url: urlBase+'users/'+$localStorage.Spotify.userid+'/playlists/'+playlistid+'/tracks',
 				dataType: "json",
 				data: JSON.stringify( { tracks: tracks } ),
@@ -272,6 +328,19 @@ angular.module('spotmop.services.spotify', [])
 			return $http({
 				method: 'GET',
 				url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		getRelatedArtists: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );
+			
+			return $http({
+				method: 'GET',
+				url: urlBase+'artists/'+artistid+'/related-artists',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}

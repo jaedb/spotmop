@@ -34,7 +34,13 @@ angular.module('spotmop.browse.artist', [
 					SpotifyService.getTopTracks( $routeParams.uri )
 						.success( function( response ){
 							$scope.tracks = response.tracks;
-							$rootScope.$broadcast('spotmop:pageUpdated');
+				
+							// get the artist's related artists
+							SpotifyService.getRelatedArtists( $routeParams.uri )
+								.success( function( response ){
+									$scope.relatedArtists = response.artists;
+									$rootScope.$broadcast('spotmop:pageUpdated');
+								});
 						});
 				});
 		});

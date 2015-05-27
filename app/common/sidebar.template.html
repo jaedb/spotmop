@@ -8,18 +8,17 @@
 		
 		<ul class="main-menu">
 			<li ng-repeat="item in mainMenu">
-				<a href="{{ item.Link }}">
+				<a href="{{ item.Link }}" ng-class="{droppable: item.Droppable}" data-type="{{ item.Type }}">
 					<i class="fa fa-{{ item.Icon }}"></i>
 					{{ item.Title }}
 				</a>
 				<ul ng-show="item.Children.length">
 					<li ng-repeat="item in item.Children">
-						<a href="{{ item.Link }}" ng-bind="item.Title"></a>
+						<a href="{{ item.Link }}" ng-bind="item.Title" ng-class="{droppable: item.Droppable}" data-type="{{ item.Type }}" data-uri="{{ item.Playlist.uri }}"></a>
 					</li>
 				</ul>
 			</li>
 		</ul>
-
 		
 		<br /><br /><br />
 		<div class="spotify">
