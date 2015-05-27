@@ -16,59 +16,28 @@ angular.module('spotmop.queue', [
 .controller('QueueController', function QueueController( $scope, $rootScope, $route, $timeout, MopidyService ){
 	
 	$scope.totalTime = 0;
-	$scope.currentTlTrack = {};
-	
-	$scope.$on('spotmop:currentTrackChanged', function( event, tlTrack ){
-		updateCurrentTlTrack( tlTrack );
-	});
-	
-	
+
+    /**
+     * Watch the current tracklist
+     * And update our totalTime when the tracklist changes
+     **/
+    $scope.$watch(
+        function($scope){
+            return $scope.$parent.currentTracklist;
+        },
+        function(newTracklist, oldTracklist){
+            calculateTotalTime( newTracklist );
+        }
+    );
+    
 	/**
-	 * Get new currently playing tl track
-	 * TODO: Apply this to the directive that handles the currentlyPlaying switch
-	 * @param tlTrack = obj (optional)
+	 * Update our totaltime
 	 **/
-	function updateCurrentTlTrack( tlTrack ){
-	
-		// we've been parsed a tlTrack, so just save it
-		if( typeof( tlTrack ) !== 'undefined' ){
-			$scope.$parent.currentTlTrack = tlTrack;
-		
-		// not provided, let's get it ourselves
-		}else{
-			MopidyService.getCurrentTlTrack()
-				.then(
-					function( tlTrack ){
-						$scope.$parent.currentTlTrack = tlTrack;
-					}
-				);
-		}
-	}
-	
-	// get tracklist on load
-	// TODO: need to figure out how to do this, without upsetting $digest
-	//$timeout(fetchTracklist, 1000);
-	
-	/**
-	 * Fetch the tracklist
-	 **/
-	function fetchTracklist(){		
-		MopidyService.getCurrentTlTracks().then( function( tracks ){			
-			updateTracklist( tracks );
-		});
-		updateCurrentTlTrack();
-	};
-	
-	/**
-	 * Update our tracklist
-	 **/
-	function updateTracklist( tracks ){
-		
-		$scope.$parent.currentTracklist = tracks;
+	function calculateTotalTime( tracklist ){
 		
 		// figure out the total time for all tracks
 		var totalTime = 0;
-		$.each( $scope.currentTracklist, function( key, track ){
+		$.each( tracklist, function( key, track ){
 			totalTime += track.track.length;
 		});	
 		$scope.totalTime = Math.round(totalTime / 100000);

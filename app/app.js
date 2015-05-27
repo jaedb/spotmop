@@ -62,7 +62,7 @@ angular.module('spotmop', [
 
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
-
+    
 	/**
 	 * Search
 	 **/

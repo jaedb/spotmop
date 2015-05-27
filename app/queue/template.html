@@ -3,7 +3,7 @@
 	<div class="queue-intro">
 		<h1>Queue</h1>
 		<div class="info-text">
-			<span ng-bind="tracks.length"></span> tracks
+			<span ng-bind="currentTracklist.length"></span> tracks
 			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes
 		</div>
 	</div>
@@ -14,7 +14,7 @@
 		   ng-repeat="track in currentTracklist"
 		   track="track"
 		   class="track"
-		   ng-class="{ playing: track.trackCurrentlyPlaying }"
+		   ng-class="{ playing: track.tlid == currentTlTrack.tlid }"
 		   ng-click="trackClicked( $event )"
 		   ng-dblclick="trackDoubleClicked( $event )"
 		   data-uri="{{ track.track.uri }}"
