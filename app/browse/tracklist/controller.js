@@ -147,43 +147,56 @@ angular.module('spotmop.browse.tracklist', [
      * Dragging of tracks
      **/
     var tracksBeingDragged = [];
-    
-    $(document).on('drag', '.track', function(event,dd){
-        
-        console.log( event.clientX );
-        
-        $('body').addClass('dragging');
-        tracksBeingDragged = $(this).siblings('.selected').andSelf();
+    var dragging = false;
+	var dragThreshold = 30;
+	
+	// when the mouse id pressed down on a .track
+	$(document).on('mousedown', '.track', function(event){
+	
+		// get the .track row in question
+		var track = $(event.currentTarget);
+		if( !track.hasClass('track') )
+			track = track.closest('.track');
+	
+		// get the sibling selected tracks too
+		var tracks = track.siblings('.selected').andSelf();
 		
-        // show the drag tracer (dialog that follows cursor during drag events)
-        $(document).find('.drag-tracer')
-            .show()
-            .css({
-                top: event.clientY-10,
-                left: event.clientX+10
-            })
-            .html('Dragging '+tracksBeingDragged.length+' track(s)');
-    });
-    
-    
-    /**
-     * Dropping of tracks
-     **/
-    $(document).on('dropend', '.track', function(event,dd){
-        
-        console.log(event);
-        
-        var target = $(event.target);
-        var tracksDraggingURIs = [];
+		// create an object that gives us all the info we need
+		dragging = {
+					clientX: event.clientX,
+					clientY: event.clientY,
+					tracks: tracks
+				}
+	});
+	
+	// when we release the mouse, release dragging container
+	$(document).on('mouseup', function(event){
+		if( dragging ){
+			dragging = false;
+			$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
+		}
+	});
+	
+	// when we move the mouse, check if we're dragging
+	$(document).on('mousemove', function(event){
+		if( dragging ){
+			
+			var left = dragging.clientX - dragThreshold;
+			var right = dragging.clientX + dragThreshold;
+			var top = dragging.clientY - dragThreshold;
+			var bottom = dragging.clientY + dragThreshold;
+			
+			// check the threshold distance from mousedown and now
+			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+				$(document).find('.drag-tracer')
+					.show()
+					.css({
+						top: event.clientY-10,
+						left: event.clientX+10
+					})
+					.html('Dragging '+dragging.tracks.length+' track(s)');
+			}
+		}
+	});
 
-        $.each( tracksBeingDragged, function(index,value){
-            tracksDraggingURIs.push( $(value).data('uri') );
-        });
-        
-        // remove all the visuals for the drag event
-        $('body').removeClass('dragging');
-        tracksBeingDragged = [];
-        $(document).find('.drag-tracer').hide();
-    });
-                
 });

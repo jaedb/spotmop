@@ -18,12 +18,13 @@
 	<div class="playlist-items tracklist"  ng-controller="TracklistController">		
 	
 		<track
-		   ng-repeat="track in tracks.items"
-		   track="track.track"
-		   class="track"
-		   ng-click="trackClicked( $event )"
-		   ng-dblclick="trackDoubleClicked( $event )"
-		   data-uri="{{ track.track.uri }}"></track>
+            ng-repeat="track in tracks.items"
+            track="track.track"
+            class="track"
+            ng-click="trackClicked( $event )"
+            ng-dblclick="trackDoubleClicked( $event )"
+            draggable="true"
+            data-uri="{{ track.track.uri }}"></track>
 
 		<div ng-hide="tracks.items.length" class="no-items">
 			No items
