@@ -181,6 +181,14 @@ input[type='submit'] {
 	transition: none !important;
 }
 
+.drag-tracer {
+	position: fixed;
+	padding: 6px 10px;
+	background: rgba(0,0,0,0.8);
+	color: #FFFFFF;
+	z-index: 9;
+	display: none;
+}
 
 /**
  * Image effects

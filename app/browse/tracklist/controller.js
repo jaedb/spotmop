@@ -141,4 +141,49 @@ angular.module('spotmop.browse.tracklist', [
 			MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
 		}
 	}
+    
+    
+    /**
+     * Dragging of tracks
+     **/
+    var tracksBeingDragged = [];
+    
+    $(document).on('drag', '.track', function(event,dd){
+        
+        console.log( event.clientX );
+        
+        $('body').addClass('dragging');
+        tracksBeingDragged = $(this).siblings('.selected').andSelf();
+		
+        // show the drag tracer (dialog that follows cursor during drag events)
+        $(document).find('.drag-tracer')
+            .show()
+            .css({
+                top: event.clientY-10,
+                left: event.clientX+10
+            })
+            .html('Dragging '+tracksBeingDragged.length+' track(s)');
+    });
+    
+    
+    /**
+     * Dropping of tracks
+     **/
+    $(document).on('dropend', '.track', function(event,dd){
+        
+        console.log(event);
+        
+        var target = $(event.target);
+        var tracksDraggingURIs = [];
+
+        $.each( tracksBeingDragged, function(index,value){
+            tracksDraggingURIs.push( $(value).data('uri') );
+        });
+        
+        // remove all the visuals for the drag event
+        $('body').removeClass('dragging');
+        tracksBeingDragged = [];
+        $(document).find('.drag-tracer').hide();
+    });
+                
 });

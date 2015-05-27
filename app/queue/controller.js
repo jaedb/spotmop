@@ -31,7 +31,7 @@ angular.module('spotmop.queue', [
     );
     
 	/**
-	 * Update our totaltime
+	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
 	 **/
 	function calculateTotalTime( tracklist ){
 		
