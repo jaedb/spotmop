@@ -11,7 +11,7 @@ angular.module('spotmop.browse.user', [
     });
 })
 
-.controller('UserController', function UserController( $scope, SpotifyService, $routeParams ){
+.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $routeParams ){
 	
 	$scope.user = {};
 	$scope.playlists = [];
@@ -25,6 +25,7 @@ angular.module('spotmop.browse.user', [
             SpotifyService.getPlaylists( response.id )
                 .success(function( response ) {
                     $scope.playlists = response;
+					$rootScope.$broadcast('spotmop:pageUpdated');
                 })
                 .error(function( error ){
                     $scope.status = 'Unable to load users playlists';

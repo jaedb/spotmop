@@ -5,12 +5,11 @@
 			<div class="image animate" style="background-image: url({{ image.url }});"></div>
 		</div>
         <div class="info">
-            <h1 ng-bind="user.display_name"></h1>
+			<h1><span ng-bind="user.display_name"></span><span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span></h1>
             <div class="info-text">
                 <span ng-bind="user.id"></span>
                  &nbsp;|&nbsp; <span ng-bind="playlists.items.length"></span> Playlists
                  &nbsp;|&nbsp; <span ng-bind="user.followers.total"></span> Followers
-                 <span ng-show="user.id == spotifyUser.id">&nbsp;|&nbsp; This is you!</span>
             </div>
         </div>
 		<div class="clear-both"></div>
