@@ -295,6 +295,12 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
+		addToTrackList: function( uris ){
+			var self = this;
+			self.mopidy.tracklist.add({uris: uris}).then( function(){
+				return true;
+			});
+		},
 		removeFromTrackList: function( tlids ){
 			var self = this;
 			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){

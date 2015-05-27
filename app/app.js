@@ -90,7 +90,9 @@ angular.module('spotmop', [
 		{
 			Title: 'Queue',
 			Link: 'queue',
-			Icon: 'list'
+			Icon: 'list',
+			Type: 'queue',
+			Droppable: true
 		},
 		{
 			Title: 'Discover',
@@ -165,7 +167,10 @@ angular.module('spotmop', [
 				if( playlist.owner.id == 'jaedb' ){
 					sanitizedPlaylists.push({
 						Title: playlist.name,
-						Link: '/browse/playlist/'+playlist.uri
+						Link: '/browse/playlist/'+playlist.uri,
+						Type: 'playlist',
+						Playlist: playlist,
+						Droppable: true
 					});
 				}
 			});
@@ -238,6 +243,103 @@ angular.module('spotmop', [
 			MopidyService.removeFromTrackList( tracks );
 		}
 	}
+	
+	
+    /**
+     * Dragging of tracks
+     **/
+    var tracksBeingDragged = [];
+    var dragging = false;
+	var dragThreshold = 30;
+	
+	// when the mouse id pressed down on a .track
+	$(document).on('mousedown', '.track', function(event){
+	
+		// get the .track row in question
+		var track = $(event.currentTarget);
+		if( !track.hasClass('track') )
+			track = track.closest('.track');
+	
+		// get the sibling selected tracks too
+		var tracks = track.siblings('.selected').andSelf();
+		
+		// create an object that gives us all the info we need
+		dragging = {
+					safetyOff: false,			// we switch this when we're outside of the dragThreshold
+					clientX: event.clientX,
+					clientY: event.clientY,
+					tracks: tracks
+				}
+	});
+	
+	// when we release the mouse, release dragging container
+	$(document).on('mouseup', function(event){
+		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
+			
+			// identify the droppable target that we've released on (if it exists)
+			var target;
+			if( $(event.target).hasClass('droppable') )
+				target = $(event.target);
+			else if( $(event.target).closest('.droppable').length > 0 )
+				target = $(event.target).closest('.droppable');
+			
+			// if we have a target
+			if( target ){
+				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
+				
+				// get the uris
+				var uris = [];
+				$.each( dragging.tracks, function(key, value){
+					uris.push( $(value).attr('data-uri') );
+				});
+				
+				// dropping on queue
+				if( target.attr('data-type') === 'queue' ){
+				
+					MopidyService.addToTrackList( uris );
+					
+				// dropping on playlist
+				}else if( target.attr('data-type') === 'playlist' ){
+				
+					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );				
+				}
+				
+			// no target, no drop action required
+			}else{
+				$(document).find('.drag-tracer').fadeOut('medium');
+			}
+		}
+			
+		// unset dragging
+		dragging = false;
+	});
+	
+	// when we move the mouse, check if we're dragging
+	$(document).on('mousemove', function(event){
+		if( dragging ){
+			
+			var left = dragging.clientX - dragThreshold;
+			var right = dragging.clientX + dragThreshold;
+			var top = dragging.clientY - dragThreshold;
+			var bottom = dragging.clientY + dragThreshold;
+			
+			// check the threshold distance from mousedown and now
+			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+			
+				// turn the trigger safety of
+				dragging.safetyOff = true;
+				
+				// setup the tracer, and make him sticky
+				$(document).find('.drag-tracer')
+					.show()
+					.css({
+						top: event.clientY-10,
+						left: event.clientX+10
+					})
+					.html('Dragging '+dragging.tracks.length+' track(s)');
+			}
+		}
+	});
 	
 });
 
