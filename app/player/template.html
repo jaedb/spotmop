@@ -10,7 +10,7 @@
 			<span class="track" ng-bind="currentTlTrack.track.name"></span>
 			<span class="artist">
 				<span ng-repeat="artist in currentTlTrack.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a>
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
 				</span>
 			</span>
 		</div>

@@ -41,7 +41,7 @@ angular.module('spotmop.player', [
 		offset = slider.offset();
 		position = event.pageX - offset.left;
 		percent = position / slider.innerWidth();
-		seekTime = Math.round(percent * $scope.currentTlTrack.length);
+		seekTime = Math.round(percent * $scope.currentTlTrack.track.length);
 		console.log( 'Seeking to '+percent+'% and '+seekTime+'ms' );
 		// tell mopidy to make it so
 		MopidyService.seek( seekTime );

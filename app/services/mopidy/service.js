@@ -26,7 +26,7 @@ angular.module('spotmop.services.mopidy', [
 			var deferred = $q.defer();
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
-
+            
 			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
 
 			if (self.isConnected) {
@@ -37,8 +37,7 @@ angular.module('spotmop.services.mopidy', [
 					deferred.reject(err);
 					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
 				});
-			}
-			else{
+			}else{
 				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
 					deferred.resolve(data);
 					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
@@ -59,16 +58,13 @@ angular.module('spotmop.services.mopidy', [
 	 * @param Array args
      */
 	function executeFunctionByName(functionName, context, args){
-			
+        
 		var namespaces = functionName.split(".");
 		var func = namespaces.pop();
-
-		for(var i = 0; i < namespaces.length; i++) {
+        
+		for(var i = 0; i < namespaces.length; i++){
 			context = context[namespaces[i]];
 		}
-		
-		// THIS SHOWS US WHAT MOPIDY FUNCTIONS ARE BEING CALLED
-		console.log( functionName );
 
 		return context[func].apply(context, args);
 	}
@@ -76,7 +72,6 @@ angular.module('spotmop.services.mopidy', [
 	return {
 		mopidy: {},
 		isConnected: false,
-		currentTlTracks: [],
 
 		/*
 		 * Method to start the Mopidy conneciton
@@ -104,7 +99,6 @@ angular.module('spotmop.services.mopidy', [
 			catch(e){
                 // need to re-initiate notifier
 				//notifier.notify({type: "custom", template: "Connecting with Mopidy failed with the following error message: <br>" + e, delay: 15000});
-
                 // Try to connect without a given url
                 this.mopidy = new Mopidy({
                     callingConvention: 'by-position-or-by-name'
@@ -124,7 +118,7 @@ angular.module('spotmop.services.mopidy', [
 				}
 			});
 
-			$rootScope.$broadcast('spotmop:mopidystarted');
+			$rootScope.$broadcast('spotmop:mopidystarted', this);
 		},
 		stop: function() {
 			$rootScope.$broadcast('spotmop:mopidystopping');
@@ -258,8 +252,7 @@ angular.module('spotmop.services.mopidy', [
 		*/
 		},
 		playTlTrack: function( tlTrack ){
-			var self = this;
-			self.mopidy.playback.play({ tl_track: tlTrack });
+            return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function(streamUri) {
 			var self = this;
@@ -275,7 +268,7 @@ angular.module('spotmop.services.mopidy', [
 					self.mopidy.playback.play();
 				}, consoleError);
 		},
-		play: function() {
+		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
 		},
 		pause: function() {

@@ -104,8 +104,6 @@ angular.module('spotmop.browse.tracklist', [
 	// when we DOUBLE click on a track
 	$scope.trackDoubleClicked = function( event ){
 		
-		console.log('double clicked');
-		
 		// get the track row (even if we clicked a child element)
 		var target = $(event.target);
 		if( !target.hasClass('track') )
@@ -113,9 +111,9 @@ angular.module('spotmop.browse.tracklist', [
 		
 		// play from queue
 		if( target.closest('.tracklist').hasClass('queue-items') ){
-			
+            
 			// get the queue
-			MopidyService.getCurrentTrackListTracks().then( function( tracklist ){
+			MopidyService.getCurrentTlTracks().then( function( tracklist ){
 				
 				var tlTrack;
 				
@@ -123,12 +121,11 @@ angular.module('spotmop.browse.tracklist', [
 				$.each( tracklist, function(key, track){
 					
 					if( track.tlid == target.attr('data-tlid') ){
-						tlTrack = track;
-					}					
-				});
 				
-				// then play our track
-				MopidyService.playTlTrack( tlTrack );
+                        // then play our track
+                        return MopidyService.playTlTrack({ tl_track: track });
+					}	
+				});
 			});
 		
 		// play from anywhere else
