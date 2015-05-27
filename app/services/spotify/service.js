@@ -334,6 +334,19 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
+		getRelatedArtists: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );
+			
+			return $http({
+				method: 'GET',
+				url: urlBase+'artists/'+artistid+'/related-artists',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
 		/**
 		 * Search results
 		 * @param type = string (album|artist|track|playlist)

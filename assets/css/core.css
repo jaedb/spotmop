@@ -89,6 +89,8 @@ html {
 .col.w100{	width: 100%; }
 
 
+.pull-left {		float: left; }
+.pull-right {		float: right; }
 
 
 
@@ -349,6 +351,44 @@ h4.section-title {
 	left: 0;
 	bottom: 0;
 	background: #666666;
+}
+
+
+/**
+ * Related artist panel
+ **/
+
+.related-artist {
+	display: block;
+	clear: both;
+	padding: 10px 0;
+	margin-bottom: 5px;
+	border: 0 !important;
+}
+
+.related-artist .thumbnail {
+	display: block;
+	width: 50px;
+	height: 50px;
+	border-radius: 100px;
+	float: left;
+	margin-right: 14px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: 60px 60px;
+	border: 2px solid #FFFFFF;
+}
+
+.related-artist:hover .thumbnail {
+	opacity: 0.75;
+	border-color: #1cf4c4;
+}
+
+.related-artist .name {
+	padding-top: 15px;
+	font-weight: 300;
+	font-size: 15px;
+	display: inline-block;
 }
 
 
