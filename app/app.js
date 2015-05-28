@@ -196,8 +196,18 @@ angular.module('spotmop', [
 	 **/
 	
 	$('body').bind('keyup',function(evt){
+        
+        // delete key
 		if( evt.which === 46 )
 			deleteKeyReleased();
+        
+        // esc key
+		if( evt.which === 27 ){
+			if( dragging ){
+                dragging = false;
+                $(document).find('.drag-tracer').hide();
+            }
+        }
 	});
 	
 	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
@@ -243,6 +253,23 @@ angular.module('spotmop', [
 			MopidyService.removeFromTrackList( tracks );
 		}
 	}
+    
+    /**
+     * Detect if we have a droppable target
+     * @var target = event.target object
+     * @return jQuery DOM object
+     **/
+    function getDroppableTarget( target ){
+        
+        var droppableTarget = null;
+        
+        if( $(target).hasClass('droppable') )
+            droppableTarget = $(target);
+        else if( $(target).closest('.droppable').length > 0 )
+            droppableTarget = $(target).closest('.droppable');   
+        
+        return droppableTarget;
+    }
 	
 	
     /**
@@ -276,12 +303,10 @@ angular.module('spotmop', [
 	$(document).on('mouseup', function(event){
 		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
 			
+            $(document).find('.droppable').removeClass('dropping');
+            
 			// identify the droppable target that we've released on (if it exists)
-			var target;
-			if( $(event.target).hasClass('droppable') )
-				target = $(event.target);
-			else if( $(event.target).closest('.droppable').length > 0 )
-				target = $(event.target).closest('.droppable');
+			var target = getDroppableTarget( event.target );
 			
 			// if we have a target
 			if( target ){
@@ -325,18 +350,32 @@ angular.module('spotmop', [
 			
 			// check the threshold distance from mousedown and now
 			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+
+                var target = getDroppableTarget( event.target );
+                var dragTracer = $(document).find('.drag-tracer');
 			
 				// turn the trigger safety of
 				dragging.safetyOff = true;
-				
-				// setup the tracer, and make him sticky
-				$(document).find('.drag-tracer')
-					.show()
-					.css({
-						top: event.clientY-10,
-						left: event.clientX+10
-					})
-					.html('Dragging '+dragging.tracks.length+' track(s)');
+
+                // setup the tracer, and make him sticky
+                dragTracer
+                    .show()
+                    .css({
+                        top: event.clientY-10,
+                        left: event.clientX+10
+                    });
+                
+                $(document).find('.droppable').removeClass('dropping');
+                
+                if( target && target.attr('data-type') === 'queue' ){
+                    dragTracer.addClass('good').html('Add to queue');
+                    target.addClass('dropping');
+                }else if( target && target.attr('data-type') === 'playlist' ){
+                    dragTracer.addClass('good').html('Add to playlist');
+                    target.addClass('dropping');
+                }else{
+                    dragTracer.removeClass('good').html('Dragging '+dragging.tracks.length+' track(s)');
+                }
 			}
 		}
 	});
