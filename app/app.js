@@ -318,6 +318,7 @@ angular.module('spotmop', [
 	$(document).on('mouseup', function(event){
 		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
 			
+            $('body').removeClass('dragging');
             $(document).find('.droppable').removeClass('dropping');
             
 			// identify the droppable target that we've released on (if it exists)
@@ -366,6 +367,7 @@ angular.module('spotmop', [
 			// check the threshold distance from mousedown and now
 			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
 
+                $('body').addClass('dragging');
                 var target = getDroppableTarget( event.target );
                 var dragTracer = $(document).find('.drag-tracer');
 			
