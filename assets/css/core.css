@@ -322,8 +322,12 @@ h4.section-title {
  **/
 
 .black-text {		color: #000000; }
-.red-text {			color: red; }
-.green-text {		color: green; }
+.red-text {			color: rgb(214,47,47); }
+.green-text {		color: rgb(53,204,53); }
+
+.black-background {	background-color: #000000; }
+.red-background {	background-color: rgb(214,47,47); }
+.green-background {	background-color: rgb(53,204,53); }
 
 
 
@@ -378,6 +382,12 @@ h4.section-title {
 .button.pill:hover {
     background: #202020;
 }
+
+.button.red {			background-color: #D62F2F; }
+.button.green {			background-color: #35CC35; }
+
+.button.red:hover {		background-color: #c42424; }
+.button.green:hover {	background-color: #28b428; }
 
 
 /**
@@ -547,6 +557,7 @@ h4.section-title {
 	border-top: 1px solid #EEEEEE;
 	border-bottom: 1px solid #EEEEEE;
 	margin-bottom: -1px;
+	cursor: pointer;
 	
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -556,9 +567,8 @@ h4.section-title {
     user-select: none;
 }
 
-.tracklist .track:hover {
+body:not(.dragging) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
-	cursor: pointer;
 }
 
 .tracklist .track.selected,
@@ -568,6 +578,15 @@ h4.section-title {
 
 .tracklist .track.playing {
 	font-weight: bold;
+}
+
+.tracklist .track.drag-hovering {
+	border-top: 2px solid #000000;
+	margin-top: -2px;
+}
+
+.tracklist .track.drag-hovering:first-child {
+	margin-top: -1px;
 }
  
 
@@ -777,7 +796,7 @@ h4.section-title {
 
 .actions {
     clear: both;
-    padding: 40px 0 0 0;
+    padding: 40px 0 0 15%;
 }
 
 .sub-page-navigation {

@@ -92,6 +92,11 @@ angular.module('spotmop.services.spotify', [])
 	
 	// setup response object
     return {
+		
+		logout: function(){
+			$localStorage.Spotify = {};
+			return true;
+		},
 	   
         getNewToken: function(){
             getNewToken();  

@@ -30,6 +30,9 @@ angular.module('spotmop.settings', [
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'refreshtoken'});
         });
     };
+    $scope.spotifyLogout = function(){
+    	SpotifyService.logout();
+    };
 	
 	SettingsService.getVersion()
 		.success( function(response){

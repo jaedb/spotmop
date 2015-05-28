@@ -125,6 +125,8 @@ angular.module('spotmop.player', [
 				$scope.playing = true;
 			else
 				$scope.playing = false;
+			
+			updateWindowTitle();
 				
 		// not sure of new state, so let's find out first
 		}else{
@@ -133,10 +135,12 @@ angular.module('spotmop.player', [
 					$scope.playing = true;
 				else
 					$scope.playing = false;
+				
+				updateWindowTitle();
 			});
 		}
 		
-		updatePlayPosition();
+		updatePlayPosition();		
 	};
 	
 	/**
@@ -220,7 +224,7 @@ angular.module('spotmop.player', [
 	 **/
 	function updateWindowTitle(){
 	
-		var track = $scope.currentTlTrack.track;		
+		var track = $scope.currentTlTrack.track;
 		var documentIcon = '\u25A0 ';
 		var artistString = '';
 		
@@ -234,20 +238,6 @@ angular.module('spotmop.player', [
 			documentIcon = '\u25B6 ';
 			
 		document.title = documentIcon +' '+ track.name +' - '+ artistString;
-		
-/*		
-		if( typeof( coreArray['currentTrack'] ) !== 'undefined' ){		
-			var track = coreArray['currentTrack'];			
-			if( coreArray['state'] == 'playing' )
-				documentIcon = '\u25B6 ';
-			else if( coreArray['state'] == 'playing' )
-				documentIcon = '\u25B6 ';
-
-			document.title = documentIcon + track.name +' - '+ joinArtistNames(track.artists,false);
-		}else{
-			document.title = documentIcon + 'No track playing';
-		}
-		*/
 	}
 	
 });

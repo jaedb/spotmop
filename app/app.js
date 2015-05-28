@@ -299,6 +299,23 @@ angular.module('spotmop', [
         
         return droppableTarget;
     }
+    
+    /**
+     * Detect if we have a track drop target
+     * @var target = event.target object
+     * @return jQuery DOM object
+     **/
+    function getTrackTarget( target ){
+        
+        var trackTarget = null;
+        
+		if( $(target).hasClass('track') )
+			trackTarget = $(target);				
+		else if( $(target).closest('.track').length > 0 )
+			trackTarget = $(target).closest('.track');
+        
+        return trackTarget;
+    }
 	
 	
     /**
@@ -334,13 +351,16 @@ angular.module('spotmop', [
 			
             $('body').removeClass('dragging');
             $(document).find('.droppable').removeClass('dropping');
+            $(document).find('.drag-hovering').removeClass('drag-hovering');
             
 			// identify the droppable target that we've released on (if it exists)
 			var target = getDroppableTarget( event.target );
+			var track = getTrackTarget( event.target );
 			
 			// if we have a target
 			if( target ){
 				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
+				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
 				
 				// get the uris
 				var uris = [];
@@ -356,7 +376,11 @@ angular.module('spotmop', [
 				// dropping on playlist
 				}else if( target.attr('data-type') === 'playlist' ){
 				
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );				
+					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );		
+					
+				// dropping within tracklist
+				}else if( track ){
+					console.log( track );
 				}
 				
 			// no target, no drop action required
@@ -380,10 +404,16 @@ angular.module('spotmop', [
 			
 			// check the threshold distance from mousedown and now
 			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
-
+				
                 $('body').addClass('dragging');
+				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
                 var target = getDroppableTarget( event.target );
+				var track = getTrackTarget( event.target );
                 var dragTracer = $(document).find('.drag-tracer');
+				
+				if( track ){
+					track.addClass('drag-hovering');
+				}
 			
 				// turn the trigger safety of
 				dragging.safetyOff = true;
