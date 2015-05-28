@@ -14,12 +14,15 @@ angular.module('spotmop.playlists', [
     });
 })
 	
-.controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, SpotifyService ){
+.controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, SpotifyService, SettingsService ){
 	
 	// set the default items
 	$scope.playlists = [];
-	
-	SpotifyService.myPlaylists()
+    
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getPlaylists( userid )
 		.then(
 			function( response ){ // successful
 				$scope.playlists = response.data.items;

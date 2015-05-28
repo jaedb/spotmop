@@ -83,7 +83,6 @@ angular.module('spotmop.services.spotify', [])
 			}
 		});
 	}
-	
 
 	
 	// specify the base URL for the API endpoints
@@ -113,6 +112,38 @@ angular.module('spotmop.services.spotify', [])
 				return exploded[2];				
 			return null;
 		},
+        
+        /**
+         * Users
+         **/
+        
+        getMe: function(){
+			return $http({
+				method: 'GET',
+				url: urlBase+'me/',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+        },
+        
+        getUser: function( useruri ){
+		
+			var userid = this.getFromUri( 'userid', useruri );
+            
+			return $http({
+				method: 'GET',
+				url: urlBase+'users/'+userid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+        },
+        
+        
+        /**
+         * Track based requests
+         **/
 	
 		getTrack: function( trackuri ){
 			
@@ -126,14 +157,15 @@ angular.module('spotmop.services.spotify', [])
 				}
 			});
 		},
+        
 	
 		/**
 		 * Playlist-oriented requests
-		 **/
-		myPlaylists: function(){
+		 **/        
+		getPlaylists: function( userid ){
 			return $http({
 				method: 'GET',
-				url: urlBase+'users/jaedb/playlists',
+				url: urlBase+'users/'+userid+'/playlists',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}

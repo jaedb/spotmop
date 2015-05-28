@@ -621,6 +621,32 @@ h4.section-title {
 	padding-bottom: 30px;
 }
 
+/**
+ * User page
+ **/
+
+.user-intro {
+    padding-bottom: 30px;
+}
+
+.user-intro .info {
+    padding-top: 30px;
+}
+
+.user-intro .info-text {
+    margin-top: -20px;
+}
+
+.user-intro .image-container .image {
+    width: 120px;
+    height: 120px;
+    border-radius: 120px;
+    float: left;
+    background-size: cover;
+    background-position: 50% 50%;
+    margin-right: 20px;
+}
+
 
 /**
  * Search
@@ -663,7 +689,21 @@ h4.section-title {
 	padding: 30px 0 20px;
 }
 
+.settings .field.current-user .input {
+    padding-top: 8px;
+}
 
+.settings .field.current-user .image-container > .image {
+    width: 36px;
+    height: 36px;
+    float: left;
+    border-radius: 36px;
+    margin-right: 10px;
+    margin-top: -10px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
 
 
 
