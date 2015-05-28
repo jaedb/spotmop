@@ -4,18 +4,34 @@
 	
 	<div class="settings">
 		
-		<div class="sub-page mopidy">
-			
-			<h4 class="section-title">Mopidy</h4>
+		<div class="sub-page-navigation">
+			<span class="menu-item active" ng-click="subpageNavigate( 'mopidy' )" ng-class="{active: currentSubpage=='mopidy'}">
+				<i class="fa fa-circle" ng-class="{ 'red-text': !mopidyOnline, 'green-text': mopidyOnline }"></i>
+				Mopidy
+			</span>
+			<span class="menu-item" ng-click="subpageNavigate( 'spotify' )" ng-class="{active: currentSubpage=='spotify'}">
+				<i class="fa fa-circle" ng-class="{ 'red-text': !spotifyOnline, 'green-text': spotifyOnline }"></i>
+				Spotify
+			</span>
+			<span class="menu-item" ng-click="subpageNavigate( 'echonest' )" ng-class="{active: currentSubpage=='echonest'}">
+				<i class="fa fa-circle" ng-class="{ 'red-text': !echonestOnline, 'green-text': echonestOnline }"></i>
+				Echonest
+			</span>
+			<span class="menu-item" ng-click="subpageNavigate( 'system' )" ng-class="{active: currentSubpage=='system'}">
+				System
+			</span>
+		</div>
+		
+		<div class="sub-page mopidy" ng-show="currentSubpage=='mopidy'">
 			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input mopidy connection-status">
 					<div class="status connected green-text" ng-hide="!mopidyOnline">
-						<i class="fa fa-circle"></i> &nbsp; Connected
+						<i class="fa fa-check"></i> &nbsp; Connected
 					</div>
 					<div class="status disconnected red-text" ng-hide="mopidyOnline">
-						<i class="fa fa-circle"></i> &nbsp; Disconnected &nbsp;&nbsp;
+						<i class="fa fa-close"></i> &nbsp; Disconnected &nbsp;&nbsp;
 						<a class="reconnect black"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
 					</div>
 				</div>
@@ -40,18 +56,18 @@
 			<div class="clear-both"></div>		
 		</div>
 		
-		<div class="sub-page spotify">
-			
-			<h4 class="section-title">Spotify</h4>
+		<!-- DIVIDER -->
+		
+		<div class="sub-page spotify" ng-show="currentSubpage=='spotify'">
 			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input spotify connection-status">
 					<div class="status connected green-text" ng-hide="!spotifyOnline">
-						<i class="fa fa-circle"></i> &nbsp; Connected
+						<i class="fa fa-check"></i> &nbsp; Connected
 					</div>
 					<div class="status disconnected red-text" ng-hide="spotifyOnline">
-						<i class="fa fa-circle"></i> &nbsp; Disconnected
+						<i class="fa fa-close"></i> &nbsp; Disconnected
 					</div>
 				</div>
 			</div>
@@ -99,15 +115,15 @@
 			<div class="clear-both"></div>			
 		</div>
 		
-		<div class="sub-page echonest">
+		<!-- DIVIDER -->
 		
-			<h4 class="section-title">Echonest Taste Profile</h4>
+		<div class="sub-page echonest" ng-show="currentSubpage=='echonest'">
 			
 			<div class="field">
 				<div class="label">Status</div>
 				<div class="input echonest connection-status">
-					<div class="status connected green-text"><i class="fa fa-circle"></i> &nbsp; Connected</div>
-					<div class="status disconnected red-text"><i class="fa fa-circle"></i> &nbsp; Disconnected</div>
+					<div class="status connected green-text"><i class="fa fa-check"></i> &nbsp; Connected</div>
+					<div class="status disconnected red-text"><i class="fa fa-close"></i> &nbsp; Disconnected</div>
 				</div>
 			</div>
 			
@@ -123,9 +139,9 @@
 			
 		</div>
 		
-		<div class="sub-page system">
+		<!-- DIVIDER -->
 		
-			<h4 class="section-title">System info</h4>				
+		<div class="sub-page system" ng-show="currentSubpage=='system'">		
 			
 			<div class="field">
 				<div class="label">Spotmop version</div>

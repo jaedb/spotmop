@@ -19,11 +19,11 @@ angular.module('spotmop.settings', [
 	// load our current settings into the template
 	$scope.version;
 	$scope.settings = SettingsService.getSettings();
-	/*
-	$scope.mopidyOnline = MopidyService.isConnected;
-	$scope.spotifyOnline = true;	// TODO: Figure out how to handle online/offline state
-	
-	*/
+	$scope.currentSubpage = 'mopidy';
+	$scope.subpageNavigate = function( subpage ){
+		console.log( subpage );
+		$scope.currentSubpage = subpage;
+	};
 	
 	SettingsService.getVersion()
 		.success( function(response){
