@@ -19,10 +19,10 @@ angular.module('spotmop.player', [
 	
 	// core controls
 	$scope.playPause = function(){
-	if( $scope.playing )
-		MopidyService.pause();
-	else
-		MopidyService.play();
+        if( $scope.playing )
+            MopidyService.pause();
+        else
+            MopidyService.play();
 	}
 	$scope.next = function(){
 		MopidyService.next();
@@ -231,8 +231,6 @@ angular.module('spotmop.player', [
 		});
 			
 		if( $scope.playing )
-			documentIcon = '\u25B6 ';
-		else
 			documentIcon = '\u25B6 ';
 			
 		document.title = documentIcon +' '+ track.name +' - '+ artistString;

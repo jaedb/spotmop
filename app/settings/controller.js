@@ -24,6 +24,12 @@ angular.module('spotmop.settings', [
 		console.log( subpage );
 		$scope.currentSubpage = subpage;
 	};
+    $scope.refreshSpotifyToken = function(){
+        $rootScope.$broadcast('spotmop:notifyUser', {id: 'refreshtoken', message: "Refreshing token", type: 'loading'});
+        $.when(SpotifyService.getNewToken()).then( function(){
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'refreshtoken'});
+        });
+    };
 	
 	SettingsService.getVersion()
 		.success( function(response){

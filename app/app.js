@@ -135,6 +135,20 @@ angular.module('spotmop', [
 		$rootScope.mopidyOnline = false;
 	});
 	
+	$scope.$on('spotmop:notifyUser', function( event, data ){
+        
+        if( typeof(data.type) === 'undefined' )
+            data.type = '';
+        
+		var container = $(document).find('#notifications');
+        container.append('<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>');
+	});
+	
+	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){
+        var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
+		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
+	});
+	
 	// the page content has been updated
 	$scope.$on('spotmop:pageUpdated', function(){
 		

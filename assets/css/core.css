@@ -360,6 +360,25 @@ h4.section-title {
 }
 
 
+/**
+ * Clickable buttons
+ **/
+
+.button.pill {
+    padding: 8px 18px;
+    border-radius: 20px;
+    background: #333333;
+    color: #FFFFFF;
+    display: inline-block;
+    border: 0 !important;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.button.pill:hover {
+    background: #202020;
+}
+
 
 /**
  * Popularity bars
@@ -756,6 +775,11 @@ h4.section-title {
  * Settings
  **/
 
+.actions {
+    clear: both;
+    padding: 40px 0 0 0;
+}
+
 .sub-page-navigation {
 	border-bottom: 1px solid #666666;
 }
@@ -787,7 +811,7 @@ h4.section-title {
 }
 
 .sub-page {
-	padding: 30px 0 20px;
+	padding: 10px 0 20px;
 }
 
 .settings .field.current-user .input {

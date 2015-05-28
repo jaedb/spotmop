@@ -92,7 +92,11 @@ angular.module('spotmop.services.spotify', [])
 	
 	// setup response object
     return {
-	
+	   
+        getNewToken: function(){
+            getNewToken();  
+        },
+        
 		/**
 		 * Get an element from a URI
 		 * @param element = string, the element we wish to extract
