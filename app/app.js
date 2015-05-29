@@ -380,7 +380,29 @@ angular.module('spotmop', [
 					
 				// dropping within tracklist
 				}else if( track ){
-					console.log( track );
+                    
+                    var start = 1000;
+                    var end = 0;
+                    var to_position = $(track).index();
+                    $.each(dragging.tracks, function(key, track){
+                        if( $(track).index() < start )  
+                            start = $(track).index();
+                        if( $(track).index() > end )  
+                            end = $(track).index();
+                    });
+                    
+                    // sorting queue tracklist
+                    if( track.closest('.tracklist').hasClass('queue-items') ){
+                        MopidyService.moveTlTracks( start, end, to_position );
+                        
+                    // sorting playlist tracklist
+                    }else if( track.closest('.tracklist').hasClass('playlist-items') ){
+                        var playlisturi = $route.current.params.uri;
+                        var range_length = 1;
+                        if( end > start ) range_length = end - start;
+                        SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+                        $(dragging.tracks).insertBefore( track );
+                    }
 				}
 				
 			// no target, no drop action required

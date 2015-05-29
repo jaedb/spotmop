@@ -225,6 +225,30 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
+		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
+            
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+            if( userid != SettingsService.getSetting('spotifyuserid',null) )
+                return false;
+			
+			return $http({
+				method: 'PUT',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+				dataType: "json",
+				data: JSON.stringify({
+                    range_start: range_start,
+                    range_length: range_length,
+                    insert_before: insert_before
+                }),
+				contentType: "application/json; charset=utf-8",
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
 		deleteTracksFromPlaylist: function( playlisturi, tracks ){
 			
 			// get the user and playlist ids from the uri
