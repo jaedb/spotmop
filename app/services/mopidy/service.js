@@ -286,10 +286,16 @@ angular.module('spotmop.services.mopidy', [
 		next: function() {
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
+		getRepeat: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getRepeat", this)();
+		},
+		setRepeat: function( isRepeat ){
+			return wrapMopidyFunc("mopidy.tracklist.setRepeat", this)([ isRepeat ]);
+		},
 		getRandom: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getRandom", this)();
 		},
-		setRandom: function (isRandom) {
+		setRandom: function( isRandom ) {
 			return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
 		},
 		getCurrentTrackList: function () {

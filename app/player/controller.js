@@ -10,6 +10,8 @@ angular.module('spotmop.player', [
 	// setup template containers
 	$scope.muted = false;
 	$scope.playing = false;
+	$scope.isRepeat = false;
+	$scope.isRandom = false;
 	$scope.volume = 100;
 	$scope.playPosition = 0;
 	$scope.playPositionPercent = function(){
@@ -61,11 +63,29 @@ angular.module('spotmop.player', [
 		$scope.volume = percent;
 		MopidyService.setVolume( percent );
 	};
+    $scope.toggleRepeat = function(){
+        if( $scope.isRepeat )
+            MopidyService.setRepeat( false ).then( function(response){ $scope.isRepeat = false; } );
+        else
+            MopidyService.setRepeat( true ).then( function(response){ $scope.isRepeat = true; } );
+    };
+    $scope.toggleRandom = function(){
+        if( $scope.isRandom )
+            MopidyService.setRandom( false ).then( function(response){ $scope.isRandom = false; } );
+        else
+            MopidyService.setRandom( true ).then( function(response){ $scope.isRandom = true; } );
+    };
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
 		updatePlayerState();
 		updateVolume();
+        MopidyService.getRepeat().then( function(isRepeat){
+            $scope.isRepeat = isRepeat;
+        });
+        MopidyService.getRandom().then( function(isRandom){
+            $scope.isRandom = isRandom;
+        });
 	});
 	
 	$scope.$on('mopidy:event:playbackStateChanged', function( event, state ){

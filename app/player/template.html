@@ -33,10 +33,10 @@
 
 		<div class="volume">
 			<div class="controls">
-				<span class="button random" ng-click="toggleRandom()">
+				<span class="button random" ng-click="toggleRandom()" ng-class="{active: isRandom}">
 					<i class="fa fa-random"></i>
 				</span>
-				<span class="button repeat" ng-click="toggleRepeat()">
+				<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: isRepeat}">
 					<i class="fa fa-repeat"></i>
 				</span>
 				<span class="button mute" ng-click="toggleMute()">
