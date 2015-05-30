@@ -182,6 +182,12 @@ angular.module('spotmop.services.mopidy', [
 		setVolume: function(volume) {
 			return wrapMopidyFunc("mopidy.mixer.setVolume", this)({ volume: volume });
 		},
+		getMute: function(){
+			return wrapMopidyFunc("mopidy.mixer.getMute", this)();
+		},
+		setMute: function( isMute ){
+			return wrapMopidyFunc("mopidy.mixer.setMute", this)([ isMute ]);
+		},
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},

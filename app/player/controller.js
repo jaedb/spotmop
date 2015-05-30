@@ -12,6 +12,7 @@ angular.module('spotmop.player', [
 	$scope.playing = false;
 	$scope.isRepeat = false;
 	$scope.isRandom = false;
+	$scope.isMute = false;
 	$scope.volume = 100;
 	$scope.playPosition = 0;
 	$scope.playPositionPercent = function(){
@@ -75,6 +76,12 @@ angular.module('spotmop.player', [
         else
             MopidyService.setRandom( true ).then( function(response){ $scope.isRandom = true; } );
     };
+    $scope.toggleMute = function(){
+        if( $scope.isMute )
+            MopidyService.setMute( false ).then( function(response){ $scope.isMute = false; } );
+        else
+            MopidyService.setMute( true ).then( function(response){ $scope.isMute = true; } );
+    };
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
@@ -85,6 +92,9 @@ angular.module('spotmop.player', [
         });
         MopidyService.getRandom().then( function(isRandom){
             $scope.isRandom = isRandom;
+        });
+        MopidyService.getMute().then( function(isMute){
+            $scope.isMute = isMute;
         });
 	});
 	
@@ -245,19 +255,25 @@ angular.module('spotmop.player', [
 	function updateWindowTitle(){
 	
 		var track = $scope.currentTlTrack.track;
-		var documentIcon = '\u25A0 ';
-		var artistString = '';
+        var newTitle = 'No track playing';
 		
-		$.each(track.artists, function(key,value){
-			if( artistString != '' )
-				artistString += ', ';
-			artistString += value.name;
-		});
-			
-		if( $scope.playing )
-			documentIcon = '\u25B6 ';
-			
-		document.title = documentIcon +' '+ track.name +' - '+ artistString;
+        if( track ){
+            var documentIcon = '\u25A0 ';
+            var artistString = '';
+            
+            $.each(track.artists, function(key,value){
+                if( artistString != '' )
+                    artistString += ', ';
+                artistString += value.name;
+            });
+
+            if( $scope.playing )
+                documentIcon = '\u25B6 ';
+
+            newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
+        };
+        
+		document.title = newTitle;
 	}
 	
 });
