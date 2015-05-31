@@ -131,15 +131,27 @@ angular.module('spotmop.browse.tracklist', [
 		// play from anywhere else
 		}else{
 			var trackToPlayIndex = target.index();
-			var surroundingTracks = target.parent().children('.track');
+			var followingTracks = target.nextAll();
 			var newTracklistUris = [];
 			
-			$.each( surroundingTracks, function(key,value){
-				newTracklistUris.push( $(value).attr('data-uri') );
+			$.each( followingTracks, function(key,value){
+				if( $(value).attr('data-uri') )
+					newTracklistUris.push( $(value).attr('data-uri') );
 			});
 			
-			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
-			MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
+			// play the target track pronto
+			// TODO: For some reason, the .then() doesn't wait until we start playing
+			MopidyService.playTrack( [target.attr('data-uri')], 0 ).then( function(){
+			
+				// notify user that this could take some time
+				$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
+				
+				// add the following tracks to the tracklist
+				MopidyService.addToTrackList( newTracklistUris ).then( function(response){
+					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
+				});
+			});
+			
 		}
 	}
 

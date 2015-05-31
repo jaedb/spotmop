@@ -194,72 +194,32 @@ angular.module('spotmop.services.mopidy', [
 		playTrack: function(newTracklistUris, trackToPlayIndex) {
 			var self = this;
 
-		// stop playback
+			// stop playback
 			return self.mopidy.playback.stop()
 				.then(function() {
 
 					// clear the current tracklist
-					self.mopidy.tracklist.clear();
+					return self.mopidy.tracklist.clear();
 
 				}, consoleError)
 				.then(function() {
 
 					// add the surrounding tracks (ie the whole tracklist in focus)
-					self.mopidy.tracklist.add({ uris: newTracklistUris });
+					return self.mopidy.tracklist.add({ uris: newTracklistUris });
 
 				}, consoleError)
 				.then(function() {
 
 					// get the new tracklist
-					self.mopidy.tracklist.getTlTracks()
-					.then(function(tlTracks) {
+					return self.mopidy.tracklist.getTlTracks()
+						.then(function(tlTracks) {
 
-						// save tracklist for later
-						self.currentTlTracks = tlTracks;
+							// save tracklist for later
+							self.currentTlTracks = tlTracks;
 
-						self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
+							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
 				}, consoleError);
 			}, consoleError);
-
-		/*
-		// Check if a playlist change is required. If not just change the track.
-		if (self.currentTlTracks.length > 0) {
-		var trackUris = _.pluck(surroundingTracks, 'uri');
-		var currentTrackUris = _.map(self.currentTlTracks, function(tlTrack) {
-		return tlTrack.track.uri;
-		});
-		if (_.difference(trackUris, currentTrackUris).length === 0) {
-		// no playlist change required, just play a different track.
-		self.mopidy.playback.stop()
-		.then(function () {
-		var tlTrackToPlay = _.find(self.currentTlTracks, function(tlTrack) {
-		return tlTrack.track.uri === track.uri;
-		});
-		self.mopidy.playback.play({ tl_track: tlTrackToPlay });
-		});
-		return;
-		}
-		}
-
-		self.mopidy.playback.stop()
-		.then(function() {
-		self.mopidy.tracklist.clear();
-		}, consoleError)
-		.then(function() {
-		self.mopidy.tracklist.add({ tracks: surroundingTracks });
-		}, consoleError)
-		.then(function() {
-		self.mopidy.tracklist.getTlTracks()
-		.then(function(tlTracks) {
-		self.currentTlTracks = tlTracks;
-		var tlTrackToPlay = _.find(tlTracks, function(tlTrack) {
-		return tlTrack.track.uri === track.uri;
-		});
-		self.mopidy.playback.play({ tl_track: tlTrackToPlay });
-		}, consoleError);
-		} , consoleError);
-		*/
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
