@@ -140,7 +140,6 @@ angular.module('spotmop.browse.tracklist', [
 			});
 			
 			// play the target track pronto
-			// TODO: For some reason, the .then() doesn't wait until we start playing
 			MopidyService.playTrack( [target.attr('data-uri')], 0 ).then( function(){
 			
 				// notify user that this could take some time
