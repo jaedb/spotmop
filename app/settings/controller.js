@@ -14,13 +14,12 @@ angular.module('spotmop.settings', [
     });
 })
 	
-.controller('SettingsController', function SettingsController( $scope, $rootScope, MopidyService, SpotifyService, SettingsService ){
+.controller('SettingsController', function SettingsController( $scope, $rootScope, MopidyService, SpotifyService, EchonestService, SettingsService ){
 	
 	// load our current settings into the template
 	$scope.version;
 	$scope.settings = SettingsService.getSettings();
 	$scope.currentSubpage = 'mopidy';
-    $scope.mopidyConsume = false;
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};
@@ -34,23 +33,27 @@ angular.module('spotmop.settings', [
     	SpotifyService.logout();
     };
     $scope.toggleMopidyConsume = function(){
-    	if( $scope.mopidyConsume ){
+    	if( $scope.settings.mopidyconsume ){
             MopidyService.setConsume( false ).then( function(){
-                $scope.mopidyConsume = false;
+                SettingsService.setSetting('mopidyconsume',false);
             });
         }else{
             MopidyService.setConsume( true ).then( function(){
-                $scope.mopidyConsume = true;
+                SettingsService.setSetting('mopidyconsume',true);
             });
         }
     };
-	
-    $scope.$on('mopidy:state:online', function(){
-        MopidyService.getConsume()
-            .then( function( isConsume ){
-                $scope.mopidyConsume = isConsume;
+    $scope.toggleEchonestEnabled = function(){
+    	if( $scope.settings.echonestenabled ){
+            MopidyService.setConsume( false ).then( function(){
+                EchonestService.stop();
             });
-    });
+        }else{
+            MopidyService.setConsume( true ).then( function(){
+                EchonestService.start();
+            });
+        }
+    };
 	
 	SettingsService.getVersion()
 		.success( function(response){

@@ -56,7 +56,7 @@
 			<div class="field">
 				<div class="label">Consume mode</div>
 				<div class="input">
-					<span class="switch-button" ng-class="{on: mopidyConsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
+					<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
 				</div>
 			</div>
 			
@@ -128,20 +128,31 @@
 		<div class="sub-page echonest" ng-show="currentSubpage=='echonest'">
 			
 			<div class="field">
+				<div class="label">Enabled</div>
+				<div class="input">
+					<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleEchonestEnabled()"><span class="switch animate"></span></span>
+				</div>
+			</div>
+			
+			<div class="field">
 				<div class="label">Status</div>
 				<div class="input echonest connection-status">
-					<div class="status connected green-text"><i class="fa fa-check"></i> &nbsp; Connected</div>
-					<div class="status disconnected red-text"><i class="fa fa-close"></i> &nbsp; Disconnected</div>
+					<div class="status connected green-text" ng-show="echonestOnline"><i class="fa fa-check"></i> &nbsp; Connected</div>
+					<div class="status disconnected red-text" ng-show="!echonestOnline"><i class="fa fa-close"></i> &nbsp; Disconnected</div>
 				</div>
 			</div>
 			
 			<div class="field">
 				<div class="label">Taste profile ID</div>
 				<div class="input">
-					<input type="text" name="tasteprofileid" placeholder="" class="autosave" />
-					<i class="fa fa-check autosave-success"></i>
+					<input type="text" name="echonesttasteprofileid" ng-model="settings.echonesttasteprofileid" />
 				</div>
 			</div>
+            
+			<div class="actions">
+                <a class="button pill black" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i>&nbsp; View my profile</a>
+                <a class="button pill red" ng-click="deleteEchonestTasteProfile()"><i class="fa fa-close"></i>&nbsp; Delete profile</a>
+            </div>
 
 			<div class="clear-both"></div>
 			

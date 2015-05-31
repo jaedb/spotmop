@@ -12,10 +12,11 @@ angular.module('spotmop', [
 	'ngStorage',
 	
 	'spotmop.player',
-	
+    
 	'spotmop.services.settings',
-	'spotmop.services.mopidy',
 	'spotmop.services.spotify',
+	'spotmop.services.mopidy',
+	'spotmop.services.echonest',
 	
 	'spotmop.queue',
 	'spotmop.settings',
@@ -59,7 +60,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $route, $routeParams, $localStorage, $timeout, $location, SpotifyService, MopidyService, SettingsService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $route, $routeParams, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
@@ -168,6 +169,8 @@ angular.module('spotmop', [
 	$timeout(
 		function(){
 			MopidyService.start();
+			if(SettingsService.getSetting('echonestenabled',false))
+                EchonestService.start();
 		},0
 	);
     
