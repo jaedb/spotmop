@@ -20,8 +20,8 @@ angular.module('spotmop.settings', [
 	$scope.version;
 	$scope.settings = SettingsService.getSettings();
 	$scope.currentSubpage = 'mopidy';
+    $scope.mopidyConsume = false;
 	$scope.subpageNavigate = function( subpage ){
-		console.log( subpage );
 		$scope.currentSubpage = subpage;
 	};
     $scope.refreshSpotifyToken = function(){
@@ -33,6 +33,24 @@ angular.module('spotmop.settings', [
     $scope.spotifyLogout = function(){
     	SpotifyService.logout();
     };
+    $scope.toggleMopidyConsume = function(){
+    	if( $scope.mopidyConsume ){
+            MopidyService.setConsume( false ).then( function(){
+                $scope.mopidyConsume = false;
+            });
+        }else{
+            MopidyService.setConsume( true ).then( function(){
+                $scope.mopidyConsume = true;
+            });
+        }
+    };
+	
+    $scope.$on('mopidy:state:online', function(){
+        MopidyService.getConsume()
+            .then( function( isConsume ){
+                $scope.mopidyConsume = isConsume;
+            });
+    });
 	
 	SettingsService.getVersion()
 		.success( function(response){

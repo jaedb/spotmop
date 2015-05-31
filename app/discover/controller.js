@@ -22,15 +22,19 @@ angular.module('spotmop.discover', [
 .controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService ){
 	
 	$scope.categories = [];
+    
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-categories', message: 'Loading'});
 	
 	SpotifyService.discoverCategories()
 		.success(function( response ) {
 			$scope.categories = response.categories.items;
 			$rootScope.$broadcast('spotmop:pageUpdated');
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
 		})
-		.error(function( error ){
-			$scope.status = 'Unable to load new releases';
-		});
+        .error(function( error ){
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
+            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-categories', message: error.error.message});
+        });
 	
 })
 
@@ -38,23 +42,27 @@ angular.module('spotmop.discover', [
 	
 	$scope.category = {};
 	$scope.playlists = [];
+    
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-category', message: 'Loading'});
 	
 	SpotifyService.getCategory( $routeParams.categoryid )
 		.success(function( response ) {
 			$scope.category = response;
-			$rootScope.$broadcast('spotmop:pageUpdated');
-		})
-		.error(function( error ){
-			$scope.status = 'Unable to load new releases';
-		});
 	
-	SpotifyService.getCategoryPlaylists( $routeParams.categoryid )
-		.success(function( response ) {
-			$scope.playlists = response.playlists;
-			$rootScope.$broadcast('spotmop:pageUpdated');
+            SpotifyService.getCategoryPlaylists( $routeParams.categoryid )
+                .success(function( response ) {
+                    $scope.playlists = response.playlists;
+                    $rootScope.$broadcast('spotmop:pageUpdated');
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+                })
+                .error(function( error ){
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
+                });
 		})
-		.error(function( error ){
-			$scope.status = 'Unable to load new releases';
-		});
+        .error(function( error ){
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
+        });
 	
 });

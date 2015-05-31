@@ -54,7 +54,7 @@ angular.module('spotmop.services.spotify', [])
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.Spotify.ClientID;
 		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify.php?authorization';
-		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private';
+		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read';
 		newURL += '&response_type=code&show_dialog=true';
 		
 		// open a new window to handle this authentication
@@ -148,6 +148,19 @@ angular.module('spotmop.services.spotify', [])
 				}
 			});
         },
+		
+		isFollowing: function( type, uri ){
+			
+			var id = this.getFromUri( type+'id', uri );
+		
+			return $http({
+				method: 'GET',
+				url: urlBase+'me/following/contains?type='+type+'&ids='+id,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
         
         
         /**
@@ -190,6 +203,48 @@ angular.module('spotmop.services.spotify', [])
 			return $http({
 				method: 'GET',
 				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		isFollowingPlaylist: function( playlisturi, ids ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+		
+			return $http({
+				method: 'GET',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		followPlaylist: function( playlisturi ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+		
+			return $http({
+				method: 'PUT',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
+		unfollowPlaylist: function( playlisturi ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+		
+			return $http({
+				method: 'DELETE',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}

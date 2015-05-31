@@ -18,6 +18,7 @@ angular.module('spotmop.browse.artist', [
 	$scope.albums = {};
 	$scope.relatedArtists = {};
 	
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-artist', message: 'Loading'});
 	
 	// get the artist
 	SpotifyService.getArtist( $routeParams.uri )
@@ -40,7 +41,12 @@ angular.module('spotmop.browse.artist', [
 								.success( function( response ){
 									$scope.relatedArtists = response.artists;
 									$rootScope.$broadcast('spotmop:pageUpdated');
-								});
+                                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+								})
+                                .error(function( error ){
+                                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+                                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
+                                });
 						});
 				});
 		});

@@ -15,6 +15,8 @@ angular.module('spotmop.browse.user', [
 	
 	$scope.user = {};
 	$scope.playlists = [];
+    
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-user', message: 'Loading'});
 	
 	// get the user
 	SpotifyService.getUser( $routeParams.uri )
@@ -26,12 +28,15 @@ angular.module('spotmop.browse.user', [
                 .success(function( response ) {
                     $scope.playlists = response;
 					$rootScope.$broadcast('spotmop:pageUpdated');
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-user'});
                 })
                 .error(function( error ){
-                    $scope.status = 'Unable to load users playlists';
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-user'});
+                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-user', message: error.error.message});
                 });
 		})
-		.error(function( error ){
-			$scope.status = 'Unable to load user';
-		});
+        .error(function( error ){
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-user'});
+            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-user', message: error.error.message});
+        });
 });

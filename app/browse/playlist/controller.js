@@ -11,13 +11,28 @@ angular.module('spotmop.browse.playlist', [
     });
 })
 
-.controller('PlaylistController', function PlaylistController( $scope, $route, SpotifyService, $routeParams ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $route, SpotifyService, SettingsService, $routeParams ){
 	
 	// setup base variables
 	$scope.playlist = {};
 	$scope.tracks = {};
 	$scope.totalTime = 0;
-	
+    $scope.following = false;
+    $scope.followPlaylist = function(){
+        SpotifyService.followPlaylist( $routeParams.uri )
+            .success( function(response){
+                $scope.following = true;
+            });
+    }
+    $scope.unfollowPlaylist = function(){
+        SpotifyService.unfollowPlaylist( $routeParams.uri )
+            .success( function(response){
+                $scope.following = false;
+            });
+    }
+    
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});
+
 	// on load, fetch the playlist
 	SpotifyService.getPlaylist( $routeParams.uri )
 		.success(function( response ) {
@@ -30,34 +45,16 @@ angular.module('spotmop.browse.playlist', [
 				totalTime += track.track.duration_ms;
 			});	
 			$scope.totalTime = Math.round(totalTime / 100000);
+        
+            // figure out if we're following this playlist
+            SpotifyService.isFollowingPlaylist( $routeParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+                .success( function( isFollowing ){
+                    $scope.following = $.parseJSON(isFollowing);
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlist'});
+                });
 		})
-		.error(function( error ){
-			$scope.status = 'Unable to load new releases';
-		});
-	
-	
-	/**
-	 * Delete tracks from this playlist
-	 * @param tracksDOM = jQuery array of dom tracks
-	 * @param tracks = json array of track info (ie {uri: "XX"});
-	 **
-	$scope.deleteTracks = function( tracksDOM, tracks ){
-	
-		// make sure that the current controller is THIS controller
-		if( $route.current.$$route.controller == 'PlaylistController' ){
-			console.log('deleting from playlist');
-		
-			var playlistid = SpotifyService.getFromUri('playlistid',$routeParams.uri);
-			return;
-			
-			// parse these uris to spotify and delete these tracks
-			SpotifyService.deleteTracksFromPlaylist( playlistid, tracks )
-				.success(function( response ) {
-					tracksDOM.slideUp('fast', function(evt){ tracksDOM.remove() });
-				})
-				.error(function( error ){
-					console.log( error );
-				});
-		}
-	};*/
+        .error(function( error ){
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlist'});
+            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlist', message: error.error.message});
+        });
 });

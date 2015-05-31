@@ -265,6 +265,12 @@ angular.module('spotmop.services.mopidy', [
 		setRandom: function( isRandom ) {
 			return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
 		},
+		getConsume: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getConsume", this)();
+		},
+		setConsume: function( isConsume ) {
+			return wrapMopidyFunc("mopidy.tracklist.setConsume", this)([ isConsume ]);
+		},
 		getCurrentTrackList: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
 		},

@@ -304,6 +304,7 @@ h4.section-title {
 	color: inherit;
 	text-decoration: none;
 	border-bottom: 1px dotted transparent;
+    cursor: pointer;
 }
 
 .body a:hover {
@@ -388,6 +389,46 @@ h4.section-title {
 
 .button.red:hover {		background-color: #c42424; }
 .button.green:hover {	background-color: #28b428; }
+
+
+/**
+ * Switch buttons
+ **/
+
+.switch-button {
+    margin-top: 6px;
+    width: 30px;
+    height: 14px;
+    background: rgba(0,0,0,0.3);
+    padding: 3px;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+}
+
+.switch-button > .switch {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #DDDDDD;
+    border-radius: 14px;
+}
+
+.switch-button.on {
+    background: rgba(0,0,0,0.8);
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
+}
+
+.switch-button.on > .switch {
+    left: auto;
+    right: 3px;
+    background: #1cf4c4;
+}
+
 
 
 /**
@@ -518,8 +559,8 @@ h4.section-title {
 .square-panel .info .name,
 .square-panel .info .tracks {
 	overflow: hidden;
-	max-height: 2.3em;
-	line-height: 1.15em;
+	max-height: 2.4em;
+	line-height: 1.2em;
 }
 
 /**
