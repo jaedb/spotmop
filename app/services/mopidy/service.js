@@ -195,7 +195,7 @@ angular.module('spotmop.services.mopidy', [
 			var self = this;
 
 		// stop playback
-			self.mopidy.playback.stop()
+			return self.mopidy.playback.stop()
 				.then(function() {
 
 					// clear the current tracklist
@@ -218,6 +218,7 @@ angular.module('spotmop.services.mopidy', [
 						self.currentTlTracks = tlTracks;
 
 						self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
+						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
 				}, consoleError);
 			}, consoleError);
 
@@ -311,10 +312,7 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
 		addToTrackList: function( uris ){
-			var self = this;
-			self.mopidy.tracklist.add({uris: uris}).then( function(){
-				return true;
-			});
+			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris });
 		},
 		removeFromTrackList: function( tlids ){
 			var self = this;

@@ -370,13 +370,26 @@ angular.module('spotmop', [
 				
 				// dropping on queue
 				if( target.attr('data-type') === 'queue' ){
-				
-					MopidyService.addToTrackList( uris );
+				    
+                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding to queue'});
+                    
+					MopidyService.addToTrackList( uris ).then( function(response){
+                        $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
+                    });
 					
 				// dropping on playlist
 				}else if( target.attr('data-type') === 'playlist' ){
+				    
+                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-playlist', message: 'Adding to playlist'});
 				
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );		
+					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris )
+                        .success( function(response){
+                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-playlist'});
+                        })
+                        .error( function(response){
+                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
+                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-playlist'});
+                        });		
 					
 				// dropping within tracklist
 				}else if( track ){

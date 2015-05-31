@@ -138,6 +138,7 @@ angular.module('spotmop.browse.tracklist', [
 				newTracklistUris.push( $(value).attr('data-uri') );
 			});
 			
+			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
 			MopidyService.playTrack( newTracklistUris, trackToPlayIndex );
 		}
 	}
