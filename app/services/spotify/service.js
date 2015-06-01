@@ -53,7 +53,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.Spotify.ClientID;
-		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify.php?authorization';
+		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify-authorization';
 		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read';
 		newURL += '&response_type=code&show_dialog=true';
 		
@@ -67,7 +67,7 @@ angular.module('spotmop.services.spotify', [])
 	 **/
 	function getNewToken(){		
 		return $.ajax({
-			url: '/spotify.php?refresh_token='+$localStorage.Spotify.RefreshToken,
+			url: '/spotify-authorization?refresh_token='+$localStorage.Spotify.RefreshToken,
 			type: "GET",
 			dataType: "json",
 			async: false,
