@@ -744,6 +744,23 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 
 .artist-intro h1 {
 	padding-bottom: 0;
+    font-size: 32px;
+}
+
+.artist-intro.background--dark h1 {             color: #FFFFFF; }
+.artist-intro.background--dark .info-text {     color: rgba(255,255,255,0.6); }
+
+.artist-intro.background--dark.background--complex h1,
+.artist-intro.background--dark.background--complex .info-text {
+    text-shadow: 1px 1px 3px #000000;
+}
+
+.artist-intro.background--light h1 {             color: #000000; }
+.artist-intro.background--light .info-text {     color: rgba(0,0,0,0.6); }
+
+.artist-intro.background--light.background--complex h1,
+.artist-intro.background--light.background--complex .info-text {
+    text-shadow: 1px 1px 3px #FFFFFF;
 }
 
 .artist-intro .image-container {

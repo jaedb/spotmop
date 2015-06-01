@@ -11,6 +11,22 @@ angular.module('spotmop.browse.artist', [
     });
 })
 
+.directive('textOverImage', function() {
+    return {
+        restrict: 'A',
+        link: function($scope, $element, $attrs) {
+            
+            $scope.$on('spotmop:pageUpdated', function(event){
+                BackgroundCheck.init({
+                    targets: $($element).parent(),
+                    images: $(document).find('.artist-intro .image')
+                });
+                BackgroundCheck.refresh();
+            });
+        }
+    };
+})
+
 .controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $routeParams ){
 	
 	$scope.artist = {};
@@ -19,7 +35,7 @@ angular.module('spotmop.browse.artist', [
 	$scope.relatedArtists = {};
 	
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-artist', message: 'Loading'});
-	
+    
 	// get the artist
 	SpotifyService.getArtist( $routeParams.uri )
 		.success( function( response ){
