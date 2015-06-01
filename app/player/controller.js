@@ -27,6 +27,9 @@ angular.module('spotmop.player', [
         else
             MopidyService.play();
 	}
+    $scope.stop = function(){
+        MopidyService.stopPlayback();
+    },
 	$scope.next = function(){
 		MopidyService.next();
 	}

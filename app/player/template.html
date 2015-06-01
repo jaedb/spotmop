@@ -22,6 +22,9 @@
 					<i class="fa fa-play" ng-show="!playing"></i>
 					<i class="fa fa-pause" ng-show="playing"></i>
 				</span>
+				<span class="button stop" ng-click="stop()">
+					<i class="fa fa-stop"></i>
+				</span>
 				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 			</div>
 			<div class="slider" ng-click="seek($event)">

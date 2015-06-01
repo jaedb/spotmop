@@ -1006,6 +1006,10 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	cursor: pointer;
 }
 
+#player .playback .slider {
+	margin-left: 160px;
+}
+
 #player .slider  .track {
 	position: relative;
 	height: 2px;
