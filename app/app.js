@@ -130,6 +130,9 @@ angular.module('spotmop', [
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
 		});
+		MopidyService.getConsume().then( function( isConsume ){			
+			SettingsService.setSetting('mopidyconsume',isConsume);
+		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
