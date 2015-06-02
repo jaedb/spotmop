@@ -841,6 +841,11 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 
 .search-results-section .square-panel .image-container {
 	height: 100px;
+	min-width: 100%;
+}
+
+.search-results-section .square-panel .image-container .image {
+	min-width: 100%;
 }
 
 .search-results-section.tracks {
