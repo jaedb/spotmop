@@ -34,6 +34,10 @@ angular.module('spotmop', [
 	'spotmop.discover.new'
 ])
 
+.config(function($routeProvider) {
+    $routeProvider.otherwise({redirectTo : '/queue'})
+})
+
 
 /* =========================================================================== ROUTING ======== */
 /* ============================================================================================ */
