@@ -1,12 +1,46 @@
-<div id="player">
+<div id="player" ng-class="{expanded: fullscreenPlayerExpanded}">
 
 	<div class="background-container animate" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1">
 		<div class="image" style="background-image: url({{ image.url }})"></div>
 	</div>
-	
-	<div class="inner">
 
+	<span class="expand-player" ng-click="toggleFullscreenPlayer()">
+		<i class="fa fa-chevron-down" ng-show="fullscreenPlayerExpanded"></i>
+		<i class="fa fa-chevron-up" ng-show="!fullscreenPlayerExpanded"></i>
+	</span>
+	
+	<div class="fullscreen-player inner" ng-show="fullscreenPlayerExpanded">
+		
+		<div class="artwork">
+			<div class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" style="background-image: url({{ image.url }})"></div>
+		</div>
+		
 		<div class="track-info">
+			<span class="track" ng-bind="currentTlTrack.track.name"></span>
+			<span class="artist">
+				<span ng-repeat="artist in currentTlTrack.track.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+				</span>
+			</span>
+		</div>
+		
+		<div class="controls">
+			<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
+			<span class="button play-pause" ng-click="playPause()">
+				<i class="fa fa-play" ng-show="!playing"></i>
+				<i class="fa fa-pause" ng-show="playing"></i>
+			</span>
+			<span class="button stop" ng-click="stop()">
+				<i class="fa fa-stop"></i>
+			</span>
+			<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+		</div>
+		
+	</div>
+	
+	<div class="slim-player inner">
+		
+		<div class="track-info" ng-show="!fullscreenPlayerExpanded">
 			<span class="track" ng-bind="currentTlTrack.track.name"></span>
 			<span class="artist">
 				<span ng-repeat="artist in currentTlTrack.track.artists">

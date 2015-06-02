@@ -944,28 +944,34 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 /* ====================================================================== PLAYER ================== */
 /* ================================================================================================ */
 
+#player {
+	background: #000000;
+	color: #FFFFFF;
+}
+
 #player .background-container {
 	position: absolute;
 	top: 0;
 	right: 0;
 	bottom: 0;
 	left: 0;
-	z-index: -1;
+	opacity: 0.25;
 }
 
 #player .background-container .image {
 	width: 100%;
 	height: 100%;
-	background-color: #333333;
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 
-#player > .inner {
-	background: rgba(0,0,0,0.75);
-	color: #FFFFFF;
-	padding: 10px 10px 30px 10px;
+#player > .slim-player.inner {
+	padding: 10px 10px 19px 10px;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	left: 0;
 }
 
 #player .button {
@@ -1062,4 +1068,73 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	transition: all 1s;
 }
 	
+
+
+/**
+ * Fullscreen player
+ **/
+
+#player.expanded {
+	top: 0;
+	height: auto;
+}
+
+#player .expand-player {
+	position: absolute;
+	bottom: 45px;
+	right: 20px;
+	padding: 10px;
+	font-size: 16px;
+	cursor: pointer;
+	display: block;
+	z-index: 9;
+	color: #FFFFFF;
+}
+
+#player .fullscreen-player {
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	margin-top: -320px;
+}
+
+#player .fullscreen-player .track-info {
+	padding: 20px 0;
+}
+
+#player .fullscreen-player .controls {
+	float: none;
+	text-align: center;
+	margin: 0;
+}
+
+#player .fullscreen-player .controls .button {
+	font-size: 20px;
+}
+
+#player .fullscreen-player .artwork {
+	width: 400px;
+	height: 400px;
+	margin: 30px auto 0;
+	position: relative;
+}
+
+#player .fullscreen-player .artwork > .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+
+
+
+
+
+
 

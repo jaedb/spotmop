@@ -85,6 +85,13 @@ angular.module('spotmop.player', [
         else
             MopidyService.setMute( true ).then( function(response){ $scope.isMute = true; } );
     };
+	$scope.fullscreenPlayerExpanded = false;
+	$scope.toggleFullscreenPlayer = function(){
+		if( $scope.fullscreenPlayerExpanded )
+			$scope.fullscreenPlayerExpanded = false;
+		else
+			$scope.fullscreenPlayerExpanded = true;
+	};
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
