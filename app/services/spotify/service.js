@@ -95,7 +95,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		logout: function(){
 			$localStorage.Spotify = {};
-			return true;
+			$rootScope.spotifyOnline = false;
 		},
 	   
         getNewToken: function(){

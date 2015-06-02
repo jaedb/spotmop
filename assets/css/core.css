@@ -20,7 +20,9 @@ html {
 	margin: 0;
 }
 
-body.dragging * {
+body.dragging *,
+.button,
+.menu-item {
 	-webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
