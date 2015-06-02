@@ -5,15 +5,23 @@
 			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
 		</div>
 		<div class="inner">
-			<h1 ng-bind="playlist.name">Loading</h1>
+			<h1>
+                <span ng-bind="playlist.name"></span>
+                <span ng-mouseover="hovering = true" ng-mouseleave="hovering = false">
+                    <span class="flag follow-toggle" ng-class="{red: hovering, dark: !hovering}" ng-show="following" ng-click="unfollowPlaylist()">
+                        <span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
+                        <span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
+                    </span>
+                    <span class="flag follow-toggle" ng-class="{green: hovering, dark: !hovering}"  ng-show="!following" ng-click="followPlaylist()">
+                        <span><i class="fa fa-star"></i> Follow</span>
+                    </span>
+                </span>
+            </h1>
 			<h4 ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
 			<div class="info-text">
 				<span ng-bind="tracks.items.length">0</span> tracks
 				&nbsp;|&nbsp; <span ng-bind="totalTime">0</span> minutes
 				&nbsp;|&nbsp; <a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
-				&nbsp;|&nbsp;
-                    <a ng-show="following" ng-click="unfollowPlaylist()"><i class="fa fa-check"></i>&nbsp; Following</a>
-                    <a ng-show="!following" ng-click="followPlaylist()">Follow</a>
 			</div>
 		</div>
 	</div>

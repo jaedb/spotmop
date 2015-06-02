@@ -276,7 +276,7 @@ input[type='submit'] {
  **/
 
 h1 {
-	font-size: 26px;
+	font-size: 30px;
 	font-weight: 200;
 	padding-bottom: 20px;
 }
@@ -361,9 +361,33 @@ h4.section-title {
 	margin-left: 5px;
 }
 
+h1 .flag {
+    vertical-align: top;
+    margin-top: 11px;
+}
+
 .flag.blue {
 	background: #1cf4c4;
 	color: #FFFFFF;
+}
+
+.flag.dark {
+	background: rgba(0,0,0,0.4);
+	color: rgba(255,255,255,0.5);
+}
+
+.flag.red {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+}
+
+.flag.green {
+    background: rgba(53,204,53,0.9);
+	color: #FFFFFF;
+}
+
+.flag.follow-toggle {
+    cursor: pointer;
 }
 
 
