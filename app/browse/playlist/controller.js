@@ -11,7 +11,7 @@ angular.module('spotmop.browse.playlist', [
     });
 })
 
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $route, SpotifyService, SettingsService, $routeParams ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $route, SpotifyService, SettingsService, $routeParams, $sce ){
 	
 	// setup base variables
 	$scope.playlist = {};
@@ -38,6 +38,9 @@ angular.module('spotmop.browse.playlist', [
 		.success(function( response ) {
 			$scope.playlist = response;
 			$scope.tracks = response.tracks;
+		
+			// parse description string and make into real html (people often have links here)
+			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
 			
 			// figure out the total time for all tracks
 			var totalTime = 0;
