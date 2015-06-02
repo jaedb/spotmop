@@ -17,8 +17,8 @@
 				<i class="fa fa-circle" ng-class="{ 'red-text': !echonestOnline, 'green-text': echonestOnline }"></i>
 				Echonest
 			</span>
-			<span class="menu-item" ng-click="subpageNavigate( 'system' )" ng-class="{active: currentSubpage=='system'}">
-				System
+			<span class="menu-item" ng-click="subpageNavigate( 'info' )" ng-class="{active: currentSubpage=='info'}">
+				Info
 			</span>
 		</div>
 		
@@ -160,18 +160,19 @@
 		
 		<!-- DIVIDER -->
 		
-		<div class="sub-page system" ng-show="currentSubpage=='system'">		
+		<div class="sub-page info" ng-show="currentSubpage=='info'">	
 			
-			<div class="field">
-				<div class="label">Spotmop version</div>
-				<div class="input readonly">
-					<span class="spotmop-version" ng-bind="version"></span>
-				</div>
+			<div class="field info">
+				Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)
+			</div>
+			
+			<div class="field info">
+				Current version: <span class="spotmop-version" ng-bind="version"></span>
 			</div>
             
-			<div class="actions">
-                <a class="button pill red"><i class="fa fa-close"></i>&nbsp; Reset all settings</a>
-            </div>
+			<br /><br />
+			
+			<a class="button pill red"><i class="fa fa-close"></i>&nbsp; Reset all settings</a>
 			
 		</div>
 		
