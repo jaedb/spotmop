@@ -116,8 +116,7 @@ if( isset($_GET['code']) ){
 			Spotify.AccessToken = response.access_token;
 			Spotify.RefreshToken = response.refresh_token;
 			localStorage.setItem('ngStorage-Spotify', JSON.stringify( Spotify ));
-			console.log('Saved new authorization data');
-			console.log(Spotify);
+            window.close();
 		</script>
 	<?php
 }

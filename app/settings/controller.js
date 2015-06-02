@@ -14,7 +14,7 @@ angular.module('spotmop.settings', [
     });
 })
 	
-.controller('SettingsController', function SettingsController( $scope, $rootScope, MopidyService, SpotifyService, EchonestService, SettingsService ){
+.controller('SettingsController', function SettingsController( $scope, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -30,7 +30,9 @@ angular.module('spotmop.settings', [
         });
     };
     $scope.spotifyLogout = function(){
-    	SpotifyService.logout();
+        SpotifyService.logout();
+        $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out", type: 'bad loading'});
+        $timeout( function(){ window.location = window.location }, 1000 );
     };
     $scope.toggleMopidyConsume = function(){
     	if( $scope.settings.mopidyconsume ){
