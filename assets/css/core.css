@@ -386,9 +386,24 @@ h1 .flag {
 	color: #FFFFFF;
 }
 
-.flag.follow-toggle {
+.flag.follow-toggle,
+.flag.edit-playlist,
+.flag.delete-playlist {
     cursor: pointer;
 }
+
+.flag.edit-playlist:hover {
+	background: #1cf4c4;
+	color: #FFFFFF;
+}
+
+.flag.delete-playlist:hover {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+}
+
+
+
 
 
 /**
@@ -753,8 +768,8 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	padding-bottom: 8px;
 }
 
-.playlist-intro .info-text {
-	padding-top: 20px;
+.playlist-intro .description {
+	padding-bottom: 20px;
 }
 
 

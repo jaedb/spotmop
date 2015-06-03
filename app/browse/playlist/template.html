@@ -7,25 +7,36 @@
 		<div class="inner">
 			<h1>
                 <span ng-bind="playlist.name"></span>
-				<span class="flag follow-toggle"
-					  ng-class="{red: hovering, dark: !hovering}"
-					  ng-show="following"
-					  ng-click="unfollowPlaylist()"
-					  ng-mouseover="hovering = true"
-					  ng-mouseleave="hovering = false">
-					<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
-					<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
+				<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
+					<span class="flag follow-toggle"
+						  ng-class="{red: hovering, dark: !hovering}"
+						  ng-show="following"
+						  ng-click="unfollowPlaylist()"
+						  ng-mouseover="hovering = true"
+						  ng-mouseleave="hovering = false">
+						<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
+						<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
+					</span>
+					<span class="flag follow-toggle"
+						  ng-class="{green: hovering, dark: !hovering}" 
+						  ng-show="!following"
+						  ng-click="followPlaylist()"
+						  ng-mouseover="hovering = true"
+						  ng-mouseleave="hovering = false">
+						<span><i class="fa fa-star"></i> Follow</span>
+					</span>
 				</span>
-				<span class="flag follow-toggle"
-					  ng-class="{green: hovering, dark: !hovering}" 
-					  ng-show="!following"
-					  ng-click="followPlaylist()"
-					  ng-mouseover="hovering = true"
-					  ng-mouseleave="hovering = false">
-					<span><i class="fa fa-star"></i> Follow</span>
+				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
+					<span class="flag edit-playlist dark"
+						  ng-click="editPlaylist()">
+						<span><i class="fa fa-pencil"></i>&nbsp; Edit</span>
+					</span>
+					<span class="flag delete-playlist dark">
+						<i class="fa fa-trash"></i>&nbsp; Delete playlist
+					</span>
 				</span>
             </h1>
-			<h4 ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
+			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
 			<div class="info-text">
 				<span ng-bind="tracks.items.length">0</span> tracks
 				&nbsp;|&nbsp; <span ng-bind="totalTime">0</span> minutes
