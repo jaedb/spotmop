@@ -149,7 +149,19 @@ angular.module('spotmop', [
             data.type = '';
         
 		var container = $(document).find('#notifications');
-        container.append('<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>');
+		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
+        container.append( notification );
+		notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
+		
+		if( data.autoremove ){
+			$timeout(
+				function(){
+					notification.fadeOut(200, function(){ notification.remove() } );
+				},
+				2500
+			);
+										
+		}
 	});
 	
 	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){

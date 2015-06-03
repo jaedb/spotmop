@@ -30,6 +30,20 @@ angular.module('spotmop.browse.playlist', [
                 $scope.following = false;
             });
     }
+    $scope.deletePlaylist = function(){
+        SpotifyService.unfollowPlaylist( $routeParams.uri )
+            .success( function(response){
+                $scope.following = false;
+    			$rootScope.$broadcast('spotmop:notifyUser', {id: 'deleting-playlist', message: 'Playlist deleted', autoremove: true});
+            });
+    }
+    $scope.recoverPlaylist = function(){
+        SpotifyService.followPlaylist( $routeParams.uri )
+            .success( function(response){
+                $scope.following = true;
+    			$rootScope.$broadcast('spotmop:notifyUser', {id: 'recovering-playlist', message: 'Playlist recovered', autoremove: true});
+            });
+    }
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});
 

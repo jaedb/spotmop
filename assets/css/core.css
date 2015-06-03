@@ -358,7 +358,8 @@ h4.section-title {
 	padding: 3px 6px;
 	font-size: 11px;
 	font-weight: 400;
-	margin-left: 5px;
+	margin-left: 10px;
+	margin-right: -10px;
 }
 
 h1 .flag {
@@ -366,7 +367,8 @@ h1 .flag {
     margin-top: 13px;
 }
 
-.flag.blue {
+.flag.blue,
+.flag.clickable:hover{
 	background: #1cf4c4;
 	color: #FFFFFF;
 }
@@ -386,20 +388,14 @@ h1 .flag {
 	color: #FFFFFF;
 }
 
-.flag.follow-toggle,
-.flag.edit-playlist,
-.flag.delete-playlist {
+.flag.clickable {
     cursor: pointer;
 }
 
-.flag.edit-playlist:hover {
-	background: #1cf4c4;
-	color: #FFFFFF;
-}
-
-.flag.delete-playlist:hover {
+.flag.clickable.destructive:hover {
     background: rgba(214,47,47,0.9);
 	color: #FFFFFF;
+	cursor: pointer;
 }
 
 

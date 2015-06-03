@@ -6,9 +6,11 @@
 		</div>
 		<div class="inner">
 			<h1>
+				
                 <span ng-bind="playlist.name"></span>
+				
 				<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
-					<span class="flag follow-toggle"
+					<span class="flag clickable destructive"
 						  ng-class="{red: hovering, dark: !hovering}"
 						  ng-show="following"
 						  ng-click="unfollowPlaylist()"
@@ -17,24 +19,32 @@
 						<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
 						<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
 					</span>
-					<span class="flag follow-toggle"
-						  ng-class="{green: hovering, dark: !hovering}" 
+					<span class="flag follow-toggle clickable dark"
 						  ng-show="!following"
-						  ng-click="followPlaylist()"
-						  ng-mouseover="hovering = true"
-						  ng-mouseleave="hovering = false">
+						  ng-click="followPlaylist()">
 						<span><i class="fa fa-star"></i> Follow</span>
 					</span>
 				</span>
+				
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
-					<span class="flag edit-playlist dark"
-						  ng-click="editPlaylist()">
-						<span><i class="fa fa-pencil"></i>&nbsp; Edit</span>
+					<span ng-show="following">
+						<span class="flag clickable dark"
+							  ng-click="editPlaylist()">
+							Edit
+						</span>
+						<span class="flag clickable destructive dark"
+							  ng-click="deletePlaylist()">
+							Delete playlist
+						</span>
 					</span>
-					<span class="flag delete-playlist dark">
-						<i class="fa fa-trash"></i>&nbsp; Delete playlist
+					<span ng-show="!following">
+						<span class="flag clickable dark"
+							  ng-click="recoverPlaylist()">
+							Recover playlist
+						</span>						
 					</span>
 				</span>
+				
             </h1>
 			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
 			<div class="info-text">
