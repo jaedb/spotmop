@@ -47,15 +47,29 @@ angular.module('spotmop.settings', [
     };
     $scope.toggleEchonestEnabled = function(){
     	if( $scope.settings.echonestenabled ){
-            MopidyService.setConsume( false ).then( function(){
-                EchonestService.stop();
-            });
+            EchonestService.stop();
         }else{
-            MopidyService.setConsume( true ).then( function(){
-                EchonestService.start();
-            });
+            EchonestService.start();
         }
     };
+	$scope.deleteEchonestTasteProfile = function( confirmed ){
+		if( confirmed ){
+			$rootScope.$broadcast('spotmop:notifyUser', {
+				id: 'delete-echonest-profile',
+				message: "Profile deleted and Echonest disabled",
+				autoremove: true
+			});
+			SettingsService.setSetting('echonesttasteprofileid',null);
+            EchonestService.stop();			
+		}
+	};
+	$scope.resetSettings = function( confirmed ){
+		if( confirmed ){
+			$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
+			localStorage.clear();		
+			window.location = window.location;
+		}
+	};
 	
 	SettingsService.getVersion()
 		.success( function(response){

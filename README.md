@@ -12,6 +12,11 @@ Requirements
 Changelog
 --------
 
+*2.0*
+* Full migration into AngularJS Framework
+* Introduction of Spotify Discover endpoint. This facilitates browsing playlists by genre.
+* Performance improvements
+
 *1.5*
 * Upgrade to track selection events, now uses proper syntax and command structure.
 * Cross-browser drag-and-drop sorting of tracks in playlists and queue.
