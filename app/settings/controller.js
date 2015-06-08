@@ -49,8 +49,20 @@ angular.module('spotmop.settings', [
     	if( $scope.settings.echonestenabled ){
             EchonestService.stop();
         }else{
+			$rootScope.$broadcast('spotmop:notifyUser', {id: 'start-echonest', message: "Connecting to Echonest", type: 'loading'});	
             EchonestService.start();
         }
+        $scope.$watch(
+            // the value function
+            function(scope){
+                return scope.echonestOnline
+            },
+            // and the processor function
+            function(newState, oldState){
+                if( newState === true )
+                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'start-echonest'});	
+            }
+        );
     };
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
