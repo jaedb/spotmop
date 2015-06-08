@@ -140,7 +140,7 @@ body.dragging *,
 	font-size: 12px;
 	width: 1.5em;
 	vertical-align: top;
-	margin-top: 4px;
+	margin-top: 5px;
 }
 
 .main-menu li > ul {
@@ -152,6 +152,16 @@ body.dragging *,
 	color: #555555;
 }
 
+
+/**
+ * Critical services (Mopidy + Spotify)
+ * Alerts shown under services menu item if offline
+ **/
+
+.critical-services-status {
+	padding-left: 29px;
+	padding-top: 5px;
+}
 
 
 

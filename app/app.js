@@ -69,6 +69,9 @@ angular.module('spotmop', [
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
+	$scope.reloadApp = function(){
+		window.location = window.location;
+	}
     
 	/**
 	 * Search
@@ -198,6 +201,7 @@ angular.module('spotmop', [
     SpotifyService.getMe()
         .success( function(response){
             $scope.spotifyUser = response;
+			$rootScope.spotifyOnline = true;
         
             // save user to settings
             SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
@@ -238,6 +242,7 @@ angular.module('spotmop', [
         })
         .error(function( error ){
             $scope.status = 'Unable to look you up';
+			$rootScope.spotifyOnline = false;
         });
 	
 	

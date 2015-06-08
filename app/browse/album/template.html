@@ -11,7 +11,8 @@
 			</span>
 		</h2>
 		<div class="info-text">
-			<span ng-bind="album.tracks.items.length"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
+			<span ng-bind="album.release_date | date : longDate"></span>
+			&nbsp;|&nbsp; <span ng-bind="album.tracks.items.length"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
 			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes
 			&nbsp;|&nbsp;
 			<span class="bar-track">

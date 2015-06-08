@@ -20,17 +20,9 @@
 			</li>
 		</ul>
 		
-		<br /><br /><br />
-		<div class="spotify">
-			Spotify:
-			<span ng-show="spotifyOnline" class="green-text">Online</span>
-			<span ng-hide="spotifyOnline" class="red-text">Offline</span>
-		</div>
-
-		<div class="mopidy">
-			Mopidy:
-			<span ng-show="mopidyOnline" class="green-text">Online</span>
-			<span ng-hide="mopidyOnline" class="red-text">Offline</span>
+		<div class="critical-services-status">
+			<p ng-show="!mopidyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Mopidy offline</p>
+			<p ng-show="!spotifyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Spotify offline</p>
 		</div>
 
 	</div>
