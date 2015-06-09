@@ -786,7 +786,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 .artist-intro {
 	position: relative;
 	margin: -20px -20px 20px -20px;
-	padding: 300px 20px 20px;
+	padding: 300px 20px 0;
 }
 
 .artist-intro h1 {
@@ -829,6 +829,26 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 50%;
+}
+
+.artist-intro .submenu {
+	margin: 20px -20px 0;
+	padding-left: 10px;
+	background: rgba(0,0,0,0.2);
+}
+
+.artist-intro .submenu .menu-item {
+	display: inline-block;
+	padding: 10px;
+	color: #FFFFFF;
+	font-size: 12px;
+	text-transform: uppercase;
+	border: 0;
+	opacity: 0.75;
+}
+
+.artist-intro .submenu .menu-item:hover {
+	opacity: 1;
 }
 
 .tracklist.top-track-items {
