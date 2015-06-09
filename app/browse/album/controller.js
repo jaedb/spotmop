@@ -29,6 +29,7 @@ angular.module('spotmop.browse.album', [
 			var totalTime = 0;
 			$.each( $scope.tracks.items, function( key, track ){
 				totalTime += track.duration_ms;
+                track.album = $scope.album;
 			});	
 			$scope.totalTime = Math.round(totalTime / 10000);
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});

@@ -39,6 +39,7 @@ angular.module('spotmop.services.echonest', [])
                     .success( function(response){
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
+                        $localStorage.echonesttasteprofile = response.response.catalog;
                     })
                     .error( function(error){
                         this.isOnline = false;
@@ -71,6 +72,17 @@ angular.module('spotmop.services.echonest', [])
 		getTasteProfile: function( profileid ){
             return $.ajax({
                 url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileid,
+                method: "GET"
+            });
+        },
+        
+        
+        /**
+         * Get artist
+         **/
+		getArtistBiography: function( artistid ){
+            return $.ajax({
+                url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid,
                 method: "GET"
             });
         }

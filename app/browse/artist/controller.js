@@ -27,7 +27,7 @@ angular.module('spotmop.browse.artist', [
     };
 })
 
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $routeParams ){
+.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, EchonestService, $routeParams, $sce ){
 	
 	$scope.artist = {};
 	$scope.tracks = {};
@@ -41,6 +41,12 @@ angular.module('spotmop.browse.artist', [
 		.success( function( response ){
 		
 			$scope.artist = response;
+    
+            // get the biography
+            EchonestService.getArtistBiography( $routeParams.uri )
+                .success( function( response ){
+                    $scope.artist.biography = response.response.biographies[0];
+                });
 		
 			// get the artist's albums
 			SpotifyService.getAlbums( $routeParams.uri )
