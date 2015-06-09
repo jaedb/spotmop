@@ -5,10 +5,11 @@ angular.module('spotmop.browse.artist', [
 ])
 
 .config(function($routeProvider) {
-    $routeProvider.when("/browse/artist/:uri", {
-        templateUrl: "app/browse/artist/template.html",
-        controller: "ArtistController"
-    });
+    $routeProvider
+        .when("/browse/artist/:uri", {
+            templateUrl: "app/browse/artist/template.html",
+            controller: "ArtistController"
+        });
 })
 
 .directive('textOverImage', function() {

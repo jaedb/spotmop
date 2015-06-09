@@ -1,0 +1,30 @@
+<div>
+
+	<div class="artist-intro">
+		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
+            <div class="image animate" style="background-image: url('/vendor/resource-proxy.php?url={{ image.url }}');"></div>
+		</div>
+		<div class="inner" text-over-image>
+			<h1 ng-bind="artist.name" class="background-check"></h1>
+			<div class="info-text" class="background-check">
+				<span ng-bind="albums.items.length"></span> albums
+				&nbsp;|&nbsp; <span ng-bind="artist.followers.total"></span> followers
+			</div>
+		</div>
+	</div>
+		
+    <h4 class="section-title">Related Artists</h4>
+
+    <a
+       ng-repeat="artist in relatedArtists | limitTo:6"
+       class="related-artist"
+       href="/browse/artist/{{ artist.uri }}">
+        <span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});"></span>
+        <span class="name" ng-bind="artist.name"></span>
+    </a>
+
+    <div ng-hide="relatedArtists.length" class="no-items">
+        No items
+    </div>
+	
+</div>

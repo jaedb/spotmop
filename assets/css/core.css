@@ -835,6 +835,12 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	padding-bottom: 30px;
 }
 
+.biography {
+    font: inherit;
+    width: 100%;
+}
+    
+
 /**
  * User page
  **/
