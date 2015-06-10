@@ -41,7 +41,9 @@ angular.module('spotmop', [
 })
 
 
-/* =========================================================================== ROUTING ======== */
+
+
+/* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
 
 // setup a filter to convert MS to MM:SS
@@ -55,6 +57,42 @@ angular.module('spotmop', [
 	}
 })
 
+// get the appropriate sized image
+.filter('thumbnailImage', function(){
+	return function( images ){
+        
+        // what if there are no images? then nada
+        if( images.length <= 0 )
+            return false;
+        
+        // loop all the images
+        for( var i = 0; i < images.length; i++){
+            var image = images[i];
+            
+            // this is our preferred size
+            if( image.height >= 200 && image.height <= 300 ){
+                return image.url;
+            
+            // let's take it a notch up then
+            }else if( image.height > 300 && image.height <= 500 ){
+                return image.url;
+            
+            // nope? let's take it a notch down then
+            }else if( image.height >= 150 && image.height < 200 ){
+                return image.url;
+            }
+        };
+        
+        // no thumbnail that suits? just get the first (and highest res) one then        
+		return images[0].url;
+	}
+})
+
+
+
+
+/* ==================================================================== APP CONTROLLER ======== */
+/* ============================================================================================ */
 
 /**
  * Global controller
