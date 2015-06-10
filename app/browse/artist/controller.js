@@ -1,14 +1,14 @@
 'use strict';
 
-angular.module('spotmop.browse_artist', [])
+angular.module('spotmop.browse.artist', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('browse_artist', {
-			url: "/browse_artist/{uri}",
+		.state('browse.artist', {
+			url: "/artist/{uri}",
 			templateUrl: "app/browse/artist/template.html",
 			controller: 'ArtistController'
 		});

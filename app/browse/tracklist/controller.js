@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spotmop.browse_tracklist', [
+angular.module('spotmop.browse.tracklist', [
 	'spotmop.services.mopidy'
 ])
 

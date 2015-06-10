@@ -1,14 +1,14 @@
 'use strict';
 
-angular.module('spotmop.browse_album', [])
+angular.module('spotmop.browse.album', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('browse_album', {
-			url: "/browse_album/:uri",
+		.state('browse.album', {
+			url: "/album/:uri",
 			templateUrl: "app/browse/album/template.html",
 			controller: 'AlbumController'
 		});

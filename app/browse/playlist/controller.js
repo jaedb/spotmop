@@ -1,14 +1,14 @@
 'use strict';
 
-angular.module('spotmop.browse_playlist', [])
+angular.module('spotmop.browse.playlist', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('browse_playlist', {
-			url: "/browse_playlist/:uri",
+		.state('browse.playlist', {
+			url: "/playlist/:uri",
 			templateUrl: "app/browse/playlist/template.html",
 			controller: 'PlaylistController'
 		});

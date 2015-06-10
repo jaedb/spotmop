@@ -5,8 +5,8 @@ angular.module('spotmop.discover.featured', [])
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('discover_featured', {
-			url: "/discover_featured",
+		.state('discover.featured', {
+			url: "/featured",
 			templateUrl: "app/discover/featured/template.html",
 			controller: 'FeaturedController'
 		});

@@ -1,14 +1,14 @@
 'use strict';
 
-angular.module('spotmop.browse_user', [])
+angular.module('spotmop.browse.user', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('browse_user', {
-			url: "/browse_user",
+		.state('browse.user', {
+			url: "/user/:uri",
 			templateUrl: "app/browse/user/template.html",
 			controller: 'UserController'
 		});
@@ -17,7 +17,7 @@ angular.module('spotmop.browse_user', [])
 /**
  * Main controller
  **/
-.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $routeParams ){
+.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $stateParams ){
 	
 	$scope.user = {};
 	$scope.playlists = [];
@@ -25,7 +25,7 @@ angular.module('spotmop.browse_user', [])
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-user', message: 'Loading'});
 	
 	// get the user
-	SpotifyService.getUser( $routeParams.uri )
+	SpotifyService.getUser( $stateParams.uri )
 		.success(function( response ) {
 			$scope.user = response;
         

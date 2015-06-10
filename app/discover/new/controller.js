@@ -5,8 +5,8 @@ angular.module('spotmop.discover.new', [])
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('discover_new', {
-			url: "/discover_new",
+		.state('discover.new', {
+			url: "/new",
 			templateUrl: "app/discover/new/template.html",
 			controller: 'NewController'
 		});

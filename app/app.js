@@ -22,11 +22,12 @@ angular.module('spotmop', [
 	'spotmop.playlists',
 	'spotmop.search',
 	
-	'spotmop.browse_artist',
-	'spotmop.browse_album',
-	'spotmop.browse_playlist',
-    'spotmop.browse_user',
-	'spotmop.browse_tracklist',
+	'spotmop.browse',
+	'spotmop.browse.artist',
+	'spotmop.browse.album',
+	'spotmop.browse.playlist',
+    'spotmop.browse.user',
+	'spotmop.browse.tracklist',
 	
 	'spotmop.discover',
 	'spotmop.discover.featured',
@@ -100,16 +101,16 @@ angular.module('spotmop', [
 		},
 		{
 			Title: 'Discover',
-			Link: '#/discover',
+			Link: '#/discover/browse',
 			Icon: 'star',
 			Children: [
 				{ 
 					Title: 'Featured playlists',
-					Link: '#/discover_featured'
+					Link: '#/discover/featured'
 				},
 				{ 
 					Title: 'New releases',
-					Link: '#/discover_new'
+					Link: '#/discover/new'
 				}
 			]
 		},

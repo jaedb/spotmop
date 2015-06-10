@@ -10,11 +10,15 @@ angular.module('spotmop.discover', [])
 	$stateProvider
 		.state('discover', {
 			url: "/discover",
-			templateUrl: "app/discover/template.html",
+			templateUrl: "app/discover/template.html"
+		})
+		.state('discover.browse', {
+			url: "/browse",
+			templateUrl: "app/discover/browse.template.html",
 			controller: 'DiscoverController'
 		})
-		.state('discover_category', {
-			url: "/discover_category/:categoryid",
+		.state('discover.category', {
+			url: "/category/:categoryid",
 			templateUrl: "app/discover/category.template.html",
 			controller: 'CategoryController'
 		});
