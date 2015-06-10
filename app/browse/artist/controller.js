@@ -32,7 +32,8 @@ angular.module('spotmop.browse.artist', [])
 		})
 		.state('browse.artist.biography', {
 			url: "/biography",
-			templateUrl: "app/browse/artist/biography.template.html"
+			templateUrl: "app/browse/artist/biography.template.html",
+			controller: 'ArtistBiographyController'
 		});
 })
 
@@ -57,7 +58,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, EchonestService, $stateParams, $sce ){
+.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $stateParams, $sce ){
 	
 	$scope.artist = {};
 	$scope.tracks = {};
@@ -71,12 +72,6 @@ angular.module('spotmop.browse.artist', [])
 		.success( function( response ){
 		
 			$scope.artist = response;
-    
-            // get the biography
-            EchonestService.getArtistBiography( $stateParams.uri )
-                .success( function( response ){
-                    $scope.artist.biography = response.response.biographies[0];
-                });
 		
 			// get the artist's albums
 			SpotifyService.getAlbums( $stateParams.uri )
@@ -137,5 +132,22 @@ angular.module('spotmop.browse.artist', [])
 		},
 		0);
 	});
+	
+})
+
+
+/**
+ * Biography controller
+ **/
+.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, EchonestService ){
+	
+    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-artist-biography', message: 'Loading'});
+	
+	// get the biography
+	EchonestService.getArtistBiography( $stateParams.uri )
+		.success( function( response ){
+			$scope.artist.biography = response.response.biographies[0];
+            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist-biography'});
+		});
 	
 });

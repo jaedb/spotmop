@@ -103,7 +103,7 @@ angular.module('spotmop', [
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.reloadApp = function(){
-		window.location = window.location;
+		window.location.reload();
 	}
 	// make all the square panels really square
 	$scope.resquarePanels = function(){

@@ -44,7 +44,7 @@
                 <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
                     <div class="image animate" style="background-image: url({{ image.url }});"></div>
                 </span>
-                <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+                <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/#/browse/user/{{ spotifyUser.uri }}"></a>)
             </span>
         </div>
     </div>
