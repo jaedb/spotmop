@@ -1,0 +1,39 @@
+<div>
+    <div class="field">
+        <div class="label">Status</div>
+        <div class="input mopidy connection-status">
+            <div class="status connected green-text" ng-hide="!mopidyOnline">
+                <i class="fa fa-check"></i> &nbsp; Connected
+            </div>
+            <div class="status disconnected red-text" ng-hide="mopidyOnline">
+                <i class="fa fa-close"></i> &nbsp; Disconnected &nbsp;&nbsp;
+                <a class="reconnect black" ng-click="reloadApp()"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Hostname</div>
+        <div class="input">
+            <input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Port</div>
+        <div class="input">
+            <input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Consume mode</div>
+        <div class="input">
+            <span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
+        </div>
+    </div>
+
+    <div class="clear-both"></div>		
+</div>

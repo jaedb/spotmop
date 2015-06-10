@@ -6,11 +6,32 @@ angular.module('spotmop.settings', [])
  * Routing 
  **/
 .config(function($stateProvider) {
+		
 	$stateProvider
 		.state('settings', {
 			url: "/settings",
+            //abstract: true,
 			templateUrl: "app/settings/template.html",
-			controller: 'SettingsController'
+            controller: ['$scope', '$state', 
+                function( $scope, $state) {
+                    $state.go('settings.mopidy');
+                }]
+		})
+		.state('settings.mopidy', {
+			url: "/mopidy",
+			templateUrl: "app/settings/mopidy.template.html"
+		})
+		.state('settings.spotify', {
+			url: "/spotify",
+			templateUrl: "app/settings/spotify.template.html"
+		})
+		.state('settings.echonest', {
+			url: "/echonest",
+			templateUrl: "app/settings/echonest.template.html"
+		})
+		.state('settings.info', {
+			url: "/info",
+			templateUrl: "app/settings/info.template.html"
 		});
 })
 	

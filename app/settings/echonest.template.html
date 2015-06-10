@@ -1,0 +1,38 @@
+<div>
+    <div class="field">
+        <div class="label">Enabled</div>
+        <div class="input">
+            <span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleEchonestEnabled()"><span class="switch animate"></span></span>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Status</div>
+        <div class="input echonest connection-status">
+            <div class="status connected green-text" ng-show="echonestOnline"><i class="fa fa-check"></i> &nbsp; Connected</div>
+            <div class="status disconnected red-text" ng-show="!echonestOnline"><i class="fa fa-close"></i> &nbsp; Disconnected</div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Taste profile ID</div>
+        <div class="input">
+            <input type="text" name="echonesttasteprofileid" ng-model="settings.echonesttasteprofileid" />
+        </div>
+    </div>
+
+    <div class="actions" ng-show="echonestOnline">
+        <a class="button pill black" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i>&nbsp; View my profile</a>				
+
+        <a class="button pill red" ng-click="deleteEchonestTasteProfile(confirming); confirming = true" ng-mouseleave="confirming = false">
+            <span ng-show="!confirming">
+                <i class="fa fa-close"></i>&nbsp; Delete profile
+            </span>
+            <span ng-show="confirming">
+                <i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
+            </span>
+        </a>
+    </div>
+
+    <div class="clear-both"></div>
+</div>

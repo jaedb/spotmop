@@ -1,196 +1,29 @@
-<div>
+<div ng-controller="SettingsController">
 	
 	<h1>Settings</h1>
 	
 	<div class="settings">
 		
 		<div class="sub-page-navigation">
-			<span class="menu-item active" ng-click="subpageNavigate( 'mopidy' )" ng-class="{active: currentSubpage=='mopidy'}">
+			<a class="menu-item" ui-sref="settings.mopidy" ui-sref-active="active">
 				<i class="fa fa-circle" ng-class="{ 'red-text': !mopidyOnline, 'green-text': mopidyOnline }"></i>
 				Mopidy
-			</span>
-			<span class="menu-item" ng-click="subpageNavigate( 'spotify' )" ng-class="{active: currentSubpage=='spotify'}">
+			</a>
+			<a class="menu-item" ui-sref="settings.spotify" ui-sref-active="active">
 				<i class="fa fa-circle" ng-class="{ 'red-text': !spotifyOnline, 'green-text': spotifyOnline }"></i>
 				Spotify
-			</span>
-			<span class="menu-item" ng-click="subpageNavigate( 'echonest' )" ng-class="{active: currentSubpage=='echonest'}">
+			</a>
+			<a class="menu-item" ui-sref="settings.echonest" ui-sref-active="active">
 				<i class="fa fa-circle" ng-class="{ 'red-text': !echonestOnline, 'green-text': echonestOnline }"></i>
 				Echonest
-			</span>
-			<span class="menu-item" ng-click="subpageNavigate( 'info' )" ng-class="{active: currentSubpage=='info'}">
-				Info
-			</span>
-		</div>
-		
-		<div class="sub-page mopidy" ng-show="currentSubpage=='mopidy'">
-			
-			<div class="field">
-				<div class="label">Status</div>
-				<div class="input mopidy connection-status">
-					<div class="status connected green-text" ng-hide="!mopidyOnline">
-						<i class="fa fa-check"></i> &nbsp; Connected
-					</div>
-					<div class="status disconnected red-text" ng-hide="mopidyOnline">
-						<i class="fa fa-close"></i> &nbsp; Disconnected &nbsp;&nbsp;
-						<a class="reconnect black" ng-click="reloadApp()"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
-					</div>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Hostname</div>
-				<div class="input">
-					<input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Port</div>
-				<div class="input">
-					<input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Consume mode</div>
-				<div class="input">
-					<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
-				</div>
-			</div>
-			
-			<div class="clear-both"></div>		
-		</div>
-		
-		<!-- DIVIDER -->
-		
-		<div class="sub-page spotify" ng-show="currentSubpage=='spotify'">
-			
-			<div class="field">
-				<div class="label">Status</div>
-				<div class="input spotify connection-status">
-					<div class="status connected green-text" ng-hide="!spotifyOnline">
-						<i class="fa fa-check"></i> &nbsp; Connected
-					</div>
-					<div class="status disconnected red-text" ng-hide="spotifyOnline">
-						<i class="fa fa-close"></i> &nbsp; Disconnected
-					</div>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Application Client ID</div>
-				<div class="input">
-					<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="settings.spotifyclientid" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Country code</div>
-				<div class="input">
-					<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Locale</div>
-				<div class="input">
-					<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
-					<i class="fa fa-check autosave-success"></i>
-				</div>
-			</div>
-			
-			<div class="field current-user">
-				<div class="label">Current user</div>
-				<div class="input">
-					<span class="my-profile">
-                        <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
-                            <div class="image animate" style="background-image: url({{ image.url }});"></div>
-                        </span>
-                        <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
-                    </span>
-				</div>
-			</div>
-            
-			<div class="actions">
-                <a class="button pill" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
-                <a class="button pill red" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-            </div>
-
-			<div class="clear-both"></div>			
-		</div>
-		
-		<!-- DIVIDER -->
-		
-		<div class="sub-page echonest" ng-show="currentSubpage=='echonest'">
-			
-			<div class="field">
-				<div class="label">Enabled</div>
-				<div class="input">
-					<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleEchonestEnabled()"><span class="switch animate"></span></span>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Status</div>
-				<div class="input echonest connection-status">
-					<div class="status connected green-text" ng-show="echonestOnline"><i class="fa fa-check"></i> &nbsp; Connected</div>
-					<div class="status disconnected red-text" ng-show="!echonestOnline"><i class="fa fa-close"></i> &nbsp; Disconnected</div>
-				</div>
-			</div>
-			
-			<div class="field">
-				<div class="label">Taste profile ID</div>
-				<div class="input">
-					<input type="text" name="echonesttasteprofileid" ng-model="settings.echonesttasteprofileid" />
-				</div>
-			</div>
-            
-			<div class="actions" ng-show="echonestOnline">
-                <a class="button pill black" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i>&nbsp; View my profile</a>				
-			
-				<a class="button pill red" ng-click="deleteEchonestTasteProfile(confirming); confirming = true" ng-mouseleave="confirming = false">
-					<span ng-show="!confirming">
-						<i class="fa fa-close"></i>&nbsp; Delete profile
-					</span>
-					<span ng-show="confirming">
-						<i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
-					</span>
-				</a>
-            </div>
-
-			<div class="clear-both"></div>
-			
-		</div>
-		
-		<!-- DIVIDER -->
-		
-		<div class="sub-page info" ng-show="currentSubpage=='info'">	
-			
-			<div class="field info">
-				Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)
-			</div>
-			
-			<div class="field info">
-				Current version: <span class="spotmop-version" ng-bind="version"></span>
-			</div>
-            
-			<br /><br />
-			
-			<a class="button pill red" ng-click="resetSettings(confirming); confirming = true" ng-mouseleave="confirming = false">
-				<span ng-show="!confirming">
-					<i class="fa fa-close"></i>&nbsp; Reset all settings
-				</span>
-				<span ng-show="confirming">
-					<i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
-				</span>
 			</a>
-			
+			<a class="menu-item" ui-sref="settings.info" ui-sref-active="active">
+				Info
+			</a>
 		</div>
-		
+        
+        <div ui-view></div>
+        
 	</div>
 	
 </div>
