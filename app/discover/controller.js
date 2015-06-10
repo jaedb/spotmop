@@ -1,24 +1,28 @@
 'use strict';
 
-angular.module('spotmop.discover', [
-    'ngRoute'
-])
+angular.module('spotmop.discover', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider
-		.when("/discover", {
+ * Routing 
+ **/
+.config(function($stateProvider){
+	
+	$stateProvider
+		.state('discover', {
+			url: "/discover",
 			templateUrl: "app/discover/template.html",
-			controller: "DiscoverController"
+			controller: 'DiscoverController'
 		})
-		.when("/discover/category/:categoryid", {
+		.state('discover_category', {
+			url: "/discover_category/:categoryid",
 			templateUrl: "app/discover/category.template.html",
-			controller: "CategoryController"
+			controller: 'CategoryController'
 		});
 })
-
+	
+/**
+ * Main controller
+ **/
 .controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService ){
 	
 	$scope.categories = [];
@@ -37,19 +41,22 @@ angular.module('spotmop.discover', [
         });
 	
 })
-
-.controller('CategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $routeParams ){
+	
+/**
+ * Category controller
+ **/
+.controller('CategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $stateParams ){
 	
 	$scope.category = {};
 	$scope.playlists = [];
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-category', message: 'Loading'});
 	
-	SpotifyService.getCategory( $routeParams.categoryid )
+	SpotifyService.getCategory( $stateParams.categoryid )
 		.success(function( response ) {
 			$scope.category = response;
 	
-            SpotifyService.getCategoryPlaylists( $routeParams.categoryid )
+            SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
                 .success(function( response ) {
                     $scope.playlists = response.playlists;
                     $rootScope.$broadcast('spotmop:pageUpdated');

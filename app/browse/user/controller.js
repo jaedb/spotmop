@@ -1,16 +1,22 @@
 'use strict';
 
-angular.module('spotmop.browse.user', [
-    'ngRoute'
-])
+angular.module('spotmop.browse_user', [])
 
-.config(function($routeProvider) {
-    $routeProvider.when("/browse/user/:uri", {
-        templateUrl: "app/browse/user/template.html",
-        controller: "UserController"
-    });
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse_user', {
+			url: "/browse_user",
+			templateUrl: "app/browse/user/template.html",
+			controller: 'UserController'
+		});
 })
-
+	
+/**
+ * Main controller
+ **/
 .controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $routeParams ){
 	
 	$scope.user = {};

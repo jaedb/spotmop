@@ -1,19 +1,20 @@
-'use strict';
-
-angular.module('spotmop.playlists', [
-    'ngRoute'
-])
+angular.module('spotmop.playlists', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider.when("/playlists", {
-        templateUrl: "app/playlists/template.html",
-        controller: "PlaylistsController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('playlists', {
+			url: "/playlists",
+			templateUrl: "app/playlists/template.html",
+			controller: 'PlaylistsController'
+		});
 })
 	
+/**
+ * Main controller
+ **/
 .controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, SpotifyService, SettingsService ){
 	
 	// set the default items

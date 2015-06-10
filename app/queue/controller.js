@@ -1,19 +1,21 @@
-
-angular.module('spotmop.queue', [
-    'ngRoute'
-])
+angular.module('spotmop.queue', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider.when("/queue", {
-        templateUrl: "app/queue/template.html",
-        controller: "QueueController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('queue', {
+			url: "/queue",
+			templateUrl: "app/queue/template.html",
+			controller: 'QueueController'
+		});
 })
 	
-.controller('QueueController', function QueueController( $scope, $rootScope, $route, $timeout, MopidyService ){
+/**
+ * Main controller
+ **/
+.controller('QueueController', function QueueController( $scope, $rootScope, $timeout, MopidyService ){
 	
 	$scope.totalTime = 0;
 

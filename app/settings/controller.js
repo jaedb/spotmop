@@ -1,19 +1,22 @@
 'use strict';
 
-angular.module('spotmop.settings', [
-    'ngRoute'
-])
+angular.module('spotmop.settings', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider.when("/settings", {
-        templateUrl: "app/settings/template.html",
-        controller: "SettingsController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('settings', {
+			url: "/settings",
+			templateUrl: "app/settings/template.html",
+			controller: 'SettingsController'
+		});
 })
 	
+/**
+ * Main controller
+ **/	
 .controller('SettingsController', function SettingsController( $scope, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService ){
 	
 	// load our current settings into the template

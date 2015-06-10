@@ -6,10 +6,9 @@
 // create our application
 angular.module('spotmop', [
 	
-	// list all our required dependencies
-	'ngRoute',
 	'ngResource',
 	'ngStorage',
+	'ui.router',
 	
 	'spotmop.player',
     
@@ -23,31 +22,26 @@ angular.module('spotmop', [
 	'spotmop.playlists',
 	'spotmop.search',
 	
-	'spotmop.browse.artist',
-	'spotmop.browse.album',
-	'spotmop.browse.playlist',
-    'spotmop.browse.user',
-	'spotmop.browse.tracklist',
+	'spotmop.browse_artist',
+	'spotmop.browse_album',
+	'spotmop.browse_playlist',
+    'spotmop.browse_user',
+	'spotmop.browse_tracklist',
 	
 	'spotmop.discover',
 	'spotmop.discover.featured',
 	'spotmop.discover.new'
 ])
 
-.config(function($routeProvider) {
-    $routeProvider.otherwise({redirectTo : '/queue'})
+.config(function($stateProvider, $urlRouterProvider){
+	
+	// set default route (if url doesn't match any other routes)
+	$urlRouterProvider.otherwise("/queue");
 })
 
 
 /* =========================================================================== ROUTING ======== */
 /* ============================================================================================ */
-
-// setup all the pages we require
-.config(function($locationProvider, $routeProvider) {
-	
-	// use the HTML5 History API
-	$locationProvider.html5Mode(true);
-})
 
 // setup a filter to convert MS to MM:SS
 .filter('formatMilliseconds', function() {
@@ -64,7 +58,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $route, $routeParams, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
@@ -99,35 +93,35 @@ angular.module('spotmop', [
 	$scope.mainMenu = [
 		{
 			Title: 'Queue',
-			Link: 'queue',
+			Link: '#/queue',
 			Icon: 'list',
 			Type: 'queue',
 			Droppable: true
 		},
 		{
 			Title: 'Discover',
-			Link: 'discover',
+			Link: '#/discover',
 			Icon: 'star',
 			Children: [
 				{ 
 					Title: 'Featured playlists',
-					Link: 'discover/featured'
+					Link: '#/discover_featured'
 				},
 				{ 
 					Title: 'New releases',
-					Link: 'discover/new'
+					Link: '#/discover_new'
 				}
 			]
 		},
 		{
 			Title: 'Playlists',
-			Link: 'playlists',
+			Link: '#/playlists',
 			Icon: 'folder-open',
 			Children: null
 		},
 		{
 			Title: 'Settings',
-			Link: 'settings',
+			Link: '#/settings',
 			Icon: 'cog'
 		}
 	];
@@ -219,7 +213,7 @@ angular.module('spotmop', [
                         if( playlist.owner.id == $scope.spotifyUser.id ){
                             sanitizedPlaylists.push({
                                 Title: playlist.name,
-                                Link: '/browse/playlist/'+playlist.uri,
+                                Link: '#/browse/playlist/'+playlist.uri,
                                 Type: 'playlist',
                                 Playlist: playlist,
                                 Droppable: true
@@ -229,7 +223,7 @@ angular.module('spotmop', [
 
                     // now loop the main menu to find our Playlist menu item
                     for(var i in $scope.mainMenu ){
-                        if( $scope.mainMenu[i].Link == 'playlists'){
+                        if( $scope.mainMenu[i].Link == '#/playlists'){
                             // inject our new menu children
                             $scope.mainMenu[i].Children = sanitizedPlaylists;
                             break; //Stop this loop, we found it!
@@ -272,10 +266,9 @@ angular.module('spotmop', [
 		var tracksDOM = $(document).find('.track.selected');
 		var tracks = [];
 		
-		
 		// --- DELETE FROM PLAYLIST --- //
 		
-		if( $route.current.$$route.controller == 'PlaylistController' ){
+		if( $state.current.controller == 'PlaylistController' ){
 			
 			// TODO: add check of userid. We want to disallow deletes if the playlist owner.id
 			// does not match the logged in user.id. Currently we just get an error from SpotifyService
@@ -299,7 +292,7 @@ angular.module('spotmop', [
 			
 		// --- DELETE FROM QUEUE --- //
 			
-		}else if( $route.current.$$route.controller == 'QueueController' ){
+		}else if( $state.current.controller == 'QueueController' ){
 		
 			// fetch each tlid and put into delete array
 			$.each( $(document).find('.track.selected'), function(trackKey, track){

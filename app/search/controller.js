@@ -1,18 +1,20 @@
-
-angular.module('spotmop.search', [
-    'ngRoute'
-])
+angular.module('spotmop.search', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider.when("/search/:query", {
-        templateUrl: "app/search/template.html",
-        controller: "SearchController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('search', {
+			url: "/search",
+			templateUrl: "app/search/template.html",
+			controller: 'SearchController'
+		});
 })
 	
+/**
+ * Main controller
+ **/
 .controller('SearchController', function SearchController( $scope, $rootScope, $routeParams, $timeout, SpotifyService ){
 	
 	$scope.query = $routeParams.query;

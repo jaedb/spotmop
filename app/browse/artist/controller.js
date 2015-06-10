@@ -1,16 +1,19 @@
 'use strict';
 
-angular.module('spotmop.browse.artist', [
-    'ngRoute'
-])
+angular.module('spotmop.browse_artist', [])
 
-.config(function($routeProvider) {
-    $routeProvider
-        .when("/browse/artist/:uri", {
-            templateUrl: "app/browse/artist/template.html",
-            controller: "ArtistController"
-        });
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse_artist', {
+			url: "/browse_artist/{uri}",
+			templateUrl: "app/browse/artist/template.html",
+			controller: 'ArtistController'
+		});
 })
+
 
 .directive('textOverImage', function() {
     return {
@@ -28,7 +31,11 @@ angular.module('spotmop.browse.artist', [
     };
 })
 
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, EchonestService, $routeParams, $sce ){
+
+/**
+ * Main controller
+ **/
+.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, EchonestService, $stateParams, $sce ){
 	
 	$scope.artist = {};
 	$scope.tracks = {};
@@ -38,29 +45,29 @@ angular.module('spotmop.browse.artist', [
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-artist', message: 'Loading'});
     
 	// get the artist
-	SpotifyService.getArtist( $routeParams.uri )
+	SpotifyService.getArtist( $stateParams.uri )
 		.success( function( response ){
 		
 			$scope.artist = response;
     
             // get the biography
-            EchonestService.getArtistBiography( $routeParams.uri )
+            EchonestService.getArtistBiography( $stateParams.uri )
                 .success( function( response ){
                     $scope.artist.biography = response.response.biographies[0];
                 });
 		
 			// get the artist's albums
-			SpotifyService.getAlbums( $routeParams.uri )
+			SpotifyService.getAlbums( $stateParams.uri )
 				.success( function( response ){
 					$scope.albums = response;
 				
 					// get the artist's top tracks
-					SpotifyService.getTopTracks( $routeParams.uri )
+					SpotifyService.getTopTracks( $stateParams.uri )
 						.success( function( response ){
 							$scope.tracks = response.tracks;
 				
 							// get the artist's related artists
-							SpotifyService.getRelatedArtists( $routeParams.uri )
+							SpotifyService.getRelatedArtists( $stateParams.uri )
 								.success( function( response ){
 									$scope.relatedArtists = response.artists;
 									$rootScope.$broadcast('spotmop:pageUpdated');

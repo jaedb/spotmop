@@ -1,17 +1,23 @@
 'use strict';
 
-angular.module('spotmop.browse.album', [
-    'ngRoute'
-])
+angular.module('spotmop.browse_album', [])
 
-.config(function($routeProvider) {
-    $routeProvider.when("/browse/album/:uri", {
-        templateUrl: "app/browse/album/template.html",
-        controller: "AlbumController"
-    });
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse_album', {
+			url: "/browse_album/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
+		});
 })
-
-.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $routeParams ){
+	
+/**
+ * Main controller
+ **/
+.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams ){
 	
 	$scope.album = {};
 	$scope.tracks = {};
@@ -20,7 +26,7 @@ angular.module('spotmop.browse.album', [
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
 	
 	// get the artist
-	SpotifyService.getAlbum( $routeParams.uri )
+	SpotifyService.getAlbum( $stateParams.uri )
 		.success(function( response ) {
 			$scope.album = response;
 			$scope.tracks = response.tracks;

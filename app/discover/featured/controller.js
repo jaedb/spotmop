@@ -1,19 +1,20 @@
-'use strict';
-
-angular.module('spotmop.discover.featured', [
-    'ngRoute'
-])
+angular.module('spotmop.discover.featured', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config( function($routeProvider) {
-    $routeProvider.when("/discover/featured", {
-        templateUrl: "/app/discover/featured/template.html",
-        controller: "FeaturedController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('discover_featured', {
+			url: "/discover_featured",
+			templateUrl: "app/discover/featured/template.html",
+			controller: 'FeaturedController'
+		});
 })
 	
+/**
+ * Main controller
+ **/
 .controller('FeaturedController', function FeaturedController( $scope, $rootScope, SpotifyService ){	
 	
 	// set the default items

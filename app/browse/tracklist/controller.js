@@ -1,8 +1,7 @@
 'use strict';
 
-angular.module('spotmop.browse.tracklist', [
-	'spotmop.services.mopidy',
-	'ngRoute'
+angular.module('spotmop.browse_tracklist', [
+	'spotmop.services.mopidy'
 ])
 
 
@@ -55,7 +54,7 @@ angular.module('spotmop.browse.tracklist', [
 	}
 })
 
-.controller('TracklistController', function TracklistController( $scope, $rootScope, $route, $routeParams, MopidyService, SpotifyService ){
+.controller('TracklistController', function TracklistController( $scope, $rootScope, $stateParams, MopidyService, SpotifyService ){
 
 	// setup switches to detect shift/control key holds
 	var shiftKeyHeld = false;

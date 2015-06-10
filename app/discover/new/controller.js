@@ -1,19 +1,20 @@
-'use strict';
-
-angular.module('spotmop.discover.new', [
-    'ngRoute'
-])
+angular.module('spotmop.discover.new', [])
 
 /**
- * Every controller start with defining its own routes.
- */
-.config(function($routeProvider) {
-    $routeProvider.when("/discover/new", {
-        templateUrl: "app/discover/new/template.html",
-        controller: "NewController"
-    });
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('discover_new', {
+			url: "/discover_new",
+			templateUrl: "app/discover/new/template.html",
+			controller: 'NewController'
+		});
 })
 	
+/**
+ * Main controller
+ **/
 .controller('NewController', function NewController( $scope, $rootScope, SpotifyService ){
 	
 	// set the default items
