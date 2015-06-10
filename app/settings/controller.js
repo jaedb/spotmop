@@ -14,7 +14,10 @@ angular.module('spotmop.settings', [])
 			templateUrl: "app/settings/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {
-                    $state.go('settings.mopidy');
+					// if we're at the index level, go to the mopidy sub-state by default
+					// this prevents re-routing on refresh even if the URL is a valid sub-state
+					if( $state.current.name === 'settings' )
+                    	$state.go('settings.mopidy');
                 }]
 		})
 		.state('settings.mopidy', {

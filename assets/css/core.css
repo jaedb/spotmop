@@ -594,6 +594,10 @@ h1 .flag {
 	height: 50px;
 }
 
+.square-panel .info.smaller {
+	height: 20px;
+}
+
 .square-panel:hover .info {
 	border-color: #1cf4c4;
 }
@@ -606,8 +610,8 @@ h1 .flag {
 .square-panel .info .name,
 .square-panel .info .tracks {
 	overflow: hidden;
-	max-height: 2.4em;
-	line-height: 1.2em;
+	max-height: 2.6em;
+	line-height: 1.3em;
 }
 
 /**

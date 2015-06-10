@@ -105,6 +105,12 @@ angular.module('spotmop', [
 	$scope.reloadApp = function(){
 		window.location = window.location;
 	}
+	// make all the square panels really square
+	$scope.resquarePanels = function(){
+		$(document).find('.square-panel').each( function(index, value){
+			$(value).find('.image-container').css('height', $(value).outerWidth() +'px');
+		});
+	}
     
 	/**
 	 * Search
@@ -210,11 +216,7 @@ angular.module('spotmop', [
 		
 		// wait for $digest
 		$timeout( function(){
-			
-			// make all the square panels really square
-			$(document).find('.square-panel').each( function(index, value){
-				$(value).find('.image-container').css('height', $(value).find('.image-container').outerWidth() +'px');
-			});
+			$scope.resquarePanels();
 		},
 		0);
 	});

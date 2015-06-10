@@ -14,16 +14,21 @@ angular.module('spotmop.browse.artist', [])
 			templateUrl: "app/browse/artist/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {
-                    $state.go('browse.artist.overview');
+					// if we're at the index level, go to the overview sub-state by default
+					// this prevents re-routing on refresh even if the URL is a valid sub-state
+					if( $state.current.name === 'browse.artist' )
+                    	$state.go('browse.artist.overview');
                 }]
 		})
 		.state('browse.artist.overview', {
 			url: "/overview",
-			templateUrl: "app/browse/artist/overview.template.html"
+			templateUrl: "app/browse/artist/overview.template.html",
+			controller: 'ArtistOverviewController'
 		})
 		.state('browse.artist.related', {
 			url: "/related",
-			templateUrl: "app/browse/artist/related.template.html"
+			templateUrl: "app/browse/artist/related.template.html",
+			controller: 'RelatedArtistsController'
 		})
 		.state('browse.artist.biography', {
 			url: "/biography",
@@ -97,5 +102,40 @@ angular.module('spotmop.browse.artist', [])
 						});
 				});
 		});
+	
+})
+
+/**
+ * Artist overview controller
+ **/
+.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope ){
+	
+	// when the related artists array changes (ie on API response, page load, etc)
+	$scope.$watch('relatedArtists', function(){
+
+		// wait for $digest
+		$timeout( function(){
+			$scope.resquarePanels();
+		},
+		0);
+	});
+	
+})
+
+
+/**
+ * Related artists controller
+ **/
+.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){
+	
+	// when the related artists array changes (ie on API response, page load, etc)
+	$scope.$watch('relatedArtists', function(){
+
+		// wait for $digest
+		$timeout( function(){
+			$scope.resquarePanels();
+		},
+		0);
+	});
 	
 });
