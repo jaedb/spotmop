@@ -6,11 +6,28 @@ angular.module('spotmop.browse.artist', [])
  * Routing 
  **/
 .config(function($stateProvider) {
+    
 	$stateProvider
 		.state('browse.artist', {
-			url: "/artist/{uri}",
+			url: "/artist/:uri",
+            //abstract: true,
 			templateUrl: "app/browse/artist/template.html",
-			controller: 'ArtistController'
+            controller: ['$scope', '$state', 
+                function( $scope, $state) {
+                    $state.go('browse.artist.overview');
+                }]
+		})
+		.state('browse.artist.overview', {
+			url: "/overview",
+			templateUrl: "app/browse/artist/overview.template.html"
+		})
+		.state('browse.artist.related', {
+			url: "/related",
+			templateUrl: "app/browse/artist/related.template.html"
+		})
+		.state('browse.artist.biography', {
+			url: "/biography",
+			templateUrl: "app/browse/artist/biography.template.html"
 		});
 })
 

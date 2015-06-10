@@ -847,6 +847,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	opacity: 0.75;
 }
 
+.artist-intro .submenu .menu-item.active,
 .artist-intro .submenu .menu-item:hover {
 	opacity: 1;
 }

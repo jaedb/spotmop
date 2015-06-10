@@ -1,4 +1,4 @@
-<div>
+<div ng-controller="ArtistController">
 
 	<div class="artist-intro">
 		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
@@ -12,12 +12,12 @@
 			</div>
 		</div>
 		<div class="submenu">
-			<span class="menu-item" ng-click="navigateToSubpage('overview')">Overview</span>
-			<span class="menu-item" ng-click="navigateToSubpage('related')">Related artists</span>
-			<span class="menu-item" ng-click="navigateToSubpage('biography')">Biography</span>
+			<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</span>
+			<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related artists</span>
+			<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</span>
 		</div>
 	</div>
 	
-	<artist-content></artist-content>
+	<div ui-view></div>
 	
 </div>

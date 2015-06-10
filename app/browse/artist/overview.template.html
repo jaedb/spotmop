@@ -26,7 +26,7 @@
 	<a
 	   ng-repeat="artist in relatedArtists | limitTo:6"
 	   class="related-artist"
-	   href="/browse/artist/{{ artist.uri }}">
+	   href="/#/browse/artist/{{ artist.uri }}">
 		<span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});"></span>
 		<span class="name" ng-bind="artist.name"></span>
 	</a>
