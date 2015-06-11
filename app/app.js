@@ -45,7 +45,7 @@ angular.module('spotmop', [
 /* ======================================================================== DIRECTIVES ======== */
 /* ============================================================================================ */
 
-.directive('dialog', function() {
+.directive('ngDialog', function() {
 	return {
 		restrict: 'E',
 		scope: {
@@ -159,35 +159,35 @@ angular.module('spotmop', [
 	$scope.mainMenu = [
 		{
 			Title: 'Queue',
-			Link: '#/queue',
+			Link: '/queue',
 			Icon: 'list',
 			Type: 'queue',
 			Droppable: true
 		},
 		{
 			Title: 'Discover',
-			Link: '#/discover/browse',
+			Link: '/discover/browse',
 			Icon: 'star',
 			Children: [
 				{ 
 					Title: 'Featured playlists',
-					Link: '#/discover/featured'
+					Link: '/discover/featured'
 				},
 				{ 
 					Title: 'New releases',
-					Link: '#/discover/new'
+					Link: '/discover/new'
 				}
 			]
 		},
 		{
 			Title: 'Playlists',
-			Link: '#/playlists',
+			Link: '/playlists',
 			Icon: 'folder-open',
 			Children: null
 		},
 		{
 			Title: 'Settings',
-			Link: '#/settings',
+			Link: '/settings',
 			Icon: 'cog'
 		}
 	];
@@ -275,7 +275,7 @@ angular.module('spotmop', [
                         if( playlist.owner.id == $scope.spotifyUser.id ){
                             sanitizedPlaylists.push({
                                 Title: playlist.name,
-                                Link: '#/browse/playlist/'+playlist.uri,
+                                Link: '/browse/playlist/'+playlist.uri,
                                 Type: 'playlist',
                                 Playlist: playlist,
                                 Droppable: true
@@ -285,7 +285,7 @@ angular.module('spotmop', [
 
                     // now loop the main menu to find our Playlist menu item
                     for(var i in $scope.mainMenu ){
-                        if( $scope.mainMenu[i].Link == '#/playlists'){
+                        if( $scope.mainMenu[i].Link == '/playlists'){
                             // inject our new menu children
                             $scope.mainMenu[i].Children = sanitizedPlaylists;
                             break; //Stop this loop, we found it!

@@ -1,9 +1,5 @@
 <div>
 	
-	<dialog show='dialogShown' width='750px' height='60%'>
-		<p>Modal Content Goes here<p>
-	</dialog>
-
 	<div class="playlist-intro">
 		<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
 			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
@@ -33,7 +29,7 @@
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
 					<span ng-show="following">
 						<span class="flag clickable dark"
-							  ng-click="toggleDialog()">
+							  ng-click="editPlaylist()">
 							Edit
 						</span>
 						<span class="flag clickable destructive dark"
@@ -54,7 +50,7 @@
 			<div class="info-text">
 				<span ng-bind="tracks.items.length">0</span> tracks
 				&nbsp;|&nbsp; <span ng-bind="totalTime">0</span> minutes
-				&nbsp;|&nbsp; <a ng-bind="playlist.owner.id" href="/#/browse/user/{{ playlist.owner.uri }}"></a>
+				&nbsp;|&nbsp; <a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
 			</div>
 		</div>
 	</div>

@@ -50,6 +50,9 @@ angular.module('spotmop.browse.playlist', [])
     			$rootScope.$broadcast('spotmop:notifyUser', {id: 'recovering-playlist', message: 'Playlist recovered', autoremove: true});
             });
     }
+    $scope.editPlaylist = function(){
+        return alert('Not yet implemented');
+    }
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});
 
