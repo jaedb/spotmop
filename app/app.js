@@ -34,10 +34,9 @@ angular.module('spotmop', [
 	'spotmop.discover.new'
 ])
 
-.config(function($stateProvider, $urlRouterProvider){
-	
-	// set default route (if url doesn't match any other routes)
-	//$urlRouterProvider.otherwise("/queue");
+.config(function($stateProvider, $locationProvider, $urlRouterProvider){
+	$locationProvider.html5Mode(true)
+	$urlRouterProvider.otherwise("/queue");
 })
 
 
