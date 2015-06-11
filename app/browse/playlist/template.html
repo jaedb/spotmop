@@ -1,4 +1,8 @@
 <div>
+	
+	<dialog show='dialogShown' width='750px' height='60%'>
+		<p>Modal Content Goes here<p>
+	</dialog>
 
 	<div class="playlist-intro">
 		<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
@@ -29,7 +33,7 @@
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
 					<span ng-show="following">
 						<span class="flag clickable dark"
-							  ng-click="editPlaylist()">
+							  ng-click="toggleDialog()">
 							Edit
 						</span>
 						<span class="flag clickable destructive dark"

@@ -6,7 +6,7 @@ angular.module('spotmop.search', [])
 .config(function($stateProvider) {
 	$stateProvider
 		.state('search', {
-			url: "/search",
+			url: "/search/:query",
 			templateUrl: "app/search/template.html",
 			controller: 'SearchController'
 		});
@@ -15,27 +15,27 @@ angular.module('spotmop.search', [])
 /**
  * Main controller
  **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $routeParams, $timeout, SpotifyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $stateParams, $timeout, SpotifyService ){
 	
-	$scope.query = $routeParams.query;
+	$scope.query = $stateParams.query;
 	$scope.tracks = [];
 	$scope.albums = [];
 	$scope.artists = [];
 	$scope.playlists = [];
 	
-	SpotifyService.getSearchResults( 'track', $routeParams.query, 20 )
+	SpotifyService.getSearchResults( 'track', $stateParams.query, 20 )
 		.success( function(response){
 		
 			$scope.tracks = response.tracks;
-			SpotifyService.getSearchResults( 'album', $routeParams.query, 6 )
+			SpotifyService.getSearchResults( 'album', $stateParams.query, 6 )
 				.success( function(response){
 				
 					$scope.albums = response.albums;
-					SpotifyService.getSearchResults( 'artist', $routeParams.query, 6 )
+					SpotifyService.getSearchResults( 'artist', $stateParams.query, 6 )
 						.success( function(response){
 						
 							$scope.artists = response.artists;
-								SpotifyService.getSearchResults( 'playlist', $routeParams.query, 6 )
+								SpotifyService.getSearchResults( 'playlist', $stateParams.query, 6 )
 									.success( function(response){
 									
 										$scope.playlists = response.playlists;

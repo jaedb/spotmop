@@ -37,10 +37,32 @@ angular.module('spotmop', [
 .config(function($stateProvider, $urlRouterProvider){
 	
 	// set default route (if url doesn't match any other routes)
-	$urlRouterProvider.otherwise("/queue");
+	//$urlRouterProvider.otherwise("/queue");
 })
 
 
+
+
+/* ======================================================================== DIRECTIVES ======== */
+/* ============================================================================================ */
+
+.directive('dialog', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			show: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function(scope, element, attrs){
+			scope.dialogStyle = {};
+			scope.hideModal = function(){
+				scope.show = false;
+			};
+		},
+		template: '/app/common/dialog.template.html'
+	};
+})
 
 
 /* ======================================================================== FILTERS =========== */
@@ -116,7 +138,7 @@ angular.module('spotmop', [
 	 * Search
 	 **/
 	$scope.searchSubmit = function( query ){
-		$location.path( '/search/'+query );
+		$state.go( 'search', { query: query } );
 	};
 
 	
