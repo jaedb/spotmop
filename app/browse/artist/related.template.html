@@ -3,7 +3,6 @@
 <div class="album-items square-panels">
 	<div class="item-container" ng-repeat="artist in relatedArtists">
 		<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
-            <div class="image-container no-image" ng-hide="{{ artist.images.length > 0 }}"></div>
 			<div class="image-container">
 				<div class="image animate" style="background-image: url({{ artist.images | thumbnailImage }});"></div>
 			</div>
