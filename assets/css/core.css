@@ -586,6 +586,12 @@ h1 .flag {
 	background-size: cover;
 }
 
+.square-panel .image-container .image.placeholder {
+	background-color: #CCCCCC;
+	background-image: url('../image-not-found.png');
+	background-size: auto;
+}
+
 .square-panel:hover .image-container .image {
 	opacity: 0.75;
 }

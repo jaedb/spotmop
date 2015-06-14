@@ -63,6 +63,53 @@ angular.module('spotmop', [
 	};
 })
 
+.directive('thumbnail', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			images: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+			
+			// fetch this instance's best thumbnail
+			$scope.image = getThumbnailImage( $scope.images );
+			
+			// get the best thumbnail image, please and thankyou
+			function getThumbnailImage( images ){
+				
+				// what if there are no images? then nada
+				if( images.length <= 0 )
+					return false;
+
+				// loop all the images
+				for( var i = 0; i < images.length; i++){
+					var image = images[i];
+
+					// this is our preferred size
+					if( image.height >= 200 && image.height <= 300 ){
+						return image;
+
+					// let's take it a notch up then
+					}else if( image.height > 300 && image.height <= 500 ){
+						return image;
+
+					// nope? let's take it a notch down then
+					}else if( image.height >= 150 && image.height < 200 ){
+						return image;
+					}
+				};
+
+				// no thumbnail that suits? just get the first (and highest res) one then        
+				return images[0];
+			}
+			
+		},
+		template: '<div><div class="image animate" style="background-image: url({{ image.url }});" ng-show="image"></div><div class="image animate placeholder" ng-show="!image"></div></div>'
+	};
+})
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
@@ -108,7 +155,6 @@ angular.module('spotmop', [
 		return images[0].url;
 	}
 })
-
 
 
 

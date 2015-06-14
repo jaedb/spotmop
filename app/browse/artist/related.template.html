@@ -4,7 +4,7 @@
 	<div class="item-container" ng-repeat="artist in relatedArtists">
 		<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
 			<div class="image-container">
-				<div class="image animate" style="background-image: url({{ artist.images | thumbnailImage }});"></div>
+				<thumbnail images="artist.images"></thumbnail>
 			</div>
 			<div class="info smaller animate">
 				<div class="name" ng-bind="artist.name"></div>
