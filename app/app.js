@@ -165,6 +165,10 @@ angular.module('spotmop', [
  * Global controller
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
+	
+    angular.element(window).resize(function () {
+        $scope.resquarePanels();
+    });
 
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
@@ -175,7 +179,8 @@ angular.module('spotmop', [
 	// make all the square panels really square
 	$scope.resquarePanels = function(){
 		$(document).find('.square-panel').each( function(index, value){
-			$(value).find('.image-container').css('height', $(value).outerWidth() +'px');
+			var realWidth = value.getBoundingClientRect().width;
+			$(value).find('.image-container').css('height', realWidth +'px');
 		});
 	}
     
