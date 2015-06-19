@@ -32,10 +32,11 @@
 							  ng-click="editPlaylist()">
 							Edit
 						</span>
-						<span class="flag clickable destructive dark"
-							  ng-click="deletePlaylist()">
-							Delete playlist
-						</span>
+						<confirmation-button class="flag clickable destructive dark"
+							  ng-click="deletePlaylist()"
+							  default-text="dddd"
+							  confirmation-text="">
+						</confirmation-button>
 					</span>
 					<span ng-show="!following">
 						<span class="flag clickable dark"

@@ -63,6 +63,12 @@ angular.module('spotmop', [
 	};
 })
 
+
+/** 
+ * Thumbnail image
+ * Figure out the best image to use for this set of image sizes
+ * @return image obj
+ **/
 .directive('thumbnail', function() {
 	return {
 		restrict: 'E',
@@ -107,6 +113,30 @@ angular.module('spotmop', [
 			
 		},
 		template: '<div><div class="image animate" style="background-image: url({{ image.url }});" ng-show="image"></div><div class="image animate placeholder" ng-show="!image"></div></div>'
+	};
+})
+
+
+/**
+ * Confirmation button
+ * Allows buttons to require double-click, with a "Are you sure?" prompt
+ **/
+.directive('confirmationButton', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			confirming: '=',
+			defaultText: '=',
+			confirmationText: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function(scope, element, attrs){
+			scope.confirming = false;
+			scope.text = scope.default;
+			console.log( scope.defaulttext );
+		},
+		template: '<span>{{ text }}</span>'
 	};
 })
 
