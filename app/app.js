@@ -124,19 +124,46 @@ angular.module('spotmop', [
 .directive('confirmationButton', function() {
 	return {
 		restrict: 'E',
+		controller: function($scope, $element){	
+			
+			$scope.text = 'Button text';
+			$scope.confirming = false;
+			$scope.text = $scope.defaultText;
+			
+			// bind to document-wide click events
+			$(document).on('click', function(evt){
+				
+				// if we've clicked on THIS confirmation button
+				if( evt.target == $element[0] ){
+					if( $scope.confirming ){
+						
+						// DELETE PLAYLIST
+						console.log('confirmed!');						
+						
+					}else{
+						$scope.confirming = true;
+						$scope.text = $scope.confirmationText;
+						$scope.$apply();
+					}
+					
+				// clicked on some other element on the page
+				}else{
+					
+					// let's un-confirm the button
+					$scope.confirming = false;
+					$scope.text = $scope.defaultText;
+					$scope.$apply();
+				}
+			});
+		},
 		scope: {
-			confirming: '=',
-			defaultText: '=',
-			confirmationText: '='
+			text: '@',
+			confirmationText: '@',
+			defaultText: '@'		
 		},
-		replace: true, // Replace with the template below
-		transclude: true, // we want to insert custom content inside the directive
-		link: function(scope, element, attrs){
-			scope.confirming = false;
-			scope.text = scope.default;
-			console.log( scope.defaulttext );
-		},
-		template: '<span>{{ text }}</span>'
+		replace: true, 		// Replace with the template below
+		transclude: true, 	// we want to insert custom content inside the directive
+		template: '<span ng-bind="text"></span>'
 	};
 })
 
