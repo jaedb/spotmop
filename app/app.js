@@ -137,8 +137,8 @@ angular.module('spotmop', [
 				if( evt.target == $element[0] ){
 					if( $scope.confirming ){
 						
-						// DELETE PLAYLIST
-						console.log('confirmed!');						
+						// unfollow playlist (which acts as delete)
+						$scope.$parent.unfollowPlaylist();
 						
 					}else{
 						$scope.confirming = true;
