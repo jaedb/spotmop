@@ -46,18 +46,6 @@ angular.module('spotmop', [
 /* ======================================================================== DIRECTIVES ======== */
 /* ============================================================================================ */
 
-.directive('dialog', function() {
-	return {
-		restrict: 'E',
-		replace: true, // Replace with the template below
-		transclude: true, // we want to insert custom content inside the directive
-		link: function(scope, element, attrs){
-			console.log('linked');
-		},
-		templateUrl: '/app/common/dialog.template.html'
-	};
-})
-
 
 /** 
  * Thumbnail image
