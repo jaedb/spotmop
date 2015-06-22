@@ -5,6 +5,15 @@
  **/
 
 
+
+/* ============================================================================ BASE STYLES ======== */
+/* ================================================================================================= */
+
+
+.dialog .dialog-title {
+	padding-bottom: 20px;
+}
+
 .dialog .background {
 	background: rgba(0,0,0,0.85);
 	position: fixed;
@@ -25,5 +34,51 @@
 	font-size: 16px;
 	z-index: 12;
 }
+
+
+
+/* ============================================================================ FORMS ============== */
+/* ================================================================================================= */
+
+.dialog input {
+	padding: 5px 0;
+	background: transparent;
+	font-family: "Roboto",Helvetica,Arial,sans-serif;
+	font-size: 14px;
+	font-weight: 200;
+	color: #FFFFFF;
+	border: 0;
+	border-bottom: 2px solid #FFFFFF;
+}
+
+.dialog input:focus {
+	border-color: #1cf4c4;
+}
+
+.dialog input.large {
+	padding: 10px 0;
+	font-size: 30px;
+	width: 50%;
+}
+
+.dialog .actions {
+	padding-left: 0;
+	padding-top: 30px;
+}
+
+.dialog .actions .button {
+	display: inline-block;
+	padding: 10px;
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.dialog .actions .button.destructive:hover {		color: rgb(214,47,47); }
+.dialog .actions .button.productive:hover {			color: rgb(53,204,53); }
+
+
+
+
+
 
 

@@ -53,8 +53,8 @@ angular.module('spotmop.browse.playlist', [])
 				$scope.updatePlaylists();
             });
     }
-    $scope.editPlaylist = function(){
-        DialogService.create('editPlaylist');
+    $scope.editPlaylist = function(){		
+        DialogService.create('editPlaylist', $scope);
     }
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});

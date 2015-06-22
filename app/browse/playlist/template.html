@@ -29,7 +29,7 @@
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
 					<span ng-show="following">
 						<span class="flag clickable dark"
-							  ng-click="editPlaylist()">
+							  ng-click="editPlaylist( $scope )">
 							Edit
 						</span>
 						<confirmation-button class="flag clickable destructive dark"

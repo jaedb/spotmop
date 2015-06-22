@@ -9,9 +9,36 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
+ * Service to facilitate the creation and management of dialogs globally
+ **/
+.factory("DialogService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
+	
+	// setup response object
+    return {
+		create: function( dialogType, parentScope ){
+			
+			// prevent undefined errors
+			if( typeof(parentScope) === 'undefined' )
+				parentScope = false;
+			
+			if( $('body').children('.dialog').length > 0 ){
+				console.log('A dialog already exists...');
+				// TODO: handle what to do in this case
+			}
+			$('body').append($compile('<dialog type="'+dialogType+'" />')( parentScope ));
+		},
+		remove: function(){
+			$('body').children('.dialog').fadeOut( 200, function(){ $(this).remove() } );
+		}
+	};
+}])
+
+
+/**
  * Directive to handle wrapping functionality
  **/
-.directive('dialog', function() {
+.directive('dialog', function( $compile ){
+	
 	return {
 		restrict: 'E',
 		replace: true,
@@ -20,8 +47,10 @@ angular.module('spotmop.services.dialog', [])
 			type: '@'
 		},
 		templateUrl: '/app/services/dialog/template.html',
+		link: function( $scope, $element ){
+			$element.find('.content').html( $compile('<'+$scope.type+'dialog />')( $scope ) );
+		},
 		controller: function( $scope, $element, DialogService ){
-			$scope.title = $scope.type;
 			
 			// listen for <esc> keypress
 			$(document).on('keyup', function(evt){
@@ -35,20 +64,24 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
- * Service to facilitate the creation and management of dialogs globally
+ * All the different types of dialogs live below
  **/
-.factory("DialogService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
+
+.directive('editplaylistdialog', function(){
 	
-	// setup response object
-    return {
-		create: function( dialogType ){
-			$('body').append($compile('<dialog type="'+dialogType+'" />')( $rootScope ));
-		},
-		remove: function(){
-			$('body').children('.dialog').fadeOut( 200, function(){ $(this).remove() } );
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: '/app/services/dialog/editplaylist.template.html',
+		controller: function( $scope, $element, DialogService ){
+			$scope.parent = $scope.$parent;
 		}
 	};
-}]);
+});
+
+
+
 
 
 
