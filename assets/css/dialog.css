@@ -1,0 +1,29 @@
+/**
+ * Dialog (modal popup) styles
+ * 
+ * Spotmop
+ **/
+
+
+.dialog .background {
+	background: rgba(0,0,0,0.85);
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 11;
+}
+
+.dialog .content {
+	position: fixed;
+	top: 15%;
+	right: 20%;
+	bottom: 15%;
+	left: 20%;
+	color: #FFFFFF;
+	font-size: 16px;
+	z-index: 12;
+}
+
+

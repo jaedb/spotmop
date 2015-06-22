@@ -17,7 +17,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, SpotifyService, SettingsService, $stateParams, $sce ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, SpotifyService, SettingsService, DialogService, $stateParams, $sce ){
 	
 	// setup base variables
 	$scope.playlist = {};
@@ -54,7 +54,7 @@ angular.module('spotmop.browse.playlist', [])
             });
     }
     $scope.editPlaylist = function(){
-        return alert('Not yet implemented');
+        DialogService.create('editPlaylist');
     }
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});

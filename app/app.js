@@ -16,6 +16,7 @@ angular.module('spotmop', [
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
 	'spotmop.services.echonest',
+	'spotmop.services.dialog',
 	
 	'spotmop.queue',
 	'spotmop.settings',
@@ -45,21 +46,15 @@ angular.module('spotmop', [
 /* ======================================================================== DIRECTIVES ======== */
 /* ============================================================================================ */
 
-.directive('ngDialog', function() {
+.directive('dialog', function() {
 	return {
 		restrict: 'E',
-		scope: {
-			show: '='
-		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
 		link: function(scope, element, attrs){
-			scope.dialogStyle = {};
-			scope.hideModal = function(){
-				scope.show = false;
-			};
+			console.log('linked');
 		},
-		template: '/app/common/dialog.template.html'
+		templateUrl: '/app/common/dialog.template.html'
 	};
 })
 
