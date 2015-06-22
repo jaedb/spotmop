@@ -137,8 +137,9 @@ angular.module('spotmop', [
 				if( evt.target == $element[0] ){
 					if( $scope.confirming ){
 						
-						// unfollow playlist (which acts as delete)
-						$scope.$parent.unfollowPlaylist();
+						// if the function exists, perform the on-confirmation function from the directive's template
+						if( typeof( $scope.$parent[ $scope.onConfirmation ]() ) === 'function' )
+							$scope.$parent[ $scope.onConfirmation ]();
 						
 					}else{
 						$scope.confirming = true;
@@ -159,7 +160,8 @@ angular.module('spotmop', [
 		scope: {
 			text: '@',
 			confirmationText: '@',
-			defaultText: '@'		
+			defaultText: '@',
+			onConfirmation: '@'
 		},
 		replace: true, 		// Replace with the template below
 		transclude: true, 	// we want to insert custom content inside the directive
@@ -239,6 +241,42 @@ angular.module('spotmop', [
 			var realWidth = value.getBoundingClientRect().width;
 			$(value).find('.image-container').css('height', realWidth +'px');
 		});
+	}
+	// update the playlists menu
+	$scope.updatePlaylists = function(){
+	
+		SpotifyService.getPlaylists( $scope.spotifyUser.id )
+			.success(function( response ) {
+
+				var sanitizedPlaylists = [];
+
+				// loop all of our playlists, and set up a menu item for each
+				$.each( response.items, function( key, playlist ){
+
+					// we only want to add playlists that this user owns
+					if( playlist.owner.id == $scope.spotifyUser.id ){
+						sanitizedPlaylists.push({
+							Title: playlist.name,
+							Link: '/browse/playlist/'+playlist.uri,
+							Type: 'playlist',
+							Playlist: playlist,
+							Droppable: true
+						});
+					}
+				});
+				
+				// now loop the main menu to find our Playlist menu item
+				for(var i in $scope.mainMenu ){
+					if( $scope.mainMenu[i].Link == '/playlists'){
+						// inject our new menu children
+						$scope.mainMenu[i].Children = sanitizedPlaylists;
+						break; //Stop this loop, we found it!
+					}
+				}
+			})
+			.error(function( error ){
+				$scope.status = 'Unable to load your playlists';
+			});	
 	}
     
 	/**
@@ -369,40 +407,9 @@ angular.module('spotmop', [
         
             // save user to settings
             SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-
-            // now get my playlists
-            SpotifyService.getPlaylists( $scope.spotifyUser.id )
-                .success(function( response ) {
-
-                    var sanitizedPlaylists = [];
-
-                    // loop all of our playlists, and set up a menu item for each
-                    $.each( response.items, function( key, playlist ){
-
-                        // we only want to add playlists that this user owns
-                        if( playlist.owner.id == $scope.spotifyUser.id ){
-                            sanitizedPlaylists.push({
-                                Title: playlist.name,
-                                Link: '/browse/playlist/'+playlist.uri,
-                                Type: 'playlist',
-                                Playlist: playlist,
-                                Droppable: true
-                            });
-                        }
-                    });
-
-                    // now loop the main menu to find our Playlist menu item
-                    for(var i in $scope.mainMenu ){
-                        if( $scope.mainMenu[i].Link == '/playlists'){
-                            // inject our new menu children
-                            $scope.mainMenu[i].Children = sanitizedPlaylists;
-                            break; //Stop this loop, we found it!
-                        }
-                    }
-                })
-                .error(function( error ){
-                    $scope.status = 'Unable to load your playlists';
-                });
+			
+			// update my playlists
+			$scope.updatePlaylists();
         })
         .error(function( error ){
             $scope.status = 'Unable to look you up';

@@ -34,6 +34,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.unfollowPlaylist( $stateParams.uri )
             .success( function(response){
                 $scope.following = false;
+				$scope.updatePlaylists();
             });
     }
     $scope.deletePlaylist = function(){
@@ -48,6 +49,7 @@ angular.module('spotmop.browse.playlist', [])
             .success( function(response){
                 $scope.following = true;
     			$rootScope.$broadcast('spotmop:notifyUser', {id: 'recovering-playlist', message: 'Playlist recovered', autoremove: true});
+				$scope.updatePlaylists();
             });
     }
     $scope.editPlaylist = function(){

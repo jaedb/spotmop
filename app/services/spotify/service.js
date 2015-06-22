@@ -187,7 +187,7 @@ angular.module('spotmop.services.spotify', [])
 		getPlaylists: function( userid ){
 			return $http({
 				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists',
+				url: urlBase+'users/'+userid+'/playlists?limit=50',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
 				}
