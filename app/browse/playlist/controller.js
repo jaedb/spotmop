@@ -28,6 +28,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.followPlaylist( $stateParams.uri )
             .success( function(response){
                 $scope.following = true;
+				$scope.updatePlaylists();
             });
     }
     $scope.unfollowPlaylist = function(){

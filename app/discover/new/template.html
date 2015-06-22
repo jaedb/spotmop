@@ -6,8 +6,8 @@
 		
 		<div class="item-container" ng-repeat="album in albums">
 			<a href="/browse/album/{{ album.uri }}" class="square-panel album">
-				<div class="image-container" ng-repeat="image in album.images | limitTo:1">
-					<div class="image animate" style="background-image: url({{ image.url }});"></div>
+				<div class="image-container">
+					<thumbnail images="album.images"></thumbnail>
 				</div>
 				<div class="info animate">
 					<div class="name" ng-bind="album.name"></div>

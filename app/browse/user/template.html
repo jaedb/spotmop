@@ -22,8 +22,8 @@
         
 		<div class="item-container" ng-repeat="playlist in playlists.items">
 			<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
-				<div class="image-container" ng-repeat="image in playlist.images | filter:image.height=300 | limitTo:1">
-					<div class="image animate" style="background-image: url({{ image.url }});"></div>
+				<div class="image-container">
+					<thumbnail images="playlist.images"></thumbnail>
 				</div>
 				<div class="info animate">
 					<div class="name" ng-bind="playlist.name"></div>
