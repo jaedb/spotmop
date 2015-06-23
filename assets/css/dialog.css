@@ -15,7 +15,7 @@
 }
 
 .dialog .background {
-	background: rgba(0,0,0,0.85);
+	background: rgba(0,0,0,0.95);
 	position: fixed;
 	top: 0;
 	right: 0;
@@ -35,10 +35,24 @@
 	z-index: 12;
 }
 
+.dialog .button.close-dialog {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 13;
+    color: #FFFFFF;
+}
+
+.dialog .button.destructive:hover {		color: rgb(214,47,47); }
+.dialog .button.productive:hover {		color: rgb(53,204,53); }
+
 
 
 /* ============================================================================ FORMS ============== */
 /* ================================================================================================= */
+
 
 .dialog input {
 	padding: 5px 0;
@@ -68,14 +82,28 @@
 
 .dialog .actions .button {
 	display: inline-block;
-	padding: 10px;
-	font-size: 20px;
+	font-size: 30px;
 	cursor: pointer;
 }
 
-.dialog .actions .button.destructive:hover {		color: rgb(214,47,47); }
-.dialog .actions .button.productive:hover {			color: rgb(53,204,53); }
+.dialog .actions .working {
+    padding-top: 5px;
+    width: 30px;
+    height: 30px;
+}
 
+
+
+
+/* ========================================================================= DIALOG-SPECIFIC ======= */
+/* ================================================================================================= */
+
+.edit-playlist-dialog .actions {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: -12px;
+    padding-left: 10px;
+}
 
 
 

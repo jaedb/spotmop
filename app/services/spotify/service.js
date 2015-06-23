@@ -323,6 +323,25 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
+        // update a playlist's details (name,public)
+		updatePlaylist: function( playlisturi, data ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+            
+			return $http({
+				method: 'PUT',
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+				dataType: "json",
+				data: data,
+				contentType: "application/json; charset=utf-8",
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.Spotify.AccessToken
+				}
+			});
+		},
+		
 		/**
 		 * Discover
 		 **/

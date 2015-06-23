@@ -1,21 +1,17 @@
-<div>
+<div class="edit-playlist-dialog">
 	
 	<h4 class="section-title dialog-title">Edit playlist</h4>
 
 	<form>
 
-		<div class="field">
-			<input class="large" name="name" placeholder="Playlist name" value="{{ parent.playlist.name }}" />
-		</div>
-		
-		<div class="field actions">
-			<span class="button save productive">
-				<i class="fa fa-check"></i>
-			</span>
-			<span class="button cancel destructive close-dialog">
-				<i class="fa fa-close"></i>
-			</span>
-		</div>
+        <input class="large" name="name" placeholder="Playlist name" ng-model="newPlaylistName" />
+        
+        <span class="actions">
+            <span class="button save productive" ng-click="savePlaylist()">
+                <i class="fa fa-check" ng-hide="saving"></i>
+            </span>
+            <img src="/assets/svg/spinner.svg" class="working" ng-show="saving" />
+        </span>
 		
 	</form>
 	

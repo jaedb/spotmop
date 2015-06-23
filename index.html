@@ -47,23 +47,23 @@
 	
 </head>
 <body ng-app="spotmop" ng-controller="ApplicationController">
-	
+        
     <div id="notifications"></div>
-    
-	<div id="sidebar">
-		<div class="inner">			
-			<ng-include src="'/app/common/sidebar.template.html'"></ng-include>
-		</div>
-	</div>
-	
-	<div id="body" class="body">
-		<div class="inner">
-			<div ui-view></div>
-		</div>
-	</div>
-	
-	<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
-	
+
+    <div id="sidebar">
+        <div class="inner">			
+            <ng-include src="'/app/common/sidebar.template.html'"></ng-include>
+        </div>
+    </div>
+
+    <div id="body" class="body">
+        <div class="inner">
+            <div ui-view></div>
+        </div>
+    </div>
+
+    <ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
+
     <div class="drag-tracer"></div>
     
     <img class="hide" src="/assets/svg/spinner.svg" />

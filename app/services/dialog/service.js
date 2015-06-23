@@ -12,7 +12,7 @@ angular.module('spotmop.services.dialog', [])
  * Service to facilitate the creation and management of dialogs globally
  **/
 .factory("DialogService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
-	
+    
 	// setup response object
     return {
 		create: function( dialogType, parentScope ){
@@ -52,6 +52,10 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: function( $scope, $element, DialogService ){
 			
+            $scope.closeDialog = function(){
+                DialogService.remove();   
+            }
+            
 			// listen for <esc> keypress
 			$(document).on('keyup', function(evt){
 				if( evt.keyCode == 27 ){
@@ -74,8 +78,28 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: '/app/services/dialog/editplaylist.template.html',
-		controller: function( $scope, $element, DialogService ){
-			$scope.parent = $scope.$parent;
+		controller: function( $scope, $element, DialogService, SpotifyService ){
+            $scope.newPlaylistName = $scope.$parent.playlist.name;
+            $scope.saving = false;
+            $scope.savePlaylist = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+                
+                // actually perform the rename
+                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.newPlaylistName } )
+                    .success( function(response){
+                    
+                        // update the playlist's name
+                        $scope.$parent.playlist.name = $scope.newPlaylistName;
+                    
+                        // fetch the new playlists (for sidebar)
+                        $scope.$parent.updatePlaylists();
+                    
+                        // and finally remove this dialog
+                        DialogService.remove();
+                    });
+            }
 		}
 	};
 });
