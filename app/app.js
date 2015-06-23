@@ -394,7 +394,7 @@ angular.module('spotmop', [
 			});
 			
 			// parse these uris to spotify and delete these tracks
-			SpotifyService.deleteTracksFromPlaylist( $routeParams.uri, tracks )
+			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracks )
 				.success(function( response ) {
 					tracksDOM.remove();
 				})
@@ -543,7 +543,7 @@ angular.module('spotmop', [
                         
                     // sorting playlist tracklist
                     }else if( track.closest('.tracklist').hasClass('playlist-items') ){
-                        var playlisturi = $route.current.params.uri;
+                        var playlisturi = $state.params.uri;
                         var range_length = 1;
                         if( end > start ) range_length = end - start;
                         SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
