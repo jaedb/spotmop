@@ -4,28 +4,22 @@
 
 	<form>
 
-		<div class="field">
-			<input class="large" name="name" placeholder="Playlist name" ng-model="playlistNewName" />
-        
-			<span class="actions">
-				<span class="button save productive" ng-click="savePlaylist()" ng-hide="saving">
-					<i class="fa fa-check"></i>
-				</span>
-				<span ng-show="saving" >
-					<img src="/assets/svg/spinner.svg" class="working" /> Saving
-				</span>
+		<input class="large" name="name" placeholder="Playlist name" ng-model="playlistNewName" />
+
+		<span class="actions">
+
+			<span class="button toggle-public" ng-click="togglePublic()">
+				<i class="fa fa-lock fa-fw" ng-show="!playlistNewPublic"></i>
+				<i class="fa fa-unlock fa-fw" ng-show="playlistNewPublic"></i>
 			</span>
-		</div>
-		
-		<div class="field">
-			<span ng-click="togglePublic()" ng-class="{on: playlistNewPublic}" class="switch-button">
-				<span class="switch animate"></span>
+
+			<span class="button save productive" ng-click="savePlaylist()" ng-hide="saving">
+				<i class="fa fa-check"></i>
 			</span>
-			<span class="inline-label">
-				<span ng-show="playlistNewPublic">Public</span>
-				<span ng-hide="playlistNewPublic">Private</span>
+			
+			<span ng-show="saving" class="saving">
+				<img src="/assets/svg/spinner.svg" class="working" />
 			</span>
-		</div>
 		
 	</form>
 	

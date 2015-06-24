@@ -75,7 +75,7 @@
 }
 
 .dialog .switch-button {
-	background: rgba(255,255,255,0.1);
+	background: rgba(255,255,255,0.2);
 }
 
 .dialog .actions {
@@ -108,6 +108,18 @@
     padding-left: 10px;
 }
 
+.edit-playlist-dialog .actions .saving {
+	position: absolute;
+}
+
+.edit-playlist-dialog .actions .toggle-public {
+	margin-left: -50px;
+	margin-right: 10px;
+}
+
+.edit-playlist-dialog .actions .toggle-public .fa-unlock {
+	color: #444444;
+}
 
 
 
