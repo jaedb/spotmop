@@ -68,7 +68,8 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
- * All the different types of dialogs live below
+ * Dialog: Edit playlist
+ * Allows user to rename and change public state for a playlist
  **/
 
 .directive('editplaylistdialog', function(){
@@ -79,19 +80,27 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: '/app/services/dialog/editplaylist.template.html',
 		controller: function( $scope, $element, DialogService, SpotifyService ){
-            $scope.newPlaylistName = $scope.$parent.playlist.name;
+            $scope.playlistNewName = $scope.$parent.playlist.name;
+            $scope.playlistNewPublic = $scope.$parent.playlist.public;
             $scope.saving = false;
+			$scope.togglePublic = function(){
+				if( $scope.playlistNewPublic )
+					$scope.playlistNewPublic = false;
+				else
+					$scope.playlistNewPublic = true;
+			}
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
                 $scope.saving = true;
                 
                 // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.newPlaylistName } )
+                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
                     .success( function(response){
                     
                         // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.newPlaylistName;
+                        $scope.$parent.playlist.name = $scope.playlistNewName;
+                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
                     
                         // fetch the new playlists (for sidebar)
                         $scope.$parent.updatePlaylists();

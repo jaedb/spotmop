@@ -31,7 +31,6 @@
 	bottom: 15%;
 	left: 20%;
 	color: #FFFFFF;
-	font-size: 16px;
 	z-index: 12;
 }
 
@@ -73,6 +72,10 @@
 	padding: 10px 0;
 	font-size: 30px;
 	width: 50%;
+}
+
+.dialog .switch-button {
+	background: rgba(255,255,255,0.1);
 }
 
 .dialog .actions {
