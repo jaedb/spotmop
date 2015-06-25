@@ -955,6 +955,11 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	min-width: 100%;
 }
 
+.search-results-section.playlists .square-panel .info > .name {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
 .search-results-section.tracks {
 	padding-top: 30px;
 }
