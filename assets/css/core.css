@@ -384,15 +384,24 @@ h1 .flag {
     margin-top: 13px;
 }
 
-.flag.blue,
-.flag.clickable:hover{
+.flag.blue{
 	background: #1cf4c4;
 	color: #FFFFFF;
+}
+
+.flag.clickable:hover{
+	background: rgba(0,0,0,0.65);
+	color: rgba(255,255,255,0.85);
 }
 
 .flag.dark {
 	background: rgba(0,0,0,0.4);
 	color: rgba(255,255,255,0.5);
+}
+
+.flag.black {
+	background: rgba(0,0,0,0.55);
+	color: rgba(255,255,255,0.8);
 }
 
 .flag.red {
@@ -1008,6 +1017,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
     background-size: cover;
     background-position: 50% 50%;
     background-repeat: no-repeat;
+	background-color: #CCCCCC;
 }
 
 

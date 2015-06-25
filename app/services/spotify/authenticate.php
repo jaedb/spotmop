@@ -111,11 +111,11 @@ if( isset($_GET['code']) ){
 	?>
 		<script type="text/javascript">
 			var response = <?php echo getToken($_GET['code'], $url ); ?>;
-			var Spotify = JSON.parse( localStorage.getItem('ngStorage-Spotify') );
+			var Spotify = JSON.parse( localStorage.getItem('ngStorage-spotify') );
 			Spotify.AuthorizationCode = "<?php echo $_GET['code'] ?>";
 			Spotify.AccessToken = response.access_token;
 			Spotify.RefreshToken = response.refresh_token;
-			localStorage.setItem('ngStorage-Spotify', JSON.stringify( Spotify ));
+			localStorage.setItem('ngStorage-spotify', JSON.stringify( Spotify ));
             window.close();
 		</script>
 	<?php

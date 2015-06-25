@@ -10,7 +10,7 @@
                 <span ng-bind="playlist.name"></span>
 				
 				<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
-					<span class="flag clickable destructive"
+					<span class="flag clickable destructive animate"
 						  ng-class="{red: hovering, dark: !hovering}"
 						  ng-show="following"
 						  ng-click="unfollowPlaylist()"
@@ -19,7 +19,7 @@
 						<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
 						<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
 					</span>
-					<span class="flag follow-toggle clickable dark"
+					<span class="flag follow-toggle clickable dark animate"
 						  ng-show="!following"
 						  ng-click="followPlaylist()">
 						<span><i class="fa fa-star"></i> Follow</span>
@@ -28,20 +28,20 @@
 				
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
 					<span ng-show="following">
-						<span class="flag clickable dark"
+						<span class="flag clickable dark animate"
 							  ng-click="editPlaylist( $scope )">
 							Edit
 						</span>
-						<confirmation-button class="flag clickable destructive dark"
+						<confirmation-button class="flag clickable destructive dark animate"
 							default-text="Delete playlist"
 							confirmation-text="Are you sure?"
 							on-confirmation="unfollowPlaylist">
 						</confirmation-button>
 					</span>
 					<span ng-show="!following">
-						<span class="flag clickable dark"
+						<span class="flag clickable dark animate"
 							  ng-click="recoverPlaylist()">
-							Recover playlist
+							<i class="fa fa-undo"></i> Recover playlist
 						</span>						
 					</span>
 				</span>

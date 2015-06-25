@@ -68,6 +68,55 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
+ * Dialog: Create playlist
+ * Allows user to create a playlist
+ **/
+
+.directive('createplaylistdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: '/app/services/dialog/createplaylist.template.html',
+		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+            $scope.saving = false;
+			$scope.togglePublic = function(){
+				if( $scope.playlistPublic )
+					$scope.playlistPublic = false;
+				else
+					$scope.playlistPublic = true;
+			}
+            $scope.savePlaylist = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+                
+                // perform the creation
+                SpotifyService.createPlaylist(
+						$scope.$parent.spotifyUser.id,
+						{ name: $scope.playlistName, public: $scope.playlistPublic } 
+					)
+                    .success( function(response){
+                    
+                        // save new playlist to our playlist array
+                        $scope.$parent.playlists.unshift( response );
+                    
+                        // fetch the new playlists (for sidebar)
+                        $scope.$parent.updatePlaylists();
+                    
+                        // and finally remove this dialog
+                        DialogService.remove();
+    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+    					$rootScope.$broadcast('spotmop:pageUpdated');
+                    });
+            }
+		}
+	};
+})
+
+
+/**
  * Dialog: Edit playlist
  * Allows user to rename and change public state for a playlist
  **/
@@ -79,7 +128,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: '/app/services/dialog/editplaylist.template.html',
-		controller: function( $scope, $element, DialogService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public;
             $scope.saving = false;
@@ -107,6 +156,7 @@ angular.module('spotmop.services.dialog', [])
                     
                         // and finally remove this dialog
                         DialogService.remove();
+    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
                     });
             }
 		}

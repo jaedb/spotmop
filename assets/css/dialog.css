@@ -109,7 +109,8 @@
 }
 
 .edit-playlist-dialog .actions .saving {
-	position: absolute;
+	float: right;
+	margin-top: -4px;
 }
 
 .edit-playlist-dialog .actions .toggle-public {
