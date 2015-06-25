@@ -56,7 +56,8 @@ angular.module('spotmop', [
 	return {
 		restrict: 'E',
 		scope: {
-			images: '='
+			images: '=',
+			size: '='
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
@@ -75,18 +76,38 @@ angular.module('spotmop', [
 				// loop all the images
 				for( var i = 0; i < images.length; i++){
 					var image = images[i];
+					
+					// small thumbnails (ie search results)
+					if( $scope.size == 'small' ){
+						
+						// this is our preferred size
+						if( image.height >= 100 && image.height <= 200 ){
+							return image;
 
-					// this is our preferred size
-					if( image.height >= 200 && image.height <= 300 ){
-						return image;
+						// let's take it a notch up then
+						}else if( image.height > 200 && image.height <= 300 ){
+							return image;
 
-					// let's take it a notch up then
-					}else if( image.height > 300 && image.height <= 500 ){
-						return image;
+						// nope? let's take it the next notch up
+						}else if( image.height > 300 && image.height < 400 ){
+							return image;
+						}
+					
+					// standard thumbnails (ie playlists, full related artists, etc)
+					}else{
+						
+						// this is our preferred size
+						if( image.height >= 200 && image.height <= 300 ){
+							return image;
 
-					// nope? let's take it a notch down then
-					}else if( image.height >= 150 && image.height < 200 ){
-						return image;
+						// let's take it a notch up then
+						}else if( image.height > 300 && image.height <= 500 ){
+							return image;
+
+						// nope? let's take it a notch down then
+						}else if( image.height >= 150 && image.height < 200 ){
+							return image;
+						}						
 					}
 				};
 

@@ -13,7 +13,7 @@
 			<div class="item-container" ng-repeat="artist in artists.items">
 				<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
 					<div class="image-container">
-						<thumbnail images="artist.images"></thumbnail>
+						<thumbnail images="artist.images" size="small"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="artist.name"></div>
@@ -30,7 +30,7 @@
 			<div class="item-container" ng-repeat="album in albums.items">
 				<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 					<div class="image-container">
-						<thumbnail images="album.images"></thumbnail>
+						<thumbnail images="album.images" size="small"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="album.name"></div>
@@ -47,7 +47,7 @@
 			<div class="item-container" ng-repeat="playlist in playlists.items">
 				<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 					<div class="image-container">
-						<thumbnail images="playlist.images"></thumbnail>
+						<thumbnail images="playlist.images" size="small"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="playlist.name"></div>
