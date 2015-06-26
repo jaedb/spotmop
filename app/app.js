@@ -8,6 +8,7 @@ angular.module('spotmop', [
 	
 	'ngResource',
 	'ngStorage',
+	'ngTouch',
 	'ui.router',
 	
 	'spotmop.player',
@@ -228,23 +229,13 @@ angular.module('spotmop', [
  * Global controller
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
-	
-    angular.element(window).resize(function () {
-        $scope.resquarePanels();
-    });
 
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
+	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
 		window.location.reload();
-	}
-	// make all the square panels really square
-	$scope.resquarePanels = function(){
-		$(document).find('.square-panel').each( function(index, value){
-			var realWidth = value.getBoundingClientRect().width;
-			$(value).find('.image-container').css('height', realWidth +'px');
-		});
 	}
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
@@ -283,6 +274,63 @@ angular.module('spotmop', [
 			});	
 	}
     
+	/**
+	 * Responsive
+	 **/
+	
+    angular.element(window).resize(function () {
+        $scope.resquarePanels();
+		$scope.checkWindowWidth();
+    });
+	
+	// make all the square panels really square
+	$scope.resquarePanels = function(){
+		$(document).find('.square-panel').each( function(index, value){
+			var realWidth = value.getBoundingClientRect().width;
+			$(value).find('.image-container').css('height', realWidth +'px');
+		});
+	}
+	
+	// check window width (for mobile-only functionality)
+	$scope.checkWindowWidth = function(){
+		if( $(window).width() <= 650 )
+			$scope.menuCollapsable = true;
+		else
+			$scope.menuCollapsable = false;
+	}
+	
+	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
+		$scope.hideMenu();
+	});
+	
+	// check windows on load
+	$scope.checkWindowWidth();
+	
+	// show menu (this is triggered by swipe event)
+	$scope.showMenu = function(){
+		if( $scope.menuCollapsable ){
+			$(document).find('#sidebar').animate({
+				left: '0px'
+			}, 100);
+			$(document).find('#body').animate({
+				left: '50%'
+			}, 100);
+		}
+	}
+	
+	// hide menu (typically triggered by swipe event)
+	$scope.hideMenu = function(){
+		if( $scope.menuCollapsable ){
+			$(document).find('#sidebar').animate({
+				left: '-50%'
+			}, 100);
+			$(document).find('#body').animate({
+				left: '0px'
+			}, 100);
+		}
+	}
+	
+	
 	/**
 	 * Search
 	 **/

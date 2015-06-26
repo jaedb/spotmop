@@ -1,0 +1,83 @@
+/**
+ * Responsive layouts
+ * 
+ * Spotmop
+ **/
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+.mobile-only {
+	display: none;
+}
+
+
+
+/* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
+/* ================================================================================================ */
+
+@media( max-width: 650px ){
+	
+	.mobile-hide {
+		display: none;
+	}
+	
+	/**
+	 * Body elements
+	 **/
+	
+	#body {
+		bottom: 56px;
+		left: 0;
+		width: 100%;
+	}
+	
+	#sidebar {
+		width: 50%;
+		left: -50%;
+		bottom: 56px;
+	}
+	
+	/**
+	 * Player bar
+	 **/
+	
+	#player {
+		height: 56px;
+	}
+	
+	#player .button {
+		margin: 0 3px;
+	}
+	
+	#player > .slim-player.inner {
+		padding: 0;
+		top: 0;
+	}
+	
+	#player .track-info {
+		padding: 20px 40px 0;
+	}
+	
+	#player .playback {
+		position: absolute;
+		top: 21px;
+		width: auto;
+		left: 0px;
+	}
+}
+
+
+
+/* =================================================================== PORTRAIT / TINY SCREENS ==== */
+/* ================================================================================================ */
+
+@media( max-width: 300px ){
+	
+	.mobile-hide {
+		display: none;
+	}
+	
+}

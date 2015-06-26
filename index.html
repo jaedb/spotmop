@@ -9,6 +9,7 @@
 	<script type="text/javascript" src="/vendor/angular-ui-router.min.js"></script>
 	<script type="text/javascript" src="/vendor/angular-resource.js"></script>
 	<script type="text/javascript" src="/vendor/angular-storage.min.js"></script>
+	<script type="text/javascript" src="/vendor/angular-touch.min.js"></script>
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
 	<script type="text/javascript" src="/vendor/background-check.min.js"></script>
 	
@@ -40,21 +41,20 @@
 	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/forms.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/dialog.css" />
-
+	<link rel="stylesheet" type="text/css" href="/assets/css/responsive.css" />
+	
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scaleable=no" name="viewport" />
+	
 	<link rel="shortcut icon" type="image/ico" href="/assets/favicon.ico" />
 	<link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico" />
 	<link rel="shortcut-icon" href="/assetes/favicon.ico" />
 	
 </head>
-<body ng-app="spotmop" ng-controller="ApplicationController">
+<body ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()">
         
     <div id="notifications"></div>
 
-    <div id="sidebar">
-        <div class="inner">			
-            <ng-include src="'/app/common/sidebar.template.html'"></ng-include>
-        </div>
-    </div>
+    <ng-include src="'/app/common/sidebar.template.html'"></ng-include>
 
     <div id="body" class="body">
         <div class="inner">

@@ -56,19 +56,19 @@
 					<i class="fa fa-play" ng-show="!playing"></i>
 					<i class="fa fa-pause" ng-show="playing"></i>
 				</span>
-				<span class="button stop" ng-click="stop()">
+				<span class="button stop mobile-hide" ng-click="stop()">
 					<i class="fa fa-stop"></i>
 				</span>
 				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 			</div>
-			<div class="slider" ng-click="seek($event)">
+			<div class="slider mobile-hide" ng-click="seek($event)">
 				<div class="track">
 					<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
 				</div>
 			</div>
 		</div>
 
-		<div class="volume">
+		<div class="volume mobile-hide">
 			<div class="controls">
 				<span class="button random" ng-click="toggleRandom()" ng-class="{active: isRandom}">
 					<i class="fa fa-random"></i>
