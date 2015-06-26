@@ -1,7 +1,8 @@
 /**
  * Responsive layouts
  * 
- * Spotmop
+ * Remember if you update the pixel thresholds here, you need to update them in app.js too
+ * This is because app.js handles the interactivity of responsive elements (ie sliding nav, etc)
  **/
 
 
@@ -12,13 +13,17 @@
 .mobile-only {
 	display: none;
 }
+	
+.mobile-hide {
+	display: none;
+}
 
 
 
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
 /* ================================================================================================ */
 
-@media( max-width: 650px ){
+@media( max-width: 700px ){
 	
 	.mobile-hide {
 		display: none;
@@ -88,6 +93,14 @@
 	.field input {
 		width: 98%;
 	}
+	
+	/**
+	 * Square panels
+	 **/
+	.square-panel {
+		width: 21%;
+		margin-bottom: 5%;
+	}
 }
 
 
@@ -95,10 +108,18 @@
 /* =================================================================== PORTRAIT / TINY SCREENS ==== */
 /* ================================================================================================ */
 
-@media( max-width: 300px ){
+@media( max-width: 450px ){
 	
 	.mobile-hide {
 		display: none;
+	}
+	
+	/**
+	 * Square panels
+	 **/
+	.square-panel {
+		width: 29%;
+		margin-bottom: 10%;
 	}
 	
 }

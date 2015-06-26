@@ -1,4 +1,4 @@
-<div class="col w70">
+<div class="col" ng-class="{'w70': !mediumScreen(), 'w100': mediumScreen()}">
 
 	<h4 class="section-title">Top tracks</h4>
 
@@ -19,7 +19,7 @@
 	</div>
 </div>
 
-<div class="col w25 pull-right">
+<div class="col w25 pull-right" ng-hide="mediumScreen()">
 
 	<h4 class="section-title">Related Artists</h4>
 

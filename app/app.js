@@ -278,9 +278,32 @@ angular.module('spotmop', [
 	 * Responsive
 	 **/
 	
+	$scope.windowWidth = $(window).width();
+	$scope.mediumScreen = function(){
+		if( $scope.windowWidth <= 700 )
+			return true;
+		return false;
+	}
+	$scope.smallScreen = function(){
+		if( $scope.windowWidth <= 450 )
+			return true;
+		return false;
+	}
+	
     angular.element(window).resize(function () {
         $scope.resquarePanels();
-		$scope.checkWindowWidth();
+		$scope.windowWidth = $(window).width();
+		
+		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
+		if( $scope.mediumScreen() || $scope.smallScreen() ){
+			$(document).find('#sidebar').css({ left: '-50%', width: '50%' });
+			$(document).find('#body').css({ left: '0px', width: '100%' });
+			
+		// full-screen, so reset any animations/sliding/offsets
+		}else{
+			$(document).find('#sidebar').attr('style','');
+			$(document).find('#body').attr('style','')
+		}
     });
 	
 	// make all the square panels really square
@@ -291,24 +314,13 @@ angular.module('spotmop', [
 		});
 	}
 	
-	// check window width (for mobile-only functionality)
-	$scope.checkWindowWidth = function(){
-		if( $(window).width() <= 650 )
-			$scope.menuCollapsable = true;
-		else
-			$scope.menuCollapsable = false;
-	}
-	
 	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
 		$scope.hideMenu();
 	});
 	
-	// check windows on load
-	$scope.checkWindowWidth();
-	
 	// show menu (this is triggered by swipe event)
 	$scope.showMenu = function(){
-		if( $scope.menuCollapsable ){
+		if( $scope.mediumScreen() || $scope.smallScreen() ){
 			$(document).find('#sidebar').animate({
 				left: '0px'
 			}, 100);
@@ -320,7 +332,7 @@ angular.module('spotmop', [
 	
 	// hide menu (typically triggered by swipe event)
 	$scope.hideMenu = function(){
-		if( $scope.menuCollapsable ){
+		if( $scope.mediumScreen() || $scope.smallScreen() ){
 			$(document).find('#sidebar').animate({
 				left: '-50%'
 			}, 100);

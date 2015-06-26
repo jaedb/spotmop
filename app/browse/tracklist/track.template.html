@@ -1,4 +1,5 @@
-<div class="col w30 title" ng-bind="track.name"></div>
+<div class="col w30 title mobile-hide" ng-bind="track.name"></div>
+<div class="col w35 title mobile-show" ng-bind="track.name"></div>
 <div class="col w30 artist">
 	<span ng-repeat="artist in track.artists">
 		<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
@@ -9,7 +10,7 @@
 	<span ng-show="track.duration_ms">{{ track.duration_ms | formatMilliseconds }}</span>
 	<span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
 </div>
-<div class="col w5 popularity">
+<div class="col w5 popularity mobile-hide">
 	<span class="bar-track">
 		<span class="bar" style="width: {{ track.popularity }}%;"></span>
 	</span>
