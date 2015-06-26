@@ -67,6 +67,27 @@
 		width: auto;
 		left: 0px;
 	}
+	
+	/**
+	 * Forms
+	 **/
+	
+	.field > .label {
+		float: none;
+		width: auto;
+		text-align: left;
+		padding: 0 0 5px;
+		font-weight: bold;
+	}
+	
+	.field > .input {
+		float: none;
+		width: auto;
+	}
+	
+	.field input {
+		width: 98%;
+	}
 }
 
 
