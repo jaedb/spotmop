@@ -54,10 +54,10 @@ angular.module('spotmop.browse.playlist', [])
     // figure out the total time for all tracks
     $scope.totalTime = function(){
         var totalTime = 0;
-        if( $scope.tracks.length > 0 ){
+        if( typeof($scope.tracks.items) !== 'undefined' ){
             $.each( $scope.tracks.items, function( key, track ){
                 totalTime += track.track.duration_ms;
-            });	
+            });
         }
         return Math.round(totalTime / 100000);   
     }
