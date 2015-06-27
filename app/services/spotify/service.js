@@ -120,6 +120,19 @@ angular.module('spotmop.services.spotify', [])
 		},
         
         /**
+         * Generic calls
+         */
+        getUrl: function( $url ){
+			return $http({
+				method: 'GET',
+				url: $url,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+				}
+			});
+        },
+        
+        /**
          * Users
          **/
         
