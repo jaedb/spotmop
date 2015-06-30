@@ -681,6 +681,26 @@ h1 .flag {
     user-select: none;
 }
 
+.track .title,
+.track .artist,
+.track .album,
+.track .duration,
+.track .popularity {
+	float: left;
+	min-height: 1px;
+}
+
+.track .title {				width: 30%; }
+.track .artist {			width: 30%; }
+.track .album {				width: 30%; }
+.track .duration {			width: 5%; }
+.track .popularity {		width: 5%; }
+
+.track.no-album .title {			width: 45%; }
+.track.no-album .artist {			width: 45%; }
+.track.no-album .duration {			width: 5%; }
+.track.no-album .popularity {		width: 5%; }
+
 body:not(.dragging) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
 }
@@ -727,7 +747,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
  **/
 
 .album-intro {
-	padding-bottom: 20px;
+	padding-right: 20px;
 }
 
 .album-intro h1 {
@@ -735,27 +755,33 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	padding-bottom: 0;
 }
 
-.album-intro .image-container {
-	float: left;
-	padding-right: 20px;
-	position: relative;
+.album-intro .square-panel {
+	width: 100%;
+	float: none;
+	margin: 0 0 20px 0;
 }
 
 .album-intro .image {
-	width: 250px;
-	height: 250px;
 	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 50%;
+	opacity: 1 !important;
 }
 
 .album-intro .info-text {
-	padding-top: 15px;
+	color: #000000;
+	text-transform: none;
+	line-height: 2em;
+}
+
+.album-intro .info-text .label {
+	width: 35%;
+	float: left;
 }
 
 .album-intro .bar-track {
 	vertical-align: top;
-	margin-top: 5px;
+	margin-top: 10px;
 }
 
  

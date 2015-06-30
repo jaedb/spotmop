@@ -11,16 +11,7 @@ angular.module('spotmop.browse.tracklist', [
 		scope: {
 			track: '='
 		},
-		templateUrl: '/app/browse/tracklist/track.template.html',
-		link: function( $scope, element, attrs ){
-			
-			/*
-			// not required because we're bypassing angular by using rude jQuery to handle selection events
-			$scope.$on('spotmop:deleteKeyReleased', function(){
-				if( $scope.
-			});
-			*/
-		}
+		templateUrl: '/app/browse/tracklist/track.template.html'
 	}
 })
 
@@ -33,13 +24,6 @@ angular.module('spotmop.browse.tracklist', [
 		},
 		templateUrl: '/app/browse/tracklist/tltrack.template.html',
 		link: function( $scope, element, attrs ){
-			
-			/*
-			// not required because we're bypassing angular by using rude jQuery to handle selection events
-			$scope.$on('spotmop:deleteKeyReleased', function(){
-				console.log('dete');
-			});
-			*/
 			
 			// when track changed, let's comapre this track.tlid with the new playing track tlid
 			// TODO: Figure out how to trigger this on load of the queue (because it currently loads without running this)

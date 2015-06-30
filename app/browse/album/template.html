@@ -1,42 +1,62 @@
 <div>
 	
-	<div class="album-intro">
-		<div class="image-container" ng-repeat="image in album.images | filter:image.height=300 | limitTo:1">
-			<div class="image animate" style="background-image: url({{ image.url }});"></div>
-		</div>
-		<h1 ng-bind="album.name"></h1>
-		<h2>
-			<span ng-repeat="artist in album.artists">
-				<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-			</span>
-		</h2>
-		<div class="info-text">
-			<span ng-bind="album.release_date | date : longDate"></span>
-			&nbsp;|&nbsp; <span ng-bind="album.tracks.items.length"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
-			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minutes
-			&nbsp;|&nbsp;
-			<span class="bar-track">
-				<span class="bar" style="width: {{ album.popularity }}%;"></span>
-			</span>
-		</div>
-		<div class="clear-both"></div>
-	</div>
-	
-	
-	<div class="album-items tracklist" ng-controller="TracklistController" >
-	
-		<track
-		   ng-repeat="track in tracks.items"
-		   track="track"
-		   class="track"
-		   ng-click="trackClicked( $event )"
-		   ng-dblclick="trackDoubleClicked( $event )"
-		   data-uri="{{ track.uri }}"></track>
-
-		<div ng-hide="tracks.items.length" class="no-items">
-			No items
-		</div>
+	<div class="col w25">		
+		<div class="album-intro">
 		
+			<div class="square-panel">
+				<div class="image-container" ng-repeat="image in album.images | filter:image.height=300 | limitTo:1">
+					<div class="image animate" style="background-image: url({{ image.url }});"></div>
+				</div>
+			</div>
+			
+			<h2>
+				<span ng-repeat="artist in album.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+				</span>
+			</h2>
+			<div class="info-text">
+				<div>
+					<span class="label">Released:</span><span ng-bind="album.release_date | date : longDate"></span>
+				</div>
+				<div>
+					<span class="label">Length:</span>
+					<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
+					(<span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes)
+				</div>
+				<div>
+					<span class="label">Popularity:</span>
+					<span class="bar-track">
+						<span class="bar" style="width: {{ album.popularity }}%;"></span>
+					</span>
+				</div>
+			</div>
+
+		</div>
 	</div>
+	
+	<div class="col w75">
+		
+		<h1 ng-bind="album.name"></h1>
+	
+		<div class="album-items tracklist" ng-controller="TracklistController" >
+
+			<track
+				ng-repeat="track in tracks.items"
+				track="track"
+				trackContext="album"
+				class="track no-album"
+				ng-click="trackClicked( $event )"
+				ng-dblclick="trackDoubleClicked( $event )"
+				data-uri="{{ track.uri }}"></track>
+
+			<div ng-hide="tracks.items.length" class="no-items">
+				No items
+			</div>
+
+		</div>
+
+	</div>
+	
+	<div class="clear-both"></div>
 	
 </div>

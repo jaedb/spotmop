@@ -1,18 +1,24 @@
-<div class="col w30 title mobile-hide" ng-bind="track.name"></div>
-<div class="col w35 title mobile-show" ng-bind="track.name"></div>
-<div class="col w30 artist">
+<div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
+
+<div class="artist" ng-class="{ empty: track.artists.length < 1 }">
 	<span ng-repeat="artist in track.artists">
 		<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 	</span>
 </div>
-<div class="col w30 album"><a href="/browse/album/{{ track.album.uri }}" ng-bind="track.album.name"></a></div>
-<div class="col w5 duration">
+
+<div class="album" ng-class="{ empty: !track.album.name }" ng-hide="!track.album.name">
+	<a href="/browse/album/{{ track.album.uri }}" ng-bind="track.album.name"></a>
+</div>
+
+<div class="duration">
 	<span ng-show="track.duration_ms">{{ track.duration_ms | formatMilliseconds }}</span>
 	<span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
 </div>
-<div class="col w5 popularity mobile-hide">
+
+<div class="popularity" ng-class="{ empty: !track.popularity }">
 	<span class="bar-track">
 		<span class="bar" style="width: {{ track.popularity }}%;"></span>
 	</span>
 </div>
+
 <div class="clear-both"></div>
