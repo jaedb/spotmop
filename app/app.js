@@ -278,7 +278,8 @@ angular.module('spotmop', [
 	 * Responsive
 	 **/
 	
-	$scope.windowWidth = $(window).width();
+	$scope.windowWidth = $(document).width();
+	$scope.windowHeight = $(document).height();
 	$scope.mediumScreen = function(){
 		if( $scope.windowWidth <= 800 )
 			return true;
@@ -289,10 +290,16 @@ angular.module('spotmop', [
 			return true;
 		return false;
 	}
+	$scope.shallowScreen = function(){
+		if( $scope.windowHeight <= 100 )
+			return true;
+		return false;
+	}
 	
     angular.element(window).resize(function () {
         $scope.resquarePanels();
-		$scope.windowWidth = $(window).width();
+		$scope.windowWidth = $(document).width();
+		$scope.windowHeight = $(document).height();
 		
 		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
