@@ -291,7 +291,12 @@ angular.module('spotmop', [
 		return false;
 	}
 	$scope.shallowScreen = function(){
-		if( $scope.windowHeight <= 100 )
+		if( $scope.windowHeight <= 500 )
+			return true;
+		return false;
+	}
+	$scope.tallScreen = function(){
+		if( $scope.windowHeight >= 800 )
 			return true;
 		return false;
 	}
