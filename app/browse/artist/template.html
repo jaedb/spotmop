@@ -1,6 +1,6 @@
 <div ng-controller="ArtistController">
 
-	<div class="artist-intro" ng-class="{ tall: tallScreen(), shallow: shallowScreen() }">
+	<div class="artist-intro">
 		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
             <div class="image" style="background-image: url('/vendor/resource-proxy.php?url={{ image.url }}');"></div>
 		</div>
