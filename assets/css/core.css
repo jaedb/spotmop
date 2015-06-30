@@ -731,12 +731,8 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 }
 
 .album-intro h1 {
-	padding-top: 28px;
+	padding-top: 68px;
 	padding-bottom: 0;
-}
-
-.album-intro .info-text {
-	padding-top: 15px;
 }
 
 .album-intro .image-container {
@@ -746,11 +742,15 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 }
 
 .album-intro .image {
-	width: 150px;
-	height: 150px;
+	width: 250px;
+	height: 250px;
 	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 50%;
+}
+
+.album-intro .info-text {
+	padding-top: 15px;
 }
 
 .album-intro .bar-track {
@@ -812,11 +812,8 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 .artist-intro {
 	position: relative;
 	margin: -20px -20px 30px -20px;
-	padding: 300px 20px 0;
+	padding: 500px 20px 0;
 }
-
-.artist-intro.tall {		padding-top: 500px; }
-.artist-intro.shallow {		padding-top: 150px; }
 
 .artist-intro h1 {
 	padding-bottom: 0;
