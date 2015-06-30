@@ -1,4 +1,4 @@
-<div id="player" ng-class="{expanded: fullscreenPlayerExpanded}">
+<div id="player">
 
 	<div class="background-container animate" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1">
 		<div class="image" style="background-image: url({{ image.url }})"></div>
@@ -9,7 +9,7 @@
 		<i class="fa fa-chevron-up" ng-show="!fullscreenPlayerExpanded"></i>
 	</span>
 	
-	<div class="fullscreen-player inner" ng-show="fullscreenPlayerExpanded">
+	<div class="fullscreen-player inner">
 		
 		<div class="artwork">
 			<div class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" style="background-image: url({{ image.url }})"></div>

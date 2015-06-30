@@ -1179,6 +1179,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 }
 
 #player .fullscreen-player {
+	display: none;
 	position: absolute;
 	top: 50%;
 	left: 0;

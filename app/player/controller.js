@@ -20,7 +20,11 @@ angular.module('spotmop.player', [
 			return ( $scope.playPosition / $scope.currentTlTrack.track.length * 100 ).toFixed(2);
 	};
 	
-	// core controls
+	
+	/**
+	 * Core player controls
+	 **/
+	
 	$scope.playPause = function(){
         if( $scope.playing )
             MopidyService.pause();
@@ -67,6 +71,12 @@ angular.module('spotmop.player', [
 		$scope.volume = percent;
 		MopidyService.setVolume( percent );
 	};
+	
+	
+	/**
+	 * Play order toggle switches
+	 **/
+	
     $scope.toggleRepeat = function(){
         if( $scope.isRepeat )
             MopidyService.setRepeat( false ).then( function(response){ $scope.isRepeat = false; } );
@@ -85,13 +95,44 @@ angular.module('spotmop.player', [
         else
             MopidyService.setMute( true ).then( function(response){ $scope.isMute = true; } );
     };
+	
+	
+	/**
+	 * Fullscreen player panel
+	 **/
+	
 	$scope.fullscreenPlayerExpanded = false;
+	
+	// when we trigger a expand/collapse event
 	$scope.toggleFullscreenPlayer = function(){
-		if( $scope.fullscreenPlayerExpanded )
+		
+		var player = $(document).find('#player');
+		
+		// collapse
+		if( $scope.fullscreenPlayerExpanded ){
+			
+			player.animate({
+				height: '90px'	// TODO: change this if we're in a mobile layout!!
+			},300);
+			player.find('.fullscreen-player').fadeOut('fast');
+			
 			$scope.fullscreenPlayerExpanded = false;
-		else
+		
+		// expand
+		}else{
+			player.animate({
+				height: $(document).height()
+			},200);
+			player.find('.fullscreen-player').fadeIn();
+			
 			$scope.fullscreenPlayerExpanded = true;
+		}
 	};
+	
+	
+	/** 
+	 * When all systems are go
+	 **/
 	
 	$scope.$on('mopidy:state:online', function(){
 		updateCurrentTrack();
