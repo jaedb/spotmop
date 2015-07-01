@@ -20,9 +20,10 @@ angular.module('spotmop', [
 	'spotmop.services.dialog',
 	
 	'spotmop.queue',
-	'spotmop.settings',
+	'spotmop.library',
 	'spotmop.playlists',
 	'spotmop.search',
+	'spotmop.settings',
 	
 	'spotmop.browse',
 	'spotmop.browse.artist',
@@ -388,6 +389,12 @@ angular.module('spotmop', [
 					Link: '/discover/new'
 				}
 			]
+		},
+		{
+			Title: 'My Music',
+			Link: '/library',
+			Icon: 'folder-open',
+			Children: null
 		},
 		{
 			Title: 'Playlists',

@@ -51,7 +51,7 @@ angular.module('spotmop.services.spotify', [])
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.spotify.ClientID;
 		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify-authorization';
-		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read';
+		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify';
 		newURL += '&response_type=code&show_dialog=true';
 		
 		// open a new window to handle this authentication
@@ -184,6 +184,16 @@ angular.module('spotmop.services.spotify', [])
 			return $http({
 				method: 'GET',
 				url: urlBase+'tracks/'+trackid,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+				}
+			});
+		},
+		
+		getMyTracks: function( userid ){
+			return $http({
+				method: 'GET',
+				url: urlBase+'me/tracks/',
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}
