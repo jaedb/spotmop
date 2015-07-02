@@ -391,10 +391,12 @@ angular.module('spotmop', [
 			]
 		},
 		{
-			Title: 'My Music',
+			Title: 'Library',
 			Link: '/library',
-			Icon: 'folder-open',
-			Children: null
+			Icon: 'music',
+			Children: null,
+			Type: 'library',
+			Droppable: true
 		},
 		{
 			Title: 'Playlists',
@@ -645,6 +647,26 @@ angular.module('spotmop', [
                         $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
                     });
 					
+				// dropping on library
+				}else if( target.attr('data-type') === 'library' ){
+				    
+                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+				
+					// convert all our URIs to IDs
+					var trackids = new Array();
+					$.each( uris, function(key,value){
+						trackids.push( SpotifyService.getFromUri('trackid', value) );
+					});
+					
+					SpotifyService.addTracksToLibrary( trackids )
+                        .success( function(response){
+                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                        })
+                        .error( function(response){
+                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: 'Error!'});
+                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                        });	
+					
 				// dropping on playlist
 				}else if( target.attr('data-type') === 'playlist' ){
 				    
@@ -733,6 +755,9 @@ angular.module('spotmop', [
                 
                 if( target && target.attr('data-type') === 'queue' ){
                     dragTracer.addClass('good').html('Add to queue');
+                    target.addClass('dropping');
+                }else if( target && target.attr('data-type') === 'library' ){
+                    dragTracer.addClass('good').html('Add to library');
                     target.addClass('dropping');
                 }else if( target && target.attr('data-type') === 'playlist' ){
                     dragTracer.addClass('good').html('Add to playlist');

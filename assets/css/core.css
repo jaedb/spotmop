@@ -747,7 +747,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
  **/
 
 .album-intro {
-	padding-right: 20px;
+	padding-right: 40px;
 }
 
 .album-intro h1 {
@@ -772,6 +772,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	color: #000000;
 	text-transform: none;
 	line-height: 2em;
+	padding-top: 15px;
 }
 
 .album-intro .info-text .label {

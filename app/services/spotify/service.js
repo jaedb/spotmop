@@ -189,6 +189,12 @@ angular.module('spotmop.services.spotify', [])
 				}
 			});
 		},
+        
+	
+		/**
+		 * Library requests
+		 * These are mostly /me related
+		 **/   
 		
 		getMyTracks: function( userid ){
 			return $http({
@@ -198,12 +204,26 @@ angular.module('spotmop.services.spotify', [])
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}
 			});
+		}, 
+		
+		addTracksToLibrary: function( trackids ){			
+			return $http({
+				method: 'PUT',
+				url: urlBase+'me/tracks',
+				dataType: "json",
+				data: JSON.stringify( { ids: trackids } ),
+				contentType: "application/json; charset=utf-8",
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+				}
+			});
 		},
-        
+		
 	
 		/**
 		 * Playlist-oriented requests
-		 **/        
+		 **/     
+		
 		getPlaylists: function( userid ){
 			return $http({
 				method: 'GET',
