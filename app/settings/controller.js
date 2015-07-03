@@ -72,6 +72,14 @@ angular.module('spotmop.settings', [])
             });
         }
     };
+	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		MopidyService.getConsume().then( function( isConsume ){
+			SettingsService.setSetting('mopidyconsume',isConsume);
+		});
+	});
+	
     $scope.toggleEchonestEnabled = function(){
     	if( $scope.settings.echonestenabled ){
             EchonestService.stop();

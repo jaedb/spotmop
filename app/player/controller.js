@@ -96,6 +96,16 @@ angular.module('spotmop.player', [
             MopidyService.setMute( true ).then( function(response){ $scope.isMute = true; } );
     };
 	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		MopidyService.getRandom().then( function( isRandom ){
+			$scope.isRandom = isRandom;
+		});
+		MopidyService.getMute().then( function( isMute ){
+			$scope.isMute = isMute;
+		});
+	});
+	
 	
 	/**
 	 * Fullscreen player panel
