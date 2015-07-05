@@ -1,4 +1,4 @@
-<div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
+<div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }" ng-click="singleClick()"></div>
 
 <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
 	<span ng-repeat="artist in track.artists">

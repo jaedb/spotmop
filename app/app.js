@@ -337,6 +337,24 @@ angular.module('spotmop', [
 		}
 	}
 	
+	/**
+	 * Keyboard shortcuts
+	 * We bind these to $rootScope so they can be used in all directives and controllers
+	 **/
+
+	$rootScope.shiftKeyHeld = false;
+	$rootScope.ctrlKeyHeld = false;
+	$('body').bind('keydown',function(evt){
+		if( evt.which === 16 ){
+			$rootScope.shiftKeyHeld = true;
+		}else if( evt.which === 17 ){
+			$rootScope.ctrlKeyHeld = true;
+		}
+	}).bind('keyup',function(evt){
+		$rootScope.shiftKeyHeld = false;
+		$rootScope.ctrlKeyHeld = false;
+	});
+	
 	
 	/**
 	 * Search
