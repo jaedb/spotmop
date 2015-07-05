@@ -55,16 +55,16 @@ angular.module('spotmop.browse.tracklist', [
 	});
 	
 	// when we SINGLE click on a track
-	$scope.trackClicked = function( event ){
-		
+    $(document).on('click', 'body:not(.touchDevice) track', function(evt){
+        
 		// get the track row (even if we clicked a child element)
-		var target = $(event.target);
+		var target = $(evt.target);
 		if( !target.hasClass('track') )
 			target = target.closest('.track');
 		
 		// control click
 		if( ctrlKeyHeld ){
-			target.addClass('selected');		
+            target.toggleClass('selected');
 
 		// shift click
 		}else if( shiftKeyHeld ){
@@ -81,14 +81,14 @@ angular.module('spotmop.browse.tracklist', [
 			// unhighlight all siblings
 			target.siblings('.track').removeClass('selected');
 			target.addClass('selected');		
-		}
-	}
+		}        
+    });
 	
 	// when we DOUBLE click on a track
-	$scope.trackDoubleClicked = function( event ){
-		
+    $(document).on('doubletap dblclick', 'track', function(evt){
+        
 		// get the track row (even if we clicked a child element)
-		var target = $(event.target);
+		var target = $(evt.target);
 		if( !target.hasClass('track') )
 			target = target.closest('.track');
 		
@@ -134,7 +134,7 @@ angular.module('spotmop.browse.tracklist', [
 				});
 			});
 			
-		}
-	}
+		}   
+    });
 
 });

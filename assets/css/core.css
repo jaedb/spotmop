@@ -109,6 +109,10 @@ body.dragging *,
 /* ================================================================================================ */
 
 
+.main-menu {
+    margin-left: -20px;
+}
+
 .main-menu a {
 	padding: 3px 6px;
 	display: inline-block;
@@ -121,6 +125,16 @@ body.dragging *,
 	background: #EEEEEE;
 }
 
+.main-menu .menu-item-wrapper {
+    border-left: 3px solid transparent;
+    padding-left: 20px;
+    display: inline-block;
+}
+
+.main-menu .menu-item-wrapper.active {
+    border-color: #1cf4c4;
+}
+
 .main-menu a.dropping {
     background: #333333;
     color: #FFFFFF;
@@ -131,12 +145,12 @@ body.dragging *,
 	list-style-type: none;
 }
 
-.main-menu > li > a {
+.main-menu .menu-item-wrapper.top-level a {
 	font-size: 17px;
 	font-weight: 300;
 }
 
-.main-menu > li > a i {
+.main-menu .menu-item-wrapper.top-level a i {
 	font-size: 12px;
 	width: 1.5em;
 	vertical-align: top;
@@ -144,8 +158,11 @@ body.dragging *,
 }
 
 .main-menu li > ul {
-	padding-left: 23px;
 	padding-bottom: 5px;
+}
+
+.main-menu li > ul .menu-item-wrapper {
+    padding-left: 43px;
 }
 
 .main-menu li > ul a {
@@ -701,7 +718,7 @@ h1 .flag {
 .track.no-album .duration {			width: 5%; }
 .track.no-album .popularity {		width: 5%; }
 
-body:not(.dragging) .tracklist .track:not(.selected):hover {
+body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
 }
 
@@ -751,8 +768,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 }
 
 .album-intro h1 {
-	padding-top: 68px;
-	padding-bottom: 0;
+	padding-bottom: 5px;
 }
 
 .album-intro .square-panel {
@@ -793,7 +809,7 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 
 .playlist-intro {
 	position: relative;
-	margin: -20px -20px 20px -20px;
+	margin: -20px -20px 30px -20px;
 }
 
 .playlist-intro .image-container {
@@ -1233,6 +1249,9 @@ body:not(.dragging) .tracklist .track:not(.selected):hover {
 	height: 400px;
 	margin: 30px auto 0;
 	position: relative;
+    display: block;
+    border: 0 !important;
+    text-decoration: none;
 }
 
 #player .fullscreen-player .artwork > .image {

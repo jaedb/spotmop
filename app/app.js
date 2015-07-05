@@ -231,6 +231,7 @@ angular.module('spotmop', [
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
+    $scope.isTouchDevice = function(){ return !!('ontouchstart' in window); }
 	$scope.currentTlTrack = {};
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
@@ -238,37 +239,30 @@ angular.module('spotmop', [
 	$scope.reloadApp = function(){
 		window.location.reload();
 	}
+    $scope.playlistsMenu = [];
+    
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id )
 			.success(function( response ) {
-
-				var sanitizedPlaylists = [];
-
+            
+                var newPlaylistsMenu = [];
+            
 				// loop all of our playlists, and set up a menu item for each
 				$.each( response.items, function( key, playlist ){
 
 					// we only want to add playlists that this user owns
 					if( playlist.owner.id == $scope.spotifyUser.id ){
-						sanitizedPlaylists.push({
-							Title: playlist.name,
-							Link: '/browse/playlist/'+playlist.uri,
-							Type: 'playlist',
-							Playlist: playlist,
-							Droppable: true
-						});
+                        var playlistObject = playlist;
+                        playlistObject.link = '/browse/playlist/'+playlist.uri;
+                        playlistObject.link = '/browse/playlist/'+playlist.uri;
+						newPlaylistsMenu.push(playlistObject);
 					}
 				});
-				
-				// now loop the main menu to find our Playlist menu item
-				for(var i in $scope.mainMenu ){
-					if( $scope.mainMenu[i].Link == '/playlists'){
-						// inject our new menu children
-						$scope.mainMenu[i].Children = sanitizedPlaylists;
-						break; //Stop this loop, we found it!
-					}
-				}
+                
+                // now reset our current list with this new list
+                $scope.playlistsMenu = newPlaylistsMenu;
 			})
 			.error(function( error ){
 				$scope.status = 'Unable to load your playlists';
@@ -350,67 +344,21 @@ angular.module('spotmop', [
 	$scope.searchSubmit = function( query ){
 		$state.go( 'search', { query: query } );
 	};
+    
+    
+    /**
+     * Application navigation success event
+     * Gives us a chance to identify the new $state, and highlight in the nav
+     **/
+    $rootScope.$on('$stateChangeSuccess', function( event, toState, toParams ){
+        $(document).find('#sidebar .menu-item-wrapper').removeClass('active');
+        $(document).find('#sidebar a[href="'+window.location.pathname+'"]').parent().addClass('active');
+    });
 
-	
-	/**
-	 * Playlists sidebar menus
-	 **/
-	$scope.playlists = [];
-	var getPlaylists = function(){
-		return $scope.playlists;
-	};
-	var setPlaylists = function( playlists ){
-		$scope.playlists = playlists;
-	};
-	
-	
-	/**
-	 * Build main menu
-	 **/
-	$scope.mainMenu = [
-		{
-			Title: 'Queue',
-			Link: '/queue',
-			Icon: 'list',
-			Type: 'queue',
-			Droppable: true
-		},
-		{
-			Title: 'Discover',
-			Link: '/discover/browse',
-			Icon: 'star',
-			Children: [
-				{ 
-					Title: 'Featured playlists',
-					Link: '/discover/featured'
-				},
-				{ 
-					Title: 'New releases',
-					Link: '/discover/new'
-				}
-			]
-		},
-		{
-			Title: 'Library',
-			Link: '/library',
-			Icon: 'music',
-			Children: null,
-			Type: 'library',
-			Droppable: true
-		},
-		{
-			Title: 'Playlists',
-			Link: '/playlists',
-			Icon: 'folder-open',
-			Children: null
-		},
-		{
-			Title: 'Settings',
-			Link: '/settings',
-			Icon: 'cog'
-		}
-	];
-
+    
+    /**
+     * Mopidy music player is open for business
+     **/
 	$scope.$on('mopidy:state:online', function(){
 		$rootScope.mopidyOnline = true;		
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
@@ -425,6 +373,11 @@ angular.module('spotmop', [
 		$rootScope.mopidyOnline = false;
 	});
 	
+    
+    /** 
+     * User notifications
+     * Displays a user-friendly notification. Can be error, loader or tip
+     **/
 	$scope.$on('spotmop:notifyUser', function( event, data ){
         
         if( typeof(data.type) === 'undefined' )
@@ -460,9 +413,15 @@ angular.module('spotmop', [
 		},
 		0);
 	});
+    
+    
 		
-	// let's kickstart this beast
-	// we use $timeout to delay start until $digest is completed
+    /**
+     * All systems go!
+     *
+     * Without this sucker, we have no operational services. This is the ignition sequence.
+     * We use $timeout to delay start until $digest is completed
+     **/
 	$timeout(
 		function(){
 			MopidyService.start();
@@ -470,6 +429,8 @@ angular.module('spotmop', [
                 EchonestService.start();
 		},0
 	);
+    
+    
     
     // figure out who we are on Spotify
     // TODO: Hold back on this to make sure we're authorized

@@ -8,6 +8,8 @@
 					<div class="image animate" style="background-image: url({{ image.url }});"></div>
 				</div>
 			</div>
+		
+			<h1 ng-bind="album.name"></h1>
 			
 			<h2>
 				<span ng-repeat="artist in album.artists">
@@ -35,8 +37,6 @@
 	</div>
 	
 	<div class="col w70 album-content">
-		
-		<h1 ng-bind="album.name"></h1>
 	
 		<div class="album-items tracklist" ng-controller="TracklistController" >
 

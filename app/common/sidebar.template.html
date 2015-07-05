@@ -5,18 +5,58 @@
 			<input type="text" ng-model="query" />
 			<button type="submit"><i class="fa fa-search"></i></button>
 		</form>
-		
+        
 		<ul class="main-menu">
-			<li ng-repeat="item in mainMenu">
-				<a href="{{ item.Link }}" ng-class="{droppable: item.Droppable}" data-type="{{ item.Type }}">
-					<i class="fa fa-{{ item.Icon }}"></i>
-					{{ item.Title }}
-				</a>
-				<ul ng-show="item.Children.length">
-					<li ng-repeat="item in item.Children">
-						<a href="{{ item.Link }}" ng-bind="item.Title" ng-class="{droppable: item.Droppable}" data-type="{{ item.Type }}" data-uri="{{ item.Playlist.uri }}"></a>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/queue" class="droppable" data-type="queue" ng-class="{ active: $state.is('queue') }">
+                        <i class="fa fa-list"></i>
+                        Queue
+                    </a>
+                </span>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/discover/browse">
+                        <i class="fa fa-star"></i>
+                        Discover
+                    </a>
+                </span>
+				<ul>
+					<li><span class="menu-item-wrapper"><a href="/discover/featured">Featured playlists</a></span></li>
+					<li><span class="menu-item-wrapper"><a href="/discover/new">New releases</a></span></li>
+				</ul>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/library" class="droppable" data-type="library">
+                        <i class="fa fa-music"></i>
+                        Library
+                    </a>
+                </span>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/playlists" data-type="playlists">
+                        <i class="fa fa-folder"></i>
+                        Playlists
+                    </a>
+                </span>
+				<ul ng-show="playlistsMenu.length">
+					<li ng-repeat="playlist in playlistsMenu">
+                        <span class="menu-item-wrapper">
+				            <a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
+                        </span>
 					</li>
 				</ul>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/settings">
+                        <i class="fa fa-cog"></i>
+                        Settings
+                    </a>
+                </span>
 			</li>
 		</ul>
 		

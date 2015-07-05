@@ -11,15 +11,15 @@
 	
 	<div class="fullscreen-player inner">
 		
-		<div class="artwork">
+		<a class="artwork" href="/browse/album/{{ currentTlTrack.track.album.uri }}" ng-click="toggleFullscreenPlayer()">
 			<div class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" style="background-image: url({{ image.url }})"></div>
-		</div>
+		</a>
 		
 		<div class="track-info">
 			<span class="track" ng-bind="currentTlTrack.track.name"></span>
 			<span class="artist">
 				<span ng-repeat="artist in currentTlTrack.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name" ng-click="toggleFullscreenPlayer()"></a><span ng-show="!$last">, </span>
 				</span>
 			</span>
 		</div>

@@ -51,7 +51,7 @@
 	<link rel="shortcut-icon" href="/assetes/favicon.ico" />
 	
 </head>
-<body ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen() }">
+<body ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
         
     <div id="notifications"></div>
 
