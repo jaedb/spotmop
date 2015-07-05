@@ -12,7 +12,7 @@ angular.module('spotmop.browse.tracklist', [
 			track: '='
 		},
 		templateUrl: '/app/browse/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope ){
+		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
 			// when we SINGLE click on a track (only within this scope)
 			$element.click( function(evt){
@@ -47,54 +47,27 @@ angular.module('spotmop.browse.tracklist', [
 			// when we DOUBLE click on a track (only within this scope)
 			$element.dblclick( function(evt){
 
-				// get the track row (even if we clicked a child element)
-				var target = $(evt.target);
-				if( !target.hasClass('track') )
-					target = target.closest('.track');
+				var trackToPlayIndex = $element.index();
+				var followingTracks = $element.nextAll();
+				var newTracklistUris = [];
 
-				// play from queue
-				if( target.closest('.tracklist').hasClass('queue-items') ){
+				$.each( followingTracks, function(key,value){
+					if( $(value).attr('data-uri') )
+						newTracklistUris.push( $(value).attr('data-uri') );
+				});
 
-					// get the queue
-					MopidyService.getCurrentTlTracks().then( function( tracklist ){
+				// play the target track pronto
+				MopidyService.playTrack( [$element.attr('data-uri')], 0 ).then( function(){
 
-						var tlTrack;
+					// notify user that this could take some time
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
 
-						// find our double-clicked track in the tracklist
-						$.each( tracklist, function(key, track){
-
-							if( track.tlid == target.attr('data-tlid') ){
-
-								// then play our track
-								return MopidyService.playTlTrack({ tl_track: track });
-							}	
-						});
+					// add the following tracks to the tracklist
+					MopidyService.addToTrackList( newTracklistUris ).then( function(response){
+						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
 					});
+				});
 
-				// play from anywhere else
-				}else{
-					var trackToPlayIndex = target.index();
-					var followingTracks = target.nextAll();
-					var newTracklistUris = [];
-
-					$.each( followingTracks, function(key,value){
-						if( $(value).attr('data-uri') )
-							newTracklistUris.push( $(value).attr('data-uri') );
-					});
-
-					// play the target track pronto
-					MopidyService.playTrack( [target.attr('data-uri')], 0 ).then( function(){
-
-						// notify user that this could take some time
-						$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( newTracklistUris ).then( function(response){
-							$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
-						});
-					});
-
-				}   
 			});
 		}
 	}
@@ -120,7 +93,7 @@ angular.module('spotmop.browse.tracklist', [
 				}
 			});
 		},
-		controller: function( $element, $scope, $rootScope ){
+		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
 			// when we SINGLE click on a track (only within this scope)
 			$element.click( function(evt){
@@ -159,19 +132,16 @@ angular.module('spotmop.browse.tracklist', [
 				// get the queue
 				MopidyService.getCurrentTlTracks().then( function( tracklist ){
 
-					var tlTrack;
-
 					// find our double-clicked track in the tracklist
 					$.each( tracklist, function(key, track){
-
-						if( track.tlid == target.attr('data-tlid') ){
+						if( track.tlid == $element.attr('data-tlid') ){
 
 							// then play our track
 							return MopidyService.playTlTrack({ tl_track: track });
 						}	
 					});
 				});
-			}
+			});
 		}
 	}
 })
