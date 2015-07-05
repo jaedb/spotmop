@@ -556,8 +556,8 @@ angular.module('spotmop', [
     var dragging = false;
 	var dragThreshold = 30;
 	
-	// when the mouse id pressed down on a .track
-	$(document).on('mousedown', '.track', function(event){
+	// when the mouse is pressed down on a track
+	$(document).on('mousedown', 'body:not(.touchDevice) track', function(event){
 	
 		// get the .track row in question
 		var track = $(event.currentTarget);

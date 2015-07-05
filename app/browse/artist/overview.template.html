@@ -8,8 +8,6 @@
 		   ng-repeat="track in tracks"
 		   track="track"
 		   class="track"
-		   ng-click="trackClicked( $event )"
-		   ng-dblclick="trackDoubleClicked( $event )"
 		   data-uri="{{ track.uri }}"></track>
 
 		<div ng-hide="tracks.length" class="no-items">
