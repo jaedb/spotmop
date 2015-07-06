@@ -112,11 +112,8 @@ angular.module('spotmop.browse.artist', [])
 			// calculate how far down the banner we've scrolled
 			var percent = -( scrollPosition / bannerHeight * 15 );
 			
-			// make this an offset of the origin position of 40%
-			percent = percent + 40;
-			
 			// and finally apply to the image
-			banner.find('.image').css('background-position', '50% '+percent+'%');
+			banner.find('.image').css({ top: -( percent * 10 ) });
 		}
     });
 	

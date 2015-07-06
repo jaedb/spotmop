@@ -876,8 +876,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: absolute;
 	top: 0;
 	right: -20px;
-	bottom: 0;
 	left: -20px;
+	height: 100%;
 	background-color: #EEEEEE;
 	background-size: cover;
 	background-position: 50% 40%;
