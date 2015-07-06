@@ -584,11 +584,9 @@ angular.module('spotmop', [
 		// get the sibling selected tracks too
 		var tracks = track.siblings('.selected').andSelf();
 		
-		console.log('dragging');
-		
 		// create an object that gives us all the info we need
 		dragging = {
-					safetyOff: false,			// we switch this when we're outside of the dragThreshold
+					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
 					tracks: tracks
@@ -676,7 +674,9 @@ angular.module('spotmop', [
                     
                     // sorting queue tracklist
                     if( track.closest('.tracklist').hasClass('queue-items') ){
-                        MopidyService.moveTlTracks( start, end, to_position );
+						
+						// note: mopidy want's the first track AFTER our range, so we need to +1
+                        MopidyService.moveTlTracks( start, end + 1, to_position );
                         
                     // sorting playlist tracklist
                     }else if( track.closest('.tracklist').hasClass('playlist-items') ){
