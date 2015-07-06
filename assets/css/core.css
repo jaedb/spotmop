@@ -763,18 +763,14 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Album page
  **/
 
-.album-intro {
-	padding-right: 40px;
-}
-
 .album-intro h1 {
-	padding-bottom: 5px;
+	padding: 20px 0 0 0;
 }
 
 .album-intro .square-panel {
-	width: 100%;
-	float: none;
-	margin: 0 0 20px 0;
+	margin: 0 30px 20px 0;
+	width: 250px;
+	height: 250px;
 }
 
 .album-intro .image {
@@ -785,20 +781,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .album-intro .info-text {
-	color: #000000;
-	text-transform: none;
-	line-height: 2em;
-	padding-top: 15px;
-}
-
-.album-intro .info-text .label {
-	width: 35%;
-	float: left;
-}
-
-.album-intro .bar-track {
-	vertical-align: top;
-	margin-top: 10px;
+	padding-top: 20px;
 }
 
  

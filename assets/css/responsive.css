@@ -103,17 +103,9 @@
 	 * Artwork panels
 	 **/
 	
-	.album-intro .image {
+	.album-intro .square-panel {
 		width: 180px;
 		height: 180px;
-	}
-	
-	.album-intro h1 {
-		padding-top: 0px;
-	}
-	
-	.album-intro .info-text {
-		padding-top: 5px;
 	}
 	
 	/**
@@ -157,24 +149,13 @@
 	 * Album page
 	 **/
 	
-	.browse.album > .col {
-		float: none;
-		width: 100%;
-	}
-	
-	.browse.album .album-intro {
+	.browse.album .album-intro h1 {
 		padding-top: 0;
 	}
 	
-	.browse.album .album-intro .square-panel,
-	.browse.album .album-intro .square-panel .image {
+	.browse.album .album-intro .square-panel {
 		width: 140px;
 		height: 140px;
-	}
-	
-	.browse.album .album-intro .square-panel {
-		float: left;
-		margin-right: 30px;
 	}
 	
 	.browse.album .album-intro .info-text {
@@ -207,18 +188,13 @@
 	 * Artwork panels
 	 **/
 	
-	.album-intro .image {
-		width: 100px;
-		height: 100px;
+	.browse.album .album-intro .square-panel {
+		width: 100%;
+		height: auto;
 	}
 	
-	.album-intro h1 {
-		padding-top: 15px;
-	}
-	
-	.album-intro .info-text {
-		clear: both;
-		padding-top: 18px;
+	.browse.album .album-intro {
+		padding-bottom: 20px;
 	}
 	
 	/**
