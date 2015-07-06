@@ -111,11 +111,13 @@ angular.module('spotmop.player', [
      * Keyboard shortcuts
      **/
     
-	$('body').bind('keyup',function(evt){
+	$('body').bind('keydown',function(evt){
         
         // spacebar
-        if( evt.which === 32 )
-            $scope.playPause();
+        if( evt.which === 32 ){
+            evt.preventDefault();
+			$scope.playPause();
+		}
     });
 	
 	
