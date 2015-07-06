@@ -337,24 +337,6 @@ angular.module('spotmop', [
 		}
 	}
 	
-	/**
-	 * Keyboard shortcuts
-	 * We bind these to $rootScope so they can be used in all directives and controllers
-	 **/
-
-	$rootScope.shiftKeyHeld = false;
-	$rootScope.ctrlKeyHeld = false;
-	$('body').bind('keydown',function(evt){
-		if( evt.which === 16 ){
-			$rootScope.shiftKeyHeld = true;
-		}else if( evt.which === 17 ){
-			$rootScope.ctrlKeyHeld = true;
-		}
-	}).bind('keyup',function(evt){
-		$rootScope.shiftKeyHeld = false;
-		$rootScope.ctrlKeyHeld = false;
-	});
-	
 	
 	/**
 	 * Search
@@ -470,24 +452,41 @@ angular.module('spotmop', [
 	
 	
 	/**
-	 * Delete key pressed
-	 * TODO: Figure out a way to integrate this into TracklistController
+	 * Keyboard shortcuts
+	 * We bind these to $rootScope so they can be used in all directives and controllers
 	 **/
-	
-	$('body').bind('keyup',function(evt){
+
+	$rootScope.shiftKeyHeld = false;
+	$rootScope.ctrlKeyHeld = false;
         
-        // delete key
-		if( evt.which === 46 )
-			deleteKeyReleased();
-        
-        // esc key
-		if( evt.which === 27 ){
-			if( dragging ){
-                dragging = false;
-                $(document).find('.drag-tracer').hide();
+    // key press start
+	$('body').bind('keydown',function(evt){
+            if( evt.which === 16 ){
+                $rootScope.shiftKeyHeld = true;
+            }else if( evt.which === 17 ){
+                $rootScope.ctrlKeyHeld = true;
+            }
+        })
+    
+        // when we release the key press
+        .bind('keyup',function(evt){
+            $rootScope.shiftKeyHeld = false;
+            $rootScope.ctrlKeyHeld = false;
+
+            // delete key
+            if( evt.which === 46 )
+                deleteKeyReleased();
+
+            // esc key
+            if( evt.which === 27 ){
+                if( dragging ){
+                    dragging = false;
+                    $(document).find('.drag-tracer').hide();
+                }
             }
         }
-	});
+    );
+    
 	
 	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
 	function deleteKeyReleased(){

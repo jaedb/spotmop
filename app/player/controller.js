@@ -19,7 +19,7 @@ angular.module('spotmop.player', [
 		if( typeof($scope.currentTlTrack.track) !== 'undefined' )
 			return ( $scope.playPosition / $scope.currentTlTrack.track.length * 100 ).toFixed(2);
 	};
-	
+    
 	
 	/**
 	 * Core player controls
@@ -105,6 +105,18 @@ angular.module('spotmop.player', [
 			$scope.isMute = isMute;
 		});
 	});
+	
+    
+    /**
+     * Keyboard shortcuts
+     **/
+    
+	$('body').bind('keyup',function(evt){
+        
+        // spacebar
+        if( evt.which === 32 )
+            $scope.playPause();
+    });
 	
 	
 	/**
