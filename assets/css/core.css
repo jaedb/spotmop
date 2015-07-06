@@ -276,9 +276,21 @@ input[type='submit'] {
 #notifications .notification-item {
     color: #FFFFFF;
     display: inline-block;
-    border-radius: 100px;
     padding: 10px 18px;
     background-color: rgba(0,0,0,0.6);
+	margin: 0px 1px;
+}
+
+#notifications .notification-item:first-child {
+	border-radius: 100px 0 0 100px;
+}
+
+#notifications .notification-item:last-child {
+	border-radius: 0 100px 100px 0;
+}
+
+#notifications .notification-item:only-child {
+	border-radius: 100px;
 }
 
 #notifications .notification-item.loading {
