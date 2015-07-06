@@ -575,7 +575,7 @@ angular.module('spotmop', [
 	var dragThreshold = 30;
 	
 	// when the mouse is pressed down on a track
-	$(document).on('mousedown', 'body:not(.touchDevice) track', function(event){
+	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
 	
 		// get the .track row in question
 		var track = $(event.currentTarget);
@@ -584,6 +584,8 @@ angular.module('spotmop', [
 	
 		// get the sibling selected tracks too
 		var tracks = track.siblings('.selected').andSelf();
+		
+		console.log('dragging');
 		
 		// create an object that gives us all the info we need
 		dragging = {
