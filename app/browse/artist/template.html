@@ -8,7 +8,7 @@
 			<h1 ng-bind="artist.name" class="background-check"></h1>
 			<div class="info-text" class="background-check">
 				<span ng-bind="albums.items.length"></span> albums
-				&nbsp;|&nbsp; <span ng-bind="artist.followers.total"></span> followers
+				&nbsp;|&nbsp; {{ artist.followers.total | number:0 }} followers
 			</div>
 		</div>
 		<div class="submenu">
