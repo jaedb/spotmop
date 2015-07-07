@@ -97,19 +97,11 @@ angular.module('spotmop.browse.album', [])
                 loadingMoreTracks = false;
             });
     }
-    
-    // on scroll, detect if we're near the bottom
-    $('#body').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-        // check if we're near to the bottom of the tracklist, and we're not already loading more tracks
-        if( distanceFromBottom <= 100 && !loadingMoreTracks && $scope.tracks.next ){
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreTracks && typeof( $scope.tracks.next ) !== 'undefined' && $scope.tracks.next ){
             loadMoreTracks( $scope.tracks.next );
         }
-    });
+	});
 });

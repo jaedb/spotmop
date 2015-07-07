@@ -531,6 +531,25 @@ angular.module('spotmop', [
 		}
 	}
     
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 **/
+    $(document).find('#body').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
+    
     /**
      * Detect if we have a droppable target
      * @var target = event.target object
@@ -641,8 +660,8 @@ angular.module('spotmop', [
                             $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
                         })
                         .error( function(response){
-                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: 'Error!'});
                             $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
                         });	
 					
 				// dropping on playlist

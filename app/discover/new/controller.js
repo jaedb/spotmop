@@ -43,7 +43,7 @@ angular.module('spotmop.discover.new', [])
     
     // go off and get more of this playlist's tracks
     function loadMoreNewReleases( $nextUrl ){
-        console.log('yep');
+		
         if( typeof( $nextUrl ) === 'undefined' )
             return false;
         
@@ -73,5 +73,12 @@ angular.module('spotmop.discover.new', [])
                 loadingMoreNewReleases = false;
             });
     }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreNewReleases && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+            loadMoreNewReleases( $scope.albums.next );
+        }
+	});
 	
 });

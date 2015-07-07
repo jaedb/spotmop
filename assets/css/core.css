@@ -300,7 +300,8 @@ input[type='submit'] {
     background-position: 10px 8px;
 }
 
-#notifications .notification-item.bad {
+#notifications .notification-item.bad,
+#notifications .notification-item.error {
     background-color: rgba(214,47,47,0.9);
 }
 
