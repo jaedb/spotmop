@@ -113,8 +113,11 @@ angular.module('spotmop.player', [
     
 	$('body').bind('keydown',function(evt){
         
-        // spacebar
-        if( evt.which === 32 ){
+		// get the object which is currently in focus (input field, etc)
+		var inFocus = $(document).find(':focus');
+		
+        // spacebar (only if we're not on an input field)
+        if( evt.which === 32 && !inFocus.is(':input') ){
             evt.preventDefault();
 			$scope.playPause();
 		}
