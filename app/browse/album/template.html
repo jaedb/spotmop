@@ -20,7 +20,7 @@
 			
 			<div class="info-text">
 				<div>
-					Released: <span ng-bind="album.release_date | date : longDate"></span>
+					Released: <span ng-bind="convertedDate()"></span>
 				</div>
 				<div>
 					<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>

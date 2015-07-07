@@ -24,7 +24,7 @@ angular.module('spotmop.discover.new', [])
 	
 	SpotifyService.newReleases()
 		.success(function( response ) {
-			$scope.albums = response.albums.items;
+			$scope.albums = response.albums;
 			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-new-releases'});
 		})
@@ -32,5 +32,61 @@ angular.module('spotmop.discover.new', [])
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-new-releases'});
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-new-releases', message: error.error.message});
         });
+    
+    
+    /**
+     * Load more of the category's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreNewReleases = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreNewReleases( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreNewReleases = true;   
+        
+        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-new-releases', message: 'Loading more releases'});
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .success(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.albums.items = $scope.albums.items.concat( response.albums.items );
+                
+                // save the next set's url (if it exists)
+                $scope.albums.next = response.albums.next;
+                
+                // update loader and re-open for further pagination objects
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-new-releases'});
+                $rootScope.$broadcast('spotmop:pageUpdated');
+                loadingMoreNewReleases = false;
+            })
+            .error(function( error ){
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-new-releases'});
+                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-new-releases', message: error.error.message});
+                loadingMoreNewReleases = false;
+            });
+    }
+    
+    // on scroll, detect if we're near the bottom
+    $('#body').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+        // check if we're near to the bottom of the tracklist, and we're not already loading more tracks
+        if( distanceFromBottom <= 100 && !loadingMoreNewReleases && $scope.albums.next ){
+            loadMoreNewReleases( $scope.albums.next );
+        }
+    });
 	
 });

@@ -4,7 +4,7 @@
 	
 	<div class="album-items square-panels">
 		
-		<div class="item-container" ng-repeat="album in albums">
+		<div class="item-container" ng-repeat="album in albums.items">
 			<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 				<div class="image-container">
 					<thumbnail images="album.images"></thumbnail>
@@ -15,7 +15,7 @@
 			</a>
 		</div>
 	
-		<div ng-hide="albums.length" class="no-items">
+		<div ng-hide="albums.items.length" class="no-items">
 			No items
 		</div>
 		

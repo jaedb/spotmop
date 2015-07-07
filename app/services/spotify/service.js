@@ -227,7 +227,7 @@ angular.module('spotmop.services.spotify', [])
 		getPlaylists: function( userid, limit ){
 			
 			if( typeof( limit ) === 'undefined' )
-				limit = 20;
+				limit = 40;
 			
 			return $http({
 				method: 'GET',
@@ -407,10 +407,14 @@ angular.module('spotmop.services.spotify', [])
 		/**
 		 * Discover
 		 **/
-		newReleases: function(){
+		newReleases: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+            
 			return $http({
 				method: 'GET',
-				url: urlBase+'browse/new-releases?country='+ country,
+				url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}
@@ -437,10 +441,14 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
-		getCategoryPlaylists: function( categoryid ){
+		getCategoryPlaylists: function( categoryid, limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+            
 			return $http({
 				method: 'GET',
-				url: urlBase+'browse/categories/'+categoryid+'/playlists?limit=50',
+				url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}

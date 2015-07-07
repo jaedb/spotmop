@@ -17,10 +17,19 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams ){
+.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams, $filter ){
 	
 	$scope.album = {};
 	$scope.tracks = {};
+    $scope.convertedDate = function(){
+        if( $scope.album.release_date_precision == 'day' )
+            return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
+        if( $scope.album.release_date_precision == 'month' )
+            return $filter('date')($scope.album.release_date, "MMMM yyyy");
+        if( $scope.album.release_date_precision == 'year' )
+            return $scope.album.release_date;
+        return false;
+    }
 	
     // figure out the total time for all tracks
     $scope.totalTime = function(){
