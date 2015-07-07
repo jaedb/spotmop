@@ -9,7 +9,7 @@
             <div class="info-text">
                 <span ng-bind="user.id"></span>
                  &nbsp;|&nbsp; <span ng-bind="playlists.items.length"></span> Playlists
-                 &nbsp;|&nbsp; <span ng-bind="user.followers.total"></span> Followers
+                 &nbsp;|&nbsp; {{ user.followers.total | number:0 }} Followers
             </div>
         </div>
 		<div class="clear-both"></div>
