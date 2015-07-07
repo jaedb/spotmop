@@ -15,7 +15,7 @@ angular.module('spotmop.discover.new', [])
 /**
  * Main controller
  **/
-.controller('NewController', function NewController( $scope, $rootScope, SpotifyService ){
+.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService ){
 	
 	// set the default items
 	$scope.albums = [];
@@ -43,7 +43,7 @@ angular.module('spotmop.discover.new', [])
     
     // go off and get more of this playlist's tracks
     function loadMoreNewReleases( $nextUrl ){
-        
+        console.log('yep');
         if( typeof( $nextUrl ) === 'undefined' )
             return false;
         
@@ -73,20 +73,5 @@ angular.module('spotmop.discover.new', [])
                 loadingMoreNewReleases = false;
             });
     }
-    
-    // on scroll, detect if we're near the bottom
-    $('#body').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-        // check if we're near to the bottom of the tracklist, and we're not already loading more tracks
-        if( distanceFromBottom <= 100 && !loadingMoreNewReleases && $scope.albums.next ){
-            loadMoreNewReleases( $scope.albums.next );
-        }
-    });
 	
 });
