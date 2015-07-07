@@ -244,7 +244,7 @@ angular.module('spotmop', [
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
-		SpotifyService.getPlaylists( $scope.spotifyUser.id )
+		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.success(function( response ) {
             
                 var newPlaylistsMenu = [];

@@ -224,10 +224,14 @@ angular.module('spotmop.services.spotify', [])
 		 * Playlist-oriented requests
 		 **/     
 		
-		getPlaylists: function( userid ){
+		getPlaylists: function( userid, limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 20;
+			
 			return $http({
 				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists?limit=50',
+				url: urlBase+'users/'+userid+'/playlists?limit='+limit,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}
