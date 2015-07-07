@@ -28,7 +28,7 @@ angular.module('spotmop.browse.album', [])
             return $filter('date')($scope.album.release_date, "MMMM yyyy");
         if( $scope.album.release_date_precision == 'year' )
             return $scope.album.release_date;
-        return false;
+        return null;
     }
 	
     // figure out the total time for all tracks
