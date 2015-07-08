@@ -92,11 +92,31 @@ angular.module('spotmop.browse.tracklist', [
 					$scope.track.trackCurrentlyPlaying = false;
 				}
 			});
+			
+			// prevent right-click menus
+			$(document).contextmenu( function(evt){
+				return false;
+			});
 		},
 		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
-			// when we SINGLE click on a track (only within this scope)
-			$element.click( function(evt){
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mousedown( function(evt){				
+				if( evt.which === 1 )
+					leftClick( evt );
+				else if( evt.which === 3 )
+					rightClick( evt );
+			});
+			
+			
+			/**
+			 * Left click
+			 * Select a track (considering shift/ctrl key holds too)
+			 **/
+			function leftClick( evt ){
 
 				// get the track row (even if we clicked a child element)
 				var target = $(evt.target);
@@ -122,11 +142,30 @@ angular.module('spotmop.browse.tracklist', [
 					// unhighlight all siblings
 					target.siblings('.track').removeClass('selected');
 					target.addClass('selected');		
-				}        
-			});
+				}     	
+			}
 			
-	
-			// when we DOUBLE click on a track (only within this scope)
+			/**
+			 * Right click
+			 * Provide context menu
+			 **/
+			function rightClick( evt ){
+				
+				evt.preventDefault();
+				
+				var positionY = evt.pageY - $(window).scrollTop();
+				var positionX = evt.pageX - window.pageYOffset;
+				
+				$(document).find('#context-menu').show().css({
+					top: positionY,
+					left: positionX
+				});
+			}
+			
+			
+			/**
+			 * Double click
+			 **/
 			$element.dblclick( function(evt){
 
 				// get the queue

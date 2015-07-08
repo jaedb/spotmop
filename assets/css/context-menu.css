@@ -1,0 +1,35 @@
+/**
+ * Context menu styles
+ * Provides right-click behavior to tracks and other interactive elements
+ * 
+ * Spotmop
+ **/
+
+
+
+/* ============================================================================ BASE STYLES ======== */
+/* ================================================================================================= */
+
+#context-menu {
+	position: fixed;
+	display: none;
+	top: 0;
+	left: 0;
+	z-index: 10;
+	background: #222222;
+	color: #FFFFFF;
+}
+
+#context-menu .menu-item {
+	display: block;
+	padding: 8px 14px;
+	border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#context-menu .menu-item:hover {
+	background: #333333;
+	cursor: pointer;
+}
+
+
+
