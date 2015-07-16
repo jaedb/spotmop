@@ -10,8 +10,7 @@ angular.module('spotmop', [
 	'ngStorage',
 	'ngTouch',
 	'ui.router',
-	
-	'spotmop.player',
+	'spotmop.common.contextmenu',
     
 	'spotmop.services.settings',
 	'spotmop.services.spotify',
@@ -19,6 +18,7 @@ angular.module('spotmop', [
 	'spotmop.services.echonest',
 	'spotmop.services.dialog',
 	
+	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
 	'spotmop.playlists',
@@ -549,6 +549,18 @@ angular.module('spotmop', [
         	$scope.$broadcast('spotmop:loadMore');
     });
 	
+	/**
+	 * When we click anywhere
+	 * This allows us to kill context menus, unselect tracks, etc
+	 **/
+	$(document).on('mousedown', 'body', function( evt ){
+		
+		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
+		// clicking INSIDE the tracklist is handled by the track/tltrack directives
+		if( $(evt.target).closest('.tracklist').length <= 0 ){
+			$rootScope.$broadcast('spotmop:hideContextMenu');
+		}
+	});
     
     /**
      * Detect if we have a droppable target
@@ -594,7 +606,7 @@ angular.module('spotmop', [
 	
 	// when the mouse is pressed down on a track
 	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
-	
+	 
 		// get the .track row in question
 		var track = $(event.currentTarget);
 		if( !track.hasClass('track') )

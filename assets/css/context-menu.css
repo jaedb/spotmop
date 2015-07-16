@@ -10,7 +10,7 @@
 /* ============================================================================ BASE STYLES ======== */
 /* ================================================================================================= */
 
-#context-menu {
+contextmenu {
 	position: fixed;
 	display: none;
 	top: 0;
@@ -20,13 +20,13 @@
 	color: #FFFFFF;
 }
 
-#context-menu .menu-item {
+contextmenu .menu-item {
 	display: block;
 	padding: 8px 14px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-#context-menu .menu-item:hover {
+contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
 }

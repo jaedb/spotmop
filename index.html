@@ -20,6 +20,8 @@
 	<script type="text/javascript" src="/app/services/echonest/service.js"></script>
 	<script type="text/javascript" src="/app/services/dialog/service.js"></script>
 	
+	<script type="text/javascript" src="/app/common/contextmenu.directive.js"></script>
+	
 	<script type="text/javascript" src="/app/browse/controller.js"></script>	
 	<script type="text/javascript" src="/app/browse/playlist/controller.js"></script>	
 	<script type="text/javascript" src="/app/browse/album/controller.js"></script>	
@@ -56,8 +58,8 @@
         
     <div id="notifications"></div>
 
-    <ng-include src="'/app/common/sidebar.template.html'"></ng-include>
-    <ng-include src="'/app/common/contextmenu.template.html'"></ng-include>
+    <ng-include src="'/app/common/sidebar.template.html'"></ng-include>	
+	<contextmenu></contextmenu>
 
     <div id="body" class="body">
         <div class="inner">

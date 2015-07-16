@@ -35,7 +35,7 @@ angular.module('spotmop.discover', [])
 	
 	SpotifyService.discoverCategories()
 		.success(function( response ) {
-			$scope.categories = response.categories.items;
+			$scope.categories = response.categories;
 			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
 		})
@@ -43,6 +43,54 @@ angular.module('spotmop.discover', [])
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-categories', message: error.error.message});
         });
+    
+    
+    /**
+     * Load more of the category's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreCategories = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreCategories( $nextUrl ){
+		
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreCategories = true;   
+        
+        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-categories', message: 'Loading more categories'});
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .success(function( response ){
+            
+                // append these new categories to the main scope
+                $scope.categories.items = $scope.categories.items.concat( response.categories.items );
+                
+                // save the next set's url (if it exists)
+                $scope.categories.next = response.categories.next;
+                
+                // update loader and re-open for further pagination objects
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-categories'});
+                $rootScope.$broadcast('spotmop:pageUpdated');
+                loadingMoreCategories = false;
+            })
+            .error(function( error ){
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-categories'});
+                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-categories', message: error.error.message});
+                loadingMoreCategories = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreCategories && typeof( $scope.categories.next ) !== 'undefined' && $scope.categories.next ){
+            loadMoreCategories( $scope.categories.next );
+        }
+	});
 	
 })
 	

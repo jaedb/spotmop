@@ -421,10 +421,14 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
-		discoverCategories: function(){
+		discoverCategories: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
 			return $http({
 				method: 'GET',
-				url: urlBase+'browse/categories',
+				url: urlBase+'browse/categories?limit='+limit,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}

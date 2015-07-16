@@ -14,11 +14,28 @@ angular.module('spotmop.browse.tracklist', [
 		templateUrl: '/app/browse/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
-			// when we SINGLE click on a track (only within this scope)
-			$element.click( function(evt){
-
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mousedown( function( event ){				
+				if( event.which === 1 )
+					leftClick( event );
+				else if( event.which === 3 )
+					rightClick( event );
+			});
+			
+			/**
+			 * Left click
+			 * Select a track (considering shift/ctrl key holds too)
+			 **/
+			function leftClick( event ){
+				
+				// hide the context menu
+				$rootScope.$broadcast('spotmop:hideContextMenu');
+			
 				// get the track row (even if we clicked a child element)
-				var target = $(evt.target);
+				var target = $(event.target);
 				if( !target.hasClass('track') )
 					target = target.closest('.track');
 
@@ -41,11 +58,23 @@ angular.module('spotmop.browse.tracklist', [
 					// unhighlight all siblings
 					target.siblings('.track').removeClass('selected');
 					target.addClass('selected');		
-				}        
-			});
-	
-			// when we DOUBLE click on a track (only within this scope)
-			$element.dblclick( function(evt){
+				}     	
+			}
+			
+			
+			/**
+			 * Right click
+			 * Provide context menu
+			 **/
+			function rightClick( event ){				
+				$rootScope.$broadcast('spotmop:showContextMenu', $element, event);
+			}
+			
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
 
 				var trackToPlayIndex = $element.index();
 				var followingTracks = $element.nextAll();
@@ -92,11 +121,6 @@ angular.module('spotmop.browse.tracklist', [
 					$scope.track.trackCurrentlyPlaying = false;
 				}
 			});
-			
-			// prevent right-click menus
-			$(document).contextmenu( function(evt){
-				return false;
-			});
 		},
 		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
@@ -104,22 +128,24 @@ angular.module('spotmop.browse.tracklist', [
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
 			 **/
-			$element.mousedown( function(evt){				
-				if( evt.which === 1 )
-					leftClick( evt );
-				else if( evt.which === 3 )
-					rightClick( evt );
+			$element.mousedown( function( event ){				
+				if( event.which === 1 )
+					leftClick( event );
+				else if( event.which === 3 )
+					rightClick( event );
 			});
-			
 			
 			/**
 			 * Left click
 			 * Select a track (considering shift/ctrl key holds too)
 			 **/
-			function leftClick( evt ){
-
+			function leftClick( event ){
+				
+				// hide the context menu
+				$rootScope.$broadcast('spotmop:hideContextMenu');
+			
 				// get the track row (even if we clicked a child element)
-				var target = $(evt.target);
+				var target = $(event.target);
 				if( !target.hasClass('track') )
 					target = target.closest('.track');
 
@@ -149,24 +175,15 @@ angular.module('spotmop.browse.tracklist', [
 			 * Right click
 			 * Provide context menu
 			 **/
-			function rightClick( evt ){
-				
-				evt.preventDefault();
-				
-				var positionY = evt.pageY - $(window).scrollTop();
-				var positionX = evt.pageX - window.pageYOffset;
-				
-				$(document).find('#context-menu').show().css({
-					top: positionY,
-					left: positionX
-				});
+			function rightClick( event ){				
+				$rootScope.$broadcast('spotmop:showContextMenu', $element, event);
 			}
 			
 			
 			/**
 			 * Double click
 			 **/
-			$element.dblclick( function(evt){
+			$element.dblclick( function( event ){
 
 				// get the queue
 				MopidyService.getCurrentTlTracks().then( function( tracklist ){
@@ -185,6 +202,21 @@ angular.module('spotmop.browse.tracklist', [
 	}
 })
 
+
+/**
+ * Tracklist controller
+ * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
+ **/
 .controller('TracklistController', function TracklistController( $element, $scope, $rootScope, $stateParams, MopidyService, SpotifyService ){
 
+	// prevent right-click menus
+	$(document).contextmenu( function(evt){
+		
+		// only if clicking in a tracklist
+		if( $(evt.target).closest('.tracklist').length > 0 )
+			return false;
+	});
 });
+
+
+
