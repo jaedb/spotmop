@@ -5,14 +5,10 @@
 	</h1>
 	
 	<div class="library-tracks tracklist droppable"  ng-controller="TracklistController">		
-	
-		<track
-            ng-repeat="track in tracks.items"
-            track="track.track"
-            class="track"
-            data-uri="{{ track.track.uri }}"></track>
+		
+		<track ng-repeat="track in tracklist.tracks"></track>
 
-		<div ng-hide="tracks.items.length" class="no-items">
+		<div ng-hide="tracklist.tracks.length" class="no-items">
 			No items
 		</div>	
 		

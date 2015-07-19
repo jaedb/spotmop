@@ -21,7 +21,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 	// setup base variables
 	$scope.playlist = {};
-	$scope.tracklist = {};
+	$scope.tracklist = { tracks: [] };
 	$scope.totalTime = 0;
     $scope.following = false;
     $scope.followPlaylist = function(){
@@ -55,9 +55,9 @@ angular.module('spotmop.browse.playlist', [])
     // figure out the total time for all tracks
     $scope.totalTime = function(){
         var totalTime = 0;
-        if( typeof($scope.tracklist.tracks) !== 'undefined' ){
-            $.each( $scope.tracklist.tracks, function( key, track ){
-                totalTime += track.track.duration_ms;
+        if( $scope.tracklist.tracks.length > 0 ){
+            angular.forEach( $scope.tracklist.tracks, function( key, track ){
+                totalTime += track.duration_ms;
             });
         }
         return Math.round(totalTime / 100000);   
@@ -68,10 +68,10 @@ angular.module('spotmop.browse.playlist', [])
 	// on load, fetch the playlist
 	SpotifyService.getPlaylist( $stateParams.uri )
 		.success(function( response ) {
-			$scope.playlist = response;
-			$scope.tracklist.tracks = response.tracks.items;
-			
-			console.log( $scope.tracklist );
+		
+			$scope.playlist = response;			
+			$scope.tracklist.next = response.tracks.next;
+			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
 		
 			// parse description string and make into real html (people often have links here)
 			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
@@ -87,6 +87,27 @@ angular.module('spotmop.browse.playlist', [])
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlist'});
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlist', message: error.error.message});
         });
+		
+		
+	/**
+	 * Reformat the track structure to the unified tracklist.track
+	 * Need to strip wrapping track object
+	 **/
+	function reformatTracks( tracks ){
+		
+		var reformattedTracks = [];
+		
+		// loop all the tracks to add
+		angular.forEach( tracks, function( track ){
+			var newTrack = track.track;
+			newTrack.added_at = track.added_at;
+			newTrack.added_by = track.added_by;
+			newTrack.is_local = track.is_local;
+			reformattedTracks.push( newTrack );
+		});
+		
+		return reformattedTracks;
+	}
     
     /**
      * Load more of the playlist's tracks
@@ -110,8 +131,8 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.getUrl( $nextUrl )
             .success(function( response ){
             
-                // append these new tracks to the main tracklist
-                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
+                // append these new tracks to the main tracklist (using our unified format of course)
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
                 
                 // save the next set's url (if it exists)
                 $scope.tracklist.next = response.next;

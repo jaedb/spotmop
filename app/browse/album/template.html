@@ -40,15 +40,10 @@
 	</div>
 	
 	<div class="album-items tracklist" ng-controller="TracklistController" >
+		
+		<track ng-repeat="track in tracklist.tracks"></track>
 
-		<track
-			ng-repeat="track in tracks.items"
-			track="track"
-			trackContext="album"
-			class="track no-album"
-			data-uri="{{ track.uri }}"></track>
-
-		<div ng-hide="tracks.items.length" class="no-items">
+		<div ng-hide="tracklist.tracks.length" class="no-items">
 			No items
 		</div>
 

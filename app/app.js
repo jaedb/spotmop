@@ -457,22 +457,22 @@ angular.module('spotmop', [
 	 * We bind these to the app-level so they can be used in all directives and controllers
 	 **/
 
-	$scope.shiftKeyHeld = false;
-	$scope.ctrlKeyHeld = false;
+	$rootScope.shiftKeyHeld = false;
+	$rootScope.ctrlKeyHeld = false;
         
     // key press start
 	$('body').bind('keydown',function(evt){
             if( evt.which === 16 ){
-                $scope.shiftKeyHeld = true;
+                $rootScope.shiftKeyHeld = true;
             }else if( evt.which === 17 ){
-                $scope.ctrlKeyHeld = true;
+                $rootScope.ctrlKeyHeld = true;
             }
         })
     
         // when we release the key press
         .bind('keyup',function(evt){
-            $scope.shiftKeyHeld = false;
-            $scope.ctrlKeyHeld = false;
+            $rootScope.shiftKeyHeld = false;
+            $rootScope.ctrlKeyHeld = false;
 
             // delete key
             if( evt.which === 46 )

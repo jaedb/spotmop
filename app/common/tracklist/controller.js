@@ -126,7 +126,7 @@ angular.module('spotmop.common.tracklist', [
 	$scope.$on('spotmop:track:clicked', function( event, $track ){
 		
 		// if ctrl key held down
-		if( $scope.ctrlKeyHeld ){
+		if( $rootScope.ctrlKeyHeld ){
 			
 			// toggle selection for this track
 			if( $track.track.selected ){
@@ -136,10 +136,10 @@ angular.module('spotmop.common.tracklist', [
 			}
 			
 		// if ctrl key not held down
-		}else if( !$scope.ctrlKeyHeld ){
+		}else if( !$rootScope.ctrlKeyHeld ){
 			
 			// unselect all tracks
-			angular.forEach( $scope.currentTracklist, function(track){
+			angular.forEach( $scope.tracklist.tracks, function(track){
 				track.selected = false;
 			});
 			
@@ -148,7 +148,7 @@ angular.module('spotmop.common.tracklist', [
 		}
 		
 		// if shift key held down, select all tracks between this track, and the last clicked one
-		if( $scope.shiftKeyHeld ){
+		if( $rootScope.shiftKeyHeld ){
 			
 			// figure out the limits of our selection (use the array's index)
 			// assume last track clicked is the lower index value, to start with

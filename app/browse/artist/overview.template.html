@@ -4,13 +4,9 @@
 
 	<div class="top-track-items tracklist" ng-controller="TracklistController">
 
-		<track
-		   ng-repeat="track in tracks"
-		   track="track"
-		   class="track"
-		   data-uri="{{ track.uri }}"></track>
+		<track ng-repeat="track in tracklist.tracks"></track>
 
-		<div ng-hide="tracks.length" class="no-items">
+		<div ng-hide="tracklist.tracks.length" class="no-items">
 			No items
 		</div>
 

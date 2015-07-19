@@ -20,7 +20,7 @@ angular.module('spotmop.browse.album', [])
 .controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams, $filter ){
 	
 	$scope.album = {};
-	$scope.tracks = {};
+	$scope.tracklist = {};
     $scope.convertedDate = function(){
         if( $scope.album.release_date_precision == 'day' )
             return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
@@ -34,8 +34,8 @@ angular.module('spotmop.browse.album', [])
     // figure out the total time for all tracks
     $scope.totalTime = function(){
         var totalTime = 0;
-        if( typeof($scope.tracks.items) !== 'undefined' ){
-            $.each( $scope.tracks.items, function( key, track ){
+        if( typeof($scope.tracklist.tracks) !== 'undefined' ){
+            angular.forEach( $scope.tracklist.tracks, function( track ){
                 totalTime += track.duration_ms;
             });
         }
@@ -47,8 +47,10 @@ angular.module('spotmop.browse.album', [])
 	// get the artist
 	SpotifyService.getAlbum( $stateParams.uri )
 		.success(function( response ) {
+		
 			$scope.album = response;
-			$scope.tracks = response.tracks;
+			$scope.tracklist = response.tracks;
+			$scope.tracklist.tracks = response.tracks.items;
 			
 			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});
@@ -82,10 +84,10 @@ angular.module('spotmop.browse.album', [])
             .success(function( response ){
             
                 // append these new tracks to the main tracklist
-                $scope.tracks.items = $scope.tracks.items.concat( response.items );
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
                 
                 // save the next set's url (if it exists)
-                $scope.tracks.next = response.next;
+                $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
@@ -100,8 +102,8 @@ angular.module('spotmop.browse.album', [])
 	
 	// once we're told we're ready to load more albums
     $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracks.next ) !== 'undefined' && $scope.tracks.next ){
-            loadMoreTracks( $scope.tracks.next );
+        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+            loadMoreTracks( $scope.tracklist.next );
         }
 	});
 });
