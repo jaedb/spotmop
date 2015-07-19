@@ -10,17 +10,11 @@
 	
 	<div class="queue-items tracklist droppable" ng-controller="TracklistController">		
 	
-		<tltrack
-		   ng-repeat="track in currentTracklist"
-		   track="track"
-		   class="track"
-		   ng-class="{ playing: track.tlid == currentTlTrack.tlid }"
-		   data-uri="{{ track.track.uri }}"
-		   data-tlid="{{ track.tlid }}"></tltrack>
+		<tltrack ng-repeat="track in currentTracklist"></tltrack>
 
 		<div ng-hide="currentTracklist.length" class="no-items">
 			No items
-		</div>	
+		</div>
 		
 	</div>
 	

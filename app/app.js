@@ -10,7 +10,9 @@ angular.module('spotmop', [
 	'ngStorage',
 	'ngTouch',
 	'ui.router',
+	
 	'spotmop.common.contextmenu',
+	'spotmop.common.tracklist',
     
 	'spotmop.services.settings',
 	'spotmop.services.spotify',
@@ -30,7 +32,6 @@ angular.module('spotmop', [
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',
-	'spotmop.browse.tracklist',
 	
 	'spotmop.discover',
 	'spotmop.discover.featured',
@@ -456,22 +457,22 @@ angular.module('spotmop', [
 	 * We bind these to $rootScope so they can be used in all directives and controllers
 	 **/
 
-	$rootScope.shiftKeyHeld = false;
-	$rootScope.ctrlKeyHeld = false;
+	$scope.shiftKeyHeld = false;
+	$scope.ctrlKeyHeld = false;
         
     // key press start
 	$('body').bind('keydown',function(evt){
             if( evt.which === 16 ){
-                $rootScope.shiftKeyHeld = true;
+                $scope.shiftKeyHeld = true;
             }else if( evt.which === 17 ){
-                $rootScope.ctrlKeyHeld = true;
+                $scope.ctrlKeyHeld = true;
             }
         })
     
         // when we release the key press
         .bind('keyup',function(evt){
-            $rootScope.shiftKeyHeld = false;
-            $rootScope.ctrlKeyHeld = false;
+            $scope.shiftKeyHeld = false;
+            $scope.ctrlKeyHeld = false;
 
             // delete key
             if( evt.which === 46 )
@@ -553,7 +554,7 @@ angular.module('spotmop', [
 	 * When we click anywhere
 	 * This allows us to kill context menus, unselect tracks, etc
 	 **/
-	$(document).on('mousedown', 'body', function( evt ){
+	$(document).on('mouseup', 'body', function( evt ){
 		
 		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
 		// clicking INSIDE the tracklist is handled by the track/tltrack directives

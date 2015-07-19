@@ -11,7 +11,11 @@ angular.module('spotmop.common.contextmenu', [
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $scope, $rootScope, $element ){
-						
+			
+			$scope.play = function(){
+				$scope.$emit('spotmop:selectedTracks:play');
+			}
+			
 			/**
 			 * Show the context menu
 			 * Someone has told us to show ourselves, but they have told us who they are (clickedElement)
