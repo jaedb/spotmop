@@ -125,36 +125,18 @@ angular.module('spotmop.common.tracklist', [
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
 			 **/
-			$element.click( function( event ){				
-				if( event.which === 1 )
-					leftClick( event );
-				else if( event.which === 3 )
-					rightClick( event );
-			});
-			
-			/**
-			 * Left click
-			 * Select a track (considering shift/ctrl key holds too)
-			 **/
-			function leftClick( event ){
+			$element.mouseup( function( event ){
 				
-				// hide the context menu
-				$rootScope.$broadcast('spotmop:hideContextMenu');
-				
-				// make track selection
-				$scope.$apply( function(){
-					$scope.track.selected = true;
-				});
-			}
-			
-			/**
-			 * Right click
-			 * Provide context menu
-			 **/
-			function rightClick( event ){				
-				$rootScope.$broadcast('spotmop:showContextMenu', $element, event);
-			}
-			
+				// left click
+				if( event.which === 1 ){
+					$scope.$emit('spotmop:contextMenu:hide');
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click
+				}else if( event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+				}
+			});			
 			
 			/**
 			 * Double click
@@ -195,21 +177,108 @@ angular.module('spotmop.common.tracklist', [
 		if( $(evt.target).closest('.tracklist').length > 0 )
 			return false;
 	});
+
+	
+	
+	/**
+	 * Dragging a track
+	 * This event is detected and $emitted from the track/tltrack directive
+	 **/
+	$scope.$on('spotmop:track:dragging', function( event ){
 		
-	$element.bind('click', function(event){
-		
-		// selected tracks: 
-		console.log( $filter('filter')( $scope.currentTracklist, {selected: true} ) );
 	});
 			
+	
+	
+	/**
+	 * Click on a single track
+	 * This event is detected and $emitted from the track/tltrack directive
+	 **/
+	$scope.$on('spotmop:track:clicked', function( event, $track ){
+		
+		// if ctrl key held down
+		if( $scope.ctrlKeyHeld ){
+			
+			// toggle selection for this track
+			if( $track.track.selected ){
+				$track.$apply( function(){ $track.track.selected = false; });
+			}else{
+				$track.$apply( function(){ $track.track.selected = true; });
+			}
+			
+		// if ctrl key not held down
+		}else if( !$scope.ctrlKeyHeld ){
+			
+			// unselect all tracks
+			angular.forEach( $scope.currentTracklist, function(track){
+				track.selected = false;
+			});
+			
+			// and select only me
+			$track.$apply( function(){ $track.track.selected = true; });
+		}
+		
+		// if shift key held down, select all tracks between this track, and the last clicked one
+		if( $scope.shiftKeyHeld ){
+			
+			// figure out the limits of our selection (use the array's index)
+			// assume last track clicked is the lower index value, to start with
+			var firstTrackIndex = ( typeof($scope.lastClickedTrack) !== 'undefined' ) ? $scope.lastClickedTrack.$index : 0;
+			var lastTrackIndex = $track.$index;
+			
+			// if we've selected a lower-indexed track, let's swap our limits accordingly
+			if( $track.$index < firstTrackIndex ){
+				firstTrackIndex = $track.$index;
+				lastTrackIndex = $scope.lastClickedTrack.$index;
+			}
+			
+			// now loop through our subset limits, and make them all selected!
+			for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
+				$scope.currentTracklist[i].selected = true;
+			};
+			
+			// tell our templates to re-read the arrays
+			$scope.$apply();
+		}
+		
+		// save this item to our last-clicked (used for shift-click)
+		$scope.lastClickedTrack = $track;
+	});
+	
+	
+	
+	/**
+	 * Selected Tracks >> ENqueue
+	 * We've been told to find the selected tracks, and add them to the queue
+	 **/
+	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event){
+		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			selectedTracksUris.push( track.track.uri );
+		});
+				    
+		$scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+selectedTracksUris.length+' tracks to queue'});
+				
+		MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
+			$scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
+		});
+	});
+	
 	
 	
 	/**
 	 * Selected Tracks >> Play
 	 * We've been told to find the selected tracks, and play them immediately
 	 **/
-	$scope.$on('spotmop:selectedTracks:play', function(event){
-		console.log( event );
+	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
+		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			selectedTracksUris.push( track.track.uri );
+		});
 	});
 	
 });

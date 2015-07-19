@@ -13,23 +13,18 @@ angular.module('spotmop.common.contextmenu', [
 		controller: function( $scope, $rootScope, $element ){
 			
 			$scope.play = function(){
-				$scope.$emit('spotmop:selectedTracks:play');
+				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
+			}
+			
+			$scope.enqueue = function(){
+				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
 			}
 			
 			/**
 			 * Show the context menu
-			 * Someone has told us to show ourselves, but they have told us who they are (clickedElement)
+			 * @param context = string (track|tltrack)
 			 **/
-			$rootScope.$on('spotmop:showContextMenu', function(event, clickedElement, originalEvent){
-			
-				// get the track row (even if we clicked a child element)
-				var target = $(originalEvent.target);
-				if( !target.hasClass('track') )
-					target = target.closest('.track');
-
-				// add this track to the selected list
-				// we can ignore ctrl/shift here, it doesn't feel UX right
-				target.addClass('selected');
+			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
 				var positionY = originalEvent.pageY - $(window).scrollTop();
 				var positionX = originalEvent.pageX - window.pageYOffset;
@@ -40,19 +35,14 @@ angular.module('spotmop.common.contextmenu', [
 				});
 				
 				// use the clicked element to define what kind of context menu to show
-				if( clickedElement.is('track') ){
-					$scope.context = 'track';
-				}else if( clickedElement.is('tltrack') ){
-					$scope.context = 'tltrack';
-				}
-				
+				$scope.context = context;				
 			});
 			
 			
 			/**
 			 * Hide the context menu
 			 **/
-			$rootScope.$on('spotmop:hideContextMenu', function(event){
+			$scope.$on('spotmop:contextMenu:hide', function(event){
 				$element.hide();
 			});
 		}

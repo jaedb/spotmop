@@ -454,7 +454,7 @@ angular.module('spotmop', [
 	
 	/**
 	 * Keyboard shortcuts
-	 * We bind these to $rootScope so they can be used in all directives and controllers
+	 * We bind these to the app-level so they can be used in all directives and controllers
 	 **/
 
 	$scope.shiftKeyHeld = false;
@@ -490,6 +490,7 @@ angular.module('spotmop', [
     
 	
 	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
+	// TODO: Fire off a $broadcast, so the current activated tracklist can handle this functionality
 	function deleteKeyReleased(){
 		
 		var tracksDOM = $(document).find('.track.selected');
