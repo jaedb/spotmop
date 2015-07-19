@@ -21,7 +21,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 	// setup base variables
 	$scope.playlist = {};
-	$scope.tracks = {};
+	$scope.tracklist = {};
 	$scope.totalTime = 0;
     $scope.following = false;
     $scope.followPlaylist = function(){
@@ -55,8 +55,8 @@ angular.module('spotmop.browse.playlist', [])
     // figure out the total time for all tracks
     $scope.totalTime = function(){
         var totalTime = 0;
-        if( typeof($scope.tracks.items) !== 'undefined' ){
-            $.each( $scope.tracks.items, function( key, track ){
+        if( typeof($scope.tracklist.tracks) !== 'undefined' ){
+            $.each( $scope.tracklist.tracks, function( key, track ){
                 totalTime += track.track.duration_ms;
             });
         }
@@ -69,7 +69,9 @@ angular.module('spotmop.browse.playlist', [])
 	SpotifyService.getPlaylist( $stateParams.uri )
 		.success(function( response ) {
 			$scope.playlist = response;
-			$scope.tracks = response.tracks;
+			$scope.tracklist.tracks = response.tracks.items;
+			
+			console.log( $scope.tracklist );
 		
 			// parse description string and make into real html (people often have links here)
 			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
@@ -109,10 +111,10 @@ angular.module('spotmop.browse.playlist', [])
             .success(function( response ){
             
                 // append these new tracks to the main tracklist
-                $scope.tracks.items = $scope.tracks.items.concat( response.items );
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
                 
                 // save the next set's url (if it exists)
-                $scope.tracks.next = response.next;
+                $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
@@ -127,8 +129,8 @@ angular.module('spotmop.browse.playlist', [])
 	
 	// once we're told we're ready to load more albums
     $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracks.next ) !== 'undefined' && $scope.tracks.next ){
-            loadMoreTracks( $scope.tracks.next );
+        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+            loadMoreTracks( $scope.tracklist.next );
         }
 	});
 });

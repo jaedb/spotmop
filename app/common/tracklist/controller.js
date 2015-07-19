@@ -8,9 +8,6 @@ angular.module('spotmop.common.tracklist', [
 .directive('track', function() {
 	return {
 		restrict: 'E',
-		scope: {
-			track: '='
-		},
 		templateUrl: '/app/common/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
@@ -18,85 +15,17 @@ angular.module('spotmop.common.tracklist', [
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
 			 **/
-			$element.mouseup( function( event ){				
-				if( event.which === 1 )
-					leftClick( event );
-				else if( event.which === 3 )
-					rightClick( event );
-			});
-			
-			/**
-			 * Left click
-			 * Select a track (considering shift/ctrl key holds too)
-			 **/
-			function leftClick( event ){
+			$element.mouseup( function( event ){
 				
-				// hide the context menu
-				$rootScope.$broadcast('spotmop:hideContextMenu');
-			
-				// get the track row (even if we clicked a child element)
-				var target = $(event.target);
-				if( !target.hasClass('track') )
-					target = target.closest('.track');
-
-				// control click
-				if( $rootScope.ctrlKeyHeld ){
-					target.toggleClass('selected');
-
-				// shift click
-				}else if( $rootScope.shiftKeyHeld ){
-
-					// figure out the first in the list of highlighted
-					var otherSelection = target.siblings('.selected').first();
-
-					// then highlight either all up or all below the other selection
-					if( otherSelection.index() < target.index() )
-						otherSelection.nextUntil(target).add(target).addClass('selected');
-					else
-						target.nextUntil(otherSelection).add(target).addClass('selected');
-				}else{
-					// unhighlight all siblings
-					target.siblings('.track').removeClass('selected');
-					target.addClass('selected');		
-				}     	
-			}
-			
-			
-			/**
-			 * Right click
-			 * Provide context menu
-			 **/
-			function rightClick( event ){				
-				$rootScope.$broadcast('spotmop:showContextMenu', $element, event);
-			}
-			
-			
-			/**
-			 * Double click
-			 **/
-			$element.dblclick( function( event ){
-
-				var trackToPlayIndex = $element.index();
-				var followingTracks = $element.nextAll();
-				var newTracklistUris = [];
-
-				$.each( followingTracks, function(key,value){
-					if( $(value).attr('data-uri') )
-						newTracklistUris.push( $(value).attr('data-uri') );
-				});
-
-				// play the target track pronto
-				MopidyService.playTrack( [$element.attr('data-uri')], 0 ).then( function(){
-
-					// notify user that this could take some time
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding tracks... this may take some time'});
-
-					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( newTracklistUris ).then( function(response){
-						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
-					});
-				});
-
+				// left click
+				if( event.which === 1 ){
+					$scope.$emit('spotmop:contextMenu:hide');
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click
+				}else if( event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'track');
+				}
 			});
 		}
 	}
@@ -234,7 +163,7 @@ angular.module('spotmop.common.tracklist', [
 			
 			// now loop through our subset limits, and make them all selected!
 			for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
-				$scope.currentTracklist[i].selected = true;
+				$scope.tracklist.tracks[i].selected = true;
 			};
 			
 			// tell our templates to re-read the arrays
@@ -248,8 +177,7 @@ angular.module('spotmop.common.tracklist', [
 	
 	
 	/**
-	 * Selected Tracks >> ENqueue
-	 * We've been told to find the selected tracks, and add them to the queue
+	 * Selected Tracks >> Add to queue
 	 **/
 	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event){
 		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
@@ -270,7 +198,6 @@ angular.module('spotmop.common.tracklist', [
 	
 	/**
 	 * Selected Tracks >> Play
-	 * We've been told to find the selected tracks, and play them immediately
 	 **/
 	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
 		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
@@ -279,6 +206,25 @@ angular.module('spotmop.common.tracklist', [
 		angular.forEach( selectedTracks, function(track){
 			selectedTracksUris.push( track.track.uri );
 		});
+		
+		// TODO: Implement mopidy
+	});
+	
+	
+	
+	/**
+	 * Selected Tracks >> Delete
+	 **/
+	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			selectedTracksUris.push( track.track.uri );
+		});
+		
+		// TODO: Implement mopidy for queue, and spotify for playlists that we own
 	});
 	
 });

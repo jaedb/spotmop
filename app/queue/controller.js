@@ -18,16 +18,18 @@ angular.module('spotmop.queue', [])
 .controller('QueueController', function QueueController( $scope, $rootScope, $timeout, MopidyService ){
 	
 	$scope.totalTime = 0;
+	$scope.tracklist = { tracks: $scope.$parent.currentTracklist };
 
     /**
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes
      **/
     $scope.$watch(
-        function($scope){
+        function( $scope ){
             return $scope.$parent.currentTracklist;
         },
         function(newTracklist, oldTracklist){
+			$scope.tracklist.tracks = newTracklist;
             calculateTotalTime( newTracklist );
         }
     );

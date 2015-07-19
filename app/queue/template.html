@@ -10,9 +10,9 @@
 	
 	<div class="queue-items tracklist droppable" ng-controller="TracklistController">		
 	
-		<tltrack ng-repeat="track in currentTracklist"></tltrack>
+		<tltrack ng-repeat="track in tracklist.tracks"></tltrack>
 
-		<div ng-hide="currentTracklist.length" class="no-items">
+		<div ng-hide="tracklist.tracks.length" class="no-items">
 			No items
 		</div>
 		
