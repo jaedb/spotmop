@@ -18,7 +18,7 @@ angular.module('spotmop.search', [])
 .controller('SearchController', function SearchController( $scope, $rootScope, $stateParams, $timeout, SpotifyService ){
 	
 	$scope.query = $stateParams.query;
-	$scope.tracks = [];
+	$scope.tracklist = {tracks: []};
 	$scope.albums = [];
 	$scope.artists = [];
 	$scope.playlists = [];
@@ -26,7 +26,9 @@ angular.module('spotmop.search', [])
 	SpotifyService.getSearchResults( 'track', $stateParams.query, 20 )
 		.success( function(response){
 		
-			$scope.tracks = response.tracks;
+			$scope.tracklist = response.tracks;
+			$scope.tracklist.tracks = response.tracks.items;
+			
 			SpotifyService.getSearchResults( 'album', $stateParams.query, 6 )
 				.success( function(response){
 				

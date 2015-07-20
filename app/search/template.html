@@ -63,18 +63,13 @@
 	
 	<div class="search-results-section tracks">
 		<h4 class="section-title">Tracks</h4>	
-		<div class="search-items tracklist"  ng-controller="TracklistController">		
-			<track
-			   ng-repeat="track in tracks.items"
-			   track="track"
-			   class="track"
-			   ng-click="trackClicked( $event )"
-			   ng-dblclick="trackDoubleClicked( $event )"
-			   data-uri="{{ track.uri }}"></track>
+		<div class="search-items tracklist"  ng-controller="TracklistController">			
+		
+			<track ng-repeat="track in tracklist.tracks"></track>
 
-			<div ng-hide="tracks.items.length" class="no-items">
-				No results
-			</div>			
+			<div ng-hide="tracklist.tracks.length" class="no-items">
+				No items
+			</div>		
 		</div>
 	</div>
 	
