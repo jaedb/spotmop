@@ -7,17 +7,32 @@ angular.module('spotmop.common.contextmenu', [
 .directive('contextmenu', function() {
 	return {
 		restrict: 'E',
-		templateUrl: '/app/common/contextmenu.template.html',
+		templateUrl: '/app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $scope, $rootScope, $element ){
 			
+			/**
+			 * Menu item functionality
+			 **/
 			$scope.play = function(){
 				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
+				$element.hide();
 			}
 			
 			$scope.enqueue = function(){
 				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
+				$element.hide();
+			}
+			
+			$scope.unqueue = function(){
+				$rootScope.$broadcast('spotmop:tracklist:unqueueSelectedTracks');
+				$element.hide();
+			}
+			
+			$scope.playNext = function(){
+				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks', true);
+				$element.hide();
 			}
 			
 			/**

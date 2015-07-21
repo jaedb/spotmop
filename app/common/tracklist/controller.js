@@ -179,18 +179,37 @@ angular.module('spotmop.common.tracklist', [
 	/**
 	 * Selected Tracks >> Add to queue
 	 **/
-	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event){
-		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event, playNext){
+		
+		var atPosition = null;
+			
+		// if we're adding these tracks to play next
+		if( typeof( playNext ) !== 'undefined' && playNext == true ){
+			
+			// fetch the currently playing track
+			var currentTrack = $filter('filter')( $scope.currentTracklist, {playing: true} );
+			
+			// make sure we got one, and then get it's position in the currentTracklist, so we can add tracks after it
+			if( currentTrack.length > 0 ){
+				atPosition = $scope.currentTracklist.indexOf(currentTrack[0]) + 1;
+				
+			// no current track, add to top of queue
+			}else{
+				atPosition = 0;
+			}
+		}
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var selectedTracksUris = [];
 		
-		angular.forEach( selectedTracks, function(track){
-			selectedTracksUris.push( track.track.uri );
+		angular.forEach( selectedTracks, function( track ){
+			selectedTracksUris.push( track.uri );
 		});
 				    
-		$scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+selectedTracksUris.length+' tracks to queue'});
+		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+selectedTracksUris.length+' tracks to queue'});
 				
-		MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
-			$scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
+		MopidyService.addToTrackList( selectedTracksUris, atPosition ).then( function(response){
+			$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
 		});
 	});
 	
@@ -200,7 +219,7 @@ angular.module('spotmop.common.tracklist', [
 	 * Selected Tracks >> Play
 	 **/
 	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
-		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+		var selectedTracks = $filter('filter')( $scope.tracklist, {selected: true} );
 		var selectedTracksUris = [];
 		
 		angular.forEach( selectedTracks, function(track){
@@ -213,9 +232,26 @@ angular.module('spotmop.common.tracklist', [
 	
 	
 	/**
-	 * Selected Tracks >> Delete
+	 * Selected Tracks >> Delete from queue (aka unqueue)
 	 **/
-	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
+	$scope.$on('spotmop:tracklist:unqueueSelectedTracks', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksTlids = [];
+		
+		angular.forEach( selectedTracks, function( track ){
+			selectedTracksTlids.push( track.tlid );
+		});
+		
+		MopidyService.removeFromTrackList( selectedTracksTlids );
+	});
+	
+	
+	
+	/**
+	 * TODO: Selected Tracks >> Delete
+	 **/
+	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
 		
 		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
 		var selectedTracksUris = [];
