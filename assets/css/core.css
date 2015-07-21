@@ -1098,6 +1098,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	bottom: 0;
 	right: 0;
 	left: 0;
+	top: 0;
 }
 
 #player .button {
@@ -1121,7 +1122,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
-	padding: 10px 0 10px;
+	padding: 24px 0 10px;
 }
 
 #player .track-info .track {
@@ -1152,14 +1153,13 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	margin-left: 15px;
 }
  
-#player .playback  {
-	width: 75%;
-	float: left;
+#player .playback,
+#player .volume  {
+	padding-top: 32px;
 }
 
-#player .volume  {
-	width: 25%;
-	float: right;
+#player .volume {
+	padding-right: 5%;
 }
 
 #player .slider {
@@ -1169,8 +1169,22 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	cursor: pointer;
 }
 
-#player .playback .slider {
-	margin-left: 160px;
+#player .slider.progress {
+	position: absolute;
+	top: -8px;
+	left: 0;
+	right: 0;
+	margin: 0;
+}
+
+#player .slider.progress .track {
+	height: 4px;
+	background: none;
+}
+
+#player .slider.progress:hover .track {
+	height: 6px;
+	background: rgba(255,255,255,0.15);
 }
 
 #player .slider  .track {
@@ -1193,7 +1207,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	-o-transition: all 1s;
 	transition: all 1s;
 }
-	
+
 
 
 /**

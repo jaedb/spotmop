@@ -94,24 +94,32 @@ angular.module('spotmop.browse.playlist', [])
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var tracksToDelete = [];
-		
-		// construct each track into a json object to delete
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
-		});
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
-			.success(function( response ){
-				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
-				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
-				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-			})
-			.error(function( error ){
-				console.log( error );
+		// make sure the current spotify user owns this playlist
+		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
+            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleting-from-playlist', message: 'Cannot delete from a playlist you don\'t own', autoremove: true});
+			
+		// we own it, proceed sir
+		}else{
+			
+			var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+			var tracksToDelete = [];
+			
+			// construct each track into a json object to delete
+			angular.forEach( selectedTracks, function( selectedTrack, index ){
+				tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
 			});
+			
+			// parse these uris to spotify and delete these tracks
+			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
+				.success(function( response ){
+					// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
+					// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
+					$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+				})
+				.error(function( error ){
+					console.log( error );
+				});
+		}
 	});
 		
 	/**

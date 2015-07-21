@@ -461,25 +461,31 @@ angular.module('spotmop', [
 	$rootScope.ctrlKeyHeld = false;
         
     // key press start
-	$('body').bind('keydown',function(evt){
-            if( evt.which === 16 ){
+	$('body').bind('keydown',function( event ){
+            if( event.which === 16 ){
                 $rootScope.shiftKeyHeld = true;
-            }else if( evt.which === 17 ){
+            }else if( event.which === 17 ){
                 $rootScope.ctrlKeyHeld = true;
             }
         })
     
         // when we release the key press
-        .bind('keyup',function(evt){
+        .bind('keyup',function( event ){
             $rootScope.shiftKeyHeld = false;
             $rootScope.ctrlKeyHeld = false;
 
             // delete key
-            if( evt.which === 46 )
+            if( event.which === 46 )
                 $scope.$broadcast('spotmop:keyboardShortcut:delete');
 
+            // navigation arrows
+            if( event.which === 38 )
+                $scope.$broadcast('spotmop:keyboardShortcut:up');
+            if( event.which === 40 )
+                $scope.$broadcast('spotmop:keyboardShortcut:down');
+
             // esc key
-            if( evt.which === 27 ){
+            if( event.which === 27 ){
                 if( dragging ){
                     dragging = false;
                     $(document).find('.drag-tracer').hide();

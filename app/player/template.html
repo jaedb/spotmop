@@ -39,17 +39,14 @@
 	</div>
 	
 	<div class="slim-player inner">
-		
-		<div class="track-info" ng-show="!fullscreenPlayerExpanded">
-			<span class="track" ng-bind="currentTlTrack.track.name"></span>
-			<span class="artist">
-				<span ng-repeat="artist in currentTlTrack.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
-				</span>
-			</span>
+	
+		<div class="progress slider mobile-hide" ng-click="seek($event)">
+			<div class="track animate">
+				<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
+			</div>
 		</div>
 
-		<div class="playback">
+		<div class="playback col w25">
 			<div class="controls">
 				<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
 				<span class="button play-pause" ng-click="playPause()">
@@ -61,14 +58,18 @@
 				</span>
 				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 			</div>
-			<div class="slider mobile-hide" ng-click="seek($event)">
-				<div class="track">
-					<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
-				</div>
-			</div>
+		</div>
+		
+		<div class="track-info col w50" ng-show="!fullscreenPlayerExpanded">
+			<span class="track" ng-bind="currentTlTrack.track.name"></span>
+			<span class="artist">
+				<span ng-repeat="artist in currentTlTrack.track.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+				</span>
+			</span>
 		</div>
 
-		<div class="volume mobile-hide">
+		<div class="volume mobile-hide col w20 pull-right">
 			<div class="controls">
 				<span class="button random" ng-click="toggleRandom()" ng-class="{active: isRandom}">
 					<i class="fa fa-random"></i>
