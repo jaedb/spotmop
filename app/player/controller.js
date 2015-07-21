@@ -264,6 +264,14 @@ angular.module('spotmop.player', [
 			// save for any other use we might dream up
 			$scope.$parent.currentTlTrack = tlTrack;
 			
+			// mark this track as playing in the currentTracklist
+			angular.forEach( $scope.$parent.currentTracklist, function( currentTracklistTrack ){
+				if( currentTracklistTrack.tlid === tlTrack.tlid )
+					currentTracklistTrack.playing = true;
+				else
+					currentTracklistTrack.playing = false;
+			});
+			
 			// now we have track info, let's get the spotify artwork	
 			SpotifyService.getTrack( tlTrack.track.uri )
 				.success(function( response ) {
@@ -276,9 +284,6 @@ angular.module('spotmop.player', [
 			// update ui
 			updatePlayPosition();
 			updateWindowTitle();
-			
-			// also notify the app that we have a new track (and parse this track)
-			//$rootScope.$broadcast('spotmop:currentTrackChanged
 		}
 		
 		// track provided, update pronto garcong!
