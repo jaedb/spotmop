@@ -205,6 +205,7 @@ angular.module('spotmop.player', [
 	$scope.$on('mopidy:event:tracklistChanged', function(){
 		MopidyService.getCurrentTlTracks().then( function(tlTracks){
 			$scope.$parent.currentTracklist = tlTracks;
+			updateCurrentTrack();	// TODO: Investigate if there's a more efficient way to do this
 		});
 	});
 	
