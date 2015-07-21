@@ -1178,7 +1178,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	left: 0;
 	right: 0;
 	margin: 0;
-	z-index: 2;
+	z-index: 3;
 }
 
 #player .slider.progress .track {
@@ -1237,11 +1237,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player .fullscreen-player {
 	display: none;
-	position: absolute;
-	top: 50%;
-	left: 0;
-	right: 0;
-	margin-top: -320px;
+	position: relative;
+	z-index: 2;
 }
 
 #player .fullscreen-player .track-info {
@@ -1259,24 +1256,19 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #player .fullscreen-player .artwork {
-	width: 400px;
-	height: 400px;
-	margin: 30px auto 0;
-	position: relative;
+	width: 80%;
+	max-width: 400px;
+	max-height: 400px;
+	margin: 0 auto;
+	padding-top: 30px;
     display: block;
     border: 0 !important;
     text-decoration: none;
 }
 
 #player .fullscreen-player .artwork > .image {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
-	background-size: cover;
+	width: 100%;
+	height: auto;
 }
 
 

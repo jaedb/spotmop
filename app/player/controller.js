@@ -153,9 +153,16 @@ angular.module('spotmop.player', [
 		
 		// expand
 		}else{
-			player.animate({
-				height: $(document).height()
-			},200);
+			player.animate(
+				{
+					height: $(document).height()
+				},
+				200,
+				function(){
+					// now we've animated, let's set it to full-height (also helps with window resizing when expanded)
+					player.css('height','100%');
+				}
+			);
 			player.find('.fullscreen-player').fadeIn();
 			player.find('.slim-player').fadeOut('fast');
 			

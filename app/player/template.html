@@ -18,7 +18,7 @@
 	<div class="fullscreen-player inner">
 		
 		<a class="artwork" href="/browse/album/{{ currentTlTrack.track.album.uri }}" ng-click="toggleFullscreenPlayer()">
-			<div class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" style="background-image: url({{ image.url }})"></div>
+			<img class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" src="{{ image.url }}" />
 		</a>
 		
 		<div class="track-info">
