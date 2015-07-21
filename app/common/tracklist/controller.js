@@ -54,7 +54,7 @@ angular.module('spotmop.common.tracklist', [
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
 			 **/
-			$element.mouseup( function( event ){
+			$element.mousedown( function( event ){
 				
 				// left click
 				if( event.which === 1 ){
