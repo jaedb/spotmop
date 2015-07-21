@@ -17,7 +17,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, SpotifyService, SettingsService, DialogService, $stateParams, $sce ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, SettingsService, DialogService ){
 	
 	// setup base variables
 	$scope.playlist = {};
@@ -56,7 +56,7 @@ angular.module('spotmop.browse.playlist', [])
     $scope.totalTime = function(){
         var totalTime = 0;
         if( $scope.tracklist.tracks.length > 0 ){
-            angular.forEach( $scope.tracklist.tracks, function( key, track ){
+            angular.forEach( $scope.tracklist.tracks, function( track ){
                 totalTime += track.duration_ms;
             });
         }
@@ -88,6 +88,31 @@ angular.module('spotmop.browse.playlist', [])
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlist', message: error.error.message});
         });
 		
+	
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var tracksToDelete = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
+		});
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
+			.success(function( response ){
+				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
+				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
+				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+			})
+			.error(function( error ){
+				console.log( error );
+			});
+	});
 		
 	/**
 	 * Reformat the track structure to the unified tracklist.track

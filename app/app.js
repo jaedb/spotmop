@@ -476,7 +476,7 @@ angular.module('spotmop', [
 
             // delete key
             if( evt.which === 46 )
-                deleteKeyReleased();
+                $scope.$broadcast('spotmop:keyboardShortcut:delete');
 
             // esc key
             if( evt.which === 27 ){
@@ -491,6 +491,7 @@ angular.module('spotmop', [
 	
 	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
 	// TODO: Fire off a $broadcast, so the current activated tracklist can handle this functionality
+	// DELETE ME
 	function deleteKeyReleased(){
 		
 		var tracksDOM = $(document).find('.track.selected');

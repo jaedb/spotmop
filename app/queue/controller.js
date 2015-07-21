@@ -15,7 +15,7 @@ angular.module('spotmop.queue', [])
 /**
  * Main controller
  **/
-.controller('QueueController', function QueueController( $scope, $rootScope, $timeout, MopidyService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
 	
 	$scope.totalTime = 0;
 	$scope.tracklist = { tracks: $scope.$parent.currentTracklist };
@@ -46,4 +46,21 @@ angular.module('spotmop.queue', [])
 		});	
 		$scope.totalTime = Math.round(totalTime / 100000);
 	};
+	
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var tracksToDelete = [];
+		
+		// build an array of tlids to remove
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			tracksToDelete.push( selectedTrack.tlid );
+		});
+		
+		MopidyService.removeFromTrackList( tracksToDelete );
+	});
+	
 });
