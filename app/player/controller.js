@@ -129,10 +129,25 @@ angular.module('spotmop.player', [
 		// collapse
 		if( $scope.fullscreenPlayerExpanded ){
 			
-			player.animate({
-				height: '90px'	// TODO: change this if we're in a mobile layout!!
-			},300);
+			// specify the height of the collapsed player
+			var collapsedHeightForAnimation = '90px';				
+			if( $scope.mediumScreen() )
+				collapsedHeightForAnimation = '56px';
+			
+			// animate the transition
+			player.animate(
+				{
+					height: collapsedHeightForAnimation
+				},
+				300,
+				function(){
+					// remove the hardcoded height we used for animation
+					// this ensures we can change our window dimensions and css responsive layouts will work without a refresh
+					player.removeAttr('style');
+				}
+			);
 			player.find('.fullscreen-player').fadeOut('fast');
+			player.find('.slim-player').fadeIn('fast');
 			
 			$scope.fullscreenPlayerExpanded = false;
 		
@@ -142,6 +157,7 @@ angular.module('spotmop.player', [
 				height: $(document).height()
 			},200);
 			player.find('.fullscreen-player').fadeIn();
+			player.find('.slim-player').fadeOut('fast');
 			
 			$scope.fullscreenPlayerExpanded = true;
 		}

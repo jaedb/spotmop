@@ -1122,7 +1122,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
-	padding: 24px 200px 0;
+	padding: 28px 200px 0;
 }
 
 #player .track-info .track {
@@ -1178,6 +1178,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	left: 0;
 	right: 0;
 	margin: 0;
+	z-index: 2;
 }
 
 #player .slider.progress .track {

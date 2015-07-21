@@ -9,6 +9,12 @@
 		<i class="fa fa-chevron-up" ng-show="!fullscreenPlayerExpanded"></i>
 	</span>
 	
+	<div class="progress slider" ng-click="seek($event)">
+		<div class="track animate">
+			<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
+		</div>
+	</div>
+	
 	<div class="fullscreen-player inner">
 		
 		<a class="artwork" href="/browse/album/{{ currentTlTrack.track.album.uri }}" ng-click="toggleFullscreenPlayer()">
@@ -39,12 +45,6 @@
 	</div>
 	
 	<div class="slim-player inner">
-	
-		<div class="progress slider" ng-click="seek($event)">
-			<div class="track animate">
-				<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
-			</div>
-		</div>
 
 		<div class="playback">
 			<div class="controls">
