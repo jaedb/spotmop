@@ -477,6 +477,16 @@ angular.module('spotmop', [
             // delete key
             if( event.which === 46 )
                 $scope.$broadcast('spotmop:keyboardShortcut:delete');
+				
+			// spacebar
+			if( event.which === 32 ){
+			
+				// make sure we're not typing in an input area
+				if( !$(document).find(':focus').is(':input') ){
+					event.preventDefault();
+					$scope.$broadcast('spotmop:keyboardShortcut:space');
+				}
+			}
 
             // navigation arrows
             if( event.which === 38 )

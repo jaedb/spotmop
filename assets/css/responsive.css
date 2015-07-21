@@ -93,10 +93,12 @@
 	}
 	
 	#player .playback {
-		position: absolute;
-		top: 21px;
-		width: auto;
-		left: 0px;
+		padding-top: 24px;
+	}
+	
+	#player .expand-player {
+		bottom: 8px;
+		right: 15px;
 	}
 	
 	/**

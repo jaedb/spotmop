@@ -107,20 +107,11 @@ angular.module('spotmop.player', [
 	});
 	
     
-    /**
-     * Keyboard shortcuts
-     **/
-    
-	$('body').bind('keydown',function(evt){
-        
-		// get the object which is currently in focus (input field, etc)
-		var inFocus = $(document).find(':focus');
-		
-        // spacebar (only if we're not on an input field)
-        if( evt.which === 32 && !inFocus.is(':input') ){
-            evt.preventDefault();
-			$scope.playPause();
-		}
+	/**
+	 * When the space key is broadcast, play/pause
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:space', function( event ){        
+		$scope.playPause();
     });
 	
 	
