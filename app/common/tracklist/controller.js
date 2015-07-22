@@ -73,14 +73,15 @@ angular.module('spotmop.common.tracklist', [
 			 
 			 // CURRENTLY NOT WORKING, SINGLE CLICK INTERRUPTS THIS BEHAVIOR
 			$element.dblclick( function( event ){
-
+		
 				// get the queue's tracks
 				// we need to re-get the queue because at this point some tracks may not have tlids
+				// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
 				MopidyService.getCurrentTlTracks().then( function( tracklist ){
-
+					
 					// find our double-clicked track in the tracklist
 					$.each( tracklist, function(key, track){
-						if( track.tlid == $element.attr('data-tlid') ){
+						if( track.tlid == $scope.track.tlid ){
 
 							// then play our track
 							return MopidyService.playTlTrack({ tl_track: track });
