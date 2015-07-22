@@ -9,31 +9,6 @@ Requirements
 * Mopidy
 * Mopidy-Spotify
 
-Changelog
---------
-
-*2.1*
-* Responsive layouts, with collasing menu, condensed player and dynamic panel sizes
-* Various performance improvements
-* Improvement to directives and code structure
-* General bugfixes
-
-*2.0*
-* Full migration into AngularJS Framework
-* Introduction of Spotify Discover endpoint. This facilitates browsing playlists by genre.
-* Performance improvements
-
-*1.5*
-* Upgrade to track selection events, now uses proper syntax and command structure.
-* Cross-browser drag-and-drop sorting of tracks in playlists and queue.
-* Pretty full-screen player (inspired by Spotcommander)
-* Add custom playlists (you still need write permission as a Spotify user)
-
-*1.2*
-* Stability improvements
-* Various browser bugs (drag and drop for Chrome)
-* Base-level responsive formatting
-
 Installation
 --------
 
@@ -60,12 +35,36 @@ Screenshots
 ![User profile](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-user-profile.jpg)
 ![Settings](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-settings.jpg)
 
+Changelog
+--------
+
+*2.1*
+* Responsive layouts, with collasing menu, condensed player and dynamic panel sizes
+* Various performance improvements
+* Improvement to directives and code structure
+* General bugfixes
+
+*2.0*
+* Full migration into AngularJS Framework
+* Introduction of Spotify Discover endpoint. This facilitates browsing playlists by genre.
+* Performance improvements
+
+*1.5*
+* Upgrade to track selection events, now uses proper syntax and command structure.
+* Cross-browser drag-and-drop sorting of tracks in playlists and queue.
+* Pretty full-screen player (inspired by Spotcommander)
+* Add custom playlists (you still need write permission as a Spotify user)
+
+*1.2*
+* Stability improvements
+* Various browser bugs (drag and drop for Chrome)
+* Base-level responsive formatting
+
 To-do
 -----
 
-* Look into more mature framework to deliver templates (AngularJS?)
-* Drag-and-drop for albums and artists
-* Improve performance of ad-hoc track lists (ie artist top tracks, public playlists)
+* Speed improvements to adding tracks to the tracklist (possible Mopidy-Spotify limitation)
+* Further improve responsive layouts and touch interactions
 * Create second playlists area for 'Subscribed' playlists
 
 Credits
