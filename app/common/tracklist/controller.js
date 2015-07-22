@@ -27,6 +27,36 @@ angular.module('spotmop.common.tracklist', [
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
 			});
+			
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+				
+				// what position track am I in the tracklist
+				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
+				var trackUrisToAdd = [];
+				
+				// loop me, and all my following tracks, fetching their uris
+				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
+					var track = $scope.tracklist.tracks[i];					
+					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
+						trackUrisToAdd.push( track.uri );
+				}
+				
+				// play me (the double-clicked track) immediately
+				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+
+					// notify user that this could take some time
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding '+trackUrisToAdd.length+' tracks... this may take some time'});
+
+					// add the following tracks to the tracklist
+					MopidyService.addToTrackList( trackUrisToAdd ).then( function(response){
+						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
+					});
+				});
+			});
 		}
 	}
 })
@@ -70,8 +100,6 @@ angular.module('spotmop.common.tracklist', [
 			/**
 			 * Double click
 			 **/
-			 
-			 // CURRENTLY NOT WORKING, SINGLE CLICK INTERRUPTS THIS BEHAVIOR
 			$element.dblclick( function( event ){
 		
 				// get the queue's tracks

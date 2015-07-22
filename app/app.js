@@ -496,6 +496,7 @@ angular.module('spotmop', [
 
             // esc key
             if( event.which === 27 ){
+                $scope.$broadcast('spotmop:keyboardShortcut:esc');
                 if( dragging ){
                     dragging = false;
                     $(document).find('.drag-tracer').hide();

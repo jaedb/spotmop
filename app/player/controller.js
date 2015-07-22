@@ -170,6 +170,13 @@ angular.module('spotmop.player', [
 		}
 	};
 	
+	// listen for esc key press, if expanded, collapse
+    $scope.$on('spotmop:keyboardShortcut:esc', function(event){
+		if( $scope.fullscreenPlayerExpanded )
+			$scope.toggleFullscreenPlayer();
+	});
+	
+	
 	
 	/** 
 	 * When all systems are go
