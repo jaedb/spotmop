@@ -52,13 +52,13 @@ Features
 Screenshots
 -----------
 
-![Overview](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/overview.jpg)
-![Discover](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-discover.jpg)
-![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
-![My Playlists](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-my-playlists.jpg)
-![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
-![User profile](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-user-profile.jpg)
-![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
+![Overview](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/overview.jpg)
+![Discover](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-discover.jpg)
+![Artist](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-artist.jpg)
+![My Playlists](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-my-playlists.jpg)
+![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-playlist.jpg)
+![User profile](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-user-profile.jpg)
+![Settings](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-settings.jpg)
 
 To-do
 -----
