@@ -12,6 +12,12 @@ Requirements
 Changelog
 --------
 
+*2.1*
+* Responsive layouts, with collasing menu, condensed player and dynamic panel sizes
+* Various performance improvements
+* Improvement to directives and code structure
+* General bugfixes
+
 *2.0*
 * Full migration into AngularJS Framework
 * Introduction of Spotify Discover endpoint. This facilitates browsing playlists by genre.
@@ -46,8 +52,12 @@ Features
 Screenshots
 -----------
 
+![Overview](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/overview.jpg)
+![Discover](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-discover.jpg)
 ![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
-![Playlist with drag-and-drop functionality](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
+![My Playlists](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-my-playlists.jpg)
+![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
+![User profile](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-user-profile.jpg)
 ![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
 
 To-do
