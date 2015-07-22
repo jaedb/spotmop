@@ -1,4 +1,4 @@
-<div class="track" ng-class="{ 'playing': track.playing, 'selected': track.selected }" data-uri="{{ track.track.uri }}">
+<div class="track" ng-class="{ 'playing': track.tlid == currentTlTrack.tlid, 'selected': track.selected }" data-uri="{{ track.track.uri }}">
 
 	<div class="col w30 title" ng-bind="track.track.name"></div>
 	

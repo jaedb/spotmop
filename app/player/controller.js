@@ -209,10 +209,9 @@ angular.module('spotmop.player', [
 		updateVolume();
 	});
 	
-	$scope.$on('mopidy:event:tracklistChanged', function(){
+	$scope.$on('mopidy:event:tracklistChanged', function( event ){
 		MopidyService.getCurrentTlTracks().then( function(tlTracks){
 			$scope.$parent.currentTracklist = tlTracks;
-			updateCurrentTrack();	// TODO: Investigate if there's a more efficient way to do this
 		});
 	});
 	
@@ -283,16 +282,8 @@ angular.module('spotmop.player', [
 		// update all ui uses of the track (window title, player bar, etc)
 		var setCurrentTrack = function( tlTrack ){
 		
-			// save for any other use we might dream up
+			// save the current tltrack for global usage
 			$scope.$parent.currentTlTrack = tlTrack;
-			
-			// mark this track as playing in the currentTracklist
-			angular.forEach( $scope.$parent.currentTracklist, function( currentTracklistTrack ){
-				if( currentTracklistTrack.tlid === tlTrack.tlid )
-					currentTracklistTrack.playing = true;
-				else
-					currentTracklistTrack.playing = false;
-			});
 			
 			// now we have track info, let's get the spotify artwork	
 			SpotifyService.getTrack( tlTrack.track.uri )
