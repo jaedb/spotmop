@@ -711,12 +711,12 @@ angular.module('spotmop', [
                     
                     var start = 1000;
                     var end = 0;
-                    var to_position = $(track).index();
+                    var to_position = $(track).parent().index();
                     $.each(dragging.tracks, function(key, track){
-                        if( $(track).index() < start )  
-                            start = $(track).index();
-                        if( $(track).index() > end )  
-                            end = $(track).index();
+                        if( $(track).parent().index() < start )  
+                            start = $(track).parent().index();
+                        if( $(track).parent().index() > end )  
+                            end = $(track).parent().index();
                     });
                     
                     // sorting queue tracklist
@@ -727,11 +727,15 @@ angular.module('spotmop', [
                         
                     // sorting playlist tracklist
                     }else if( track.closest('.tracklist').hasClass('playlist-items') ){
-                        var playlisturi = $state.params.uri;
+					
                         var range_length = 1;
-                        if( end > start ) range_length = end - start;
-                        SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
-                        $(dragging.tracks).insertBefore( track );
+                        if( end > start ){
+							range_length = end - start;
+							range_length++;
+						};
+						
+						// tell our playlist controller to update it's track order, and pass it on to Spotify too
+						$scope.$broadcast('spotmop:playlist:reorder', start, range_length, to_position);
                     }
 				}
 				

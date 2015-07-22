@@ -57,11 +57,53 @@ angular.module('spotmop.browse.playlist', [])
         var totalTime = 0;
         if( $scope.tracklist.tracks.length > 0 ){
             angular.forEach( $scope.tracklist.tracks, function( track ){
-                totalTime += track.duration_ms;
+				if( typeof( track ) !== 'undefined' )
+					totalTime += track.duration_ms;
             });
         }
         return Math.round(totalTime / 100000);   
     }
+	
+	/**
+	 * When the user changes the order of a playlist tracklist
+	 * @param start = int
+	 * @param range_length = int
+	 * @param to_position = int
+	 **/
+	$scope.$on('spotmop:playlist:reorder', function( event, start, range_length, to_position ){
+	
+		var playlisturi = $state.params.uri;		
+        
+		// get spotify to start moving
+		SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+		
+		var tracksToMove = [];
+		
+		// build an array of the tracks we need to move
+		for( var i = 0; i < range_length; i++ )
+			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
+		
+		// if we're dragging items down the line further, account for the tracks that we've just removed
+		if( start < to_position )
+			to_position = to_position - range_length;
+		
+		// reverse the order of our tracks to move (unexplained as to why we need this...)
+		tracksToMove.reverse();
+		
+		// we need to apply this straight to the template, so we wrap in $apply
+		$scope.$apply( function(){
+		
+			// remove our tracks to move (remembering to adjust Spotify's range_length value)
+			$scope.tracklist.tracks.splice( start, range_length );
+			
+			// and now we add our moved tracks, to their new position
+			angular.forEach( tracksToMove, function(trackToMove){
+				console.log( to_position );
+				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+			});
+		});
+	});
+	
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});
 
