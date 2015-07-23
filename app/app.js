@@ -234,6 +234,7 @@ angular.module('spotmop', [
 
     $scope.isTouchDevice = function(){ return !!('ontouchstart' in window); }
 	$scope.currentTlTrack = {};
+	$scope.getCurrentTlTrack = function(){ return $scope.currentTlTrack };
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;

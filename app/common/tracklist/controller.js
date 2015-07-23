@@ -49,7 +49,11 @@ angular.module('spotmop.common.tracklist', [
 				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
 
 					// notify user that this could take some time
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: 'Adding '+trackUrisToAdd.length+' tracks... this may take some time'});
+			
+					var message = 'Adding '+trackUrisToAdd.length+' tracks';
+					if( trackUrisToAdd.length > 10 )
+						message += '... this could take some time';
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message});
 
 					// add the following tracks to the tracklist
 					MopidyService.addToTrackList( trackUrisToAdd ).then( function(response){
@@ -200,21 +204,21 @@ angular.module('spotmop.common.tracklist', [
 	 **/
 	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event, playNext){
 		
-		var atPosition = null;
+		var atPosition = 0;
 			
 		// if we're adding these tracks to play next
 		if( typeof( playNext ) !== 'undefined' && playNext == true ){
 			
 			// fetch the currently playing track
-			var currentTrack = $filter('filter')( $scope.currentTracklist, {playing: true} );
+			var currentTrack = $scope.currentTlTrack;
 			
-			// make sure we got one, and then get it's position in the currentTracklist, so we can add tracks after it
-			if( currentTrack.length > 0 ){
-				atPosition = $scope.currentTracklist.indexOf(currentTrack[0]) + 1;
-				
-			// no current track, add to top of queue
-			}else{
-				atPosition = 0;
+			// make sure we have a current track
+			if( currentTrack ){
+				var currentTrackObject = $filter('filter')($scope.currentTracklist, {tlid: currentTrack.tlid});
+			
+				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
+				if( currentTrackObject.length > 0 )				
+					atPosition = $scope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
 			}
 		}
 		
@@ -224,8 +228,12 @@ angular.module('spotmop.common.tracklist', [
 		angular.forEach( selectedTracks, function( track ){
 			selectedTracksUris.push( track.uri );
 		});
-				    
-		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+selectedTracksUris.length+' tracks to queue'});
+			
+		var message = 'Adding '+selectedTracks.length+' tracks to queue';
+		if( selectedTracks.length > 10 )
+			message += '... this could take some time';
+			
+		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message});
 				
 		MopidyService.addToTrackList( selectedTracksUris, atPosition ).then( function(response){
 			$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
@@ -238,14 +246,59 @@ angular.module('spotmop.common.tracklist', [
 	 * Selected Tracks >> Play
 	 **/
 	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
-		var selectedTracks = $filter('filter')( $scope.tracklist, {selected: true} );
-		var selectedTracksUris = [];
+	
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var firstSelectedTrack = selectedTracks[0];	
 		
-		angular.forEach( selectedTracks, function(track){
-			selectedTracksUris.push( track.track.uri );
-		});
+		// detect tracklist context
+		if( $element.data('type') === 'queue' )
+			var context = 'queue';
+		else
+			var context = 'generic';
+			
+		// depending on context, make the selected track(s) play
+		// queue
+		if( context === 'queue' ){
+			
+			// get the queue's tracks
+			// we need to re-get the queue because at this point some tracks may not have tlids
+			// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
+			MopidyService.getCurrentTlTracks().then( function( tracklist ){
+				
+				// find our double-clicked track in the tracklist
+				$.each( tracklist, function(key, track){
+					if( track.tlid == firstSelectedTrack.tlid ){
+
+						// then play our track
+						return MopidyService.playTlTrack({ tl_track: track });
+					}	
+				});
+			});
+			
+		// generic tracklist (playlist, top-tracks, album, etc)
+		}else if( context === 'generic' ){
 		
-		// TODO: Implement mopidy
+			// build an array of track uris (and subtract the first one, as we play him immediately)
+			var selectedTracksUris = [];
+			for( var i = 1; i < selectedTracks.length; i++ ){
+				selectedTracksUris.push( selectedTracks[i].uri );
+			};
+			
+			var message = 'Adding '+selectedTracks.length+' tracks to queue';
+			if( selectedTracks.length > 10 )
+				message += '... this could take some time';
+				
+			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message });
+				
+			// play the first track immediately
+			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
+
+				// add the following tracks to the tracklist
+				MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
+					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
+				});
+			});
+		}
 	});
 	
 	
