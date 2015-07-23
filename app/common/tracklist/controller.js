@@ -204,10 +204,12 @@ angular.module('spotmop.common.tracklist', [
 	 **/
 	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event, playNext){
 		
-		var atPosition = 0;
+		var atPosition = null;
 			
 		// if we're adding these tracks to play next
 		if( typeof( playNext ) !== 'undefined' && playNext == true ){
+		
+			atPosition = 0;
 			
 			// fetch the currently playing track
 			var currentTrack = $scope.currentTlTrack;

@@ -666,8 +666,12 @@ angular.module('spotmop', [
 				
 				// dropping on queue
 				if( target.attr('data-type') === 'queue' ){
+			
+					var message = 'Adding '+uris.length+' track(s) to queue';
+					if( uris.length > 10 )
+						message += '... this could take some time';
 				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding to queue'});
+                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message});
                     
 					MopidyService.addToTrackList( uris ).then( function(response){
                         $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
