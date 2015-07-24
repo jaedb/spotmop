@@ -1160,9 +1160,9 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player .volume {
 	padding-top: 32px;
-	padding-right: 5%;
+	padding-right: 48px;
 	float: right;
-	width: 20%;
+	width: 180px;
 }
 
 #player .slider {
@@ -1225,7 +1225,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player .expand-player {
 	position: absolute;
-	bottom: 45px;
+	bottom: 25px;
 	right: 20px;
 	padding: 10px;
 	font-size: 16px;
@@ -1242,10 +1242,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #player .fullscreen-player .track-info {
-	padding: 20px 0;
+	padding: 40px 0;
 }
 
-#player .fullscreen-player .controls {
+#player .fullscreen-player .player-controls {
 	float: none;
 	text-align: center;
 	margin: 0;
@@ -1271,6 +1271,21 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	height: auto;
 }
 
+#player .fullscreen-player .volume {
+	margin: 0 auto;
+	max-width: 500px;
+	width: 80%;
+	float: none;
+	padding: 40px 0 0 0;
+}
+
+#player .fullscreen-player .volume .controls {
+	margin: -5px 0 0 0;
+}
+
+#player .fullscreen-player .volume .slider {
+	margin: 0 0 0 45px;
+}
 
 
 

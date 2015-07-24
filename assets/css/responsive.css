@@ -148,6 +148,24 @@
 @media( max-width: 600px ){
 	
 	/**
+	 * Tracklists
+	 **/
+	.tracklist .track .popularity,
+	.tracklist .track .duration {
+		display: none;
+	}
+	
+	.tracklist .track .title {
+		width: 40%;
+	}
+	
+	.tracklist.album-items .track .title,
+	.tracklist.album-items .track .artist {
+		width: 50%;
+	}
+	
+	
+	/**
 	 * Album page
 	 **/
 	
@@ -208,3 +226,29 @@
 	}
 	
 }
+
+
+
+/* ====================================================== SHALLOW SCREENS (ie phone landscape) ==== */
+/* ================================================================================================ */
+
+@media( max-height: 500px ){
+
+	#player .fullscreen-player .artwork-wrapper {
+		float: left;
+		width: 40%;
+	}
+
+	#player .fullscreen-player .info-wrapper {
+		float: right;
+		width: 55%;
+	}
+
+	#player .fullscreen-player .artwork {
+		max-height: 200px;
+		max-width: 200px;
+	}
+
+}
+
+

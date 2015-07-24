@@ -276,6 +276,7 @@ angular.module('spotmop', [
 	 **/
 	
 	$scope.windowWidth = $(document).width();
+	$scope.windowHeight = $(document).height();
 	$scope.mediumScreen = function(){
 		if( $scope.windowWidth <= 800 )
 			return true;

@@ -17,29 +17,51 @@
 	
 	<div class="fullscreen-player inner">
 		
-		<a class="artwork" href="/browse/album/{{ currentTlTrack.track.album.uri }}" ng-click="toggleFullscreenPlayer()">
-			<img class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" src="{{ image.url }}" />
-		</a>
+		<div class="artwork-wrapper">
 		
-		<div class="track-info">
-			<span class="track" ng-bind="currentTlTrack.track.name"></span>
-			<span class="artist">
-				<span ng-repeat="artist in currentTlTrack.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name" ng-click="toggleFullscreenPlayer()"></a><span ng-show="!$last">, </span>
-				</span>
-			</span>
+			<a class="artwork" href="/browse/album/{{ currentTlTrack.track.album.uri }}" ng-click="toggleFullscreenPlayer()">
+				<img class="image" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1" src="{{ image.url }}" />
+			</a>
+			
 		</div>
+		<div class="info-wrapper">
 		
-		<div class="controls">
-			<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
-			<span class="button play-pause" ng-click="playPause()">
-				<i class="fa fa-play" ng-show="!playing"></i>
-				<i class="fa fa-pause" ng-show="playing"></i>
-			</span>
-			<span class="button stop" ng-click="stop()">
-				<i class="fa fa-stop"></i>
-			</span>
-			<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+			<div class="track-info">
+				<span class="track" ng-bind="currentTlTrack.track.name"></span>
+				<span class="artist">
+					<span ng-repeat="artist in currentTlTrack.track.artists">
+						<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name" ng-click="toggleFullscreenPlayer()"></a><span ng-show="!$last">, </span>
+					</span>
+				</span>
+			</div>
+			
+			<div class="player-controls controls">
+			{{ shallowScreen() }}
+				<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
+				<span class="button play-pause" ng-click="playPause()">
+					<i class="fa fa-play" ng-show="!playing"></i>
+					<i class="fa fa-pause" ng-show="playing"></i>
+				</span>
+				<span class="button stop" ng-click="stop()">
+					<i class="fa fa-stop"></i>
+				</span>
+				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+			</div>
+
+			<div class="volume">
+				<div class="controls">
+					<span class="button mute" ng-click="toggleMute()" ng-class="{active: isMute}">
+						<i class="fa fa-volume-off" ng-show="muted"></i>
+						<i class="fa fa-volume-down" ng-show="!muted"></i>
+					</span>
+				</div>
+				<div class="slider" ng-click="setVolume($event)">
+					<div class="track">
+						<div class="fill" style="width: {{ volume }}%"></div>
+					</div>
+				</div>
+			</div>
+		
 		</div>
 		
 	</div>
