@@ -49,7 +49,7 @@
             </h1>
 			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
 			<div class="info-text">
-				<span ng-bind="tracks.total">0</span> tracks
+				<span ng-bind="tracklist.total">0</span> tracks
 				&nbsp;|&nbsp; <span ng-show="tracks.next">+</span><span ng-bind="totalTime()">0</span> minutes
 				&nbsp;|&nbsp; <i class="fa fa-lock" ng-hide="playlist.public">&nbsp;</i><a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
 			</div>

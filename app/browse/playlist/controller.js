@@ -113,6 +113,9 @@ angular.module('spotmop.browse.playlist', [])
 		
 			$scope.playlist = response;			
 			$scope.tracklist.next = response.tracks.next;
+			$scope.tracklist.previous = response.tracks.previous;
+			$scope.tracklist.offset = response.tracks.offset;
+			$scope.tracklist.total = response.tracks.total;
 			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
 		
 			// parse description string and make into real html (people often have links here)
