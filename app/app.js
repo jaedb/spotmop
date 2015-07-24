@@ -23,7 +23,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
-	'spotmop.playlists',
+	'spotmop.myplaylists',
 	'spotmop.search',
 	'spotmop.settings',
 	

@@ -1,21 +1,21 @@
-angular.module('spotmop.playlists', [])
+angular.module('spotmop.myplaylists', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('playlists', {
-			url: "/playlists",
-			templateUrl: "app/playlists/template.html",
-			controller: 'PlaylistsController'
+		.state('myplaylists', {
+			url: "/my-playlists",
+			templateUrl: "app/my-playlists/template.html",
+			controller: 'MyPlaylistsController'
 		});
 })
 	
 /**
  * Main controller
  **/
-.controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, SpotifyService, SettingsService, DialogService ){
+.controller('MyPlaylistsController', function MyPlaylistsController( $scope, $rootScope, SpotifyService, SettingsService, DialogService ){
 	
 	// set the default items
 	$scope.playlists = [];
