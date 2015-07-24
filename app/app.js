@@ -655,7 +655,7 @@ angular.module('spotmop', [
 			var track = getTrackTarget( event.target );
 			
 			var isMenuItem = false;
-			if( target.closest('.menu-item').length > 0 )
+			if( target && target.closest('.main-menu').length > 0 )
 				isMenuItem = true;
 			
 			// if we have a target
@@ -795,9 +795,11 @@ angular.module('spotmop', [
                 $(document).find('.droppable').removeClass('dropping');
 			
 				var isMenuItem = false;
-				if( target.closest('.menu-item').length > 0 )
+				if( target && target.closest('.main-menu').length > 0 )
 					isMenuItem = true;
                 
+				console.log( isMenuItem );
+				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     dragTracer.addClass('good').html('Add to queue');
                     target.addClass('dropping');
