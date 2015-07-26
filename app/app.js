@@ -654,6 +654,10 @@ angular.module('spotmop', [
 			var target = getDroppableTarget( event.target );
 			var track = getTrackTarget( event.target );
 			
+			var isMenuItem = false;
+			if( target && target.closest('.main-menu').length > 0 )
+				isMenuItem = true;
+			
 			// if we have a target
 			if( target ){
 				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
@@ -666,7 +670,7 @@ angular.module('spotmop', [
 				});
 				
 				// dropping on queue
-				if( target.attr('data-type') === 'queue' ){
+				if( isMenuItem && target.attr('data-type') === 'queue' ){
 			
 					var message = 'Adding '+uris.length+' track(s) to queue';
 					if( uris.length > 10 )
@@ -679,7 +683,7 @@ angular.module('spotmop', [
                     });
 					
 				// dropping on library
-				}else if( target.attr('data-type') === 'library' ){
+				}else if( isMenuItem && target.attr('data-type') === 'library' ){
 				    
                     $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
 				
@@ -699,7 +703,7 @@ angular.module('spotmop', [
                         });	
 					
 				// dropping on playlist
-				}else if( target.attr('data-type') === 'playlist' ){
+				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
 				    
                     $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-playlist', message: 'Adding to playlist'});
 				
@@ -789,14 +793,20 @@ angular.module('spotmop', [
                     });
                 
                 $(document).find('.droppable').removeClass('dropping');
+			
+				var isMenuItem = false;
+				if( target && target.closest('.main-menu').length > 0 )
+					isMenuItem = true;
                 
-                if( target && target.attr('data-type') === 'queue' ){
+				console.log( isMenuItem );
+				
+                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     dragTracer.addClass('good').html('Add to queue');
                     target.addClass('dropping');
-                }else if( target && target.attr('data-type') === 'library' ){
+                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
                     dragTracer.addClass('good').html('Add to library');
                     target.addClass('dropping');
-                }else if( target && target.attr('data-type') === 'playlist' ){
+                }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
                 }else{
