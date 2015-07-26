@@ -43,6 +43,26 @@
 	.artist-intro {
 		padding-top: 150px;
 	}
+
+	
+	/** 
+	 * Player
+	 **/
+	 
+	#player .fullscreen-player .artwork-wrapper {
+		float: left;
+		width: 40%;
+	}
+
+	#player .fullscreen-player .info-wrapper {
+		float: right;
+		width: 55%;
+	}
+
+	#player .fullscreen-player .artwork {
+		max-height: 200px;
+		max-width: 200px;
+	}
 }
 
 
@@ -70,6 +90,15 @@
 		left: -50%;
 		bottom: 56px;
 	}
+	
+	
+	/**
+	 * Notifications
+	 **/
+	#notifications {
+		left: 0;
+	}
+	
 	
 	/**
 	 * Player bar
@@ -243,28 +272,5 @@
 	
 }
 
-
-
-/* ====================================================== SHALLOW SCREENS (ie phone landscape) ==== */
-/* ================================================================================================ */
-
-@media( max-height: 500px ){
-
-	#player .fullscreen-player .artwork-wrapper {
-		float: left;
-		width: 40%;
-	}
-
-	#player .fullscreen-player .info-wrapper {
-		float: right;
-		width: 55%;
-	}
-
-	#player .fullscreen-player .artwork {
-		max-height: 200px;
-		max-width: 200px;
-	}
-
-}
 
 

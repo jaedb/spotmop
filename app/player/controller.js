@@ -52,7 +52,7 @@ angular.module('spotmop.player', [
 		position = event.pageX - offset.left;
 		percent = position / slider.innerWidth();
 		seekTime = Math.round(percent * $scope.currentTlTrack.track.length);
-		console.log( 'Seeking to '+percent+'% and '+seekTime+'ms' );
+		
 		// tell mopidy to make it so
 		MopidyService.seek( seekTime );
 	}
@@ -201,8 +201,8 @@ angular.module('spotmop.player', [
 		updatePlayerState( state.new_state );
 	});
 	
-	$scope.$on('mopidy:event:seeked', function( event, state ){
-		updatePlayPosition();
+	$scope.$on('mopidy:event:seeked', function( event, position ){
+		updatePlayPosition( position.time_position );
 	});
 	
 	$scope.$on('mopidy:event:volumeChanged', function( event, state ){
@@ -223,6 +223,7 @@ angular.module('spotmop.player', [
 		updatePlayerState();
 	});
 	
+	
 	/**
 	 * Update play progress position slider
 	 **/
@@ -235,10 +236,24 @@ angular.module('spotmop.player', [
 		1000
 	);
 	
-	function updatePlayPosition(){
-		MopidyService.getTimePosition().then( function(position){
-			$scope.playPosition = position;
-		});
+	/**
+	 * Set the new play position and, if required, figure it out first
+	 * @param newPosition = integer (optional)
+	 **/
+	function updatePlayPosition( newPosition ){
+	
+		// if we haven't been provided with a specific new position
+		if( typeof( newPosition ) === 'undefined' ){
+		
+			// go get the time position
+			MopidyService.getTimePosition().then( function(position){
+				$scope.playPosition = position;
+			});
+		
+		// we've been parsed the time position, so just use that
+		}else{
+			$scope.playPosition = newPosition;
+		}
 	}
 	
 	

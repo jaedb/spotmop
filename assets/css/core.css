@@ -1188,7 +1188,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #player .slider.progress:hover .track {
-	height: 6px;
+	height: 8px;
 	background: rgba(255,255,255,0.15);
 }
 
