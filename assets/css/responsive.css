@@ -138,6 +138,11 @@
 		width: 21%;
 		margin-bottom: 5%;
 	}
+	
+	.square-panel.category:hover .name,
+	.square-panel.category .name {
+		padding-bottom: 12%;
+	}
 }
 
 
@@ -191,6 +196,17 @@
 		padding-top: 20px;
 	}
 	
+	
+	/**
+	 * Square panels
+	 **/
+	
+	.square-panel.category:hover .name,
+	.square-panel.category .name {
+		padding-bottom: 8%;
+		font-size: 13px;
+	}
+	
 }
 
 
@@ -222,7 +238,7 @@
 	 **/
 	.square-panel {
 		width: 29%;
-		margin-bottom: 10%;
+		margin-bottom: 5%;
 	}
 	
 }
