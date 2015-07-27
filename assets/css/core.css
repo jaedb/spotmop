@@ -62,6 +62,10 @@ body.dragging *,
 	height: 90px;
 }
 
+#body > .inner {
+	overflow-x: hidden;
+}
+
 #sidebar > .inner,
 #body > .inner,
 #player > .inner {
