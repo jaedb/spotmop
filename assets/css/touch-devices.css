@@ -1,0 +1,58 @@
+/**
+ * touchDevice specific elements
+ * This is how we show touch-friendly track selection and context menus, etc
+ * 
+ * Spotmop
+ **/
+ 
+ 
+ 
+/**
+ * Tracklist context menu
+ **/
+
+.touchDevice .tracklist .track {
+	padding-left: 30px;
+}
+
+.tracklist .track .selected-state {
+	display: none;
+}
+
+.touchDevice .tracklist .track .selected-state {
+	display: block;
+	width: 10px;
+	position: absolute;
+	top: 2px;
+	left: 0;
+	padding: 10px;
+	font-size: 14px;
+}
+
+.tracklist-context-menu {
+	display: none;
+}
+
+.touchDevice .tracklist-context-menu {
+	display: block;
+	background: #222222;
+	color: #FFFFFF;
+	margin: -20px -20px 10px -20px;
+}
+
+.touchDevice .tracklist-context-menu .menu-item {
+	display: inline-block;
+	padding: 12px 8px;
+	font-size: 13px;
+}
+
+.touchDevice .tracklist-context-menu .status {
+	color: #777777;
+	padding-left: 15px;
+}
+
+
+
+
+
+

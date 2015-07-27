@@ -1,5 +1,10 @@
 <div class="track" ng-class="{ 'playing': track.tlid == currentTlTrack.tlid, 'selected': track.selected }" data-uri="{{ track.track.uri }}">
 
+	<div class="selected-state">
+		<i class="fa fa-check-square-o" ng-show="track.selected"></i>
+		<i class="fa fa-square-o" ng-show="!track.selected"></i>
+	</div>
+
 	<div class="col w30 title" ng-bind="track.track.name"></div>
 	
 	<div class="col w30 artist">
@@ -13,8 +18,6 @@
 	<div class="col w5 duration">	
 		<span ng-show="track.track.length">{{ track.track.length | formatMilliseconds }}</span>
 	</div>
-	
-	<div class="context-menu-trigger fa fa-ellipsis-v"></div>
 	
 	<div class="clear-both"></div>
 
