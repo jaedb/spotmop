@@ -18,6 +18,7 @@ contextmenu {
 	z-index: 10;
 	background: #222222;
 	color: #FFFFFF;
+	min-width: 110px;
 }
 
 contextmenu .menu-item {

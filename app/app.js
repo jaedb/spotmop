@@ -797,8 +797,6 @@ angular.module('spotmop', [
 				var isMenuItem = false;
 				if( target && target.closest('.main-menu').length > 0 )
 					isMenuItem = true;
-                
-				console.log( isMenuItem );
 				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     dragTracer.addClass('good').html('Add to queue');

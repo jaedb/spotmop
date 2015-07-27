@@ -80,14 +80,18 @@ angular.module('spotmop.common.tracklist', [
 			 **/
 			$element.mouseup( function( event ){
 				
-				// left click
-				if( event.which === 1 ){
-					$scope.$emit('spotmop:contextMenu:hide');
-					$scope.$emit('spotmop:track:clicked', $scope);
-					
-				// right click
-				}else if( event.which === 3 ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+				if( $(event.target).hasClass('context-menu-trigger') ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack', true);
+				}else{				
+					// left click
+					if( event.which === 1 ){
+						$scope.$emit('spotmop:contextMenu:hide');
+						$scope.$emit('spotmop:track:clicked', $scope);
+						
+					// right click
+					}else if( event.which === 3 ){
+						$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+					}
 				}
 			});			
 			

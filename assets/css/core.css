@@ -707,6 +707,7 @@ h1 .flag {
 	border-bottom: 1px solid #EEEEEE;
 	margin-bottom: -1px;
 	cursor: pointer;
+	position: relative;
 	
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -756,6 +757,14 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .tracklist .track.drag-hovering:first-child {
 	margin-top: -1px;
+}
+
+.tracklist .track .context-menu-trigger {
+	padding: 10px;
+	width: 10px;
+	position: absolute;
+	top: 0;
+	right: 0;
 }
  
 

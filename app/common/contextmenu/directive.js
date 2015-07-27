@@ -38,19 +38,28 @@ angular.module('spotmop.common.contextmenu', [
 			/**
 			 * Show the context menu
 			 * @param context = string (track|tltrack)
+			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
 			 **/
-			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
+			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context, reverse){
 				
 				var positionY = originalEvent.pageY - $(window).scrollTop();
 				var positionX = originalEvent.pageX - window.pageYOffset;
 				
-				$element.show().css({
-					top: positionY,
-					left: positionX + 5
-				});
+				if( typeof( reverse ) !== 'undefined' && reverse )
+					positionX -= $element.outerWidth();
+				
+				// position and reveal our element
+				$element
+					.css({
+						top: positionY,
+						left: positionX + 5
+					})
+					.show();
 				
 				// use the clicked element to define what kind of context menu to show
-				$scope.context = context;				
+				$scope.$apply( function(){
+					$scope.context = context;
+				});
 			});
 			
 			
