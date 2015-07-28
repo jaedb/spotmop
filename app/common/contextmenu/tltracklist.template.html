@@ -1,9 +1,18 @@
-<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0 && isTouchDevice()">
-	<span class="menu-item status">
-		{{ ( tracklist.tracks | filter: { selected: true } ).length }} selected tracks
+<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0 && isTouchDevice()">	
+	<span class="menu-item" ng-click="play()">
+		<i class="fa fa-play"></i>
+		<span class="text">Play</span>
 	</span>
-	<span class="menu-item" ng-click="play()">Play</span>
-	<span class="menu-item" ng-click="unqueue()">Remove</span>
-	<span class="menu-item" ng-click="selectAll()">Select all</span>
-	<span class="menu-item close" ng-click="unselectAll()"><i class="fa fa-close"></i></span>
+	<span class="menu-item" ng-click="unqueue()">
+		<i class="fa fa-trash-o"></i>
+		<span class="text">Delete</span>
+	</span>
+	<span class="menu-item" ng-click="selectAll()">
+		<i class="fa fa-check-square-o"></i>
+		<span class="text">Select all</span>
+	</span>
+	<span class="menu-item cancel" ng-click="unselectAll()">
+		<i class="fa fa-close"></i>
+		<span class="text">Cancel</span>
+	</span>
 </div>
