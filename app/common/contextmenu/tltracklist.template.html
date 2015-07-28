@@ -1,4 +1,4 @@
-<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0">
+<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0 && isTouchDevice()">
 	<span class="menu-item status">
 		{{ ( tracklist.tracks | filter: { selected: true } ).length }} selected tracks
 	</span>
