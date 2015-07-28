@@ -2,13 +2,7 @@
 	
 	<div class="queue-intro">
 		
-		<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0">
-			<span class="menu-item status">
-				{{ ( tracklist.tracks | filter: { selected: true } ).length }} selected tracks
-			</span>
-			<span class="menu-item" ng-click="play()">Play</span>
-			<span class="menu-item" ng-click="unqueue()">Remove</span>
-		</div>
+		<ng-include src="'/app/common/contextmenu/tltracklist.template.html'"></ng-include>
 		
 		<h1>Queue</h1>
 		

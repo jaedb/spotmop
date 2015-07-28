@@ -1,0 +1,10 @@
+<div class="tracklist-context-menu" ng-show="( tracklist.tracks | filter: { selected: true } ).length > 0">
+	<span class="menu-item status">
+		{{ ( tracklist.tracks | filter: { selected: true } ).length }} selected tracks
+	</span>
+	<span class="menu-item" ng-click="play()">Play</span>
+	<span class="menu-item" ng-click="playNext()">Play next</span>
+	<span class="menu-item" ng-click="enqueue()">Add to queue</span>
+	<span class="menu-item" ng-click="unqueue()">Remove</span>
+	<span class="menu-item close" ng-click="unselectAll()"><i class="fa fa-close"></i></span>
+</div>

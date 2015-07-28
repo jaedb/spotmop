@@ -80,20 +80,16 @@ angular.module('spotmop.common.tracklist', [
 			 **/
 			$element.mouseup( function( event ){
 				
-				if( $(event.target).hasClass('context-menu-trigger') ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack', true);
-				}else{				
-					// left click
-					if( event.which === 1 ){
-						$scope.$emit('spotmop:contextMenu:hide');
-						$scope.$emit('spotmop:track:clicked', $scope);
-						
-					// right click
-					}else if( event.which === 3 ){
-						$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
-					}
+				// left click
+				if( event.which === 1 ){
+					$scope.$emit('spotmop:contextMenu:hide');
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click
+				}else if( event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
 				}
-			});			
+			});		
 			
 			/**
 			 * Double click
@@ -153,7 +149,7 @@ angular.module('spotmop.common.tracklist', [
 	$scope.$on('spotmop:track:clicked', function( event, $track ){
 		
 		// if ctrl key held down
-		if( $rootScope.ctrlKeyHeld ){
+		if( $rootScope.ctrlKeyHeld || $scope.isTouchDevice() ){
 			
 			// toggle selection for this track
 			if( $track.track.selected ){
@@ -331,7 +327,7 @@ angular.module('spotmop.common.tracklist', [
 	 **/
 	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
 		
-		var selectedTracks = $filter('filter')( $scope.currentTracklist, {selected: true} );
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var selectedTracksUris = [];
 		
 		angular.forEach( selectedTracks, function(track){
@@ -339,6 +335,21 @@ angular.module('spotmop.common.tracklist', [
 		});
 		
 		// TODO: Implement mopidy for queue, and spotify for playlists that we own
+	});
+	
+	
+	/**
+	 * Manipulate selected tracks
+	 **/
+	$scope.$on('spotmop:tracklist:selectAll', function(event){
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			track.selected = true;
+		});
+	});
+	$scope.$on('spotmop:tracklist:unselectAll', function(event){
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			track.selected = false;
+		});
 	});
 	
 });

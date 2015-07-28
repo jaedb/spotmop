@@ -29,24 +29,34 @@
 	font-size: 14px;
 }
 
-.tracklist-context-menu {
-	display: none;
-}
+/*
+.tracklist-context-menu {					display: none; }
+.touchDevice .tracklist-context-menu {		display: block; }
+*/
 
-.touchDevice .tracklist-context-menu {
-	display: block;
+.tracklist-context-menu {
 	background: #222222;
 	color: #FFFFFF;
-	margin: -20px -20px 10px -20px;
+	z-index: 9;
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
 }
 
-.touchDevice .tracklist-context-menu .menu-item {
+.tracklist-context-menu .menu-item {
 	display: inline-block;
-	padding: 12px 8px;
+	padding: 20px 16px;
 	font-size: 13px;
 }
 
-.touchDevice .tracklist-context-menu .status {
+.tracklist-context-menu .menu-item.close {
+	float: right;
+	margin-top: -3px;
+	font-size: 20px;
+}
+
+.tracklist-context-menu .status {
 	color: #777777;
 	padding-left: 15px;
 }

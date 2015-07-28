@@ -35,6 +35,16 @@ angular.module('spotmop.common.contextmenu', [
 				$element.hide();
 			}
 			
+			$scope.selectAll = function(){
+				$rootScope.$broadcast('spotmop:tracklist:selectAll');
+				$element.hide();
+			}
+			
+			$scope.unselectAll = function(){
+				$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+				$element.hide();
+			}
+			
 			/**
 			 * Show the context menu
 			 * @param context = string (track|tltrack)

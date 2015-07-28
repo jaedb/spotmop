@@ -1,5 +1,10 @@
 <div class="track" ng-class="{ 'selected': track.selected }" data-uri="{{ track.uri }}">
 
+	<div class="selected-state">
+		<i class="fa fa-check-square-o" ng-show="track.selected"></i>
+		<i class="fa fa-square-o" ng-show="!track.selected"></i>
+	</div>
+	
 	<div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
 
 	<div class="artist" ng-class="{ empty: track.artists.length < 1 }">

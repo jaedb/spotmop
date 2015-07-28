@@ -1,5 +1,7 @@
 <div>
 	
+	<ng-include src="'/app/common/contextmenu/tracklist.template.html'"></ng-include>
+		
 	<div class="playlist-intro">
 		<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
 			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>

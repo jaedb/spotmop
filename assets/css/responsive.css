@@ -139,6 +139,7 @@
 		height: 180px;
 	}
 	
+	
 	/**
 	 * Forms
 	 **/
@@ -184,6 +185,16 @@
 	/**
 	 * Tracklists
 	 **/
+	 
+	.tracklist {
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+	
+	.tracklist .track {
+		padding-right: 20px;
+	}
+	 
 	.tracklist .track .popularity,
 	.tracklist .track .duration {
 		display: none;
@@ -196,6 +207,14 @@
 	.tracklist.album-items .track .title,
 	.tracklist.album-items .track .artist {
 		width: 50%;
+	}
+	
+	
+	/**
+	 * Intro panels
+	 **/
+	.playlist-intro .inner {
+		padding: 30px;
 	}
 	
 	
@@ -235,6 +254,13 @@
 		padding-bottom: 8%;
 		font-size: 13px;
 	}
+
+	/**
+	 * Context menu 
+	 **/
+	.tracklist-context-menu .menu-item {
+		padding: 12px 8px;
+	}
 	
 }
 
@@ -268,6 +294,14 @@
 	.square-panel {
 		width: 29%;
 		margin-bottom: 5%;
+	}
+	
+	
+	/**
+	 * Touch-device context menus
+	 **/
+	.tracklist-context-menu .status {
+		display: none;
 	}
 	
 }
