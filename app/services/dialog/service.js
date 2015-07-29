@@ -190,6 +190,16 @@ angular.module('spotmop.services.dialog', [])
 					$scope.status = 'Unable to load your playlists';
 				});	
 			
+			/**
+			 * When we select the playlist for these tracks
+			 **/
+			$scope.playlistSelected = function( playlist ){
+			
+				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );
+			
+				console.log( playlist.uri );
+				console.log( selectedTracks );
+			};
 			/*
             $scope.savePlaylist = function(){
                 

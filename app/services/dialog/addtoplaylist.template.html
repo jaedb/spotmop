@@ -3,7 +3,7 @@
 	<h4 class="section-title dialog-title">Add to playlist</h4>
 
 	<div class="select-playlist">
-		<div class="square-panel playlist" ng-repeat="playlist in playlists">
+		<div class="square-panel playlist" ng-repeat="playlist in playlists" ng-click="playlistSelected( playlist )">
 			<div class="image-container">
 				<thumbnail images="playlist.images"></thumbnail>
 			</div>

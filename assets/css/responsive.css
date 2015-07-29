@@ -173,6 +173,20 @@
 	.square-panel.category .name {
 		padding-bottom: 12%;
 	}
+	
+	
+	/**
+	 * Dialogs and popups
+	 **/
+	 
+	.dialog .content {
+		padding-left: 15%;
+		padding-right: 15%;
+	}
+	
+	.add-to-playlist-dialog .playlist {
+		width: 21%;
+	}
 }
 
 
