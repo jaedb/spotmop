@@ -195,34 +195,34 @@ angular.module('spotmop.services.dialog', [])
 			 **/
 			$scope.playlistSelected = function( playlist ){
 			
-				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );
-			
-				console.log( playlist.uri );
-				console.log( selectedTracks );
+				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );				
+				var selectedTracksUris = [];
+				
+				// construct a flat array of track uris
+				angular.forEach( selectedTracks, function( track ){
+					
+					// accommodate TlTrack objects, with their nested track objects
+					if( typeof( track.track ) !== 'undefined' )
+						selectedTracksUris.push( track.track.uri );
+					
+					// not TlTrack, so not nested
+					else
+						selectedTracksUris.push( track.uri );					
+				});
+				
+				// get Spotify involved...
+				SpotifyService.addTracksToPlaylist( playlist.uri, selectedTracksUris )
+					.success( function(response){
+					
+						// remove this dialog, and initiate standard notification
+						DialogService.remove();
+						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
+					})
+					.error( function(response){
+						$scope.$emit('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
+					});
 			};
-			/*
-            $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
-                
-                // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .success( function(response){
-                    
-                        // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.playlistNewName;
-                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
-                    
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
-            }
-			*/
 		}
 	};
 });
