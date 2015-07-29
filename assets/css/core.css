@@ -1252,8 +1252,15 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player .fullscreen-player {
 	display: none;
-	position: relative;
 	z-index: 2;
+}
+
+#player .fullscreen-player .info-wrapper {
+	position: absolute;
+	top: 60%;
+	left: 0;
+	right: 0;
+	height: 50%;
 }
 
 #player .fullscreen-player .track-info {
@@ -1270,20 +1277,27 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	font-size: 20px;
 }
 
+#player .fullscreen-player .artwork-wrapper {
+	position: absolute;
+	top: 5%;
+	left: 0;
+	right: 0;
+	height: 50%;
+	text-align: center;
+}
+
 #player .fullscreen-player .artwork {
-	width: 80%;
-	max-width: 400px;
-	max-height: 400px;
+	height: 100%;
 	margin: 0 auto;
 	padding-top: 30px;
-    display: block;
+    display: inline-block;
     border: 0 !important;
     text-decoration: none;
 }
 
 #player .fullscreen-player .artwork > .image {
-	width: 100%;
-	height: auto;
+	height: 100%;
+	width: auto;
 }
 
 #player .fullscreen-player .volume {

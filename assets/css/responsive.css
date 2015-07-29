@@ -50,13 +50,14 @@
 	 **/
 	 
 	#player .fullscreen-player .artwork-wrapper {
-		float: left;
 		width: 40%;
+		top: 20%;
 	}
 
 	#player .fullscreen-player .info-wrapper {
-		float: right;
-		width: 55%;
+		top: 20%;
+		left: 40%;
+		width: 60%;
 	}
 
 	#player .fullscreen-player .artwork {
@@ -64,6 +65,26 @@
 		max-width: 200px;
 	}
 }
+
+@media( max-height: 300px ){
+	/** 
+	 * Player
+	 **/
+	 
+	#player .fullscreen-player .artwork-wrapper,
+	#player .fullscreen-player .info-wrapper {
+		top: 15%;
+	}
+
+	#player .fullscreen-player .track-info {
+		padding: 30px 0 20px;
+	}
+
+	#player .fullscreen-player .volume {
+		padding-top: 20px;
+	}
+}
+
 
 
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
@@ -284,6 +305,14 @@
 		font-size: 8px;
 	}
 	
+
+	/**
+	 * Player
+	 **/
+	
+	#player .fullscreen-player .artwork {
+		height: 300px;
+	}
 }
 
 
@@ -338,6 +367,13 @@
 	
 	.add-to-playlist-dialog .playlist {
 		width: 29.3333%;
+	}
+	
+	/** 
+	 * Player
+	 **/
+	#player .fullscreen-player .track-info {
+		padding-bottom: 15px;
 	}
 	
 }
