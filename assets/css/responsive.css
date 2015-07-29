@@ -312,6 +312,20 @@
 		display: none;
 	}
 	
+	
+	/**
+	 * Dialogs and popups
+	 **/
+	 
+	.dialog .content {
+		padding-left: 10%;
+		padding-right: 10%;
+	}
+	
+	.add-to-playlist-dialog .playlist {
+		width: 29.3333%;
+	}
+	
 }
 
 

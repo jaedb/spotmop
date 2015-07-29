@@ -48,7 +48,7 @@ angular.module('spotmop.browse.playlist', [])
 				$scope.updatePlaylists();
             });
     }
-    $scope.editPlaylist = function(){		
+    $scope.editPlaylist = function(){
         DialogService.create('editPlaylist', $scope);
     }
 	

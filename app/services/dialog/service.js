@@ -161,6 +161,60 @@ angular.module('spotmop.services.dialog', [])
             }
 		}
 	};
+})
+
+
+/**
+ * Dialog: Add tracks to playlist
+ * Accepts a list of tracks, and provides a list of playlists that we can add to
+ **/
+
+.directive('addtoplaylistdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: '/app/services/dialog/addtoplaylist.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
+            
+			$scope.playlists = [];
+			var spotifyUserID = SettingsService.getSetting('spotifyuserid');
+			
+			SpotifyService.getPlaylists( spotifyUserID, 50 )
+				.success(function( response ) {
+					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
+					$scope.$emit('spotmop:pageUpdated');
+				})
+				.error(function( error ){
+					$scope.status = 'Unable to load your playlists';
+				});	
+			
+			/*
+            $scope.savePlaylist = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+                
+                // actually perform the rename
+                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
+                    .success( function(response){
+                    
+                        // update the playlist's name
+                        $scope.$parent.playlist.name = $scope.playlistNewName;
+                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
+                    
+                        // fetch the new playlists (for sidebar)
+                        $scope.$parent.updatePlaylists();
+                    
+                        // and finally remove this dialog
+                        DialogService.remove();
+    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+                    });
+            }
+			*/
+		}
+	};
 });
 
 

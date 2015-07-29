@@ -120,7 +120,7 @@ angular.module('spotmop.common.tracklist', [
  * Tracklist controller
  * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
  **/
-.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService ){
+.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService ){
 
 	// prevent right-click menus
 	$(document).contextmenu( function(evt){
@@ -335,6 +335,29 @@ angular.module('spotmop.common.tracklist', [
 		});
 		
 		// TODO: Implement mopidy for queue, and spotify for playlists that we own
+	});
+	
+	
+	/**
+	 * Selected Tracks >> Add to playlist
+	 **/
+	$scope.$on('spotmop:tracklist:addSelectedTracksToPlaylist', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			
+			// if we have a nested track object (ie TlTrack objects)
+			if( typeof(track.track) !== 'undefined' )
+				selectedTracksUris.push( track.track.uri );
+			
+			// nope, so let's use a non-nested version
+			else
+				selectedTracksUris.push( track.uri );
+		});
+		
+        DialogService.create('addToPlaylist', $scope);
 	});
 	
 	
