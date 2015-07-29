@@ -30,7 +30,7 @@
 }
 
 .tracklist-context-menu {
-	background: rgba(50,50,50,0.9);
+	background: rgba(50,50,50,0.95);
 	color: #FFFFFF;
 	z-index: 9;
 	position: fixed;

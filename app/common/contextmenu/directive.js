@@ -18,20 +18,41 @@ angular.module('spotmop.common.contextmenu', [
 			$scope.play = function(){
 				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
 				$element.hide();
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
 			$scope.enqueue = function(){
 				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
 				$element.hide();
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
 			$scope.unqueue = function(){
 				$rootScope.$broadcast('spotmop:tracklist:unqueueSelectedTracks');
 				$element.hide();
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
 			$scope.playNext = function(){
 				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks', true);
+				$element.hide();
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+			}
+			
+			$scope.addToPlaylist = function(){
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylist');
 				$element.hide();
 			}
 			
