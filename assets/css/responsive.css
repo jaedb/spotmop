@@ -199,6 +199,10 @@
 	/**
 	 * Dialogs and popups
 	 **/
+	
+	.dialog input.large {
+		width: 89%;
+	}
 	 
 	.dialog .content {
 		padding-left: 15%;
@@ -313,6 +317,24 @@
 	#player .fullscreen-player .artwork {
 		height: 300px;
 	}
+	
+	
+	/**
+	 * Dialog popups
+	 **/
+	.dialog input.large {
+		width: 100%;
+	}
+	
+	.edit-playlist-dialog .actions {
+		display: block;
+		padding-left: 0;
+	}
+	
+	.edit-playlist-dialog .actions .toggle-public {
+		margin-left: 0;
+	}
+	
 }
 
 

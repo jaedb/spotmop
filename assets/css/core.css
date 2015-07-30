@@ -1290,7 +1290,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	height: 100%;
 	margin: 0 auto;
 	padding-top: 30px;
-    display: inline-block;
+    display: block;
     border: 0 !important;
     text-decoration: none;
 }

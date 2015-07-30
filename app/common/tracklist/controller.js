@@ -17,8 +17,6 @@ angular.module('spotmop.common.tracklist', [
 			 **/
 			$element.mouseup( function( event ){
 				
-				console.log( $scope );
-				
 				// left click
 				if( event.which === 1 ){
 					$scope.$emit('spotmop:contextMenu:hide');

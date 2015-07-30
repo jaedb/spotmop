@@ -135,6 +135,7 @@
  **/
  
 .add-to-playlist-dialog .select-playlist {
+	padding-top: 15px;
 	margin: 0 -2%;
 }
  
