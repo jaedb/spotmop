@@ -20,29 +20,7 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 800px ){
-
-	
-	/**
-	 * Artwork panels
-	 **/
-	
-	.artist-intro {
-		padding-top: 300px;
-	}
-	
-}
-
 @media( max-height: 500px ){
-	
-	
-	/**
-	 * Artwork panels
-	 **/
-	
-	.artist-intro {
-		padding-top: 150px;
-	}
 
 	
 	/** 

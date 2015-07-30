@@ -14,6 +14,10 @@ html {
 	font-size: 12px;
 }
 
+body {
+	perspective: 1px;
+}
+
 * {
 	border: 0;
 	padding: 0;
@@ -60,6 +64,9 @@ body {
 	width: 80%;
 	bottom: 90px;
 	overflow-y: scroll;
+	-webkit-perspective: 1px;
+	-moz-perspective: 1px;
+	perspective: 1px;
 }
 
 #player {
@@ -866,7 +873,15 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .artist-intro {
 	position: relative;
 	margin: -20px -20px 30px -20px;
-	padding: 500px 20px 0;
+	padding: 0 20px;
+	height: 70vh;
+}
+
+.artist-intro > .inner {
+	position: absolute;
+	left: 20px;
+	right: 20px;
+	bottom: 50px;
 }
 
 .artist-intro h1 {
@@ -903,16 +918,19 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .artist-intro .image {
 	position: absolute;
 	top: 0;
-	right: -20px;
-	left: -20px;
-	height: 100%;
+	right: 0;
+	bottom: 0;
+	left: 0;
 	background-color: #EEEEEE;
+	background-position: 50% 50%;
 	background-size: cover;
-	background-position: 50% 40%;
 }
 
 .artist-intro .submenu {
-	margin: 20px -20px 0;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
 	padding-left: 10px;
 	background: rgba(0,0,0,0.2);
 }
