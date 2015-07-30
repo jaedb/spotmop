@@ -17,13 +17,15 @@ angular.module('spotmop.common.tracklist', [
 			 **/
 			$element.mouseup( function( event ){
 				
+				console.log( $scope );
+				
 				// left click
 				if( event.which === 1 ){
 					$scope.$emit('spotmop:contextMenu:hide');
 					$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click
-				}else if( event.which === 3 ){
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
 			});
@@ -85,8 +87,8 @@ angular.module('spotmop.common.tracklist', [
 					$scope.$emit('spotmop:contextMenu:hide');
 					$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click
-				}else if( event.which === 3 ){
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
 				}
 			});		
