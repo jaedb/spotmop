@@ -476,33 +476,38 @@ angular.module('spotmop', [
             $rootScope.shiftKeyHeld = false;
             $rootScope.ctrlKeyHeld = false;
 
-            // delete key
-            if( event.which === 46 )
-                $scope.$broadcast('spotmop:keyboardShortcut:delete');
+			// make sure we're not typing in an input area
+			if( !$(document).find(':focus').is(':input') ){
 				
-			// spacebar
-			if( event.which === 32 ){
-			
-				// make sure we're not typing in an input area
-				if( !$(document).find(':focus').is(':input') ){
-					event.preventDefault();
+				// prevent default key behavior
+				event.preventDefault();
+				
+				// delete key
+				if( event.which === 46 )
+					$scope.$broadcast('spotmop:keyboardShortcut:delete');
+					
+				// spacebar
+				if( event.which === 32 )
 					$scope.$broadcast('spotmop:keyboardShortcut:space');
+
+				// navigation arrows
+				if( event.which === 37 )
+					$scope.$broadcast('spotmop:keyboardShortcut:left');
+				if( event.which === 38 )
+					$scope.$broadcast('spotmop:keyboardShortcut:up');
+				if( event.which === 39 )
+					$scope.$broadcast('spotmop:keyboardShortcut:right');
+				if( event.which === 40 )
+					$scope.$broadcast('spotmop:keyboardShortcut:down');
+
+				// esc key
+				if( event.which === 27 ){
+					$scope.$broadcast('spotmop:keyboardShortcut:esc');
+					if( dragging ){
+						dragging = false;
+						$(document).find('.drag-tracer').hide();
+					}
 				}
-			}
-
-            // navigation arrows
-            if( event.which === 38 )
-                $scope.$broadcast('spotmop:keyboardShortcut:up');
-            if( event.which === 40 )
-                $scope.$broadcast('spotmop:keyboardShortcut:down');
-
-            // esc key
-            if( event.which === 27 ){
-                $scope.$broadcast('spotmop:keyboardShortcut:esc');
-                if( dragging ){
-                    dragging = false;
-                    $(document).find('.drag-tracer').hide();
-                }
             }
         }
     );
