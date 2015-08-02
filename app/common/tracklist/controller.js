@@ -141,6 +141,30 @@ angular.module('spotmop.common.tracklist', [
 	});
 			
 	
+	/**
+	 * Keyboard shortcuts
+	 **/
+	
+	$scope.$on('spotmop:keyboardShortcut:up', function( event ){
+				console.log( $scope.lastSelectedTrack );
+		var lastSelectedTrackIndex = ( typeof($scope.lastSelectedTrack) !== 'undefined' ) ? $scope.lastSelectedTrack.$index : 0;
+		
+		// if we're not at the top of the tracklist, yet
+		if( lastSelectedTrackIndex > 0 ){
+			
+			// unselect all other tracks
+			angular.forEach( $scope.tracklist.tracks, function(track){
+				track.selected = false;
+			});
+			
+			// apply selection to the last selected track, plus 1 (to go up)
+			$scope.$apply( function(){
+				$scope.tracklist.tracks[lastSelectedTrackIndex-1].selected = true;
+				$scope.lastSelectedTrack = $scope.tracklist.tracks[lastSelectedTrackIndex-1];
+			});
+		}
+    });
+	
 	
 	/**
 	 * Click on a single track
@@ -175,13 +199,13 @@ angular.module('spotmop.common.tracklist', [
 			
 			// figure out the limits of our selection (use the array's index)
 			// assume last track clicked is the lower index value, to start with
-			var firstTrackIndex = ( typeof($scope.lastClickedTrack) !== 'undefined' ) ? $scope.lastClickedTrack.$index : 0;
+			var firstTrackIndex = ( typeof($scope.lastSelectedTrack) !== 'undefined' ) ? $scope.lastSelectedTrack.$index : 0;
 			var lastTrackIndex = $track.$index;
 			
 			// if we've selected a lower-indexed track, let's swap our limits accordingly
 			if( $track.$index < firstTrackIndex ){
 				firstTrackIndex = $track.$index;
-				lastTrackIndex = $scope.lastClickedTrack.$index;
+				lastTrackIndex = $scope.lastSelectedTrack.$index;
 			}
 			
 			// now loop through our subset limits, and make them all selected!
@@ -194,7 +218,7 @@ angular.module('spotmop.common.tracklist', [
 		}
 		
 		// save this item to our last-clicked (used for shift-click)
-		$scope.lastClickedTrack = $track;
+		$scope.lastSelectedTrack = $track;
 	});
 	
 	

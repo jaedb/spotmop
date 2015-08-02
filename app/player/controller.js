@@ -108,10 +108,16 @@ angular.module('spotmop.player', [
 	
     
 	/**
-	 * When the space key is broadcast, play/pause
+	 * Shortcut keys
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:space', function( event ){        
 		$scope.playPause();
+    });
+	$scope.$on('spotmop:keyboardShortcut:right', function( event ){        
+		$scope.next();
+    });
+	$scope.$on('spotmop:keyboardShortcut:left', function( event ){        
+		$scope.previous();
     });
 	
 	
