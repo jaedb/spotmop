@@ -117,7 +117,8 @@
 	}
 	
 	#player .track-info {
-		padding: 20px 40px 0;
+		padding: 22px 40px 0;
+		font-size: 14px;
 	}
 	
 	#player .playback {
@@ -128,6 +129,7 @@
 		bottom: 8px;
 		right: 15px;
 	}
+	
 	
 	/**
 	 * Artwork panels
@@ -372,8 +374,24 @@
 	/** 
 	 * Player
 	 **/
+	 
 	#player .fullscreen-player .track-info {
 		padding-bottom: 15px;
+	}
+	
+	#player .track-info {
+		font-size: 12px;
+		line-height: 1.2em;
+		padding-top: 17px;
+	}
+	
+	#player .track-info .track,
+	#player .track-info .artist {
+		display: block;
+		padding: 0 10px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	
 }
