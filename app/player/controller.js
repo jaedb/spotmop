@@ -119,6 +119,22 @@ angular.module('spotmop.player', [
 	$scope.$on('spotmop:keyboardShortcut:left', function( event ){        
 		$scope.previous();
     });
+	$scope.$on('spotmop:keyboardShortcut:up', function( event ){
+		$scope.volume += 10;
+		
+		// don't let the volume exceed maximum possible, 100%
+		if( $scope.volume >= 100 )
+			$scope.volume = 100;
+		MopidyService.setVolume( $scope.volume );
+    });
+	$scope.$on('spotmop:keyboardShortcut:down', function( event ){
+		$scope.volume -= 10;
+		
+		// don't let the volume below minimum possible, 0%
+		if( $scope.volume < 0 )
+			$scope.volume = 0;
+		MopidyService.setVolume( $scope.volume );
+    });
 	
 	
 	/**

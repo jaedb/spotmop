@@ -139,31 +139,6 @@ angular.module('spotmop.common.tracklist', [
 	$scope.$on('spotmop:track:dragging', function( event ){
 		
 	});
-			
-	
-	/**
-	 * Keyboard shortcuts
-	 **/
-	
-	$scope.$on('spotmop:keyboardShortcut:up', function( event ){
-				console.log( $scope.lastSelectedTrack );
-		var lastSelectedTrackIndex = ( typeof($scope.lastSelectedTrack) !== 'undefined' ) ? $scope.lastSelectedTrack.$index : 0;
-		
-		// if we're not at the top of the tracklist, yet
-		if( lastSelectedTrackIndex > 0 ){
-			
-			// unselect all other tracks
-			angular.forEach( $scope.tracklist.tracks, function(track){
-				track.selected = false;
-			});
-			
-			// apply selection to the last selected track, plus 1 (to go up)
-			$scope.$apply( function(){
-				$scope.tracklist.tracks[lastSelectedTrackIndex-1].selected = true;
-				$scope.lastSelectedTrack = $scope.tracklist.tracks[lastSelectedTrackIndex-1];
-			});
-		}
-    });
 	
 	
 	/**
