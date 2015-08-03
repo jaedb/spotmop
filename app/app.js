@@ -489,6 +489,10 @@ angular.module('spotmop', [
 				// spacebar
 				if( event.which === 32 )
 					$scope.$broadcast('spotmop:keyboardShortcut:space');
+					
+				// enter
+				if( event.which === 13 )
+					$scope.$broadcast('spotmop:keyboardShortcut:enter');
 
 				// navigation arrows
 				if( event.which === 37 )

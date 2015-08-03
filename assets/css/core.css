@@ -874,7 +874,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -20px -20px 30px -20px;
 	padding: 0 20px;
-	height: 70vh;
+	height: 60vh;
 }
 
 .artist-intro > .inner {
