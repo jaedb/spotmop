@@ -33,6 +33,7 @@ angular.module('spotmop.queue', [])
             calculateTotalTime( newTracklist );
         }
     );
+	
     
 	/**
 	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
@@ -46,6 +47,7 @@ angular.module('spotmop.queue', [])
 		});	
 		$scope.totalTime = Math.round(totalTime / 100000);
 	};
+	
 	
 	/**
 	 * When the delete key is broadcast, delete the selected tracks
@@ -61,6 +63,33 @@ angular.module('spotmop.queue', [])
 		});
 		
 		MopidyService.removeFromTrackList( tracksToDelete );
+	});
+	
+	
+	/**
+	 * When the enter key is broadcast, play the first of our currently selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:enter', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		
+		// make sure we have at least one track selected
+		if( selectedTracks.length > 0 ){
+		
+			// fetch our tracklist
+			// TODO: figure out why we need to re-fetch the tracklist all the time, rather than storing in a variable
+			MopidyService.getCurrentTlTracks().then( function(tltracks){
+			
+				// loop our tracklist
+				angular.forEach( tltracks, function(tltrack){
+				
+					// this tlid matches our first selected track's tlid (aka the same track)
+					if( tltrack.tlid === selectedTracks[0].tlid ){
+						return MopidyService.playTlTrack({ tl_track: tltrack });
+					}
+				});
+			});
+		}
 	});
 	
 });
