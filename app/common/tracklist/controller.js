@@ -246,7 +246,13 @@ angular.module('spotmop.common.tracklist', [
 	/**
 	 * Selected Tracks >> Play
 	 **/
-	$scope.$on('spotmop:tracklist:playSelectedTracks', function(event){
+	 
+	// listeners
+	$scope.$on('spotmop:tracklist:playSelectedTracks', function(){ playSelectedTracks() });
+	$scope.$on('spotmop:keyboardShortcut:enter', function(){ playSelectedTracks() });
+	
+	// the actual behavior
+	function playSelectedTracks(){
 	
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var firstSelectedTrack = selectedTracks[0];	
@@ -263,7 +269,7 @@ angular.module('spotmop.common.tracklist', [
 			
 			// get the queue's tracks
 			// we need to re-get the queue because at this point some tracks may not have tlids
-			// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
+			// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligible
 			MopidyService.getCurrentTlTracks().then( function( tracklist ){
 				
 				// find our double-clicked track in the tracklist
@@ -300,7 +306,7 @@ angular.module('spotmop.common.tracklist', [
 				});
 			});
 		}
-	});
+	}
 	
 	
 	
