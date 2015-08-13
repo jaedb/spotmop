@@ -72,6 +72,13 @@ angular.module('spotmop.settings', [])
             });
         }
     };
+    $scope.toggleKeyboardShortcuts = function(){
+    	if( SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+            SettingsService.setSetting('keyboardShortcutsEnabled',false);
+        }else{
+            SettingsService.setSetting('keyboardShortcutsEnabled',true);
+        }
+    };
 	
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){

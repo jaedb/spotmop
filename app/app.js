@@ -477,7 +477,7 @@ angular.module('spotmop', [
             $rootScope.ctrlKeyHeld = false;
 
 			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
 				
 				// prevent default key behavior
 				event.preventDefault();

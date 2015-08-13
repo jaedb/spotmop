@@ -1097,17 +1097,22 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background-color: #CCCCCC;
 }
 
-.settings .field.shortcut-key {
-	padding-bottom: 20px;
+.settings .field.shortcut-keys {
+	padding-bottom: 30px;
 }
 
-.settings .field.shortcut-key .row {
+.settings .field.shortcut-keys .shortcuts {
+	padding-top: 15px;
+}
+
+.settings .field.shortcut-keys .row {
 	padding-bottom: 5px;
 }
 
-.settings .field.shortcut-key .row .flag {
+.settings .field.shortcut-keys .row .flag {
 	margin-left: 0;
 }
+
 
 
 /* ====================================================================== PLAYER ================== */
