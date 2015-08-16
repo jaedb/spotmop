@@ -5,7 +5,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, MopidyService, SpotifyService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, MopidyService, SpotifyService ){
 	
 	// setup template containers
 	$scope.muted = false;
@@ -55,8 +55,8 @@ angular.module('spotmop.player', [
 		
 		// tell mopidy to make it so
 		MopidyService.seek( seekTime );
-	}
-	$scope.setVolume = function( event ){
+	}	
+	$scope.setVolume = function( event ){		
 		var slider, offset, position, percent;
 		if( $(event.target).hasClass('slider') )
 			slider = $(event.target);

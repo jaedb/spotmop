@@ -8,6 +8,21 @@
  
  
 /**
+ * Player
+ **/
+
+/* a curious issue where clicking on the slider fires touchend but on the track fires click. We remedy by pumping up the track size */
+.touchDevice #player .volume .slider {
+	padding: 0;
+}
+
+.touchDevice #player .volume .slider .track {
+	margin: 6px 0 10px;
+}
+
+ 
+ 
+/**
  * Tracklist context menu
  **/
 
