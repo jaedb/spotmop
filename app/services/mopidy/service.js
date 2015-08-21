@@ -68,6 +68,19 @@ angular.module('spotmop.services.mopidy', [
 
 		return context[func].apply(context, args);
 	}
+	
+	/**
+	 * Fire events to the mopidy server
+	 * @param action = string
+	 **/
+	function instructMopidyServer( action ){
+		return $.ajax({
+			url: 'http://'+SettingsService.getSetting("mopidyhost", $location.host())+'/index.php?action='+action,
+			type: "GET",
+			async: false,
+			timeout: 5000
+		});
+	}
 
 	return {
 		mopidy: {},
@@ -130,6 +143,15 @@ angular.module('spotmop.services.mopidy', [
 		restart: function() {
 			this.stop();
 			this.start();
+		},
+		startServer: function(){
+			return instructMopidyServer('start');
+		},
+		restartServer: function(){
+			return instructMopidyServer('restart');
+		},
+		stopServer: function(){
+			return instructMopidyServer('stop');
 		},
 		getPlaylists: function() {
 			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
