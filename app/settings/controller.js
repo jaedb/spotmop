@@ -80,6 +80,44 @@ angular.module('spotmop.settings', [])
         }
     };
 	
+	// commands to parse to the mopidy server
+	$scope.startMopidyServer = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to start server", type: 'loading'});	
+		MopidyService.startServer()
+			.success( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Starting", type: 'loading', autoremove: true});	
+			})
+			.error( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
+			});
+	};
+	$scope.restartMopidyServer = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to restart server", type: 'loading'});	
+		MopidyService.restartServer()
+			.success( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Restarting", type: 'loading', autoremove: true});	
+			})
+			.error( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
+			});
+	};
+	$scope.stopMopidyServer = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to stop server", type: 'loading'});	
+		MopidyService.stopServer()
+			.success( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Stopping", type: 'loading', autoremove: true});	
+			})
+			.error( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
+			});
+	};
+	
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
 		MopidyService.getConsume().then( function( isConsume ){

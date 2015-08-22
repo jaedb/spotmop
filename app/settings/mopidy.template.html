@@ -1,4 +1,5 @@
 <div>
+
     <div class="field">
         <div class="label">Status</div>
         <div class="input mopidy connection-status">
@@ -7,7 +8,6 @@
             </div>
             <div class="status disconnected red-text" ng-hide="mopidyOnline">
                 <i class="fa fa-close"></i> &nbsp; Disconnected &nbsp;&nbsp;
-                <a class="reconnect black" ng-click="reloadApp()"><i class="fa fa-refresh"></i>&nbsp; Retry</a>
             </div>
         </div>
     </div>
@@ -33,6 +33,12 @@
         <div class="input">
             <span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
         </div>
+    </div>
+
+    <div class="actions">
+        <a class="button pill green" ng-click="startMopidyServer()"><i class="fa fa-check"></i>&nbsp; Start</a>
+        <a class="button pill" ng-click="restartMopidyServer()"><i class="fa fa-refresh"></i>&nbsp; Restart</a>
+        <a class="button pill red" ng-click="stopMopidyServer()"><i class="fa fa-close"></i>&nbsp; Stop</a>
     </div>
 
     <div class="clear-both"></div>		
