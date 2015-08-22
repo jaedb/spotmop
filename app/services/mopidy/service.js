@@ -153,6 +153,15 @@ angular.module('spotmop.services.mopidy', [
 		stopServer: function(){
 			return instructMopidyServer('stop');
 		},
+		startServer: function(){
+			return instructMopidyServer('start');
+		},
+		restartServer: function(){
+			return instructMopidyServer('restart');
+		},
+		stopServer: function(){
+			return instructMopidyServer('stop');
+		},
 		getPlaylists: function() {
 			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
 		},
