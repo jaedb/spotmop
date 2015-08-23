@@ -499,7 +499,7 @@ body .button.bordered {
 	vertical-align: top;
 }
 
-body .button.bordered:hover {
+body .button.bordered:not(.disabled):hover {
 	background: none;
 	border-bottom-width: 4px;
 	padding-top: 16px;
@@ -519,23 +519,31 @@ body .button.bordered:hover {
 	vertical-align: top;
 }
 
+/* disabled */
+
+body .button.disabled {
+	cursor: not-allowed;
+	color: #DDDDDD !important;
+	border-color: #DDDDDD !important;
+}
+
 
 /* variations */
 
 .button.large {					padding: 18px 26px; }
 
-.button.light {					background: #EEEEEE; color: #222222; }
-.button.light:hover {			background: #DDDDDD; }
+.button.light {									background: #EEEEEE; color: #222222; }
+.button.light:not(.disabled):hover {			background: #DDDDDD; }
 
-.button.red {					background-color: #D62F2F; }
-.button.red:hover,
-.button.red-hover:hover {		background-color: #c42424; }
-.button.bordered.red {			border-color: #D62F2F; color: #D62F2F; }
+.button.red {									background-color: #D62F2F; }
+.button.red:not(.disabled):hover,
+.button.red-hover:not(.disabled):hover {		background-color: #c42424; }
+.button.bordered.red {							border-color: #D62F2F; color: #D62F2F; }
 
-.button.green {					background-color: #35CC35; }
-.button.green:hover,
-.button.green-hover:hover {		background-color: #28b428; }
-.button.bordered.green {		border-color: #35CC35; color: #35CC35; }
+.button.green {									background-color: #35CC35; }
+.button.green:not(.disabled):hover,
+.button.green-hover:not(.disabled):hover {		background-color: #28b428; }
+.button.bordered.green {						border-color: #35CC35; color: #35CC35; }
 
 
 

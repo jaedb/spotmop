@@ -22,9 +22,9 @@
     </div>
 
     <div class="actions" ng-show="echonestOnline">
-        <a class="button pill black" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i>&nbsp; View my profile</a>				
+        <a class="button bordered large black" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i>&nbsp; View my profile</a>				
 
-        <a class="button pill red" ng-click="deleteEchonestTasteProfile(confirming); confirming = true" ng-mouseleave="confirming = false">
+        <a class="button bordered large red" ng-click="deleteEchonestTasteProfile(confirming); confirming = true" ng-mouseleave="confirming = false">
             <span ng-show="!confirming">
                 <i class="fa fa-close"></i>&nbsp; Delete profile
             </span>

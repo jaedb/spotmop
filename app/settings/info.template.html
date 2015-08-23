@@ -58,12 +58,14 @@
 		<div class="clear-both"></div>
     </div>
 
-    <a class="button pill red" ng-click="resetSettings(confirming); confirming = true" ng-mouseleave="confirming = false">
-        <span ng-show="!confirming">
-            <i class="fa fa-close"></i>&nbsp; Reset all settings
-        </span>
-        <span ng-show="confirming">
-            <i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
-        </span>
-    </a>
+	<div class="actions">
+		<a class="button bordered large red" ng-click="resetSettings(confirming); confirming = true" ng-mouseleave="confirming = false">
+			<span ng-show="!confirming">
+				<i class="fa fa-close"></i>&nbsp; Reset all settings
+			</span>
+			<span ng-show="confirming">
+				<i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
+			</span>
+		</a>
+	</div>
 </div>
