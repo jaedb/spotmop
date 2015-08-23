@@ -481,26 +481,62 @@ h1 .flag {
  * Clickable buttons
  **/
 
-.button.pill {
+body .button {
     padding: 8px 18px;
-    border-radius: 20px;
     background: #333333;
     color: #FFFFFF;
     display: inline-block;
-    border: 0 !important;
+    border: 0;
     cursor: pointer;
     margin-right: 10px;
 }
 
-.button.pill:hover {
+body .button.bordered {
+	border: 1px solid #333333;
+	color: #333333;
+	background: none;
+	text-transform: uppercase;
+	vertical-align: top;
+}
+
+body .button.bordered:hover {
+	background: none;
+	border-bottom-width: 4px;
+	padding-top: 16px;
+	padding-bottom: 16px;
+}
+
+.button:hover {
     background: #202020;
 }
 
-.button.red {			background-color: #D62F2F; }
-.button.green {			background-color: #35CC35; }
+.button.pill {
+    border-radius: 20px;
+}
 
-.button.red:hover {		background-color: #c42424; }
-.button.green:hover {	background-color: #28b428; }
+.button.default > .fa {
+	margin-top: 2px;
+	vertical-align: top;
+}
+
+
+/* variations */
+
+.button.large {					padding: 18px 26px; }
+
+.button.light {					background: #EEEEEE; color: #222222; }
+.button.light:hover {			background: #DDDDDD; }
+
+.button.red {					background-color: #D62F2F; }
+.button.red:hover,
+.button.red-hover:hover {		background-color: #c42424; }
+.button.bordered.red {			border-color: #D62F2F; color: #D62F2F; }
+
+.button.green {					background-color: #35CC35; }
+.button.green:hover,
+.button.green-hover:hover {		background-color: #28b428; }
+.button.bordered.green {		border-color: #35CC35; color: #35CC35; }
+
 
 
 /**

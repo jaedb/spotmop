@@ -36,9 +36,15 @@
     </div>
 
     <div class="actions">
-        <a class="button pill green" ng-click="startMopidyServer()"><i class="fa fa-check"></i>&nbsp; Start</a>
-        <a class="button pill" ng-click="restartMopidyServer()"><i class="fa fa-refresh"></i>&nbsp; Restart</a>
-        <a class="button pill red" ng-click="stopMopidyServer()"><i class="fa fa-close"></i>&nbsp; Stop</a>
+        <a class="button large bordered green" ng-click="startMopidyServer()" ng-class="{ disabled: settings.mopidyhost != 'localhost' }">
+			<i class="fa fa-check"></i>&nbsp; Start
+		</a>
+        <a class="button large bordered" ng-click="restartMopidyServer()" ng-class="{ disabled: settings.mopidyhost != 'localhost' }">
+			<i class="fa fa-refresh"></i>&nbsp; Restart
+		</a>
+        <a class="button large bordered red" ng-click="stopMopidyServer()" ng-class="{ disabled: settings.mopidyhost != 'localhost' }">
+			<i class="fa fa-close"></i>&nbsp; Stop
+		</a>
     </div>
 
     <div class="clear-both"></div>		

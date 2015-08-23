@@ -3,6 +3,7 @@
  * 
  * Spotmop
  **/
+ 
 .field {
 	clear: both;
 	padding-top: 20px;
@@ -65,6 +66,17 @@
 .field .connection-status.offline .status.disconnected {
 	display: block;
 }
+
+
+/**
+ * Form actions
+ * Also used in settings
+ **/
+
+.actions .button {
+	margin-right: 15px;
+}
+
 
 
 /**
