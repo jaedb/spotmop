@@ -70,50 +70,84 @@ angular.module('spotmop.browse.artist', [])
 	// get the artist
 	SpotifyService.getArtist( $stateParams.uri )
 		.success( function( response ){
-		
 			$scope.artist = response;
-		
-			// get the artist's albums
-			SpotifyService.getAlbums( $stateParams.uri )
-				.success( function( response ){
-					$scope.albums = response;
-				
-					// get the artist's top tracks
-					SpotifyService.getTopTracks( $stateParams.uri )
-						.success( function( response ){
-							$scope.tracklist.tracks = response.tracks;
-				
-							// get the artist's related artists
-							SpotifyService.getRelatedArtists( $stateParams.uri )
-								.success( function( response ){
-									$scope.relatedArtists = response.artists;
-									$rootScope.$broadcast('spotmop:pageUpdated');
-                                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
-								})
-                                .error(function( error ){
-                                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
-                                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
-                                });
-						});
-				});
 		});	
 })
 
 /**
  * Artist overview controller
  **/
-.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope ){
+.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
-	// when the related artists array changes (ie on API response, page load, etc)
-	$scope.$watch('relatedArtists', function(){
+	// get the artist's albums
+	SpotifyService.getAlbums( $stateParams.uri )
+		.success( function( response ){
+			$scope.albums = response;
+		
+			// get the artist's top tracks
+			SpotifyService.getTopTracks( $stateParams.uri )
+				.success( function( response ){
+					$scope.tracklist.tracks = response.tracks;
+		
+					// get the artist's related artists
+					SpotifyService.getRelatedArtists( $stateParams.uri )
+						.success( function( response ){
+							$scope.relatedArtists = response.artists;
+							$rootScope.$broadcast('spotmop:pageUpdated');
+							$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+						})
+						.error(function( error ){
+							$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
+						});
+				});
+		});	
+	
+    /**
+     * Load more of the playlist's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreAlbums = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreAlbums( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreAlbums = true;   
+        
+        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-albums', message: 'Loading albums'});
 
-		// wait for $digest
-		$timeout( function(){
-			$scope.resquarePanels();
-		},
-		0);
-	});
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .success(function( response ){
+            
+                // append these new tracks to the main tracklist (using our unified format of course)
+                $scope.albums.items = $scope.albums.items.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.albums.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-albums'});
+                loadingMoreAlbums = false;
+            })
+            .error(function( error ){
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-albums'});
+                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-albums', message: error.error.message});
+                loadingMoreAlbums = false;
+            });
+    }
 	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+            loadMoreAlbums( $scope.albums.next );
+        }
+	});
 })
 
 
