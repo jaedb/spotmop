@@ -481,7 +481,8 @@ h1 .flag {
  * Clickable buttons
  **/
 
-body .button {
+body .button.default,
+body .button.pill {
     padding: 8px 18px;
     background: #333333;
     color: #FFFFFF;
@@ -506,7 +507,8 @@ body .button.bordered:not(.disabled):hover {
 	padding-bottom: 16px;
 }
 
-.button:hover {
+.button.pill:not(.disabled):hover,
+.button.default:not(.disabled):hover {
     background: #202020;
 }
 
