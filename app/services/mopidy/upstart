@@ -18,9 +18,9 @@ DAEMON=/usr/bin/mopidy
 DAEMON_USER=mopidy
 DAEMON_GROUP=audio
 CONFIG_FILES="/home/mopidy/.config/mopidy/mopidy.conf:/usr/share/mopidy/conf.d:/etc/mopidy/mopidy.conf"
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-PIDFILE=$DIR$NAME.pid
-SCRIPTNAME=$DIR$NAME
+#DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+PIDFILE=$NAME.pid
+SCRIPTNAME=$NAME
 
 # Exit if the package is not installed
 [ -x $DAEMON ] || exit 0
