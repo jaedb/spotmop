@@ -82,7 +82,7 @@ angular.module('spotmop.settings', [])
 	
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
-		if( $scope.mopidyhost != 'localhost' ){
+		if( !$scope.isSameDomainAsMopidy() ){
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
@@ -98,7 +98,7 @@ angular.module('spotmop.settings', [])
 			});
 	};
 	$scope.restartMopidyServer = function(){
-		if( $scope.mopidyhost != 'localhost' ){
+		if( !$scope.isSameDomainAsMopidy() ){
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
@@ -114,7 +114,7 @@ angular.module('spotmop.settings', [])
 			});
 	};
 	$scope.stopMopidyServer = function(){
-		if( $scope.mopidyhost != 'localhost' ){
+		if( !$scope.isSameDomainAsMopidy() ){
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}

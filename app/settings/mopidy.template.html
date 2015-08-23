@@ -36,19 +36,19 @@
     </div>
 
     <div class="actions">
-        <a class="button large bordered green" ng-click="startMopidyServer()" ng-class="{ disabled: settings.mopidyhost && settings.mopidyhost != 'localhost' }">
+        <a class="button large bordered green" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-check"></i>&nbsp; Start
 		</a>
-        <a class="button large bordered" ng-click="restartMopidyServer()" ng-class="{ disabled: settings.mopidyhost && settings.mopidyhost != 'localhost' }">
+        <a class="button large bordered" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-refresh"></i>&nbsp; Restart
 		</a>
-        <a class="button large bordered red" ng-click="stopMopidyServer()" ng-class="{ disabled: settings.mopidyhost && settings.mopidyhost != 'localhost' }">
+        <a class="button large bordered red" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-close"></i>&nbsp; Stop
 		</a>
-		<div ng-show="settings.mopidyhost && settings.mopidyhost != 'localhost'" class="red-text">
+		<div ng-hide="isSameDomainAsMopidy()" class="red-text">
 			<br />
 			<br />
-			Cannot control Mopidy daemon unless Spotmop is running on the same machine as Mopidy (ie localhost)
+			Cannot control Mopidy daemon unless Spotmop is running on the same machine as Mopidy
 		</div>
     </div>
 

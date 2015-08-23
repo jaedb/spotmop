@@ -235,6 +235,17 @@ angular.module('spotmop', [
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
     $scope.isTouchDevice = function(){ return !!('ontouchstart' in window); }
+    $scope.isSameDomainAsMopidy = function(){
+		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
+		
+		// if set to localhost or not set at all (then using default of localhost)
+		if( !mopidyhost || mopidyhost == 'localhost' )
+			return true;
+		
+		// custom setting, and if it matches the domain spotmop is using, then we're in business
+		if( $location.host() == mopidyhost )
+			return true;
+		}
 	$scope.currentTlTrack = {};
 	$scope.getCurrentTlTrack = function(){ return $scope.currentTlTrack };
 	$scope.currentTracklist = [];
