@@ -45,6 +45,11 @@ Screenshots
 Changelog
 --------
 
+*2.1.2 (beta)*
+* Upstart script that allows start/stop/restart of Mopidy server from HTTP interface
+* Switch to enable/disable keyboard shortcuts
+* General bugfixes
+
 *2.1*
 * Responsive layouts, with collasing menu, condensed player and dynamic panel sizes
 * Various performance improvements
