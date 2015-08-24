@@ -99,8 +99,6 @@ angular.module('spotmop.services.mopidy', [
             var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
             var mopidyport = SettingsService.getSetting("mopidyport", "6680");
 			
-			console.log(mopidyhost);
-			
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({

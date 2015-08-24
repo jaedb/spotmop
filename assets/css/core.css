@@ -497,6 +497,7 @@ body .button.bordered {
 	color: #333333;
 	background: none;
 	text-transform: uppercase;
+	display: inline-block;
 	vertical-align: top;
 }
 
@@ -505,6 +506,7 @@ body .button.bordered:not(.disabled):hover {
 	border-bottom-width: 4px;
 	padding-top: 16px;
 	padding-bottom: 16px;
+	background: #FAFAFA;
 }
 
 .button.pill:not(.disabled):hover,
@@ -1141,10 +1143,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 	background-color: #CCCCCC;
-}
-
-.settings .field.shortcut-keys {
-	padding-bottom: 30px;
 }
 
 .settings .field.shortcut-keys .shortcuts {
