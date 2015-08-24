@@ -96,8 +96,10 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyhost = SettingsService.getSetting("mopidyhost", $location.host());
+            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
             var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+			
+			console.log(mopidyhost);
 			
 			// Initialize mopidy
             try{
@@ -111,7 +113,7 @@ angular.module('spotmop.services.mopidy', [
             }
 			catch(e){
                 // need to re-initiate notifier
-				//notifier.notify({type: "custom", template: "Connecting with Mopidy failed with the following error message: <br>" + e, delay: 15000});
+				console.log( "Connecting with Mopidy failed with the following error message: " + e);
                 // Try to connect without a given url
                 this.mopidy = new Mopidy({
                     callingConvention: 'by-position-or-by-name'

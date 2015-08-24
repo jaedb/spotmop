@@ -16,7 +16,14 @@ angular.module('spotmop.services.settings', [])
 	return {
 		
 		setSetting: function( $setting, $value ){
-			$localStorage.settings[$setting] = $value;
+			
+			// unsetting?
+			if( $value == '' || $value === null || typeof($value) === 'undefined' )
+				delete $localStorage.settings[$setting];
+			
+			// setting
+			else
+				$localStorage.settings[$setting] = $value;
 		},
 		
 		getSetting: function( $setting, $default ){	
