@@ -86,7 +86,6 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
-		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to start server", type: 'loading'});	
 		MopidyService.startServer()
 			.success( function(response){
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
@@ -102,7 +101,6 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
-		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to restart server", type: 'loading'});	
 		MopidyService.restartServer()
 			.success( function(response){
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
@@ -118,7 +116,6 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
-		$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Attempting to stop server", type: 'loading'});	
 		MopidyService.stopServer()
 			.success( function(response){
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});
