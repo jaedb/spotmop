@@ -1,4 +1,6 @@
 config.js
 /temp
+app/services/mopidy/mopidy.pid
 @eaDir
-/assets
+Thumbs.db
+

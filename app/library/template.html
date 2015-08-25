@@ -1,0 +1,19 @@
+<div>
+	
+	<ng-include src="'/app/common/contextmenu/tracklist.template.html'"></ng-include>
+
+	<h1>
+		My Music Library
+	</h1>
+	
+	<div class="library-tracks tracklist droppable"  ng-controller="TracklistController">		
+		
+		<track ng-repeat="track in tracklist.tracks"></track>
+
+		<div ng-hide="tracklist.tracks.length" class="no-items">
+			No items
+		</div>	
+		
+	</div>
+	
+</div>

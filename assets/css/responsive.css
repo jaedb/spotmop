@@ -1,0 +1,400 @@
+/**
+ * Responsive layouts
+ * 
+ * Remember if you update the pixel thresholds here, you need to update them in app.js too
+ * This is because app.js handles the interactivity of responsive elements (ie sliding nav, etc)
+ **/
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+.mobile-only,
+.mobile-show {
+	display: none;
+}
+
+
+
+/* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
+/* ================================================================================================ */
+
+@media( max-height: 500px ){
+
+	
+	/** 
+	 * Player
+	 **/
+	 
+	#player .fullscreen-player .artwork-wrapper {
+		width: 40%;
+		top: 20%;
+	}
+
+	#player .fullscreen-player .info-wrapper {
+		top: 20%;
+		left: 40%;
+		width: 60%;
+	}
+
+	#player .fullscreen-player .artwork {
+		max-height: 200px;
+		max-width: 200px;
+	}
+}
+
+@media( max-height: 300px ){
+	/** 
+	 * Player
+	 **/
+	 
+	#player .fullscreen-player .artwork-wrapper,
+	#player .fullscreen-player .info-wrapper {
+		top: 15%;
+	}
+
+	#player .fullscreen-player .track-info {
+		padding: 30px 0 20px;
+	}
+
+	#player .fullscreen-player .volume {
+		padding-top: 20px;
+	}
+}
+
+
+
+/* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
+/* ================================================================================================ */
+
+@media( max-width: 800px ){
+	
+	.mobile-hide {
+		display: none;
+	}
+	
+	/**
+	 * Body elements
+	 **/
+	
+	#body {
+		bottom: 56px;
+		left: 0;
+		width: 100%;
+	}
+	
+	#sidebar {
+		width: 50%;
+		left: -50%;
+		bottom: 56px;
+	}
+	
+	
+	/**
+	 * Notifications
+	 **/
+	#notifications {
+		left: 0;
+	}
+	
+	
+	/**
+	 * Player bar
+	 **/
+	
+	#player {
+		height: 56px;
+	}
+	
+	#player .button {
+		margin: 0 3px;
+	}
+	
+	#player > .slim-player.inner {
+		padding: 0;
+		top: 0;
+	}
+	
+	#player .track-info {
+		padding: 22px 40px 0;
+		font-size: 14px;
+	}
+	
+	#player .playback {
+		padding-top: 24px;
+	}
+	
+	#player .expand-player {
+		bottom: 8px;
+		right: 15px;
+	}
+	
+	
+	/**
+	 * Artwork panels
+	 **/
+	
+	.album-intro .square-panel {
+		width: 180px;
+		height: 180px;
+	}
+	
+	
+	/**
+	 * Forms
+	 **/
+	
+	.field > .label {
+		float: none;
+		width: auto;
+		text-align: left;
+		padding: 0 0 5px;
+		font-weight: bold;
+	}
+	
+	.field > .input {
+		float: none;
+		width: auto;
+	}
+	
+	.field input {
+		width: 98%;
+	}
+	
+	/**
+	 * Square panels
+	 **/
+	.square-panel {
+		width: 21%;
+		margin-bottom: 5%;
+	}
+	
+	.square-panel.category:hover .name,
+	.square-panel.category .name {
+		padding-bottom: 12%;
+	}
+	
+	
+	/**
+	 * Dialogs and popups
+	 **/
+	
+	.dialog input.large {
+		width: 89%;
+	}
+	 
+	.dialog .content {
+		padding-left: 15%;
+		padding-right: 15%;
+	}
+	
+	.add-to-playlist-dialog .playlist {
+		width: 21%;
+	}
+}
+
+
+
+/* ======================================================= INTERMEDIATE DEVICES (medium-small) ==== */
+/* ================================================================================================ */
+
+@media( max-width: 600px ){
+	
+	/**
+	 * Tracklists
+	 **/
+	 
+	.tracklist {
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+	
+	.tracklist .track {
+		padding-right: 20px;
+	}
+	 
+	.tracklist .track .popularity,
+	.tracklist .track .duration {
+		display: none;
+	}
+	
+	.tracklist .track .title {
+		width: 40%;
+	}
+	
+	.tracklist.album-items .track .title,
+	.tracklist.album-items .track .artist {
+		width: 50%;
+	}
+	
+	
+	/**
+	 * Intro panels
+	 **/
+	.playlist-intro .inner {
+		padding: 30px;
+	}
+	
+	
+	/**
+	 * Album page
+	 **/
+	
+	.browse.album .album-intro h1 {
+		padding-top: 0;
+	}
+	
+	.browse.album .album-intro .square-panel {
+		width: 140px;
+		height: 140px;
+	}
+	
+	.browse.album .album-intro .info-text {
+		clear: none;
+	}
+	
+	.browse.album .album-intro .info-text .label {
+		display: none;
+	}
+	
+	.browse.album .album-content {
+		clear: both;
+		padding-top: 20px;
+	}
+	
+	
+	/**
+	 * Square panels
+	 **/
+	
+	.square-panel.category:hover .name,
+	.square-panel.category .name {
+		padding-bottom: 8%;
+		font-size: 13px;
+	}
+
+	/**
+	 * Context menu 
+	 **/
+	.tracklist-context-menu {
+		padding-left: 5px;
+	}
+	
+	.tracklist-context-menu .menu-item {
+		padding: 14px 5px 12px;
+	}
+	
+	.tracklist-context-menu .menu-item .text {
+		font-size: 8px;
+	}
+	
+
+	/**
+	 * Player
+	 **/
+	
+	#player .fullscreen-player .artwork {
+		height: 300px;
+	}
+	
+	
+	/**
+	 * Dialog popups
+	 **/
+	.dialog input.large {
+		width: 100%;
+	}
+	
+	.edit-playlist-dialog .actions {
+		display: block;
+		padding-left: 0;
+	}
+	
+	.edit-playlist-dialog .actions .toggle-public {
+		margin-left: 0;
+	}
+	
+}
+
+
+
+/* =================================================================== PORTRAIT / TINY SCREENS ==== */
+/* ================================================================================================ */
+
+@media( max-width: 450px ){
+	
+	.mobile-hide {
+		display: none;
+	}
+	
+	/**
+	 * Artwork panels
+	 **/
+	
+	.browse.album .album-intro .square-panel {
+		width: 100%;
+		height: auto;
+	}
+	
+	.browse.album .album-intro {
+		padding-bottom: 20px;
+	}
+	
+	/**
+	 * Square panels
+	 **/
+	.square-panel {
+		width: 29%;
+		margin-bottom: 5%;
+	}
+	
+	
+	/**
+	 * Touch-device context menus
+	 **/
+	.tracklist-context-menu .status {
+		display: none;
+	}
+	
+	
+	/**
+	 * Dialogs and popups
+	 **/
+	 
+	.dialog .content {
+		padding-left: 10%;
+		padding-right: 10%;
+	}
+	
+	.add-to-playlist-dialog .playlist {
+		width: 29.3333%;
+	}
+	
+	/** 
+	 * Player
+	 **/
+	 
+	#player .fullscreen-player .track-info {
+		padding-bottom: 15px;
+	}
+	
+	#player .track-info {
+		font-size: 12px;
+		line-height: 1.2em;
+		padding-top: 17px;
+	}
+	
+	#player .track-info .track,
+	#player .track-info .artist {
+		display: block;
+		padding: 0 10px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+}
+
+
+

@@ -1,0 +1,23 @@
+<div ng-controller="ArtistController">
+
+	<div class="artist-intro">
+		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
+            <div class="image" style="background-image: url('/vendor/resource-proxy.php?url={{ image.url }}');"></div>
+		</div>
+		<div class="inner" text-over-image>
+			<h1 ng-bind="artist.name" class="background-check"></h1>
+			<div class="info-text" class="background-check">
+				<span ng-bind="albums.items.length"></span> albums
+				&nbsp;|&nbsp; {{ artist.followers.total | number:0 }} followers
+			</div>
+		</div>
+		<div class="submenu">
+			<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
+			<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related artists</a>
+			<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</a>
+		</div>
+	</div>
+	
+	<div ui-view></div>
+	
+</div>

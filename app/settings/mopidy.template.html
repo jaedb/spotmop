@@ -1,0 +1,56 @@
+<div>
+
+    <div class="field">
+        <div class="label">Status</div>
+        <div class="input mopidy connection-status">
+            <div class="status connected green-text" ng-hide="!mopidyOnline">
+                <i class="fa fa-check"></i> &nbsp; Connected
+            </div>
+            <div class="status disconnected red-text" ng-hide="mopidyOnline">
+                <i class="fa fa-close"></i> &nbsp; Disconnected &nbsp;&nbsp;
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Hostname</div>
+        <div class="input">
+            <input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Port</div>
+        <div class="input">
+            <input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Consume mode</div>
+        <div class="input">
+            <span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleMopidyConsume()"><span class="switch animate"></span></span>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a class="button large bordered green" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+			<i class="fa fa-check"></i>&nbsp; Start
+		</a>
+        <a class="button large bordered" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+			<i class="fa fa-refresh"></i>&nbsp; Restart
+		</a>
+        <a class="button large bordered red" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+			<i class="fa fa-close"></i>&nbsp; Stop
+		</a>
+		<div ng-hide="isSameDomainAsMopidy()" class="red-text">
+			<br />
+			<br />
+			Cannot control Mopidy daemon unless Spotmop is running on the same machine as Mopidy
+		</div>
+    </div>
+
+    <div class="clear-both"></div>		
+</div>

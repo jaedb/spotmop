@@ -1,0 +1,70 @@
+<div>
+	
+	<ng-include src="'/app/common/contextmenu/tracklist.template.html'"></ng-include>
+		
+	<div class="playlist-intro">
+		<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
+			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
+		</div>
+		<div class="inner">
+			<h1>
+				
+                <span ng-bind="playlist.name"></span>
+				
+				<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
+					<span class="flag clickable destructive animate"
+						  ng-class="{red: hovering, dark: !hovering}"
+						  ng-show="following"
+						  ng-click="unfollowPlaylist()"
+						  ng-mouseover="hovering = true"
+						  ng-mouseleave="hovering = false">
+						<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
+						<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
+					</span>
+					<span class="flag follow-toggle clickable dark animate"
+						  ng-show="!following"
+						  ng-click="followPlaylist()">
+						<span><i class="fa fa-star"></i> Follow</span>
+					</span>
+				</span>
+				
+				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
+					<span ng-show="following">
+						<span class="flag clickable dark animate"
+							  ng-click="editPlaylist( $scope )">
+							Edit
+						</span>
+						<confirmation-button class="flag clickable destructive dark animate"
+							default-text="Delete playlist"
+							confirmation-text="Are you sure?"
+							on-confirmation="unfollowPlaylist">
+						</confirmation-button>
+					</span>
+					<span ng-show="!following">
+						<span class="flag clickable dark animate"
+							  ng-click="recoverPlaylist()">
+							<i class="fa fa-undo"></i> Recover playlist
+						</span>						
+					</span>
+				</span>
+				
+            </h1>
+			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
+			<div class="info-text">
+				<span ng-bind="tracklist.total">0</span> tracks
+				&nbsp;|&nbsp; <span ng-show="tracks.next">+</span><span ng-bind="totalTime()">0</span> minutes
+				&nbsp;|&nbsp; <i class="fa fa-lock" ng-hide="playlist.public">&nbsp;</i><a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
+			</div>
+		</div>
+	</div>
+	
+	<div class="playlist-items tracklist droppable" ng-controller="TracklistController">
+	
+		<track ng-repeat="track in tracklist.tracks"></track>
+
+		<div ng-hide="tracklist.tracks.length" class="no-items">
+			No items
+		</div>	
+		
+	</div>
+</div>

@@ -1,0 +1,54 @@
+<div class="browse album">
+	
+	<ng-include src="'/app/common/contextmenu/tracklist.template.html'"></ng-include>
+	
+	<div class="album-intro">
+		
+		<div class="square-panel">
+			<div class="image-container" ng-repeat="image in album.images | filter:image.height=300 | limitTo:1">
+				<div class="image animate" style="background-image: url({{ image.url }});"></div>
+			</div>
+		</div>
+		
+		<div class="content">
+			
+			<h1 ng-bind="album.name"></h1>
+
+			<h2>
+				<span ng-repeat="artist in album.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+				</span>
+			</h2>
+			
+			<div class="info-text">
+				<div>
+					Released: <span ng-bind="convertedDate()"></span>
+				</div>
+				<div>
+					<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
+					(<span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes)
+				</div>
+				<div>
+					<span class="bar-track">
+						<span class="bar" style="width: {{ album.popularity }}%;"></span>
+					</span>
+				</div>
+			</div>
+			
+		</div>
+		
+		<div class="clear-both"></div>
+		
+	</div>
+	
+	<div class="album-items tracklist" ng-controller="TracklistController" >
+		
+		<track ng-repeat="track in tracklist.tracks"></track>
+
+		<div ng-hide="tracklist.tracks.length" class="no-items">
+			No items
+		</div>
+
+	</div>
+	
+</div>

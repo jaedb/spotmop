@@ -1,0 +1,58 @@
+
+<div>
+
+    <div class="field">
+        <div class="label">Status</div>
+        <div class="input spotify connection-status">
+            <div class="status connected green-text" ng-hide="!spotifyOnline">
+                <i class="fa fa-check"></i> &nbsp; Connected
+            </div>
+            <div class="status disconnected red-text" ng-hide="spotifyOnline">
+                <i class="fa fa-close"></i> &nbsp; Disconnected
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Application Client ID</div>
+        <div class="input">
+            <input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="settings.spotifyclientid" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Country code</div>
+        <div class="input">
+            <input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="label">Locale</div>
+        <div class="input">
+            <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+            <i class="fa fa-check autosave-success"></i>
+        </div>
+    </div>
+
+    <div class="field current-user">
+        <div class="label">Current user</div>
+        <div class="input">
+            <span class="my-profile">
+                <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+                    <div class="image animate" style="background-image: url({{ image.url }});"></div>
+                </span>
+                <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+            </span>
+        </div>
+    </div>
+
+    <div class="actions">
+        <a class="button bordered large" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+        <a class="button bordered large red" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+    </div>
+
+    <div class="clear-both"></div>			
+</div>

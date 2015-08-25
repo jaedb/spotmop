@@ -1,0 +1,33 @@
+<div>
+
+	<h1>
+		My Playlists
+		<span class="flag clickable black animate"
+			ng-click="createPlaylist()">
+			New playlist
+		</span>
+	</h1>
+	
+	<div class="playlist-items square-panels">
+		
+		<div class="item-container" ng-repeat="playlist in playlists">
+			<a ui-sref="browse.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
+				<div class="image-container">
+					<thumbnail images="playlist.images"></thumbnail>
+				</div>
+				<div class="info animate">
+					<div class="name" ng-bind="playlist.name"></div>
+					<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+				</div>
+			</a>
+		</div>
+	
+		<div ng-hide="playlists.length" class="no-items">
+			No items
+		</div>
+		
+		<div class="clear-both"></div>
+	
+	</div>
+	
+</div>

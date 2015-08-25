@@ -1,0 +1,1400 @@
+/**
+ * Core styles
+ * 
+ * Spotmop
+ **/
+
+@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
+
+body,
+html {
+	background: ##FFFFFF;
+	color: #000000;
+	font-family: 'Roboto', Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+
+body {
+	perspective: 1px;
+}
+
+* {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+body.dragging *,
+.button,
+.menu-item {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+body {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+#sidebar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 90px;
+	width: 20%;
+	overflow-y: auto;
+}
+
+#body {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 80%;
+	bottom: 90px;
+	overflow-y: scroll;
+	-webkit-perspective: 1px;
+	-moz-perspective: 1px;
+	perspective: 1px;
+}
+
+#player {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 90px;
+}
+
+#body > .inner {
+	overflow-x: hidden;
+}
+
+#sidebar > .inner,
+#body > .inner,
+#player > .inner {
+	padding: 20px;
+}
+
+
+/**
+ * Column layouts
+ * Provides percentage fluid faux tables
+ **/
+.col {
+	float: left;
+	min-height: 1px;
+}
+
+.col.w5{	width: 5%; }
+.col.w10{	width: 10%; }
+.col.w15{	width: 15%; }
+.col.w20{	width: 20%; }
+.col.w25{	width: 25%; }
+.col.w30{	width: 30%; }
+.col.w35{	width: 35%; }
+.col.w40{	width: 40%; }
+.col.w45{	width: 45%; }
+.col.w50{	width: 50%; }
+.col.w55{	width: 55%; }
+.col.w60{	width: 60%; }
+.col.w65{	width: 65%; }
+.col.w70{	width: 70%; }
+.col.w75{	width: 75%; }
+.col.w80{	width: 80%; }
+.col.w85{	width: 85%; }
+.col.w90{	width: 90%; }
+.col.w95{	width: 95%; }
+.col.w100{	width: 100%; }
+
+
+.pull-left {		float: left; }
+.pull-right {		float: right; }
+
+
+
+/* ================================================================================ SIDEBAR ======= */
+/* ================================================================================================ */
+
+
+.main-menu {
+    margin-left: -20px;
+}
+
+.main-menu a {
+	padding: 3px 6px;
+	display: inline-block;
+	border-radius: 3px;
+	text-decoration: none;
+	color: inherit;
+}
+
+.main-menu a:hover {
+	background: #EEEEEE;
+}
+
+.main-menu .menu-item-wrapper {
+    border-left: 3px solid transparent;
+    padding-left: 20px;
+    display: inline-block;
+}
+
+.main-menu .menu-item-wrapper.active {
+    border-color: #1cf4c4;
+}
+
+.main-menu a.dropping {
+    background: #333333;
+    color: #FFFFFF;
+}
+
+.main-menu li {
+	padding-top: 2px;
+	list-style-type: none;
+}
+
+.main-menu .menu-item-wrapper.top-level a {
+	font-size: 17px;
+	font-weight: 300;
+}
+
+.main-menu .menu-item-wrapper.top-level a i {
+	font-size: 12px;
+	width: 1.5em;
+	vertical-align: top;
+	margin-top: 5px;
+}
+
+.main-menu li > ul {
+	padding-bottom: 5px;
+}
+
+.main-menu li > ul .menu-item-wrapper {
+    padding-left: 43px;
+}
+
+.main-menu li > ul a {
+	color: #555555;
+}
+
+
+/**
+ * Critical services (Mopidy + Spotify)
+ * Alerts shown under services menu item if offline
+ **/
+
+.critical-services-status {
+	padding-left: 29px;
+	padding-top: 5px;
+}
+
+
+
+
+/* ====================================================================== GLOBAL ELEMENTS ========= */
+/* ================================================================================================ */
+
+
+.clear-both {
+	clear: both;
+}
+
+.hide {
+	display: none !important;
+}
+
+*:focus {
+    outline: none;
+}
+
+
+/**
+ * Animations
+ * Add .animation to any element to animate :hover and :focus sudo-styles
+ **/
+ 
+.animate,
+.button,
+button,
+input[type='submit'] {
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+/* prevent animations when page is loading */
+.loading .animate,
+.loading .button,
+.loading button,
+.loading input[type='submit'] {
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+/**
+ * Image effects
+ * Blurs, etc
+ **/
+
+.blur {
+	filter: url('../svg/blur.svg#blur');
+	-webkit-filter: blur(10px);
+	filter: blur(10px);
+}
+
+
+/**
+ * Drag tracer
+ * Follows the cursor during drag events
+ **/
+
+.drag-tracer {
+	position: fixed;
+	padding: 5px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+	background: rgba(100,100,100,0.6);
+	color: #FFFFFF;
+	z-index: 9;
+	display: none;
+}
+
+.drag-tracer.good {
+    background-color: rgba(53,204,53,1);
+}
+    
+
+
+/**
+ * Notifications
+ **/
+
+#notifications {
+    position: fixed;
+    z-index: 9;
+    top: 15px;
+    left: 20%;
+    right: 0;
+    text-align: center;
+}
+
+#notifications .notification-item {
+    color: #FFFFFF;
+    display: inline-block;
+    padding: 10px 18px;
+    background-color: rgba(0,0,0,0.6);
+	margin: 0px 1px;
+}
+
+#notifications .notification-item:first-child {
+	border-radius: 100px 0 0 100px;
+}
+
+#notifications .notification-item:last-child {
+	border-radius: 0 100px 100px 0;
+}
+
+#notifications .notification-item:only-child {
+	border-radius: 100px;
+}
+
+#notifications .notification-item.loading {
+    padding-left: 40px;
+    background-image: url('../svg/spinner.svg');
+    background-repeat: no-repeat;
+    background-position: 10px 8px;
+}
+
+#notifications .notification-item.bad,
+#notifications .notification-item.error {
+    background-color: rgba(214,47,47,0.9);
+}
+
+#notifications .notification-item.good {
+    background-color: rgba(53,204,53,0.9);
+}
+
+
+/**
+ * Base-level typography
+ * Standardise the font styles
+ **/
+
+h1 {
+	font-size: 30px;
+	font-weight: 200;
+	padding-bottom: 20px;
+}
+
+h2 {
+	font-size: 20px;
+	font-weight: 300;
+}
+
+h3 {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+h4 {
+	font-size: 14px;
+	font-weight: 400;
+}
+
+h4.section-title {
+	text-transform: uppercase;
+	font-weight: 600;
+	padding-bottom: 10px;
+}
+
+.body a {
+	color: inherit;
+	text-decoration: none;
+	border-bottom: 1px dotted transparent;
+    cursor: pointer;
+}
+
+.body a:hover {
+	border-color: inherit;
+}
+
+.info-text {
+	color: #AAAAAA;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
+
+/**
+ * Text colour variations
+ **/
+
+.black-text {		color: #000000; }
+.red-text {			color: rgb(214,47,47); }
+.green-text {		color: rgb(53,204,53); }
+
+.black-background {	background-color: #000000; }
+.red-background {	background-color: rgb(214,47,47); }
+.green-background {	background-color: rgb(53,204,53); }
+
+
+/**
+ * Text style variatons
+ **/
+
+.bold-text {		font-weight: bold; }
+.italic-text {		font-style: italic; }
+
+
+
+/* ====================================================================== STANDARD ELEMENTS ======= */
+/* ================================================================================================ */
+
+
+.no-items {
+	text-align: center;
+	font-size: 16px;
+	color: #CCCCCC;
+	padding-top: 50px;
+	font-weight: bold;
+}
+
+/**
+ * Flags
+ **/
+
+.flag {
+	background: #EEEEEE;
+	display: inline-block;
+	border-radius: 3px;
+	padding: 3px 6px;
+	font-size: 11px;
+	font-weight: 400;
+	margin-left: 10px;
+	margin-right: -10px;
+}
+
+h1 .flag {
+    vertical-align: top;
+    margin-top: 13px;
+}
+
+.flag.blue{
+	background: #1cf4c4;
+	color: #FFFFFF;
+}
+
+.flag.clickable:hover{
+	background: rgba(0,0,0,0.65);
+	color: rgba(255,255,255,0.85);
+}
+
+.flag.dark {
+	background: rgba(0,0,0,0.4);
+	color: rgba(255,255,255,0.5);
+}
+
+.flag.black {
+	background: rgba(0,0,0,0.55);
+	color: rgba(255,255,255,0.8);
+}
+
+.flag.red {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+}
+
+.flag.green {
+    background: rgba(53,204,53,0.9);
+	color: #FFFFFF;
+}
+
+.flag.clickable {
+    cursor: pointer;
+}
+
+.flag.clickable.destructive:hover {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+
+
+
+
+/**
+ * Clickable buttons
+ **/
+
+body .button.default,
+body .button.pill {
+    padding: 8px 18px;
+    background: #333333;
+    color: #FFFFFF;
+    display: inline-block;
+    border: 0;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+body .button.bordered {
+	border: 1px solid #333333;
+	color: #333333;
+	background: none;
+	text-transform: uppercase;
+	display: inline-block;
+	vertical-align: top;
+}
+
+body .button.bordered:not(.disabled):hover {
+	background: none;
+	border-bottom-width: 4px;
+	padding-top: 16px;
+	padding-bottom: 16px;
+	background: #FAFAFA;
+}
+
+.button.pill:not(.disabled):hover,
+.button.default:not(.disabled):hover {
+    background: #202020;
+}
+
+.button.pill {
+    border-radius: 20px;
+}
+
+.button.default > .fa {
+	margin-top: 2px;
+	vertical-align: top;
+}
+
+/* disabled */
+
+body .button.disabled {
+	cursor: not-allowed;
+	color: #DDDDDD !important;
+	border-color: #DDDDDD !important;
+}
+
+
+/* variations */
+
+.button.large {					padding: 18px 26px; }
+
+.button.light {									background: #EEEEEE; color: #222222; }
+.button.light:not(.disabled):hover {			background: #DDDDDD; }
+
+.button.red {									background-color: #D62F2F; }
+.button.red:not(.disabled):hover,
+.button.red-hover:not(.disabled):hover {		background-color: #c42424; }
+.button.bordered.red {							border-color: #D62F2F; color: #D62F2F; }
+
+.button.green {									background-color: #35CC35; }
+.button.green:not(.disabled):hover,
+.button.green-hover:not(.disabled):hover {		background-color: #28b428; }
+.button.bordered.green {						border-color: #35CC35; color: #35CC35; }
+
+
+
+/**
+ * Switch buttons
+ **/
+
+.switch-button {
+    margin-top: 6px;
+    width: 30px;
+    height: 14px;
+    background: rgba(0,0,0,0.3);
+    padding: 3px;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+}
+
+.switch-button > .switch {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #DDDDDD;
+    border-radius: 14px;
+}
+
+.switch-button.on {
+    background: rgba(0,0,0,0.8);
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
+}
+
+.switch-button.on > .switch {
+    left: auto;
+    right: 3px;
+    background: #1cf4c4;
+}
+
+
+
+/**
+ * Popularity bars
+ **/
+ 
+.bar-track {	
+	display: inline-block;
+	width: 40px;
+	position: relative;
+	height: 4px;
+	background: #DDDDDD;
+	margin-top: 5px;
+}
+
+.bar-track .bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #666666;
+}
+
+
+/**
+ * Related artist panel
+ **/
+
+.related-artist {
+	display: block;
+	clear: both;
+	padding: 10px 0;
+	margin-bottom: 5px;
+	border: 0 !important;
+}
+
+.related-artist .thumbnail {
+	display: block;
+	width: 50px;
+	height: 50px;
+	border-radius: 100px;
+	float: left;
+	margin-right: 14px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+	background-color: #777777;
+	border: 2px solid #FFFFFF;
+}
+
+.related-artist:hover .thumbnail {
+	opacity: 0.75;
+	border-color: #1cf4c4;
+}
+
+.related-artist .name {
+	padding-top: 15px;
+	padding-left: 65px;
+	font-weight: 300;
+	font-size: 15px;
+	display: block;
+}
+
+
+/**
+ * Square panels
+ * The basis for all playlist, album and artist thumbnails
+ **/
+ 
+ .square-panels {
+	margin-left: -2%;
+	margin-right: -2%;
+}
+ 
+.square-panel {
+	width: 16%;
+	margin: 0 2% 3% 2%;
+	display: block;
+	float: left;
+	background-size: cover;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	text-decoration: none;
+	color: inherit;
+	border: none !important;
+}
+
+.square-panel .image-container {
+	position: relative;
+	height: 180px;
+}
+
+.square-panel .image-container .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #777777;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.square-panel .image-container .image.placeholder {
+	background-color: #CCCCCC;
+	background-image: url('../image-not-found.png');
+	background-size: auto;
+}
+
+.square-panel:hover .image-container .image {
+	opacity: 0.75;
+}
+
+.square-panel .info {
+	padding-top: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	border-top: 3px solid transparent;
+	margin-top: -3px;
+	position: relative;
+	height: 50px;
+}
+
+.square-panel .info.smaller {
+	height: 30px;
+}
+
+.square-panel:hover .info {
+	border-color: #1cf4c4;
+}
+
+.square-panel .info .secondary {
+	padding-top: 2px;
+	color: #AAAAAA;
+}
+
+.square-panel .info .name,
+.square-panel .info .tracks {
+	overflow: hidden;
+	max-height: 2.6em;
+	line-height: 1.3em;
+}
+
+/**
+ * Unique instances of square panels
+ * ie. Category panels
+ **/
+ 
+.square-panel.category .name {
+	position: absolute;
+	padding-bottom: 20%;
+	border-bottom: 3px solid transparent;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	text-align: center;
+	color: #FFFFFF;
+	font-weight: bold;
+	font-size: 14px;
+}
+ 
+.square-panel.category:hover .name {
+	border-color: #1cf4c4;
+	padding-bottom: 21%;
+}
+
+
+/**
+ * Track rows
+ * At least 75% of the functionality lives here. At least.
+ **/
+
+.tracklist .track {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	cursor: pointer;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.track .title,
+.track .artist,
+.track .album,
+.track .duration,
+.track .popularity {
+	float: left;
+	min-height: 1px;
+}
+
+.track .title {				width: 30%; }
+.track .artist {			width: 30%; }
+.track .album {				width: 30%; }
+.track .duration {			width: 5%; }
+.track .popularity {		width: 5%; }
+
+.track.no-album .title {			width: 45%; }
+.track.no-album .artist {			width: 45%; }
+.track.no-album .duration {			width: 5%; }
+.track.no-album .popularity {		width: 5%; }
+
+body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
+	background: #F4F4F4;
+}
+
+.tracklist .track.selected,
+.tracklist .track.selected:hover {
+	background: #FFF39C;
+}
+
+.tracklist .track.playing {
+	font-weight: bold;
+}
+
+.tracklist .track.drag-hovering {
+	border-top: 2px solid #000000;
+	margin-top: -2px;
+}
+
+.tracklist .track.drag-hovering:first-child {
+	margin-top: -1px;
+}
+ 
+ 
+
+
+/* ====================================================================== PAGE-SPECIFIC =========== */
+/* ================================================================================================ */
+
+/**
+ * Queue
+ **/
+ 
+.queue-intro {
+	padding-bottom: 20px;
+}
+ 
+.queue-intro .info-text {
+	margin-top: -15px;
+	padding: 0;
+}
+
+
+/**
+ * Album page
+ **/
+
+.album-intro h1 {
+	padding: 20px 0 0 0;
+}
+
+.album-intro .square-panel {
+	margin: 0 30px 20px 0;
+	width: 250px;
+	height: 250px;
+}
+
+.album-intro .image {
+	background-color: #EEEEEE;
+	background-size: cover;
+	background-position: 50% 50%;
+	opacity: 1 !important;
+}
+
+.album-intro .info-text {
+	padding-top: 20px;
+}
+
+ 
+
+/**
+ * Playlist
+ **/
+
+.playlist-intro {
+	position: relative;
+	margin: -20px -20px 30px -20px;
+}
+
+.playlist-intro .image-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	overflow: hidden;
+	z-index: -1;
+}
+
+.playlist-intro .image {
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	bottom: -10px;
+	left: -10px;
+	background-color: #EEEEEE;
+	background-size: cover;
+	background-position: 50% 100%;
+}
+
+.playlist-intro .inner {
+	background: rgba(0,0,0,0.5);
+	color: #FFFFFF;
+	padding: 50px;
+}
+
+.playlist-intro h1 {
+	padding-bottom: 8px;
+}
+
+.playlist-intro .description {
+	padding-bottom: 20px;
+}
+
+
+/**
+ * Artist
+ **/
+
+.artist-intro {
+	position: relative;
+	margin: -20px -20px 30px -20px;
+	padding: 0 20px;
+	height: 60vh;
+}
+
+.artist-intro > .inner {
+	position: absolute;
+	left: 20px;
+	right: 20px;
+	bottom: 50px;
+}
+
+.artist-intro h1 {
+	padding-bottom: 0;
+    font-size: 32px;
+}
+
+.artist-intro.background--dark h1 {             color: #FFFFFF; }
+.artist-intro.background--dark .info-text {     color: rgba(255,255,255,0.6); }
+
+.artist-intro.background--dark.background--complex h1,
+.artist-intro.background--dark.background--complex .info-text {
+    text-shadow: 1px 1px 3px #000000;
+}
+
+.artist-intro.background--light h1 {             color: #000000; }
+.artist-intro.background--light .info-text {     color: rgba(0,0,0,0.6); }
+
+.artist-intro.background--light.background--complex h1,
+.artist-intro.background--light.background--complex .info-text {
+    text-shadow: 1px 1px 3px #FFFFFF;
+}
+
+.artist-intro .image-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	overflow: hidden;
+	z-index: -1;
+}
+
+.artist-intro .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #EEEEEE;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
+.artist-intro .submenu {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding-left: 10px;
+	background: rgba(0,0,0,0.2);
+}
+
+.artist-intro .submenu .menu-item {
+	display: inline-block;
+	padding: 10px;
+	color: #FFFFFF;
+	font-size: 12px;
+	text-transform: uppercase;
+	border: 0;
+	opacity: 0.75;
+}
+
+.artist-intro .submenu .menu-item.active,
+.artist-intro .submenu .menu-item:hover {
+	opacity: 1;
+}
+
+.tracklist.top-track-items {
+	padding-bottom: 30px;
+}
+
+.biography .content {
+    font: inherit;
+    width: 100%;
+}
+
+.biography .details {
+    padding: 20px 0;
+	color: #666666;
+}
+
+
+    
+
+/**
+ * User page
+ **/
+
+.user-intro {
+    padding-bottom: 30px;
+}
+
+.user-intro .info {
+    padding-top: 30px;
+}
+
+.user-intro .info-text {
+    margin-top: -20px;
+}
+
+.user-intro .image-container .image {
+    width: 120px;
+    height: 120px;
+    border-radius: 120px;
+    float: left;
+    background-size: cover;
+    background-position: 50% 50%;
+    margin-right: 20px;
+}
+
+
+/**
+ * Search
+ **/
+
+.search-intro .info-text {
+	margin-top: -15px;
+	padding-bottom: 30px;
+}
+
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 32%;
+	float: left;
+}
+.search-results-section.artists,
+.search-results-section.albums {
+	padding-right: 2%;
+}
+
+.search-results-section .square-panel {
+	width: 29%;
+}
+
+.search-results-section .square-panel .image-container {
+	height: 100px;
+	min-width: 100%;
+}
+
+.search-results-section .square-panel .image-container .image {
+	min-width: 100%;
+}
+
+.search-results-section.playlists .square-panel .info > .name {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.search-results-section.tracks {
+	padding-top: 30px;
+}
+
+
+/**
+ * Settings
+ **/
+
+.actions {
+    clear: both;
+    padding: 40px 0 0 15%;
+}
+
+.sub-page-navigation {
+	border-bottom: 1px solid #666666;
+}
+
+.sub-page-navigation .menu-item {
+	padding: 10px 0;
+	margin-left: 20px;
+	margin-bottom: -1px;
+	border-bottom: 1px solid transparent;
+	display: inline-block;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.sub-page-navigation .menu-item > i {
+	font-size: 6px;
+	vertical-align: middle;
+	margin-top: -4px;
+	padding-right: 2px;
+}
+
+.sub-page-navigation .menu-item:hover {
+	color: #555555;
+	cursor: pointer;
+}
+
+.sub-page-navigation .menu-item.active {
+	border-color: #1cf4c4;
+}
+
+.sub-page {
+	padding: 10px 0 20px;
+}
+
+.settings .field.current-user .input {
+    padding-top: 8px;
+}
+
+.settings .field.current-user .image-container > .image {
+    width: 36px;
+    height: 36px;
+    float: left;
+    border-radius: 36px;
+    margin-right: 10px;
+    margin-top: -10px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+	background-color: #CCCCCC;
+}
+
+.settings .field.shortcut-keys .shortcuts {
+	padding-top: 15px;
+}
+
+.settings .field.shortcut-keys .row {
+	padding-bottom: 5px;
+}
+
+.settings .field.shortcut-keys .row .flag {
+	margin-left: 0;
+}
+
+
+
+/* ====================================================================== PLAYER ================== */
+/* ================================================================================================ */
+
+#player {
+	background: #000000;
+	color: #FFFFFF;
+}
+
+#player .background-container {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	opacity: 0.25;
+}
+
+#player .background-container .image {
+	width: 100%;
+	height: 100%;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+#player > .slim-player.inner {
+	padding: 10px 10px 19px 10px;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	top: 0;
+}
+
+#player .button {
+	padding: 5px;
+	margin: 0 5px;
+	font-size: 14px;
+	opacity: 0.75;
+}
+
+#player .button.active,
+#player .button:hover {
+	opacity: 1;
+	cursor: pointer;
+}
+
+#player .button.active {
+    color: #1cf4c4;
+}
+
+#player .track-info {
+	text-align: center;
+	font-size: 16px;
+	text-transform: uppercase;
+	padding: 28px 200px 0;
+}
+
+#player .track-info .track {
+	display: inline-block;
+}
+
+#player .track-info .artist {
+	display: inline-block;
+	opacity: 0.5;
+}
+
+#player .track-info .artist a{
+	text-decoration: none;
+	color: #FFFFFF;
+	border-bottom: 1px dotted transparent;
+}
+
+#player .track-info .artist a:hover {
+	border-color: #FFFFFF;
+}
+
+/**
+ * Playback controls
+ **/
+ 
+#player .controls {
+	float: left;
+	margin-left: 15px;
+}
+ 
+#player .playback {
+	padding-top: 32px;
+	float: left;
+}
+
+#player .volume {
+	padding-top: 32px;
+	padding-right: 48px;
+	float: right;
+	width: 180px;
+}
+
+#player .slider {
+	padding: 8px 0;
+	margin-left: 120px;
+	margin-right: 20px;
+	cursor: pointer;
+}
+
+#player .slider.progress {
+	position: absolute;
+	top: -8px;
+	left: 0;
+	right: 0;
+	margin: 0;
+	z-index: 3;
+}
+
+#player .slider.progress .track {
+	height: 4px;
+	background: none;
+}
+
+#player .slider.progress:hover .track {
+	height: 8px;
+	background: rgba(255,255,255,0.15);
+}
+
+#player .slider  .track {
+	position: relative;
+	height: 2px;
+	background: rgba(255,255,255,0.3);
+}
+
+#player .slider  .track .fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #1cf4c4;
+}
+
+#player .slider  .track .fill.animate {
+	-webkit-transition: all 1s;
+	-moz-transition: all 1s;
+	-o-transition: all 1s;
+	transition: all 1s;
+}
+
+
+/**
+ * Fullscreen player
+ **/
+
+#player.expanded {
+	top: 0;
+	height: auto;
+}
+
+#player .expand-player {
+	position: absolute;
+	bottom: 25px;
+	right: 20px;
+	padding: 10px;
+	font-size: 16px;
+	cursor: pointer;
+	display: block;
+	z-index: 9;
+	color: #FFFFFF;
+}
+
+#player .fullscreen-player {
+	display: none;
+	z-index: 2;
+}
+
+#player .fullscreen-player .info-wrapper {
+	position: absolute;
+	top: 60%;
+	left: 0;
+	right: 0;
+	height: 50%;
+}
+
+#player .fullscreen-player .track-info {
+	padding: 40px 0;
+}
+
+#player .fullscreen-player .player-controls {
+	float: none;
+	text-align: center;
+	margin: 0;
+}
+
+#player .fullscreen-player .controls .button {
+	font-size: 20px;
+}
+
+#player .fullscreen-player .artwork-wrapper {
+	position: absolute;
+	top: 5%;
+	left: 0;
+	right: 0;
+	height: 50%;
+	text-align: center;
+}
+
+#player .fullscreen-player .artwork {
+	height: 100%;
+	margin: 0 auto;
+	padding-top: 30px;
+    display: block;
+    border: 0 !important;
+    text-decoration: none;
+}
+
+#player .fullscreen-player .artwork > .image {
+	height: 100%;
+	width: auto;
+}
+
+#player .fullscreen-player .volume {
+	margin: 0 auto;
+	max-width: 500px;
+	width: 80%;
+	float: none;
+	padding: 40px 0 0 0;
+}
+
+#player .fullscreen-player .volume .controls {
+	margin: -5px 0 0 0;
+}
+
+#player .fullscreen-player .volume .slider {
+	margin: 0 0 0 45px;
+}
+
+
+
+
+
+
+

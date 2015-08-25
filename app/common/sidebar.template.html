@@ -1,0 +1,69 @@
+<div id="sidebar">
+	<div class="inner">
+		
+		<form class="search-form" ng-submit="searchSubmit( query )">
+			<input type="text" ng-model="query" />
+			<button type="submit"><i class="fa fa-search"></i></button>
+		</form>
+        
+		<ul class="main-menu">
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/queue" class="droppable" data-type="queue" ng-class="{ active: $state.is('queue') }">
+                        <i class="fa fa-list"></i>
+                        Queue
+                    </a>
+                </span>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/discover/browse">
+                        <i class="fa fa-star"></i>
+                        Discover
+                    </a>
+                </span>
+				<ul>
+					<li><span class="menu-item-wrapper"><a href="/discover/featured">Featured playlists</a></span></li>
+					<li><span class="menu-item-wrapper"><a href="/discover/new">New releases</a></span></li>
+				</ul>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/library" class="droppable" data-type="library">
+                        <i class="fa fa-music"></i>
+                        Library
+                    </a>
+                </span>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/my-playlists" data-type="playlists">
+                        <i class="fa fa-folder"></i>
+                        Playlists
+                    </a>
+                </span>
+				<ul ng-show="playlistsMenu.length">
+					<li ng-repeat="playlist in playlistsMenu">
+                        <span class="menu-item-wrapper">
+				            <a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
+                        </span>
+					</li>
+				</ul>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/settings">
+                        <i class="fa fa-cog"></i>
+                        Settings
+                    </a>
+                </span>
+			</li>
+		</ul>
+		
+		<div class="critical-services-status">
+			<p ng-show="!mopidyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Mopidy offline</p>
+			<p ng-show="!spotifyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Spotify offline</p>
+		</div>
+
+	</div>
+</div>

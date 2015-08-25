@@ -1,0 +1,25 @@
+<div>
+	
+	<div class="queue-intro">
+		
+		<ng-include src="'/app/common/contextmenu/tltracklist.template.html'"></ng-include>
+		
+		<h1>Queue</h1>
+		
+		<div class="info-text">
+			<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length > 1">s</span>
+			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minute<span ng-show="totalTime != 1">s</span>
+		</div>
+	</div>
+	
+	<div class="queue-items tracklist droppable" ng-controller="TracklistController" data-type="queue">		
+	
+		<tltrack ng-repeat="track in tracklist.tracks"></tltrack>
+
+		<div ng-hide="tracklist.tracks.length" class="no-items">
+			No items
+		</div>
+		
+	</div>
+	
+</div>
