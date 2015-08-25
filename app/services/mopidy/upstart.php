@@ -4,11 +4,13 @@
  * Portal script that allows Spotmop interface to interact
  * with the mopidy upstart script. Will require installation as below:
  *
- * 1. Grant PHP user sudo access by adding the following to /etc/sudoers:
- *    www-data ALL=NOPASSWD:{ABSOLUTEPATHTOWEBDIR}/app/services/mopidy/upstart
+ * 1. Grant PHP user sudo access to upstart wrapper by adding the following to /etc/sudoers:
+ *    www-data ALL=NOPASSWD:{ABSOLUTEPATHTOWEBDIR}/app/services/mopidy/upstart.sh
  **/
  
-$status = exec("sudo ".realpath(dirname(__FILE__))."/upstart ".$_GET['action']);
+$action = $_GET['action'];
+$result = exec("sudo ".realpath(dirname(__FILE__))."/upstart.sh ".$action);
 
-echo $status;
+echo $result;
+
 return;
