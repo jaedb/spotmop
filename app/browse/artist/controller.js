@@ -71,6 +71,18 @@ angular.module('spotmop.browse.artist', [])
 	SpotifyService.getArtist( $stateParams.uri )
 		.success( function( response ){
 			$scope.artist = response;
+		
+			// get the artist's related artists
+			SpotifyService.getRelatedArtists( $stateParams.uri )
+				.success( function( response ){
+					$scope.relatedArtists = response.artists;
+					$rootScope.$broadcast('spotmop:pageUpdated');
+					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+				})
+				.error(function( error ){
+					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
+				});
 		});	
 })
 
@@ -88,18 +100,7 @@ angular.module('spotmop.browse.artist', [])
 			SpotifyService.getTopTracks( $stateParams.uri )
 				.success( function( response ){
 					$scope.tracklist.tracks = response.tracks;
-		
-					// get the artist's related artists
-					SpotifyService.getRelatedArtists( $stateParams.uri )
-						.success( function( response ){
-							$scope.relatedArtists = response.artists;
-							$rootScope.$broadcast('spotmop:pageUpdated');
-							$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
-						})
-						.error(function( error ){
-							$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-artist'});
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
-						});
+					$rootScope.$broadcast('spotmop:pageUpdated');
 				});
 		});	
 	
@@ -134,6 +135,8 @@ angular.module('spotmop.browse.artist', [])
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-albums'});
                 loadingMoreAlbums = false;
+				
+				$rootScope.$broadcast('spotmop:pageUpdated');
             })
             .error(function( error ){
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-albums'});
