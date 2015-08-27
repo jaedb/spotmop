@@ -1,19 +1,39 @@
-<div>
-
-	<div class="search-intro">
-		<h1>Search</h1>
-		<div class="info-text">
-			You searched for "<em ng-bind="query"></em>"
-		</div>
+<div class="search">
+	
+	<div class="search-form">
+		<form>
+			<input type="text" ng-model="query" class="query" placeholder="Search" />
+			<div class="dropdown" ng-class="{ active: dropdownActive }">
+				<div class="value" ng-click="toggleDropdown()">
+					<span ng-bind="type"></span>
+					<span class="arrow">
+						<i class="fa fa-caret-right" ng-hide="dropdownActive"></i>
+						<i class="fa fa-caret-down" ng-show="dropdownActive"></i>
+					</span>
+				</div>
+				<div class="options" ng-show="dropdownActive">
+					<a class="option"
+						ng-repeat="option in ['all','artist','album','playlist','track']"
+						href="/search/{{ option }}/{{ query }}">
+							{{ option }}
+					</a>
+				</div>
+			</div>
+		</form>
+		<div class="clear: both;"></div>
 	</div>
 	
-	<div class="search-results-section artists">
-		<h4 class="section-title">Artists</h4>	
+	<div ng-show="type == 'artist'">
+	
+		<div ng-show="loading" class="loading">
+			<img src="/assets/svg/spinner-black.svg" />
+		</div>
+		
 		<div class="artist-items square-panels">
 			<div class="item-container" ng-repeat="artist in artists.items">
 				<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
 					<div class="image-container">
-						<thumbnail images="artist.images" size="small"></thumbnail>
+						<thumbnail images="artist.images"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="artist.name"></div>
@@ -21,33 +41,48 @@
 				</a>
 			</div>
 		</div>
+		<div ng-hide="artists.items.length || loading" class="no-items">
+			No items
+		</div>		
 		<div class="clear-both"></div>
 	</div>
 	
-	<div class="search-results-section albums">
-		<h4 class="section-title">Albums</h4>	
+	<div ng-show="type == 'album'">		
+	
+		<div ng-show="loading" class="loading">
+			<img src="/assets/svg/spinner-black.svg" />
+		</div>
+		
 		<div class="album-items square-panels">
 			<div class="item-container" ng-repeat="album in albums.items">
 				<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 					<div class="image-container">
-						<thumbnail images="album.images" size="small"></thumbnail>
+						<thumbnail images="album.images"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="album.name"></div>
+						<div class="secondary tracks"><span ng-bind="album.tracks.total"></span> tracks</div>
 					</div>
 				</a>
 			</div>
-		</div>
+		</div>		
+		<div ng-hide="albums.items.length || loading" class="no-items">
+			No items
+		</div>		
 		<div class="clear-both"></div>
-	</div>	
+	</div>
 	
-	<div class="search-results-section playlists">
-		<h4 class="section-title">Playlists</h4>		
+	<div ng-show="type == 'playlist'">		
+	
+		<div ng-show="loading" class="loading">
+			<img src="/assets/svg/spinner-black.svg" />
+		</div>
+		
 		<div class="playlist-items square-panels">
 			<div class="item-container" ng-repeat="playlist in playlists.items">
 				<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 					<div class="image-container">
-						<thumbnail images="playlist.images" size="small"></thumbnail>
+						<thumbnail images="playlist.images"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="playlist.name"></div>
@@ -55,22 +90,95 @@
 					</div>
 				</a>
 			</div>
-		</div>
+		</div>		
+		<div ng-hide="playlists.items.length || loading" class="no-items">
+			No items
+		</div>		
 		<div class="clear-both"></div>
 	</div>
 	
-	<div class="clear-both"></div>
+	<div ng-show="type == 'track'">
 	
-	<div class="search-results-section tracks">
-		<h4 class="section-title">Tracks</h4>	
-		<div class="search-items tracklist"  ng-controller="TracklistController">			
-		
-			<track ng-repeat="track in tracklist.tracks"></track>
-
-			<div ng-hide="tracklist.tracks.length" class="no-items">
-				No items
-			</div>		
+		<div ng-show="loading" class="loading">
+			<img src="/assets/svg/spinner-black.svg" />
 		</div>
+		
+		<div class="search-items tracklist"  ng-controller="TracklistController">
+			<track ng-repeat="track in tracklist.tracks"></track>	
+		</div>
+		<div ng-hide="tracklist.tracks.length || loading" class="no-items">
+			No items
+		</div>	
+	</div>
+	
+	<div ng-show="type == 'all'">
+	
+		<div class="search-results-section artists">
+			<h4 class="section-title">Artists</h4>	
+			<div class="artist-items square-panels">
+				<div class="item-container" ng-repeat="artist in artists.items">
+					<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
+						<div class="image-container">
+							<thumbnail images="artist.images" size="small"></thumbnail>
+						</div>
+						<div class="info animate">
+							<div class="name" ng-bind="artist.name"></div>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="clear-both"></div>
+		</div>
+		
+		<div class="search-results-section albums">
+			<h4 class="section-title">Albums</h4>	
+			<div class="album-items square-panels">
+				<div class="item-container" ng-repeat="album in albums.items">
+					<a href="/browse/album/{{ album.uri }}" class="square-panel album">
+						<div class="image-container">
+							<thumbnail images="album.images" size="small"></thumbnail>
+						</div>
+						<div class="info animate">
+							<div class="name" ng-bind="album.name"></div>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="clear-both"></div>
+		</div>	
+		
+		<div class="search-results-section playlists">
+			<h4 class="section-title">Playlists</h4>		
+			<div class="playlist-items square-panels">
+				<div class="item-container" ng-repeat="playlist in playlists.items">
+					<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
+						<div class="image-container">
+							<thumbnail images="playlist.images" size="small"></thumbnail>
+						</div>
+						<div class="info animate">
+							<div class="name" ng-bind="playlist.name"></div>
+							<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+						</div>
+					</a>
+				</div>
+			</div>
+			<div class="clear-both"></div>
+		</div>
+		
+		<div class="clear-both"></div>
+		
+		<div class="search-results-section tracks">
+			<h4 class="section-title">Tracks</h4>	
+			<div class="search-items tracklist"  ng-controller="TracklistController">			
+			
+				<track ng-repeat="track in tracklist.tracks"></track>
+
+				<div ng-hide="tracklist.tracks.length" class="no-items">
+					No items
+				</div>		
+			</div>
+		</div>
+		
 	</div>
 	
 </div>

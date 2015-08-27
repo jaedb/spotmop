@@ -1046,9 +1046,15 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Search
  **/
 
-.search-intro .info-text {
-	margin-top: -15px;
-	padding-bottom: 30px;
+.search .loading {
+	margin: 50px auto;
+	width: 70px;
+	height: 70px;
+}
+
+.search .loading img {
+	width: 100%;
+	height: 100%;
 }
 
 .search-results-section.artists,
