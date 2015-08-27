@@ -8,7 +8,7 @@
 			<h1><span ng-bind="user.display_name"></span><span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span></h1>
             <div class="info-text">
                 <span ng-bind="user.id"></span>
-                 &nbsp;|&nbsp; <span ng-bind="playlists.items.length"></span> Playlists
+                 &nbsp;|&nbsp; <span ng-bind="totalPlaylists"></span> Playlists
                  &nbsp;|&nbsp; {{ user.followers.total | number:0 }} Followers
             </div>
         </div>
@@ -20,7 +20,7 @@
 	
     <div class="playlist-items square-panels">
         
-		<div class="item-container" ng-repeat="playlist in playlists.items">
+		<div class="item-container" ng-repeat="playlist in playlists">
 			<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 				<div class="image-container">
 					<thumbnail images="playlist.images"></thumbnail>
@@ -32,7 +32,7 @@
 			</a>
 		</div>
 	
-		<div ng-hide="playlists.items.length" class="no-items">
+		<div ng-hide="playlists.length" class="no-items">
 			No items
 		</div>
 		
