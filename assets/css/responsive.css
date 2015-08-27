@@ -315,6 +315,22 @@
 		margin-left: 0;
 	}
 	
+	
+	/**
+	 * Buttons and interactive panels
+	 **/
+	.actions {
+		padding-left: 0;
+	}
+	
+	.button.large {
+		padding: 14px 18px;
+	}	
+	
+	body .button.bordered:hover:not(.disabled) {
+		padding-bottom: 12px;
+		padding-top: 12px;
+	}
 }
 
 
