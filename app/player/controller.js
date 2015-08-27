@@ -113,11 +113,13 @@ angular.module('spotmop.player', [
 	$scope.$on('spotmop:keyboardShortcut:space', function( event ){        
 		$scope.playPause();
     });
-	$scope.$on('spotmop:keyboardShortcut:right', function( event ){        
-		$scope.next();
+	$scope.$on('spotmop:keyboardShortcut:right', function( event ){		
+		if( $rootScope.ctrlKeyHeld )
+			$scope.next();
     });
-	$scope.$on('spotmop:keyboardShortcut:left', function( event ){        
-		$scope.previous();
+	$scope.$on('spotmop:keyboardShortcut:left', function( event ){    
+		if( $rootScope.ctrlKeyHeld )    
+			$scope.previous();
     });
 	$scope.$on('spotmop:keyboardShortcut:up', function( event ){
 		$scope.volume += 10;

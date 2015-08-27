@@ -486,8 +486,6 @@ angular.module('spotmop', [
     
         // when we release the key press
         .bind('keyup',function( event ){
-            $rootScope.shiftKeyHeld = false;
-            $rootScope.ctrlKeyHeld = false;
 
 			// make sure we're not typing in an input area
 			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
@@ -526,6 +524,8 @@ angular.module('spotmop', [
 					}
 				}
             }
+            $rootScope.shiftKeyHeld = false;
+            $rootScope.ctrlKeyHeld = false;
         }
     );
     
