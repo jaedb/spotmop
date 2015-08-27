@@ -524,8 +524,12 @@ angular.module('spotmop', [
 					}
 				}
             }
-            $rootScope.shiftKeyHeld = false;
-            $rootScope.ctrlKeyHeld = false;
+			
+			// we'll also release the modifier key switches
+            if( event.which === 16 )
+                $rootScope.shiftKeyHeld = false;
+			if( event.which === 17 )
+                $rootScope.ctrlKeyHeld = false;
         }
     );
     
