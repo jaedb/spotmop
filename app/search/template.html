@@ -114,7 +114,11 @@
 		
 		<div ng-show="type == 'all'">
 		
-			<div class="search-results-section artists">
+			<div ng-show="loading" class="loading">
+				<img src="/assets/svg/spinner-black.svg" />
+			</div>
+		
+			<div class="search-results-section artists" ng-hide="loading">
 				<h4 class="section-title">Artists</h4>	
 				<div class="artist-items square-panels">
 					<div class="item-container" ng-repeat="artist in artists.items">
@@ -131,7 +135,7 @@
 				<div class="clear-both"></div>
 			</div>
 			
-			<div class="search-results-section albums">
+			<div class="search-results-section albums" ng-hide="loading">
 				<h4 class="section-title">Albums</h4>	
 				<div class="album-items square-panels">
 					<div class="item-container" ng-repeat="album in albums.items">
@@ -148,7 +152,7 @@
 				<div class="clear-both"></div>
 			</div>	
 			
-			<div class="search-results-section playlists">
+			<div class="search-results-section playlists" ng-hide="loading">
 				<h4 class="section-title">Playlists</h4>		
 				<div class="playlist-items square-panels">
 					<div class="item-container" ng-repeat="playlist in playlists.items">
@@ -168,7 +172,7 @@
 			
 			<div class="clear-both"></div>
 			
-			<div class="search-results-section tracks">
+			<div class="search-results-section tracks" ng-hide="loading">
 				<h4 class="section-title">Tracks</h4>	
 				<div class="search-items tracklist"  ng-controller="TracklistController">			
 				
@@ -176,7 +180,7 @@
 
 					<div ng-hide="tracklist.tracks.length" class="no-items">
 						No items
-					</div>		
+					</div>
 				</div>
 			</div>
 			
