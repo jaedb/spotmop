@@ -92,6 +92,7 @@ angular.module('spotmop.search', [])
 					.success( function(response){
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.tracks = response.tracks.items;
+						$scope.next = response.tracks.next;
 						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
@@ -102,6 +103,7 @@ angular.module('spotmop.search', [])
 				SpotifyService.getSearchResults( 'album', query, 20 )
 					.success( function(response){		
 						$scope.albums = response.albums;
+						$scope.next = response.albums.next;
 						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
@@ -112,6 +114,7 @@ angular.module('spotmop.search', [])
 				SpotifyService.getSearchResults( 'artist', query, 20 )
 					.success( function(response){		
 						$scope.artists = response.artists;
+						$scope.next = response.artists.next;
 						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
@@ -122,6 +125,7 @@ angular.module('spotmop.search', [])
 				SpotifyService.getSearchResults( 'playlist', query, 20 )
 					.success( function(response){		
 						$scope.playlists = response.playlists;
+						$scope.next = response.playlists.next;
 						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
@@ -173,4 +177,64 @@ angular.module('spotmop.search', [])
 				break;
 		}
 	}
+	
+	
+    /**
+     * Load more results
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreResults = false;
+	
+    function loadMoreResults( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreResults = true;   
+        
+        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more', message: 'Loading more'});
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .success(function( response ){
+            
+                // append these new playlists to our existing array
+				switch( $scope.type ){
+					case 'artist':
+						$scope.artists.items = $scope.artists.items.concat( response.artists.items );
+						$scope.next = response.artists.next;
+						break;
+					case 'album':
+						$scope.albums.items = $scope.albums.items.concat( response.albums.items );
+						$scope.next = response.albums.next;
+						break;
+					case 'track':
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
+						$scope.next = response.tracks.next;
+						break;
+					case 'playlist':
+						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
+						$scope.next = response.playlists.next;
+						break;
+				}
+                
+                // update loader and re-open for further pagination objects
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more'});
+                loadingMoreResults = false;
+            })
+            .error(function( error ){
+                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more'});
+                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more', message: error.error.message});
+                loadingMoreResults = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreResults && typeof( $scope.next ) !== 'undefined' && $scope.next ){
+            loadMoreResults( $scope.next );
+        }
+	});
 });
