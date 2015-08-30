@@ -1,10 +1,5 @@
 <div id="sidebar">
 	<div class="inner">
-		
-		<form class="search-form" ng-submit="searchSubmit( query )">
-			<input type="text" ng-model="query" />
-			<button type="submit"><i class="fa fa-search"></i></button>
-		</form>
         
 		<ul class="main-menu">
 			<li>
@@ -26,6 +21,14 @@
 					<li><span class="menu-item-wrapper"><a href="/discover/featured">Featured playlists</a></span></li>
 					<li><span class="menu-item-wrapper"><a href="/discover/new">New releases</a></span></li>
 				</ul>
+			</li>
+			<li>
+                <span class="menu-item-wrapper top-level">
+                    <a href="/search" ng-class="{ active: $state.is('search') }">
+                        <i class="fa fa-search"></i>
+                        Search
+                    </a>
+                </span>
 			</li>
 			<li>
                 <span class="menu-item-wrapper top-level">
