@@ -67,6 +67,7 @@ angular.module('spotmop.player', [
 		offset = slider.offset();
 		position = event.pageX - offset.left;
 		percent = position / slider.innerWidth() * 100;
+		percent = parseInt(percent);
 		
 		$scope.volume = percent;
 		MopidyService.setVolume( percent );

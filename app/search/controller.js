@@ -8,7 +8,11 @@ angular.module('spotmop.search', [])
 		.state('search', {
 			url: "/search/:type/:query",
 			templateUrl: "app/search/template.html",
-			controller: 'SearchController'
+			controller: 'SearchController',
+			params: {
+				type: { squash: true, value: 'all' },
+				query: { squash: true, value: null }
+			}
 		});
 })
 	
@@ -45,7 +49,7 @@ angular.module('spotmop.search', [])
 		$scope.playlists = [];
 		$timeout(
 			function(){
-				$state.go('search',{ type: $scope.type, query: $scope.query});			
+				//$state.go('search',{ type: $scope.type, query: $scope.query});			
 			}, 500
 		);
 	}, true);
@@ -55,75 +59,77 @@ angular.module('spotmop.search', [])
 	 * On init, figure out what type of results we want
 	 * This defines the type of search requests we'll perform, and thus the page layout
 	 **/
-	switch( $stateParams.type ){
-		
-		case 'track' :
-			$scope.loading = true;
-			SpotifyService.getSearchResults( 'track', $stateParams.query, 50 )
-				.success( function(response){
-					$scope.tracklist = response.tracks;
-					$scope.tracklist.tracks = response.tracks.items;
-					$rootScope.$broadcast('spotmop:pageUpdated');
-					$scope.loading = false;
-				});
-			break;
-		
-		case 'album' :
-			$scope.loading = true;
-			SpotifyService.getSearchResults( 'album', $stateParams.query, 20 )
-				.success( function(response){		
-					$scope.albums = response.albums;
-					$rootScope.$broadcast('spotmop:pageUpdated');
-					$scope.loading = false;
-				});
-			break;
-				
-		case 'artist' :
-			$scope.loading = true;
-			SpotifyService.getSearchResults( 'artist', $stateParams.query, 20 )
-				.success( function(response){		
-					$scope.artists = response.artists;
-					$rootScope.$broadcast('spotmop:pageUpdated');
-					$scope.loading = false;
-				});
-			break;
-				
-		case 'playlist' :
-			$scope.loading = true;
-			SpotifyService.getSearchResults( 'playlist', $stateParams.query, 20 )
-				.success( function(response){		
-					$scope.playlists = response.playlists;
-					$rootScope.$broadcast('spotmop:pageUpdated');
-					$scope.loading = false;
-				});
-			break;
-		
-		default :
-			$scope.loading = 4;
-			SpotifyService.getSearchResults( 'track', $stateParams.query, 20 )
-				.success( function(response){
-					$scope.tracklist = response.tracks;
-					$scope.tracklist.tracks = response.tracks.items;
-					$scope.loading -= 1;
-				});	
-				
-			SpotifyService.getSearchResults( 'album', $stateParams.query, 6 )
-				.success( function(response){		
-					$scope.albums = response.albums;
-					$scope.loading -= 1;
-				});
-				
-			SpotifyService.getSearchResults( 'artist', $stateParams.query, 6 )
-				.success( function(response){		
-					$scope.artists = response.artists;
-					$scope.loading -= 1;
-				});
-				
-			SpotifyService.getSearchResults( 'playlist', $stateParams.query, 6 )
-				.success( function(response){		
-					$scope.playlists = response.playlists;
-					$scope.loading -= 1;
-				});
-			break;
+	if( $scope.query ){
+		switch( $stateParams.type ){
+			
+			case 'track' :
+				$scope.loading = true;
+				SpotifyService.getSearchResults( 'track', $stateParams.query, 50 )
+					.success( function(response){
+						$scope.tracklist = response.tracks;
+						$scope.tracklist.tracks = response.tracks.items;
+						$rootScope.$broadcast('spotmop:pageUpdated');
+						$scope.loading = false;
+					});
+				break;
+			
+			case 'album' :
+				$scope.loading = true;
+				SpotifyService.getSearchResults( 'album', $stateParams.query, 20 )
+					.success( function(response){		
+						$scope.albums = response.albums;
+						$rootScope.$broadcast('spotmop:pageUpdated');
+						$scope.loading = false;
+					});
+				break;
+					
+			case 'artist' :
+				$scope.loading = true;
+				SpotifyService.getSearchResults( 'artist', $stateParams.query, 20 )
+					.success( function(response){		
+						$scope.artists = response.artists;
+						$rootScope.$broadcast('spotmop:pageUpdated');
+						$scope.loading = false;
+					});
+				break;
+					
+			case 'playlist' :
+				$scope.loading = true;
+				SpotifyService.getSearchResults( 'playlist', $stateParams.query, 20 )
+					.success( function(response){		
+						$scope.playlists = response.playlists;
+						$rootScope.$broadcast('spotmop:pageUpdated');
+						$scope.loading = false;
+					});
+				break;
+			
+			default :
+				$scope.loading = 4;
+				SpotifyService.getSearchResults( 'track', $stateParams.query, 20 )
+					.success( function(response){
+						$scope.tracklist = response.tracks;
+						$scope.tracklist.tracks = response.tracks.items;
+						$scope.loading -= 1;
+					});	
+					
+				SpotifyService.getSearchResults( 'album', $stateParams.query, 6 )
+					.success( function(response){		
+						$scope.albums = response.albums;
+						$scope.loading -= 1;
+					});
+					
+				SpotifyService.getSearchResults( 'artist', $stateParams.query, 6 )
+					.success( function(response){		
+						$scope.artists = response.artists;
+						$scope.loading -= 1;
+					});
+					
+				SpotifyService.getSearchResults( 'playlist', $stateParams.query, 6 )
+					.success( function(response){		
+						$scope.playlists = response.playlists;
+						$scope.loading -= 1;
+					});
+				break;
+		}
 	}
 });
