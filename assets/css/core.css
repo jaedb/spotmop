@@ -502,7 +502,10 @@ body .button.bordered {
 }
 
 body .button.bordered:not(.disabled):hover {
-	background: none;
+	background: #FAFAFA;
+}
+
+body:not(.touchDevice) .button.bordered:not(.disabled):hover {
 	border-bottom-width: 4px;
 	padding-top: 16px;
 	padding-bottom: 16px;

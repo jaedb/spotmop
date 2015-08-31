@@ -8,10 +8,10 @@ case "$1" in
 		RESULT=$(sudo service mopidy status)
 
 		case $RESULT in
-			" * mopidy is running" )
+			*"mopidy is running"* )
 				echo '{ "status": 1, "message": "Running" }'
 				;;
-			" * mopidy is not running" )
+			*"mopidy is not running"* )
 				echo '{ "status": 1, "message": "Not running" }'
 				;;
 			*)

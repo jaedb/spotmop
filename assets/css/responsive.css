@@ -202,6 +202,17 @@
 @media( max-width: 600px ){
 	
 	/**
+	 * Tables and grids
+	 **/
+	
+	.collapse-for-mobile .col {
+		width: 100%;
+		float: none;
+		padding-top: 2px;
+	}
+	
+	
+	/**
 	 * Tracklists
 	 **/
 	 
@@ -324,13 +335,33 @@
 	}
 	
 	.button.large {
-		padding: 14px 18px;
+		padding: 12px 16px;
+		margin-right: 10px;
 	}	
 	
 	body .button.bordered:hover:not(.disabled) {
 		padding-bottom: 12px;
 		padding-top: 12px;
 	}
+	
+	
+	/**
+	 * Search results
+	 **/
+	
+	.search-form input.query {
+		font-size: 40px;
+	}
+	
+	.search-form .dropdown {
+		font-size: 28px;
+		top: 12px;
+	}
+	
+	.search-form .dropdown .arrow {
+		top: 32%;
+	}
+	
 }
 
 
