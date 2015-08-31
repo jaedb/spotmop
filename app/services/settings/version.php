@@ -7,9 +7,7 @@
 */
 
 // describe our current tag
-$tag = exec('git describe --abbrev=0');
-
-var_dump( $tag );
+$tag = exec('git describe --abbrev=0 --tags');
 
 // get the commit hash (short version)
 $commit = exec('git rev-parse --short HEAD');
@@ -21,4 +19,5 @@ if( $tag ){
 	$version = 'Latest development version';
 }
 
-echo $version .' ('.$commit.')';
+echo json_encode(array( 'version' => $version, 'commit' => $commit ));
+return;

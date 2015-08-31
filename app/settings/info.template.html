@@ -7,7 +7,10 @@
 
     <div class="field">
         <div class="label">Current version</div>
-        <div class="input readonly"><span class="spotmop-version" ng-bind="version"></span></div>
+        <div class="input readonly">
+			<span class="spotmop-version" ng-bind="version.version"></span>
+			(<a class="spotmop-version" ng-bind="version.commit" target="_blank" href="https://github.com/jaedb/spotmop/commit/{{ version.commit }}"></a>)
+		</div>
 		<div class="clear-both"></div>
     </div>
 
