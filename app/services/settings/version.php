@@ -6,7 +6,19 @@
  * Relies on branch syntax of release/x.xx
 */
 
-$branch = exec('git rev-parse --abbrev-ref HEAD');
-$branch = str_replace('release/','',$branch);
+// describe our current tag
+$tag = exec('git describe --abbrev=0');
+
+var_dump( $tag );
+
+// get the commit hash (short version)
 $commit = exec('git rev-parse --short HEAD');
-echo $branch .' ('.$commit.')';
+
+// fatal response, meaning we're not on a tag (we've deviated, or 'Detached')
+if( $tag ){
+	$version = $tag;
+}else{
+	$version = 'Latest development version';
+}
+
+echo $version .' ('.$commit.')';
