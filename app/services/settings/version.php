@@ -7,7 +7,7 @@
 */
 
 // describe our current tag
-$tag = exec('git describe --abbrev=0 --tags');
+$tag = exec('git describe --abbrev=0 --exact-match --tags');
 
 // get the commit hash (short version)
 $commit = exec('git rev-parse --short HEAD');
