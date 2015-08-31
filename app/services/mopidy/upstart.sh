@@ -40,7 +40,7 @@ case "$1" in
 		RESULT=$(sudo service mopidy restart)
 		
 		case $RESULT in
-			" * Restarting Mopidy music server mopidy [ OK ]" )
+			*"done"* )
 				echo '{ "status": 1, "message": "Restarted" }'
 				;;
 			*)

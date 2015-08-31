@@ -88,6 +88,7 @@ angular.module('spotmop.settings', [])
 		}
 		MopidyService.startServer()
 			.success( function(response){
+				console.log( response );
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Starting", type: 'loading', autoremove: true});	
 			})
@@ -103,6 +104,7 @@ angular.module('spotmop.settings', [])
 		}
 		MopidyService.restartServer()
 			.success( function(response){
+				console.log( response );
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Restarting", type: 'loading', autoremove: true});	
 			})
@@ -118,6 +120,7 @@ angular.module('spotmop.settings', [])
 		}
 		MopidyService.stopServer()
 			.success( function(response){
+				console.log( response );
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Stopping", type: 'loading', autoremove: true});	
 			})
