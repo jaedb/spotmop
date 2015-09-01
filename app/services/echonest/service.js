@@ -12,6 +12,7 @@ angular.module('spotmop.services.echonest', [])
     
     var baseURL = 'http://developer.echonest.com/api/v4/';
     var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
+    var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
 	
 	// setup response object
     return {
@@ -69,10 +70,59 @@ angular.module('spotmop.services.echonest', [])
             });
         },
         
-		getTasteProfile: function( profileid ){
+		getTasteProfile: function(){
             return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileid,
+                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID+'&bucket=audio_summary',
                 method: "GET"
+            });
+        },
+        
+		
+		/**
+		 * Add a number of trackids to the taste profile
+		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
+		 * @param trackid = string|array spotify uri
+		 * @param favorite = boolean (optional) add these track(s) as favorites
+		 * @return ajax request
+		 **/
+		addToTasteProfile: function( action, trackid, favorite ){
+			
+			if( typeof(favorite) === 'undefined' )
+				var favorite = false;
+			
+			var requestData = [];
+			var trackids = [];
+			
+			// if we've been given a single string, wrap it in an array
+			if( typeof( trackid ) === 'string' ){
+				trackids = [trackid];
+			}else{
+				trackids = trackid;
+			}
+			
+			// loop all the trackids (even if a single one, wrapped in an array)
+			angular.forEach( trackids, function( trackid ){
+			
+				// add each to our request payload
+				requestData.push( {
+								action: action,
+								item: {
+									track_id: trackid,
+									favorite: favorite
+								}
+							} );
+			});
+		
+            return $.ajax({
+                url: baseURL+'tasteprofile/update',
+                method: "POST",
+				data: {
+						api_key: apiKey,
+						format: 'json',
+						data_type: 'json',
+						id: profileID,
+						data: JSON.stringify( requestData )
+					}
             });
         },
         

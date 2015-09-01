@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, SettingsService /*, Settings, notifier */){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, SettingsService, EchonestService /*, Settings, notifier */){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -244,6 +244,10 @@ angular.module('spotmop.services.mopidy', [
 			}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){
+		
+			// add to taste profile
+			EchonestService.addToTasteProfile( tlTrack.tl_track.track.uri );
+			
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function(streamUri) {
@@ -272,7 +276,7 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function() {
+		next: function() {			
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
 		getRepeat: function () {
@@ -299,7 +303,7 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		addToTrackList: function( uris, atPosition ){
+		addToTrackList: function( uris, atPosition ){			
 			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
 			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
 		},
