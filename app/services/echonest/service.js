@@ -85,10 +85,7 @@ angular.module('spotmop.services.echonest', [])
 		 * @param favorite = boolean (optional) add these track(s) as favorites
 		 * @return ajax request
 		 **/
-		addToTasteProfile: function( action, trackid, favorite ){
-			
-			if( typeof(favorite) === 'undefined' )
-				var favorite = false;
+		addToTasteProfile: function( action, trackid ){
 			
 			var requestData = [];
 			var trackids = [];
@@ -107,8 +104,7 @@ angular.module('spotmop.services.echonest', [])
 				requestData.push( {
 								action: action,
 								item: {
-									track_id: trackid,
-									favorite: favorite
+									track_id: trackid
 								}
 							} );
 			});

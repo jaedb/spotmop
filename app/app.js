@@ -722,9 +722,6 @@ angular.module('spotmop', [
 					SpotifyService.addTracksToLibrary( trackids )
                         .success( function(response){
                             $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
-		
-							// log this addition to our library as an indication of being a favorite
-							EchonestService.addToTasteProfile( 'update', trackids, true );
                         })
                         .error( function(response){
                             $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});

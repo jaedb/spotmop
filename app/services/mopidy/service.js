@@ -246,7 +246,7 @@ angular.module('spotmop.services.mopidy', [
 		playTlTrack: function( tlTrack ){
 		
 			// add to taste profile
-			EchonestService.addToTasteProfile( tlTrack.tl_track.track.uri );
+			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 			
             return this.mopidy.playback.play( tlTrack );
 		},
