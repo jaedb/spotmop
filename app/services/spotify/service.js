@@ -219,6 +219,19 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
+		deleteTracksFromLibrary: function( trackids ){			
+			return $http({
+				method: 'DELETE',
+				url: urlBase+'me/tracks',
+				dataType: "json",
+				data: JSON.stringify( { ids: trackids } ),
+				contentType: "application/json; charset=utf-8",
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+				}
+			});
+		},
+		
 	
 		/**
 		 * Playlist-oriented requests

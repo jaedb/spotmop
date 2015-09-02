@@ -15,7 +15,7 @@ angular.module('spotmop.library', [])
 /**
  * Main controller
  **/
-.controller('LibraryController', function PlaylistsController( $scope, $rootScope, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
 	$scope.tracklist = {tracks: []};
 	
@@ -44,6 +44,32 @@ angular.module('spotmop.library', [])
 			}
 		);
 		
+		
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var tracksToDelete = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			tracksToDelete.push( SpotifyService.getFromUri( 'trackid', selectedTrack.uri ) );
+		});
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
+			.success(function( response ){
+				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
+				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
+				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+			})
+			.error(function( error ){
+				console.log( error );
+			});
+	});
+	
 		
 	/**
 	 * Reformat the track structure to the unified tracklist.track
