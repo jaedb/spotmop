@@ -264,6 +264,9 @@ angular.module('spotmop.player', [
 		$scope.$parent.currentTlTrack = tlTrack.tl_track;
 		updateCurrentTrack( tlTrack.tl_track );
 		updatePlayerState();
+		
+		// log this play
+		EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
 	
 	
