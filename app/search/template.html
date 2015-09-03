@@ -23,8 +23,8 @@
 		<div class="clear: both;"></div>
 	</div>
 	
-	<div ng-show="query">
-		<div ng-show="type == 'artist'">
+	<div ng-if="query">
+		<div ng-if="type == 'artist'">
 		
 			<div ng-show="loading" class="loading">
 				<img src="/assets/svg/spinner-black.svg" />
@@ -48,7 +48,7 @@
 			<div class="clear-both"></div>
 		</div>
 		
-		<div ng-show="type == 'album'">		
+		<div ng-if="type == 'album'">		
 		
 			<div ng-show="loading" class="loading">
 				<img src="/assets/svg/spinner-black.svg" />
@@ -73,7 +73,7 @@
 			<div class="clear-both"></div>
 		</div>
 		
-		<div ng-show="type == 'playlist'">		
+		<div ng-if="type == 'playlist'">		
 		
 			<div ng-show="loading" class="loading">
 				<img src="/assets/svg/spinner-black.svg" />
@@ -98,7 +98,7 @@
 			<div class="clear-both"></div>
 		</div>
 		
-		<div ng-show="type == 'track'">
+		<div ng-if="type == 'track'">
 		
 			<div ng-show="loading" class="loading">
 				<img src="/assets/svg/spinner-black.svg" />
@@ -112,7 +112,7 @@
 			</div>	
 		</div>
 		
-		<div ng-show="type == 'all'">
+		<div ng-if="type == 'all'">
 		
 			<div ng-show="loading" class="loading">
 				<img src="/assets/svg/spinner-black.svg" />
