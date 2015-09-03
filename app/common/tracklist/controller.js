@@ -295,15 +295,20 @@ angular.module('spotmop.common.tracklist', [
 			if( selectedTracks.length > 10 )
 				message += '... this could take some time';
 				
-			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message });
+			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message, autoremove: 10000 });
 				
 			// play the first track immediately
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
-
-				// add the following tracks to the tracklist
-				MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
+				
+				// no other tracks to add
+				if( selectedTracksUris.length <= 1 ){
 					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
-				});
+				}else{
+					// add the following tracks to the tracklist
+					MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
+						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
+					});
+				}
 			});
 		}
 	}
