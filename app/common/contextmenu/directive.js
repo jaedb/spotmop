@@ -56,6 +56,11 @@ angular.module('spotmop.common.contextmenu', [
 				$element.hide();
 			}
 			
+			$scope.addToLibrary = function(){
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToLibrary');
+				$element.hide();
+			}
+			
 			$scope.selectAll = function(){
 				$rootScope.$broadcast('spotmop:tracklist:selectAll');
 				$element.hide();

@@ -301,7 +301,7 @@ angular.module('spotmop.common.tracklist', [
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
 				
 				// no other tracks to add
-				if( selectedTracksUris.length <= 1 ){
+				if( selectedTracks.length <= 1 ){
 					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
 				}else{
 					// add the following tracks to the tracklist
@@ -368,6 +368,39 @@ angular.module('spotmop.common.tracklist', [
 		});
 		
         DialogService.create('addToPlaylist', $scope);
+	});
+	
+	
+	/**
+	 * Selected Tracks >> Add to library
+	 **/
+	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
+				    
+        $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			
+			// if we have a nested track object (ie TlTrack objects)
+			if( typeof(track.track) !== 'undefined' )
+				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.track.uri) );
+			
+			// nope, so let's use a non-nested version
+			else
+				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.uri) );
+		});
+		
+		// tell spotify to go'on get
+		SpotifyService.addTracksToLibrary( selectedTracksUris )
+			.success( function(response){
+				$scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+			})
+			.error( function(response){
+				$scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+				$scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
+			});	
 	});
 	
 	
