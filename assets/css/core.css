@@ -383,13 +383,15 @@ h4.section-title {
  * Text colour variations
  **/
 
-.black-text {		color: #000000; }
-.red-text {			color: rgb(214,47,47); }
-.green-text {		color: rgb(53,204,53); }
+.black-text {						color: #000000; }
+.red-text {							color: rgb(214,47,47); }
+.green-text {						color: rgb(53,204,53); }
+.primary-colour-text {				color: #1cf4c4; }
 
-.black-background {	background-color: #000000; }
-.red-background {	background-color: rgb(214,47,47); }
-.green-background {	background-color: rgb(53,204,53); }
+.black-background {					background-color: #000000; }
+.red-background {					background-color: rgb(214,47,47); }
+.green-background {					background-color: rgb(53,204,53); }
+.primary-colour-background {		background-color: #1cf4c4; }
 
 
 /**
@@ -526,18 +528,10 @@ body:not(.touchDevice) .button.bordered:not(.disabled):hover {
 	vertical-align: top;
 }
 
-/* disabled */
-
-body .button.disabled {
-	cursor: not-allowed;
-	color: #DDDDDD !important;
-	border-color: #DDDDDD !important;
-}
-
 
 /* variations */
 
-.button.large {					padding: 18px 26px; }
+.button.large {									padding: 18px 26px; }
 
 .button.light {									background: #EEEEEE; color: #222222; }
 .button.light:not(.disabled):hover {			background: #DDDDDD; }
@@ -552,6 +546,14 @@ body .button.disabled {
 .button.green-hover:not(.disabled):hover {		background-color: #28b428; }
 .button.bordered.green {						border-color: #35CC35; color: #35CC35; }
 
+body .button.primary {							background: #1cf4c4; }
+body .button.primary:not(.disabled):hover {		background: #13e4b5; }
+
+body .button.disabled {
+	cursor: not-allowed;
+	color: #DDDDDD !important;
+	border-color: #DDDDDD !important;
+}
 
 
 /**

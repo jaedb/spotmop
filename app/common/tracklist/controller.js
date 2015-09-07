@@ -375,7 +375,7 @@ angular.module('spotmop.common.tracklist', [
 	 * Selected Tracks >> Add to library
 	 **/
 	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
-				    
+		
         $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
 		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );

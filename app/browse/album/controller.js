@@ -17,7 +17,7 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams, $filter ){
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
 	
 	$scope.album = {};
 	$scope.tracklist = {};
@@ -41,6 +41,11 @@ angular.module('spotmop.browse.album', [])
         }
         return Math.round(totalTime / 100000);   
     }
+	
+	// play the whole album
+	$scope.playAlbum = function(){
+		MopidyService.playStream( $scope.album.uri );
+	}
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
 	

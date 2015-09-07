@@ -17,7 +17,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, SettingsService, DialogService ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService ){
 	
 	// setup base variables
 	$scope.playlist = {};
