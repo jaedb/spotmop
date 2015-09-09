@@ -36,13 +36,13 @@
     </div>
 
     <div class="actions">
-        <a class="button large bordered green" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+        <a class="button primary" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-check"></i>&nbsp; Start
 		</a>
-        <a class="button large bordered" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+        <a class="button" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-refresh"></i>&nbsp; Restart
 		</a>
-        <a class="button large bordered red" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+        <a class="button" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
 			<i class="fa fa-close"></i>&nbsp; Stop
 		</a>
 		<div ng-hide="isSameDomainAsMopidy()" class="red-text">

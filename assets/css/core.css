@@ -481,75 +481,40 @@ h1 .flag {
 
 /**
  * Clickable buttons
+ * These are all within the .body element (ie the main app frame)
  **/
 
-body .button.default,
-body .button.pill {
-    padding: 8px 18px;
-    background: #333333;
-    color: #FFFFFF;
+.body .button {
+    padding: 8px 16px;
     display: inline-block;
     border: 0;
     cursor: pointer;
-    margin-right: 10px;
+    margin-right: 4px;
+	border-radius: 3px;
+    color: #FFFFFF;
+	border: 0;
 }
 
-body .button.bordered {
-	border: 1px solid #333333;
-	color: #333333;
-	background: none;
-	text-transform: uppercase;
-	display: inline-block;
-	vertical-align: top;
-}
+.body .button { 						background: #9b9b9b; }
+.body .button:hover { 					background: #8B8B8B; }
 
-body .button.bordered:not(.disabled):hover {
-	background: #FAFAFA;
-}
-
-body:not(.touchDevice) .button.bordered:not(.disabled):hover {
-	border-bottom-width: 4px;
-	padding-top: 16px;
-	padding-bottom: 16px;
-	background: #FAFAFA;
-}
-
-.button.pill:not(.disabled):hover,
-.button.default:not(.disabled):hover {
-    background: #202020;
-}
-
-.button.pill {
-    border-radius: 20px;
-}
-
-.button.default > .fa {
+.body .button .fa {
 	margin-top: 2px;
+	margin-left: -2px;
 	vertical-align: top;
 }
 
 
 /* variations */
 
-.button.large {									padding: 18px 26px; }
+.body .button.primary {					background: #08d58f; }
+.body .button.primary:hover {			background: #03c784; }
 
-.button.light {									background: #EEEEEE; color: #222222; }
-.button.light:not(.disabled):hover {			background: #DDDDDD; }
+.body .button.destructive {				background: #cf2d2d; }
+.body .button.destructive:hover {		background: #bc1f1f; }
 
-.button.red {									background-color: #D62F2F; }
-.button.red:not(.disabled):hover,
-.button.red-hover:not(.disabled):hover {		background-color: #c42424; }
-.button.bordered.red {							border-color: #D62F2F; color: #D62F2F; }
 
-.button.green {									background-color: #35CC35; }
-.button.green:not(.disabled):hover,
-.button.green-hover:not(.disabled):hover {		background-color: #28b428; }
-.button.bordered.green {						border-color: #35CC35; color: #35CC35; }
-
-body .button.primary {							background: #1cf4c4; }
-body .button.primary:not(.disabled):hover {		background: #13e4b5; }
-
-body .button.disabled {
+.body .button.disabled {
 	cursor: not-allowed;
 	color: #DDDDDD !important;
 	border-color: #DDDDDD !important;
