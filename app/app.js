@@ -69,7 +69,11 @@ angular.module('spotmop', [
 			// fetch this instance's best thumbnail
 			$scope.image = getThumbnailImage( $scope.images );
 			
-			// get the best thumbnail image, please and thankyou
+			/**
+			 * Get the most appropriate thumbnail image
+			 * @param images = array of image urls
+			 * @return string (image url)
+			 **/
 			function getThumbnailImage( images ){
 				
 				// what if there are no images? then nada

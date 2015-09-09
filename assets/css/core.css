@@ -870,17 +870,31 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .playlist-intro .inner {
-	background: rgba(0,0,0,0.5);
+	background: rgba(0,0,0,0.65);
 	color: #FFFFFF;
 	padding: 50px;
 }
 
+.playlist-intro .thumbnail {
+	width: 200px;
+	height: 200px;
+	float: left;
+	margin: -20px 40px -20px -20px;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
 .playlist-intro h1 {
-	padding-bottom: 8px;
+	padding-bottom: 0;
+	margin-bottom: -5px;
 }
 
 .playlist-intro .description {
-	padding-bottom: 20px;
+	padding: 24px 0 8px;
+}
+
+.playlist-intro .buttons {
+	padding-top: 20px;
 }
 
 

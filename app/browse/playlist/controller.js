@@ -20,7 +20,7 @@ angular.module('spotmop.browse.playlist', [])
 .controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService ){
 	
 	// setup base variables
-	$scope.playlist = {};
+	$scope.playlist = {images: []};
 	$scope.tracklist = { tracks: [] };
 	$scope.totalTime = 0;
     $scope.following = false;

@@ -7,12 +7,23 @@
 			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
 		</div>
 		<div class="inner">
-			<h1>
-				
-                <span ng-bind="playlist.name"></span>
+		
+			<div class="thumbnail" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+		
+			<h1 ng-bind="playlist.name"></h1>
+			
+			<div class="info-text">
+				<span ng-bind="tracklist.total">0</span> tracks
+				&nbsp;|&nbsp; <span ng-show="tracks.next">+</span><span ng-bind="totalTime()">0</span> minutes
+				&nbsp;|&nbsp; <i class="fa fa-lock" ng-hide="playlist.public">&nbsp;</i><a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
+			</div>
+			
+			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
+			
+			<div class="buttons">
 				
 				<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
-					<span class="flag clickable destructive animate"
+					<a class="button destructive"
 						  ng-class="{red: hovering, dark: !hovering}"
 						  ng-show="following"
 						  ng-click="unfollowPlaylist()"
@@ -20,41 +31,37 @@
 						  ng-mouseleave="hovering = false">
 						<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
 						<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
-					</span>
-					<span class="flag follow-toggle clickable dark animate"
+					</a>
+					<a class="button"
 						  ng-show="!following"
 						  ng-click="followPlaylist()">
 						<span><i class="fa fa-star"></i> Follow</span>
-					</span>
+					</a>
 				</span>
 				
 				<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
 					<span ng-show="following">
-						<span class="flag clickable dark animate"
+						<a class="button"
 							  ng-click="editPlaylist( $scope )">
 							Edit
-						</span>
-						<confirmation-button class="flag clickable destructive dark animate"
+						</a>
+						<confirmation-button class="button destructive"
 							default-text="Delete playlist"
 							confirmation-text="Are you sure?"
 							on-confirmation="unfollowPlaylist">
 						</confirmation-button>
 					</span>
 					<span ng-show="!following">
-						<span class="flag clickable dark animate"
+						<a class="button"
 							  ng-click="recoverPlaylist()">
 							<i class="fa fa-undo"></i> Recover playlist
-						</span>					
+						</a>					
 					</span>
 				</span>
-				
-            </h1>
-			<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
-			<div class="info-text">
-				<span ng-bind="tracklist.total">0</span> tracks
-				&nbsp;|&nbsp; <span ng-show="tracks.next">+</span><span ng-bind="totalTime()">0</span> minutes
-				&nbsp;|&nbsp; <i class="fa fa-lock" ng-hide="playlist.public">&nbsp;</i><a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
 			</div>
+			
+			<div class="clear-both"></div>
+			
 		</div>
 	</div>
 	
