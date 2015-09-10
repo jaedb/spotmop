@@ -18,7 +18,7 @@ angular.module('spotmop.queue', [])
 .controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
 	
 	$scope.totalTime = 0;
-	$scope.tracklist = { tracks: $scope.$parent.currentTracklist };
+	$scope.tracklist = { type: 'tltrack', tracks: $scope.$parent.currentTracklist };
 
     /**
      * Watch the current tracklist

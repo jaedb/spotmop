@@ -20,7 +20,7 @@ angular.module('spotmop.browse.album', [])
 .controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
 	
 	$scope.album = {};
-	$scope.tracklist = {};
+	$scope.tracklist = {type: 'track'};
     $scope.convertedDate = function(){
         if( $scope.album.release_date_precision == 'day' )
             return $filter('date')($scope.album.release_date, "MMMM d, yyyy");

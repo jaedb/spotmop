@@ -17,7 +17,7 @@ angular.module('spotmop.common.contextmenu', [
 			 **/
 			$scope.play = function(){
 				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
-				$element.hide();
+				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
 				if( $scope.isTouchDevice() )
@@ -26,7 +26,7 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.enqueue = function(){
 				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
-				$element.hide();
+				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
 				if( $scope.isTouchDevice() )
@@ -35,7 +35,7 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.unqueue = function(){
 				$rootScope.$broadcast('spotmop:tracklist:unqueueSelectedTracks');
-				$element.hide();
+				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
 				if( $scope.isTouchDevice() )
@@ -44,7 +44,7 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.playNext = function(){
 				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks', true);
-				$element.hide();
+				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
 				if( $scope.isTouchDevice() )
@@ -53,22 +53,26 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.addToPlaylist = function(){
 				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylist');
-				$element.hide();
+				$element.fadeOut('fast');
+			}
+			
+			$scope.removeFromPlaylist = function(){
+				$rootScope.$broadcast('spotmop:tracklist:removeSelectedTracksFromPlaylist');
+				$element.fadeOut('fast');
 			}
 			
 			$scope.addToLibrary = function(){
 				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToLibrary');
-				$element.hide();
+				$element.fadeOut('fast');
 			}
 			
 			$scope.selectAll = function(){
 				$rootScope.$broadcast('spotmop:tracklist:selectAll');
-				$element.hide();
 			}
 			
 			$scope.unselectAll = function(){
 				$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-				$element.hide();
+				$element.fadeOut('fast');
 			}
 			
 			/**
@@ -121,11 +125,8 @@ angular.module('spotmop.common.contextmenu', [
 			/**
 			 * Hide the context menu
 			 **/
-			$scope.$on('spotmop:touchContextMenu:hide', function(event){
-				$element.hide();
-			});
 			$scope.$on('spotmop:contextMenu:hide', function(event){
-				$element.hide();
+				$element.fadeOut('fast');
 			});
 		}
 	}

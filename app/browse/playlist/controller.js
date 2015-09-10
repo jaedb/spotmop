@@ -21,7 +21,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 	// setup base variables
 	$scope.playlist = {images: []};
-	$scope.tracklist = { tracks: [] };
+	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
     $scope.followPlaylist = function(){

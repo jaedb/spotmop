@@ -238,7 +238,11 @@ angular.module('spotmop', [
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
-    $scope.isTouchDevice = function(){ return true }; // !!('ontouchstart' in window); }
+    $scope.isTouchDevice = function(){
+		if( SettingsService.getSetting('emulateTouchDevice',false) )
+			return true;
+		return !!('ontouchstart' in window);
+	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
 		

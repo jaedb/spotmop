@@ -79,6 +79,13 @@ angular.module('spotmop.settings', [])
             SettingsService.setSetting('keyboardShortcutsEnabled',true);
         }
     };
+    $scope.toggleEmulateTouchDevice = function(){
+    	if( SettingsService.getSetting('emulateTouchDevice',true) ){
+            SettingsService.setSetting('emulateTouchDevice',false);
+        }else{
+            SettingsService.setSetting('emulateTouchDevice',true);
+        }
+    };
 	
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
