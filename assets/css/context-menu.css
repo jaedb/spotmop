@@ -33,4 +33,47 @@ contextmenu .menu-item:hover {
 }
 
 
+/**
+ * Touch-device friendly
+ * This provides a sticky toolbar while tracks are selected
+ **/
+.touchDevice contextmenu {
+	padding-left: 5px;
+	position: fixed;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 99;
+}
+
+.touchDevice contextmenu .menu-item {
+	display: block;
+	float: left;
+	padding: 14px 0 12px;
+	width: 45px;
+	text-align: center;
+	border: 0;
+}
+
+.touchDevice contextmenu .menu-item.cancel {
+	opacity: 0.5;
+	float: right;
+}
+
+.touchDevice contextmenu .menu-item .icon {
+	font-size: 16px;
+}
+
+.touchDevice contextmenu .menu-item .text {
+	font-size: 8px;
+	display: block;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
+
+
+
+
+
 

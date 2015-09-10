@@ -284,21 +284,6 @@
 		padding-bottom: 8%;
 		font-size: 13px;
 	}
-
-	/**
-	 * Context menu 
-	 **/
-	.tracklist-context-menu {
-		padding-left: 5px;
-	}
-	
-	.tracklist-context-menu .menu-item {
-		padding: 14px 5px 12px;
-	}
-	
-	.tracklist-context-menu .menu-item .text {
-		font-size: 8px;
-	}
 	
 
 	/**
@@ -394,14 +379,6 @@
 	.square-panel {
 		width: 29%;
 		margin-bottom: 5%;
-	}
-	
-	
-	/**
-	 * Touch-device context menus
-	 **/
-	.tracklist-context-menu .status {
-		display: none;
 	}
 	
 	

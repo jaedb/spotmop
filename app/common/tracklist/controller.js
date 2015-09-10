@@ -194,6 +194,13 @@ angular.module('spotmop.common.tracklist', [
 		
 		// save this item to our last-clicked (used for shift-click)
 		$scope.lastSelectedTrack = $track;
+		
+		
+		// tell our touch device to show the context menu
+		if( $filter('filter')($scope.tracklist.tracks, {selected: true}).length > 0 )
+			$rootScope.$broadcast('spotmop:touchContextMenu:show', 'tltrack' );
+		else
+			$rootScope.$broadcast('spotmop:touchContextMenu:hide' );
 	});
 	
 	

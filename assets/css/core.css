@@ -875,6 +875,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	padding: 50px;
 }
 
+.playlist-intro .content {
+	padding-left: 220px;
+}
+
 .playlist-intro .thumbnail {
 	width: 200px;
 	height: 200px;

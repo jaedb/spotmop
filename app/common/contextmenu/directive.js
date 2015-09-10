@@ -72,7 +72,9 @@ angular.module('spotmop.common.contextmenu', [
 			}
 			
 			/**
-			 * Show the context menu
+			 * Show the standard context menu
+			 * This is typically triggered by a right-click on a track
+			 *
 			 * @param context = string (track|tltrack)
 			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
 			 **/
@@ -98,10 +100,30 @@ angular.module('spotmop.common.contextmenu', [
 				});
 			});
 			
+			/**
+			 * Show the touch-device specific context menu
+			 * This is triggered when our tracklist has selected tracks
+			 *
+			 * @param context = string (track|tltrack)
+			 **/
+			$scope.$on('spotmop:touchContextMenu:show', function(event, context){
+				
+				// position and reveal our element
+				$element.show();
+				
+				// use the clicked element to define what kind of context menu to show
+				$scope.$apply( function(){
+					$scope.context = context;
+				});
+			});
+			
 			
 			/**
 			 * Hide the context menu
 			 **/
+			$scope.$on('spotmop:touchContextMenu:hide', function(event){
+				$element.hide();
+			});
 			$scope.$on('spotmop:contextMenu:hide', function(event){
 				$element.hide();
 			});
