@@ -272,7 +272,7 @@ angular.module('spotmop.common.tracklist', [
 	
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var firstSelectedTrack = selectedTracks[0];
-			
+		console.log( $scope.tracklist );
 		// depending on context, make the selected track(s) play
 		// queue
 		if( $scope.tracklist.type == 'tltrack' ){

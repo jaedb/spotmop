@@ -55,6 +55,7 @@ angular.module('spotmop.browse.album', [])
 		
 			$scope.album = response;
 			$scope.tracklist = response.tracks;
+			$scope.tracklist.type = 'track';
 			$scope.tracklist.tracks = response.tracks.items;
 			
 			$rootScope.$broadcast('spotmop:pageUpdated');
