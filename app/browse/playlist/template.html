@@ -20,10 +20,12 @@
 				<h4 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h4>
 				
 				<div class="buttons">
+				
+					<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play playlist</a>
 					
 					<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
-						<a class="button destructive"
-							  ng-class="{red: hovering, dark: !hovering}"
+						<a class="button"
+							  ng-class="{destructive: hovering}"
 							  ng-show="following"
 							  ng-click="unfollowPlaylist()"
 							  ng-mouseover="hovering = true"
@@ -44,8 +46,8 @@
 								  ng-click="editPlaylist( $scope )">
 								Edit
 							</a>
-							<confirmation-button class="button destructive"
-								default-text="Delete playlist"
+							<confirmation-button
+								default-text="Delete"
 								confirmation-text="Are you sure?"
 								on-confirmation="unfollowPlaylist">
 							</confirmation-button>

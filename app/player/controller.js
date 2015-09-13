@@ -5,7 +5,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, MopidyService, SpotifyService, EchonestService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, MopidyService, SpotifyService, EchonestService, SettingsService ){
 	
 	// setup template containers
 	$scope.muted = false;
@@ -37,7 +37,8 @@ angular.module('spotmop.player', [
 	$scope.next = function(){
 		
 		// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-		EchonestService.addToTasteProfile( 'skip', $scope.currentTlTrack.track.uri );
+		if( SettingsService.getSetting('echonestenabled',false) )
+			EchonestService.addToTasteProfile( 'skip', $scope.currentTlTrack.track.uri );
 	
 		MopidyService.next();
 	}
@@ -266,7 +267,8 @@ angular.module('spotmop.player', [
 		updatePlayerState();
 		
 		// log this play
-		EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
+		if( SettingsService.getSetting('echonestenabled',false) )
+			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
 	
 	

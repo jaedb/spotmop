@@ -46,6 +46,21 @@ angular.module('spotmop.browse.album', [])
 	$scope.playAlbum = function(){
 		MopidyService.playStream( $scope.album.uri );
 	}
+	
+	// add album to library
+	$scope.addToLibrary = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+		
+		var trackids = [];
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
+		});
+		
+		SpotifyService.addTracksToLibrary( trackids )
+			.success( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+			});
+	}
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
 	

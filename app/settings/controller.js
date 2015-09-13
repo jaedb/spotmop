@@ -174,12 +174,10 @@ angular.module('spotmop.settings', [])
             EchonestService.stop();			
 		}
 	};
-	$scope.resetSettings = function( confirmed ){
-		if( confirmed ){
-			$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
-			localStorage.clear();		
-			window.location = window.location;
-		}
+	$scope.resetSettings = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
+		localStorage.clear();		
+		window.location = window.location;
 	};
 	
 	SettingsService.getVersion()

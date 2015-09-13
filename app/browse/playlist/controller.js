@@ -52,6 +52,11 @@ angular.module('spotmop.browse.playlist', [])
         DialogService.create('editPlaylist', $scope);
     }
 	
+	// play the whole playlist
+	$scope.playPlaylist = function(){
+		MopidyService.playStream( $scope.playlist.uri );
+	}
+	
     // figure out the total time for all tracks
     $scope.totalTime = function(){
         var totalTime = 0;

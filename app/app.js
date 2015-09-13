@@ -142,12 +142,12 @@ angular.module('spotmop', [
 			$scope.text = $scope.defaultText;
 			
 			// bind to document-wide click events
-			$(document).on('click', function(evt){
+			$(document).on('click', function(event){
 				
-				// if we've clicked on THIS confirmation button
-				if( evt.target == $element[0] ){
+				// if we've left-clicked on THIS confirmation button
+				if( event.target == $element[0] && event.which == 1 ){
 					if( $scope.confirming ){
-						
+					
 						// if the function exists, perform the on-confirmation function from the directive's template
 						if( typeof( $scope.$parent[ $scope.onConfirmation ]() ) === 'function' )
 							$scope.$parent[ $scope.onConfirmation ]();
@@ -176,7 +176,7 @@ angular.module('spotmop', [
 		},
 		replace: true, 		// Replace with the template below
 		transclude: true, 	// we want to insert custom content inside the directive
-		template: '<span ng-bind="text"></span>'
+		template: '<span ng-bind="text" class="button" ng-class="{ destructive: confirming }"></span>'
 	};
 })
 
