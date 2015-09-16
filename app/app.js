@@ -421,16 +421,6 @@ angular.module('spotmop', [
         var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
 		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
 	});
-	
-	// the page content has been updated
-	$scope.$on('spotmop:pageUpdated', function(){
-		
-		// wait for $digest
-		$timeout( function(){
-			$scope.resquarePanels();
-		},
-		0);
-	});
     
     
 		

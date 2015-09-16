@@ -25,7 +25,6 @@ angular.module('spotmop.discover.new', [])
 	SpotifyService.newReleases()
 		.success(function( response ) {
 			$scope.albums = response.albums;
-			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-new-releases'});
 		})
         .error(function( error ){
@@ -64,7 +63,6 @@ angular.module('spotmop.discover.new', [])
                 
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-new-releases'});
-                $rootScope.$broadcast('spotmop:pageUpdated');
                 loadingMoreNewReleases = false;
             })
             .error(function( error ){

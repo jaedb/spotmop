@@ -10,7 +10,7 @@ angular.module('spotmop.browse.artist', [])
 	$stateProvider
 		.state('browse.artist', {
 			url: "/artist/:uri",
-            //abstract: true,
+            abstract: true,
 			templateUrl: "app/browse/artist/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {
@@ -21,7 +21,7 @@ angular.module('spotmop.browse.artist', [])
                 }]
 		})
 		.state('browse.artist.overview', {
-			url: "/overview",
+			url: "",
 			templateUrl: "app/browse/artist/overview.template.html",
 			controller: 'ArtistOverviewController'
 		})
@@ -157,18 +157,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Related artists controller
  **/
-.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){
-	
-	// when the related artists array changes (ie on API response, page load, etc)
-	$scope.$watch('relatedArtists', function(){
-
-		// wait for $digest
-		$timeout( function(){
-			$scope.resquarePanels();
-		},
-		0);
-	});
-	
+.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){	
 })
 
 

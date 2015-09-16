@@ -21,8 +21,5 @@ angular.module('spotmop.myplaylists', [])
 	
 	$scope.createPlaylist = function(){
         DialogService.create('createPlaylist', $scope);
-	}
-	
-	$scope.$broadcast('spotmop:pageUpdated');
-	
+	}	
 });

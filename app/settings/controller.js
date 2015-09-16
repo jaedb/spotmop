@@ -10,7 +10,7 @@ angular.module('spotmop.settings', [])
 	$stateProvider
 		.state('settings', {
 			url: "/settings",
-            //abstract: true,
+            abstract: true,
 			templateUrl: "app/settings/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {
@@ -21,7 +21,7 @@ angular.module('spotmop.settings', [])
                 }]
 		})
 		.state('settings.mopidy', {
-			url: "/mopidy",
+			url: "",
 			templateUrl: "app/settings/mopidy.template.html"
 		})
 		.state('settings.spotify', {

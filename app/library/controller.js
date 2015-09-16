@@ -30,7 +30,6 @@ angular.module('spotmop.library', [])
 				$scope.tracklist = response.data;
 				$scope.tracklist.tracks = reformatTracks( response.data.items );
 				
-				$rootScope.$broadcast('spotmop:pageUpdated');
 				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-library'});
 			},
 			function( response ){ // error

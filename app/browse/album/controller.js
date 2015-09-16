@@ -73,7 +73,6 @@ angular.module('spotmop.browse.album', [])
 			$scope.tracklist.type = 'track';
 			$scope.tracklist.tracks = response.tracks.items;
 			
-			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});
 		})
 		.error(function( error ){

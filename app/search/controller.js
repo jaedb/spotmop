@@ -94,7 +94,6 @@ angular.module('spotmop.search', [])
 						$scope.tracklist.tracks = response.tracks.items;
 						$scope.tracklist.type = 'track';
 						$scope.next = response.tracks.next;
-						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
 				break;
@@ -105,7 +104,6 @@ angular.module('spotmop.search', [])
 					.success( function(response){		
 						$scope.albums = response.albums;
 						$scope.next = response.albums.next;
-						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
 				break;
@@ -116,7 +114,6 @@ angular.module('spotmop.search', [])
 					.success( function(response){		
 						$scope.artists = response.artists;
 						$scope.next = response.artists.next;
-						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
 				break;
@@ -127,7 +124,6 @@ angular.module('spotmop.search', [])
 					.success( function(response){		
 						$scope.playlists = response.playlists;
 						$scope.next = response.playlists.next;
-						$rootScope.$broadcast('spotmop:pageUpdated');
 						$scope.loading = false;
 					});
 				break;
@@ -142,8 +138,6 @@ angular.module('spotmop.search', [])
 						
 						// handle loading (remembering that these queries may finish in a different order)
 						$scope.loading = $scope.loading - 1;
-						if( $scope.loading <= 0 )
-							$rootScope.$broadcast('spotmop:pageUpdated');
 					});	
 					
 				SpotifyService.getSearchResults( 'album', query, 6 )
@@ -152,8 +146,6 @@ angular.module('spotmop.search', [])
 						
 						// handle loading (remembering that these queries may finish in a different order)
 						$scope.loading = $scope.loading - 1;
-						if( $scope.loading <= 0 )
-							$rootScope.$broadcast('spotmop:pageUpdated');
 					});
 					
 				SpotifyService.getSearchResults( 'artist', query, 6 )
@@ -162,8 +154,6 @@ angular.module('spotmop.search', [])
 						
 						// handle loading (remembering that these queries may finish in a different order)
 						$scope.loading = $scope.loading - 1;
-						if( $scope.loading <= 0 )
-							$rootScope.$broadcast('spotmop:pageUpdated');
 					});
 					
 				SpotifyService.getSearchResults( 'playlist', query, 6 )
@@ -172,8 +162,6 @@ angular.module('spotmop.search', [])
 						
 						// handle loading (remembering that these queries may finish in a different order)
 						$scope.loading = $scope.loading - 1;
-						if( $scope.loading <= 0 )
-							$rootScope.$broadcast('spotmop:pageUpdated');
 							
 					});
 				break;

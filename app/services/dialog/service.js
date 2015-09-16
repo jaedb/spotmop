@@ -108,7 +108,6 @@ angular.module('spotmop.services.dialog', [])
                         // and finally remove this dialog
                         DialogService.remove();
     					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-    					$rootScope.$broadcast('spotmop:pageUpdated');
                     });
             }
 		}
@@ -184,7 +183,6 @@ angular.module('spotmop.services.dialog', [])
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
 				.success(function( response ) {
 					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-					$scope.$emit('spotmop:pageUpdated');
 				})
 				.error(function( error ){
 					$scope.status = 'Unable to load your playlists';
