@@ -138,6 +138,7 @@ angular.module('spotmop.services.spotify', [])
         
         getMe: function(){
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'me/',
 				headers: {
@@ -151,6 +152,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', useruri );
             
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'users/'+userid,
 				headers: {
@@ -182,6 +184,7 @@ angular.module('spotmop.services.spotify', [])
 			var trackid = this.getFromUri('trackid', trackuri);
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'tracks/'+trackid,
 				headers: {
@@ -198,6 +201,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyTracks: function( userid ){
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'me/tracks/',
 				headers: {
@@ -243,6 +247,7 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'users/'+userid+'/playlists?limit='+limit,
 				headers: {
@@ -258,6 +263,7 @@ angular.module('spotmop.services.spotify', [])
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 		
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
 				headers: {
@@ -310,6 +316,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		featuredPlaylists: function(){
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'browse/featured-playlists',
 				headers: {
@@ -426,6 +433,7 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
             
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
 				headers: {
@@ -440,6 +448,7 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'browse/categories?limit='+limit,
 				headers: {
@@ -450,6 +459,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		getCategory: function( categoryid ){
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'browse/categories/'+categoryid,
 				headers: {
@@ -464,6 +474,7 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
             
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
 				headers: {
@@ -481,6 +492,7 @@ angular.module('spotmop.services.spotify', [])
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'artists/'+artistid,
 				headers: {
@@ -494,6 +506,7 @@ angular.module('spotmop.services.spotify', [])
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
 				headers: {
@@ -507,6 +520,7 @@ angular.module('spotmop.services.spotify', [])
 			var albumid = this.getFromUri( 'albumid', albumuri );
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'albums/'+albumid,
 				headers: {
@@ -520,6 +534,7 @@ angular.module('spotmop.services.spotify', [])
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
 				headers: {
@@ -533,6 +548,7 @@ angular.module('spotmop.services.spotify', [])
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'artists/'+artistid+'/related-artists',
 				headers: {
@@ -552,6 +568,7 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' ) limit = 10;
 		
 			return $http({
+				cache: true,
 				method: 'GET',
 				url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
 				headers: {

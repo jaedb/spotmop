@@ -263,13 +263,16 @@ angular.module('spotmop', [
 		window.location.reload();
 	}
     $scope.playlistsMenu = [];
+    $scope.myPlaylists = {};
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.success(function( response ) {
-            
+				
+				$scope.myPlaylists = response.items;
+				
                 var newPlaylistsMenu = [];
             
 				// loop all of our playlists, and set up a menu item for each
@@ -310,7 +313,6 @@ angular.module('spotmop', [
 	}
 	
     angular.element(window).resize(function () {
-        $scope.resquarePanels();
 		$scope.windowWidth = $(document).width();
 		
 		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
@@ -324,14 +326,6 @@ angular.module('spotmop', [
 			$(document).find('#body').attr('style','')
 		}
     });
-	
-	// make all the square panels really square
-	$scope.resquarePanels = function(){
-		$(document).find('.square-panel').each( function(index, value){
-			var realWidth = value.getBoundingClientRect().width;
-			$(value).find('.image-container').css('height', realWidth +'px');
-		});
-	}
 	
 	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
 		$scope.hideMenu();

@@ -10,7 +10,7 @@
 	
 	<div class="playlist-items square-panels">
 		
-		<div class="item-container" ng-repeat="playlist in playlists">
+		<div class="item-container" ng-repeat="playlist in myPlaylists">
 			<a ui-sref="browse.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 				<div class="image-container">
 					<thumbnail images="playlist.images"></thumbnail>
@@ -22,7 +22,7 @@
 			</a>
 		</div>
 	
-		<div ng-hide="playlists.length" class="no-items">
+		<div ng-hide="myPlaylists.length" class="no-items">
 			No items
 		</div>
 		

@@ -648,7 +648,8 @@ h1 .flag {
 
 .square-panel .image-container {
 	position: relative;
-	height: 180px;
+	width: 100%;
+	padding-bottom: 100%;
 }
 
 .square-panel .image-container .image {
