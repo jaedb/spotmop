@@ -1061,15 +1061,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	width: 29%;
 }
 
-.search-results-section .square-panel .image-container {
-	height: 100px;
-	min-width: 100%;
-}
-
-.search-results-section .square-panel .image-container .image {
-	min-width: 100%;
-}
-
 .search-results-section.playlists .square-panel .info > .name {
 	white-space: nowrap;
 	overflow: hidden;
