@@ -61,7 +61,7 @@ angular.module('spotmop.browse.artist', [])
 .controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $stateParams, $sce ){
 	
 	$scope.artist = {};
-	$scope.tracklist = {};
+	$scope.tracklist = {type: 'track'};
 	$scope.albums = {};
 	$scope.relatedArtists = {};
 	
@@ -95,7 +95,7 @@ angular.module('spotmop.browse.artist', [])
 	SpotifyService.getAlbums( $stateParams.uri )
 		.success( function( response ){
 			$scope.albums = response;
-		
+			
 			// get the artist's top tracks
 			SpotifyService.getTopTracks( $stateParams.uri )
 				.success( function( response ){

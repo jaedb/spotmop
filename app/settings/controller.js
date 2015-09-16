@@ -79,6 +79,13 @@ angular.module('spotmop.settings', [])
             SettingsService.setSetting('keyboardShortcutsEnabled',true);
         }
     };
+    $scope.toggleEmulateTouchDevice = function(){
+    	if( SettingsService.getSetting('emulateTouchDevice',true) ){
+            SettingsService.setSetting('emulateTouchDevice',false);
+        }else{
+            SettingsService.setSetting('emulateTouchDevice',true);
+        }
+    };
 	
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
@@ -167,12 +174,10 @@ angular.module('spotmop.settings', [])
             EchonestService.stop();			
 		}
 	};
-	$scope.resetSettings = function( confirmed ){
-		if( confirmed ){
-			$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
-			localStorage.clear();		
-			window.location = window.location;
-		}
+	$scope.resetSettings = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
+		localStorage.clear();		
+		window.location = window.location;
 	};
 	
 	SettingsService.getVersion()

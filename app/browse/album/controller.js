@@ -17,10 +17,10 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, SpotifyService, $stateParams, $filter ){
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
 	
 	$scope.album = {};
-	$scope.tracklist = {};
+	$scope.tracklist = {type: 'track'};
     $scope.convertedDate = function(){
         if( $scope.album.release_date_precision == 'day' )
             return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
@@ -41,6 +41,26 @@ angular.module('spotmop.browse.album', [])
         }
         return Math.round(totalTime / 100000);   
     }
+	
+	// play the whole album
+	$scope.playAlbum = function(){
+		MopidyService.playStream( $scope.album.uri );
+	}
+	
+	// add album to library
+	$scope.addToLibrary = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+		
+		var trackids = [];
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
+		});
+		
+		SpotifyService.addTracksToLibrary( trackids )
+			.success( function(response){
+				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+			});
+	}
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
 	
@@ -50,6 +70,7 @@ angular.module('spotmop.browse.album', [])
 		
 			$scope.album = response;
 			$scope.tracklist = response.tracks;
+			$scope.tracklist.type = 'track';
 			$scope.tracklist.tracks = response.tracks.items;
 			
 			$rootScope.$broadcast('spotmop:pageUpdated');

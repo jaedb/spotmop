@@ -383,13 +383,15 @@ h4.section-title {
  * Text colour variations
  **/
 
-.black-text {		color: #000000; }
-.red-text {			color: rgb(214,47,47); }
-.green-text {		color: rgb(53,204,53); }
+.black-text {						color: #000000; }
+.red-text {							color: rgb(214,47,47); }
+.green-text {						color: rgb(53,204,53); }
+.primary-colour-text {				color: #1cf4c4; }
 
-.black-background {	background-color: #000000; }
-.red-background {	background-color: rgb(214,47,47); }
-.green-background {	background-color: rgb(53,204,53); }
+.black-background {					background-color: #000000; }
+.red-background {					background-color: rgb(214,47,47); }
+.green-background {					background-color: rgb(53,204,53); }
+.primary-colour-background {		background-color: #1cf4c4; }
 
 
 /**
@@ -479,79 +481,44 @@ h1 .flag {
 
 /**
  * Clickable buttons
+ * These are all within the .body element (ie the main app frame)
  **/
 
-body .button.default,
-body .button.pill {
-    padding: 8px 18px;
-    background: #333333;
-    color: #FFFFFF;
+.body .button {
+    padding: 8px 16px;
     display: inline-block;
     border: 0;
     cursor: pointer;
-    margin-right: 10px;
+    margin-right: 4px;
+	border-radius: 3px;
+    color: #FFFFFF;
+	border: 0;
 }
 
-body .button.bordered {
-	border: 1px solid #333333;
-	color: #333333;
-	background: none;
-	text-transform: uppercase;
-	display: inline-block;
-	vertical-align: top;
-}
+.body .button { 						background: #9b9b9b; }
+.body .button:hover { 					background: #8B8B8B; }
 
-body .button.bordered:not(.disabled):hover {
-	background: #FAFAFA;
-}
-
-body:not(.touchDevice) .button.bordered:not(.disabled):hover {
-	border-bottom-width: 4px;
-	padding-top: 16px;
-	padding-bottom: 16px;
-	background: #FAFAFA;
-}
-
-.button.pill:not(.disabled):hover,
-.button.default:not(.disabled):hover {
-    background: #202020;
-}
-
-.button.pill {
-    border-radius: 20px;
-}
-
-.button.default > .fa {
+.body .button .fa {
 	margin-top: 2px;
+	margin-left: -2px;
 	vertical-align: top;
-}
-
-/* disabled */
-
-body .button.disabled {
-	cursor: not-allowed;
-	color: #DDDDDD !important;
-	border-color: #DDDDDD !important;
 }
 
 
 /* variations */
 
-.button.large {					padding: 18px 26px; }
+.body .button.primary {					background: #08d58f; }
+.body .button.primary:hover {			background: #03c784; }
 
-.button.light {									background: #EEEEEE; color: #222222; }
-.button.light:not(.disabled):hover {			background: #DDDDDD; }
+.body .button.destructive {				background: #cf2d2d; }
+.body .button.destructive:hover {		background: #bc1f1f; }
 
-.button.red {									background-color: #D62F2F; }
-.button.red:not(.disabled):hover,
-.button.red-hover:not(.disabled):hover {		background-color: #c42424; }
-.button.bordered.red {							border-color: #D62F2F; color: #D62F2F; }
 
-.button.green {									background-color: #35CC35; }
-.button.green:not(.disabled):hover,
-.button.green-hover:not(.disabled):hover {		background-color: #28b428; }
-.button.bordered.green {						border-color: #35CC35; color: #35CC35; }
-
+.body .button.disabled {
+	cursor: not-allowed;
+	color: #DDDDDD !important;
+	border-color: #DDDDDD !important;
+}
 
 
 /**
@@ -903,17 +870,35 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .playlist-intro .inner {
-	background: rgba(0,0,0,0.5);
+	background: rgba(0,0,0,0.65);
 	color: #FFFFFF;
 	padding: 50px;
 }
 
+.playlist-intro .content {
+	padding-left: 220px;
+}
+
+.playlist-intro .thumbnail {
+	width: 200px;
+	height: 200px;
+	float: left;
+	margin: -20px 0 -20px -20px;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
 .playlist-intro h1 {
-	padding-bottom: 8px;
+	padding-bottom: 0;
+	margin-bottom: -5px;
 }
 
 .playlist-intro .description {
-	padding-bottom: 20px;
+	padding: 24px 0 8px;
+}
+
+.playlist-intro .buttons {
+	padding-top: 20px;
 }
 
 

@@ -1,7 +1,5 @@
 <div class="browse album">
 	
-	<ng-include src="'/app/common/contextmenu/tracklist.template.html'"></ng-include>
-	
 	<div class="album-intro">
 		
 		<div class="square-panel">
@@ -33,9 +31,13 @@
 						<span class="bar" style="width: {{ album.popularity }}%;"></span>
 					</span>
 				</div>
-			</div>
-			
+			</div>			
 		</div>
+		
+		<br /><br />
+		
+		<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play album</a>
+		<a class="button" ng-click="addToLibrary()">Add to library</a>
 		
 		<div class="clear-both"></div>
 		

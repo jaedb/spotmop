@@ -37,12 +37,12 @@
 					<div class="clear-both"></div>
 				</div>
 				<div class="row collapse-for-mobile">
-					<div class="col w20"><span class="flag grey"><i class="fa fa-arrow-up"></i> Up arrow</span></div>
+					<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-up"></i> Up arrow</span></div>
 					<div class="col w80">Volume up by 10%</div>
 					<div class="clear-both"></div>
 				</div>
 				<div class="row collapse-for-mobile">
-					<div class="col w20"><span class="flag grey"><i class="fa fa-arrow-down"></i> Down arrow</span></div>
+					<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-down"></i> Down arrow</span></div>
 					<div class="col w80">Volume down by 10%</div>
 					<div class="clear-both"></div>
 				</div>
@@ -61,14 +61,19 @@
 		<div class="clear-both"></div>
     </div>
 
+    <div class="field">
+        <div class="label">Emulate touch device</div>
+        <div class="input">		
+            <span class="switch-button" ng-class="{on: settings.emulateTouchDevice}" ng-click="toggleEmulateTouchDevice()"><span class="switch animate"></span></span>
+		</div>
+	</div>
+
 	<div class="actions">
-		<a class="button bordered large red" ng-click="resetSettings(confirming); confirming = true" ng-mouseleave="confirming = false">
-			<span ng-show="!confirming">
-				<i class="fa fa-close"></i>&nbsp; Reset all settings
-			</span>
-			<span ng-show="confirming">
-				<i class="fa fa-exclamation-triangle"></i>&nbsp; Are you sure?
-			</span>
-		</a>
+		<confirmation-button
+			class="destructive"
+			default-text="Reset all settings"
+			confirmation-text="Are you sure?"
+			on-confirmation="resetSettings">
+		</confirmation-button>
 	</div>
 </div>
