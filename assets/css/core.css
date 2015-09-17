@@ -1160,15 +1160,18 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
-	padding: 28px 200px 0;
 }
 
 #player .track-info .track {
-	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 #player .track-info .artist {
-	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	opacity: 0.5;
 }
 
@@ -1197,7 +1200,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 #player .volume {
 	padding-top: 32px;
 	padding-right: 48px;
-	float: right;
 	width: 180px;
 }
 

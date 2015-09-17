@@ -1,5 +1,14 @@
 <div id="player">
 	
+	<div class="track-info">
+		<div class="track" ng-bind="currentTlTrack.track.name"></div>
+		<div class="artist">
+			<span ng-repeat="artist in currentTlTrack.track.artists">
+				<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+			</span>
+		</div>
+	</div>
+	
 	<div class="progress slider" ng-click="seek($event)">
 		<div class="track animate">
 			<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
@@ -39,15 +48,5 @@
 			</div>
 		</div>
 	</div>
-	
-	<div class="track-info" ng-show="!fullscreenPlayerExpanded">
-		<span class="track" ng-bind="currentTlTrack.track.name"></span>
-		<span class="artist">
-			<span ng-repeat="artist in currentTlTrack.track.artists">
-				<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
-			</span>
-		</span>
-	</div>
 
-	<div class="clear-both"></div>
 </div>
