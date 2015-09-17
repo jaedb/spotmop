@@ -1,9 +1,6 @@
 <div>
 		
 	<div class="playlist-intro">
-		<div class="image-container" ng-repeat="image in playlist.images | limitTo:1">
-			<div class="image animate blur" style="background-image: url({{ image.url }});"></div>
-		</div>
 		<div class="inner">
 		
 			<div class="thumbnail" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>

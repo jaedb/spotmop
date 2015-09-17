@@ -5,13 +5,14 @@
  **/
 
 @import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Archivo+Narrow:400,400italic,700,700italic);
 
 body,
 html {
 	background: ##FFFFFF;
 	color: #000000;
-	font-family: 'Roboto', Helvetica, Arial, sans-serif;
-	font-size: 12px;
+	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
+	font-size: 14px;
 }
 
 body {
@@ -100,7 +101,7 @@ body {
 
 #body > .inner {
 	overflow-x: hidden;
-	padding: 20px;
+	padding: 40px;
 }
 
 
@@ -150,7 +151,10 @@ body {
 	padding: 10px 0 10px 20px;
 	color: #FFFFFF;
 	text-decoration: none;
-	font-size: 14px;
+	font-size: 16px;
+	background-image: url('../svg/white-diamond.svg');
+	background-position: 110% 50%;
+	background-repeat: no-repeat;
 }
 
 .main-menu > .menu-item > a > i {
@@ -159,12 +163,13 @@ body {
 }
 
 .main-menu > .menu-item.active > a {
-	background: rgba(255,255,255,0.1);
 	border-color: #08d58f;
+	background-color: rgba(255,255,255,0.1);
+	background-position: 100% 50%;
 }
 
 .main-menu > .menu-item > a:hover {
-	background: rgba(255,255,255,0.05);
+	background-color: rgba(255,255,255,0.05);
 }
 
 
@@ -173,7 +178,7 @@ body {
  **/
 
 .main-menu .submenu {
-	padding-left: 45px;
+	padding-left: 55px;
 }
 
 .main-menu .submenu > .menu-item {
@@ -182,7 +187,7 @@ body {
 
 .main-menu .submenu > .menu-item > a {
 	color: rgba(255,255,255,0.5);
-	font-size: 12px;
+	font-size: 14px;
 	padding: 3px;
 	text-decoration: none;
 	display: block;
@@ -344,7 +349,8 @@ input[type='submit'] {
 h1 {
 	font-size: 30px;
 	font-weight: 200;
-	padding-bottom: 20px;
+	padding-bottom: 35px;
+	margin-top: -10px;
 }
 
 h2 {
@@ -853,34 +859,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .playlist-intro {
 	position: relative;
-	margin: -20px -20px 30px -20px;
-}
-
-.playlist-intro .image-container {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	overflow: hidden;
-	z-index: -1;
-}
-
-.playlist-intro .image {
-	position: absolute;
-	top: -10px;
-	right: -10px;
-	bottom: -10px;
-	left: -10px;
-	background-color: #EEEEEE;
-	background-size: cover;
-	background-position: 50% 100%;
-}
-
-.playlist-intro .inner {
-	background: rgba(0,0,0,0.65);
-	color: #FFFFFF;
-	padding: 50px;
+	margin: 0 0 30px 0;
 }
 
 .playlist-intro .content {
@@ -891,13 +870,14 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	width: 200px;
 	height: 200px;
 	float: left;
-	margin: -20px 0 -20px -20px;
+	margin: 0;
 	background-position: 50% 50%;
 	background-size: cover;
 }
 
 .playlist-intro h1 {
 	padding-bottom: 0;
+	padding-top: 15px;
 	margin-bottom: -5px;
 }
 
@@ -916,9 +896,9 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .artist-intro {
 	position: relative;
-	margin: -20px -20px 30px -20px;
+	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 60vh;
+	height: 50vh;
 }
 
 .artist-intro > .inner {
@@ -1156,34 +1136,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 /* ================================================================================================ */
 
 #player {
-	background: #000000;
 	color: #FFFFFF;
-}
-
-#player .background-container {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	opacity: 0.25;
-}
-
-#player .background-container .image {
-	width: 100%;
-	height: 100%;
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
-	background-size: cover;
-}
-
-#player > .slim-player.inner {
-	padding: 10px 10px 19px 10px;
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	left: 0;
-	top: 0;
 }
 
 #player .button {
@@ -1234,13 +1187,11 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  **/
  
 #player .controls {
-	float: left;
 	margin-left: 15px;
 }
  
 #player .playback {
 	padding-top: 32px;
-	float: left;
 }
 
 #player .volume {
@@ -1296,96 +1247,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	-o-transition: all 1s;
 	transition: all 1s;
 }
-
-
-/**
- * Fullscreen player
- **/
-
-#player.expanded {
-	top: 0;
-	height: auto;
-}
-
-#player .expand-player {
-	position: absolute;
-	bottom: 25px;
-	right: 20px;
-	padding: 10px;
-	font-size: 16px;
-	cursor: pointer;
-	display: block;
-	z-index: 9;
-	color: #FFFFFF;
-}
-
-#player .fullscreen-player {
-	display: none;
-	z-index: 2;
-}
-
-#player .fullscreen-player .info-wrapper {
-	position: absolute;
-	top: 60%;
-	left: 0;
-	right: 0;
-	height: 50%;
-}
-
-#player .fullscreen-player .track-info {
-	padding: 40px 0;
-}
-
-#player .fullscreen-player .player-controls {
-	float: none;
-	text-align: center;
-	margin: 0;
-}
-
-#player .fullscreen-player .controls .button {
-	font-size: 20px;
-}
-
-#player .fullscreen-player .artwork-wrapper {
-	position: absolute;
-	top: 5%;
-	left: 0;
-	right: 0;
-	height: 50%;
-	text-align: center;
-}
-
-#player .fullscreen-player .artwork {
-	height: 100%;
-	margin: 0 auto;
-	padding-top: 30px;
-    display: block;
-    border: 0 !important;
-    text-decoration: none;
-}
-
-#player .fullscreen-player .artwork > .image {
-	height: 100%;
-	width: auto;
-}
-
-#player .fullscreen-player .volume {
-	margin: 0 auto;
-	max-width: 500px;
-	width: 80%;
-	float: none;
-	padding: 40px 0 0 0;
-}
-
-#player .fullscreen-player .volume .controls {
-	margin: -5px 0 0 0;
-}
-
-#player .fullscreen-player .volume .slider {
-	margin: 0 0 0 45px;
-}
-
-
 
 
 
