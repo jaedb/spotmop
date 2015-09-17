@@ -369,7 +369,7 @@ angular.module('spotmop', [
      * Gives us a chance to identify the new $state, and highlight in the nav
      **/
     $rootScope.$on('$stateChangeSuccess', function( event, toState, toParams ){
-        $(document).find('#sidebar .menu-item-wrapper').removeClass('active');
+        $(document).find('#sidebar .menu-item').removeClass('active');
         $(document).find('#sidebar a[href="'+window.location.pathname+'"]').parent().addClass('active');
     });
 

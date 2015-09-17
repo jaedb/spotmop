@@ -1,0 +1,46 @@
+<ul class="main-menu">
+	<li class="menu-item top-level">
+		<a href="/queue" class="droppable" data-type="queue" ng-class="{ active: $state.is('queue') }">
+			<i class="fa fa-list"></i>
+			Now playing
+		</a>
+	</li>	
+	<li class="menu-item top-level">
+		<a href="/discover/browse">
+			<i class="fa fa-star"></i>
+			Discover
+		</a>
+		<ul class="submenu">
+			<li class="menu-item"><a href="/discover/featured">Featured playlists</a></li>
+			<li class="menu-item"><a href="/discover/new">New releases</a></li>
+		</ul>
+	</li>
+	<li class="menu-item top-level">
+		<a href="/library" class="droppable" data-type="library">
+			<i class="fa fa-music"></i>
+			Library
+		</a>
+	</li>
+	<li class="menu-item top-level">
+		<a href="/my-playlists" data-type="playlists">
+			<i class="fa fa-folder"></i>
+			Playlists
+		</a>
+		<ul ng-show="playlistsMenu.length" class="submenu">
+			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
+				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
+			</li>
+		</ul>
+	</li>
+	<li class="menu-item top-level">
+		<a href="/settings">
+			<i class="fa fa-cog"></i>
+			Settings
+		</a>
+	</li>
+</ul>
+
+<div class="critical-services-status">
+	<p ng-show="!mopidyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Mopidy offline</p>
+	<p ng-show="!spotifyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Spotify offline</p>
+</div>

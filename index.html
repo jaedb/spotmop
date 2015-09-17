@@ -56,25 +56,34 @@
 	<link rel="shortcut-icon" href="/assetes/favicon.ico" />
 	
 </head>
-<body ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
-        
-    <div id="notifications"></div>
-
-    <ng-include src="'/app/common/sidebar.template.html'"></ng-include>	
-
-    <div id="body" class="body">
-        <div class="inner">
-            <div ui-view></div>
-        </div>
-    </div>
-
-    <ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
-	
-	<contextmenu></contextmenu>
-
-    <div class="drag-tracer"></div>
+<body>
     
-    <img class="hide" src="/assets/svg/spinner.svg" />
+	<div id="app" ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
+
+		<div class="background-image" style="background-image: url({{ image.url }})" ng-repeat="image in currentTlTrack.track.album.images | limitTo:1"></div>
+	
+		<div id="notifications"></div>
+		
+		<div id="sidebar">
+			<div class="inner">
+				<ng-include src="'/app/common/mainmenu.template.html'"></ng-include>
+				<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>		
+			</div>
+		</div>
+
+		<div id="body" class="body">
+			<div class="inner">
+				<div ui-view></div>
+			</div>
+		</div>
+		
+		<contextmenu></contextmenu>
+
+		<div class="drag-tracer"></div>
+		
+		<img class="hide" src="/assets/svg/spinner.svg" />
+		
+	</div>
     
 </body>
 </html>
