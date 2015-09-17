@@ -69,7 +69,11 @@ angular.module('spotmop', [
 			// fetch this instance's best thumbnail
 			$scope.image = getThumbnailImage( $scope.images );
 			
-			// get the best thumbnail image, please and thankyou
+			/**
+			 * Get the most appropriate thumbnail image
+			 * @param images = array of image urls
+			 * @return string (image url)
+			 **/
 			function getThumbnailImage( images ){
 				
 				// what if there are no images? then nada
@@ -138,12 +142,12 @@ angular.module('spotmop', [
 			$scope.text = $scope.defaultText;
 			
 			// bind to document-wide click events
-			$(document).on('click', function(evt){
+			$(document).on('click', function(event){
 				
-				// if we've clicked on THIS confirmation button
-				if( evt.target == $element[0] ){
+				// if we've left-clicked on THIS confirmation button
+				if( event.target == $element[0] && event.which == 1 ){
 					if( $scope.confirming ){
-						
+					
 						// if the function exists, perform the on-confirmation function from the directive's template
 						if( typeof( $scope.$parent[ $scope.onConfirmation ]() ) === 'function' )
 							$scope.$parent[ $scope.onConfirmation ]();
@@ -172,7 +176,7 @@ angular.module('spotmop', [
 		},
 		replace: true, 		// Replace with the template below
 		transclude: true, 	// we want to insert custom content inside the directive
-		template: '<span ng-bind="text"></span>'
+		template: '<span ng-bind="text" class="button" ng-class="{ destructive: confirming }"></span>'
 	};
 })
 
@@ -234,7 +238,11 @@ angular.module('spotmop', [
  **/
 .controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
 
-    $scope.isTouchDevice = function(){ return !!('ontouchstart' in window); }
+    $scope.isTouchDevice = function(){
+		if( SettingsService.getSetting('emulateTouchDevice',false) )
+			return true;
+		return !!('ontouchstart' in window);
+	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
 		
@@ -255,13 +263,16 @@ angular.module('spotmop', [
 		window.location.reload();
 	}
     $scope.playlistsMenu = [];
+    $scope.myPlaylists = {};
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.success(function( response ) {
-            
+				
+				$scope.myPlaylists = response.items;
+				
                 var newPlaylistsMenu = [];
             
 				// loop all of our playlists, and set up a menu item for each
@@ -302,7 +313,6 @@ angular.module('spotmop', [
 	}
 	
     angular.element(window).resize(function () {
-        $scope.resquarePanels();
 		$scope.windowWidth = $(document).width();
 		
 		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
@@ -316,14 +326,6 @@ angular.module('spotmop', [
 			$(document).find('#body').attr('style','')
 		}
     });
-	
-	// make all the square panels really square
-	$scope.resquarePanels = function(){
-		$(document).find('.square-panel').each( function(index, value){
-			var realWidth = value.getBoundingClientRect().width;
-			$(value).find('.image-container').css('height', realWidth +'px');
-		});
-	}
 	
 	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
 		$scope.hideMenu();
@@ -418,16 +420,6 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){
         var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
 		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
-	});
-	
-	// the page content has been updated
-	$scope.$on('spotmop:pageUpdated', function(){
-		
-		// wait for $digest
-		$timeout( function(){
-			$scope.resquarePanels();
-		},
-		0);
 	});
     
     

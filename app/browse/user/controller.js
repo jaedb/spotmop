@@ -35,7 +35,6 @@ angular.module('spotmop.browse.user', [])
                     $scope.playlists = response.items;
                     $scope.next = response.next;
                     $scope.totalPlaylists = response.total;
-					$rootScope.$broadcast('spotmop:pageUpdated');
                     $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-user'});
                 })
                 .error(function( error ){

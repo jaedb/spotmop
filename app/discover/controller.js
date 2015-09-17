@@ -36,7 +36,6 @@ angular.module('spotmop.discover', [])
 	SpotifyService.discoverCategories()
 		.success(function( response ) {
 			$scope.categories = response.categories;
-			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
 		})
         .error(function( error ){
@@ -75,7 +74,6 @@ angular.module('spotmop.discover', [])
                 
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-categories'});
-                $rootScope.$broadcast('spotmop:pageUpdated');
                 loadingMoreCategories = false;
             })
             .error(function( error ){
@@ -111,7 +109,6 @@ angular.module('spotmop.discover', [])
             SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
                 .success(function( response ) {
                     $scope.playlists = response.playlists;
-                    $rootScope.$broadcast('spotmop:pageUpdated');
                     $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
                 })
                 .error(function( error ){
@@ -155,7 +152,6 @@ angular.module('spotmop.discover', [])
                 
                 // update loader and re-open for further pagination objects
                 $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-playlists'});
-                $rootScope.$broadcast('spotmop:pageUpdated');
                 loadingMorePlaylists = false;
             })
             .error(function( error ){

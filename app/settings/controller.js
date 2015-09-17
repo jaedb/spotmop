@@ -10,7 +10,7 @@ angular.module('spotmop.settings', [])
 	$stateProvider
 		.state('settings', {
 			url: "/settings",
-            //abstract: true,
+            abstract: true,
 			templateUrl: "app/settings/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {
@@ -21,7 +21,7 @@ angular.module('spotmop.settings', [])
                 }]
 		})
 		.state('settings.mopidy', {
-			url: "/mopidy",
+			url: "",
 			templateUrl: "app/settings/mopidy.template.html"
 		})
 		.state('settings.spotify', {
@@ -77,6 +77,13 @@ angular.module('spotmop.settings', [])
             SettingsService.setSetting('keyboardShortcutsEnabled',false);
         }else{
             SettingsService.setSetting('keyboardShortcutsEnabled',true);
+        }
+    };
+    $scope.toggleEmulateTouchDevice = function(){
+    	if( SettingsService.getSetting('emulateTouchDevice',true) ){
+            SettingsService.setSetting('emulateTouchDevice',false);
+        }else{
+            SettingsService.setSetting('emulateTouchDevice',true);
         }
     };
 	
@@ -167,12 +174,10 @@ angular.module('spotmop.settings', [])
             EchonestService.stop();			
 		}
 	};
-	$scope.resetSettings = function( confirmed ){
-		if( confirmed ){
-			$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
-			localStorage.clear();		
-			window.location = window.location;
-		}
+	$scope.resetSettings = function(){
+		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
+		localStorage.clear();		
+		window.location = window.location;
 	};
 	
 	SettingsService.getVersion()

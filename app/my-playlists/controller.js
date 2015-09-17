@@ -17,33 +17,9 @@ angular.module('spotmop.myplaylists', [])
  **/
 .controller('MyPlaylistsController', function MyPlaylistsController( $scope, $rootScope, SpotifyService, SettingsService, DialogService ){
 	
-	// set the default items
-	$scope.playlists = [];
+	// note: we use the existing playlist list to show playlists on this page
+	
 	$scope.createPlaylist = function(){
         DialogService.create('createPlaylist', $scope);
-	}
-    
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-	
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlists', message: 'Loading'});
-    
-	SpotifyService.getPlaylists( userid )
-		.then(
-			function( response ){ // successful
-				$scope.playlists = response.data.items;
-				$rootScope.$broadcast('spotmop:pageUpdated');
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlists'});
-			},
-			function( response ){ // error
-			
-				// if it was 401, refresh token
-				if( error.error.status == 401 )
-					Spotify.refreshToken();
-			
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlists'});
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlists', message: error.error.message});
-			}
-		);
-	
+	}	
 });

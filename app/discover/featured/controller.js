@@ -25,7 +25,6 @@ angular.module('spotmop.discover.featured', [])
 	SpotifyService.featuredPlaylists()
 		.success(function( response ) {
 			$scope.playlists = response.playlists.items;
-			$rootScope.$broadcast('spotmop:pageUpdated');
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-featured-playlists'});
 		})
         .error(function( error ){

@@ -17,11 +17,11 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, SettingsService, DialogService ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService ){
 	
 	// setup base variables
-	$scope.playlist = {};
-	$scope.tracklist = { tracks: [] };
+	$scope.playlist = {images: []};
+	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
     $scope.followPlaylist = function(){
@@ -51,6 +51,11 @@ angular.module('spotmop.browse.playlist', [])
     $scope.editPlaylist = function(){
         DialogService.create('editPlaylist', $scope);
     }
+	
+	// play the whole playlist
+	$scope.playPlaylist = function(){
+		MopidyService.playStream( $scope.playlist.uri );
+	}
 	
     // figure out the total time for all tracks
     $scope.totalTime = function(){

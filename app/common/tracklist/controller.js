@@ -19,7 +19,10 @@ angular.module('spotmop.common.tracklist', [
 				
 				// left click
 				if( event.which === 1 ){
-					$scope.$emit('spotmop:contextMenu:hide');
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
 					$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
@@ -82,7 +85,10 @@ angular.module('spotmop.common.tracklist', [
 				
 				// left click
 				if( event.which === 1 ){
-					$scope.$emit('spotmop:contextMenu:hide');
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
 					$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
@@ -194,6 +200,16 @@ angular.module('spotmop.common.tracklist', [
 		
 		// save this item to our last-clicked (used for shift-click)
 		$scope.lastSelectedTrack = $track;
+		
+		/**
+		 * Hide/show mobile version of the context menu
+		 **/
+		if( $scope.isTouchDevice() ){
+			if( $filter('filter')($scope.tracklist.tracks, {selected: true}).length > 0 )
+				$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.tracklist.type );
+			else
+				$rootScope.$broadcast('spotmop:contextMenu:hide' );
+		}
 	});
 	
 	
@@ -255,17 +271,11 @@ angular.module('spotmop.common.tracklist', [
 	function playSelectedTracks(){
 	
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var firstSelectedTrack = selectedTracks[0];	
-		
-		// detect tracklist context
-		if( $element.data('type') === 'queue' )
-			var context = 'queue';
-		else
-			var context = 'generic';
-			
+		var firstSelectedTrack = selectedTracks[0];
+		console.log( $scope.tracklist );
 		// depending on context, make the selected track(s) play
 		// queue
-		if( context === 'queue' ){
+		if( $scope.tracklist.type == 'tltrack' ){
 			
 			// get the queue's tracks
 			// we need to re-get the queue because at this point some tracks may not have tlids
@@ -283,7 +293,7 @@ angular.module('spotmop.common.tracklist', [
 			});
 			
 		// generic tracklist (playlist, top-tracks, album, etc)
-		}else if( context === 'generic' ){
+		}else if( $scope.tracklist.type == 'track' ){
 		
 			// build an array of track uris (and subtract the first one, as we play him immediately)
 			var selectedTracksUris = [];
@@ -300,14 +310,14 @@ angular.module('spotmop.common.tracklist', [
 			// play the first track immediately
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
 				
-				// no other tracks to add
-				if( selectedTracks.length <= 1 ){
-					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
-				}else{
+				// more tracks to add
+				if( selectedTracksUris.length > 0 ){
 					// add the following tracks to the tracklist
 					MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
 						$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
 					});
+				}else{
+					$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'playing-from-tracklist'});
 				}
 			});
 		}
@@ -375,7 +385,7 @@ angular.module('spotmop.common.tracklist', [
 	 * Selected Tracks >> Add to library
 	 **/
 	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
-				    
+		
         $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
 		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
