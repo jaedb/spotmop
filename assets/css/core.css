@@ -222,6 +222,11 @@ body {
 	z-index: 9;
 }
 
+.settings-menu-item.active {
+	color: #08d58f;
+	opacity: 1;
+}
+
 .settings-menu-item:hover {
 	opacity: 1;
 }
