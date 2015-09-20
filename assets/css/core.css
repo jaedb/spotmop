@@ -148,7 +148,7 @@ body {
 .main-menu > .menu-item > a {
 	display: block;
 	border-left: 4px solid transparent;
-	padding: 10px 0 10px 20px;
+	padding: 10px 0 10px 15px;
 	color: #FFFFFF;
 	text-decoration: none;
 	font-size: 16px;
@@ -160,6 +160,7 @@ body {
 .main-menu > .menu-item > a > i {
 	width: 15px;
 	padding-right: 5px;
+	font-size: 12px;
 }
 
 .main-menu > .menu-item.active > a {
@@ -178,7 +179,7 @@ body {
  **/
 
 .main-menu .submenu {
-	padding-left: 55px;
+	padding-left: 41px;
 }
 
 .main-menu .submenu > .menu-item {
@@ -209,6 +210,21 @@ body {
 	padding-top: 5px;
 }
 
+.settings-menu-item {
+	position: fixed;
+	top: 5px;
+	right: 22px;
+	padding: 2px;
+	color: #000000;
+	opacity: 0.5;
+	font-size: 22px;
+	border: none !important;
+	z-index: 9;
+}
+
+.settings-menu-item:hover {
+	opacity: 1;
+}
 
 
 
@@ -1144,6 +1160,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	margin: 0 5px;
 	font-size: 14px;
 	opacity: 0.75;
+	display: inline-block;
 }
 
 #player .button.active,
@@ -1160,6 +1177,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
+	padding-bottom: 10px;
 }
 
 #player .track-info .track {
@@ -1190,42 +1208,33 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  **/
  
 #player .controls {
-	margin-left: 15px;
 }
  
 #player .playback {
-	padding-top: 32px;
+	float: left;
 }
 
 #player .volume {
-	padding-top: 32px;
-	padding-right: 48px;
-	width: 180px;
+	float: right;
 }
 
 #player .slider {
-	padding: 8px 0;
-	margin-left: 120px;
-	margin-right: 20px;
 	cursor: pointer;
 }
 
 #player .slider.progress {
-	position: absolute;
-	top: -8px;
-	left: 0;
-	right: 0;
-	margin: 0;
-	z-index: 3;
+	padding-top: 5px;
 }
 
 #player .slider.progress .track {
-	height: 4px;
+	height: 8px;
 	background: none;
+	padding-top: 4px;
 }
 
 #player .slider.progress:hover .track {
-	height: 8px;
+	height: 12px;
+	padding-top: 0;
 	background: rgba(255,255,255,0.15);
 }
 

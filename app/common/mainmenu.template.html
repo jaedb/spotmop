@@ -1,7 +1,7 @@
 <ul class="main-menu">
 	<li class="menu-item top-level">
 		<a href="/queue" class="droppable" data-type="queue" ng-class="{ active: $state.is('queue') }">
-			<i class="fa fa-list"></i>
+			<i class="fa fa-play"></i>
 			Now playing
 		</a>
 	</li>	
@@ -31,12 +31,6 @@
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
 			</li>
 		</ul>
-	</li>
-	<li class="menu-item top-level">
-		<a href="/settings">
-			<i class="fa fa-cog"></i>
-			Settings
-		</a>
 	</li>
 </ul>
 

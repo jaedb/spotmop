@@ -1,5 +1,5 @@
 <div id="player">
-	
+		
 	<div class="track-info">
 		<div class="track" ng-bind="currentTlTrack.track.name"></div>
 		<div class="artist">
@@ -8,10 +8,18 @@
 			</span>
 		</div>
 	</div>
-	
-	<div class="progress slider" ng-click="seek($event)">
-		<div class="track animate">
-			<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
+
+	<div class="volume">
+		<div class="controls">
+			<span class="button mute" ng-click="toggleMute()" ng-class="{active: isMute}">
+				<i class="fa fa-volume-off" ng-show="muted"></i>
+				<i class="fa fa-volume-down" ng-show="!muted"></i>
+			</span>
+		</div>
+		<div class="slider" ng-click="setVolume($event)">
+			<div class="track">
+				<div class="fill" style="width: {{ volume }}%"></div>
+			</div>
 		</div>
 	</div>
 
@@ -22,30 +30,15 @@
 				<i class="fa fa-play" ng-show="!playing"></i>
 				<i class="fa fa-pause" ng-show="playing"></i>
 			</span>
-			<span class="button stop mobile-hide" ng-click="stop()">
-				<i class="fa fa-stop"></i>
-			</span>
 			<span class="button next mobile-hide" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 		</div>
 	</div>
-
-	<div class="volume mobile-hide">
-		<div class="controls">
-			<span class="button random" ng-click="toggleRandom()" ng-class="{active: isRandom}">
-				<i class="fa fa-random"></i>
-			</span>
-			<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: isRepeat}">
-				<i class="fa fa-repeat"></i>
-			</span>
-			<span class="button mute" ng-click="toggleMute()" ng-class="{active: isMute}">
-				<i class="fa fa-volume-off" ng-show="muted"></i>
-				<i class="fa fa-volume-down" ng-show="!muted"></i>
-			</span>
-		</div>
-		<div class="slider" ng-click="setVolume($event)">
-			<div class="track">
-				<div class="fill" style="width: {{ volume }}%"></div>
-			</div>
+	
+	<div class="clear-both"></div>
+	
+	<div class="progress slider" ng-click="seek($event)">
+		<div class="track animate">
+			<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
 		</div>
 	</div>
 
