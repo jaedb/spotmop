@@ -368,7 +368,7 @@ input[type='submit'] {
  **/
 
 h1 {
-	font-size: 30px;
+	font-size: 40px;
 	font-weight: 200;
 	padding-bottom: 35px;
 	margin-top: -10px;
@@ -1217,15 +1217,28 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  
 #player .playback {
 	float: left;
+	padding-left: 15px;
 }
 
 #player .volume {
 	float: right;
+	padding-right: 20px;
+}
+
+#player .volume .slider {
+	display: inline-block;
+	width: 40px;
+	vertical-align: middle;
 }
 
 #player .slider {
 	cursor: pointer;
 }
+
+
+/**
+ * Scrobbling
+ **/
 
 #player .slider.progress {
 	padding-top: 5px;
@@ -1237,24 +1250,22 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #player .slider.progress .track {
-	height: 8px;
+	height: 4px;
 	background: none;
-	padding-top: 4px;
 }
 
 #player .slider.progress:hover .track {
 	height: 12px;
-	padding-top: 0;
 	background: rgba(0,0,0,0.15);
 }
 
-#player .slider  .track {
+#player .slider .track {
 	position: relative;
 	height: 2px;
 	background: rgba(255,255,255,0.3);
 }
 
-#player .slider  .track .fill {
+#player .slider .track .fill {
 	position: absolute;
 	top: 0;
 	left: 0;
