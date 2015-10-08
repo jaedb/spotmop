@@ -1054,6 +1054,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	height: 100%;
 }
 
+.search .sub-page-navigation {
+	margin: -10px 0 30px;
+}
+
 .search-results-section.artists,
 .search-results-section.albums,
 .search-results-section.playlists {
@@ -1089,14 +1093,14 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .sub-page-navigation {
-	border-bottom: 1px solid #666666;
+	margin-bottom: 20px;
 }
 
 .sub-page-navigation .menu-item {
-	padding: 10px 0;
-	margin-left: 20px;
+	padding: 5px 0;
+	margin-right: 20px;
 	margin-bottom: -1px;
-	border-bottom: 1px solid transparent;
+	border-bottom: 2px solid transparent;
 	display: inline-block;
 	font-weight: bold;
 	text-transform: uppercase;

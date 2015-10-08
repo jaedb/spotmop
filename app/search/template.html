@@ -1,12 +1,14 @@
 <div class="search">
 	
 
-	<div class="sub-menu">
+	<div class="sub-page-navigation">
 		<a class="menu-item"
 			ng-repeat="option in ['all','artist','album','playlist','track']"
-			href="/search/{{ query }}/{{ option }}">
+			href="/search/{{ query }}/{{ option }}"
+			ng-class="{active: type == option}">
 				{{ option }}<span ng-hide="option == 'all'">s</span>
 		</a>
+		<div class="clear-both"></div>
 	</div>
 	
 	<div ng-if="query">
