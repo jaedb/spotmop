@@ -548,10 +548,10 @@ h1 .flag {
 .body .button.destructive:hover {		background: #bc1f1f; }
 
 
-.body .button.disabled {
+.body .button.disabled,
+.body .button.disabled:hover {
 	cursor: not-allowed;
-	color: #DDDDDD !important;
-	border-color: #DDDDDD !important;
+	opacity: 0.5;
 }
 
 
