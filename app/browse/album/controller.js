@@ -64,7 +64,7 @@ angular.module('spotmop.browse.album', [])
     
     $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
 	
-	// get the artist
+	// get the album
 	SpotifyService.getAlbum( $stateParams.uri )
 		.success(function( response ) {
 		
@@ -72,6 +72,10 @@ angular.module('spotmop.browse.album', [])
 			$scope.tracklist = response.tracks;
 			$scope.tracklist.type = 'track';
 			$scope.tracklist.tracks = response.tracks.items;
+			
+			angular.forEach( $scope.tracklist.tracks, function(track){
+				track.album = $scope.album;
+			});
 			
             $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});
 		})
