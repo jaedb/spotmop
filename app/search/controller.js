@@ -6,7 +6,7 @@ angular.module('spotmop.search', [])
 .config(function($stateProvider) {
 	$stateProvider
 		.state('search', {
-			url: "/search/:type/:query",
+			url: "/search/:query/:type",
 			templateUrl: "app/search/template.html",
 			controller: 'SearchController',
 			

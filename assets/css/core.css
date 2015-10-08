@@ -1183,6 +1183,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	font-size: 16px;
 	text-transform: uppercase;
 	padding-bottom: 10px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
 #player .track-info .track {

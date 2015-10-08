@@ -67,10 +67,12 @@
 		<div id="sidebar">
 			<div class="inner">
 				<div class="search-form">
-					<input type="text" name="query" placeholder="Search" class="query" />
-					<button class="submit" type="submit">
-						<i class="fa fa-search"></i>
-					</button>
+					<form ng-submit="searchSubmit( query )">
+						<input type="text" name="query" placeholder="Search" class="query" ng-model="query" />
+						<button class="submit" type="submit">
+							<i class="fa fa-search"></i>
+						</button>
+					</form>
 				</div>
 				<ng-include src="'/app/common/mainmenu.template.html'"></ng-include>
 				<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>		
