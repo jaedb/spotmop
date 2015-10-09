@@ -40,6 +40,7 @@ angular.module('spotmop.player', [
 		if( SettingsService.getSetting('echonestenabled',false) )
 			EchonestService.addToTasteProfile( 'skip', $scope.currentTlTrack.track.uri );
 	
+		MopidyService.play();
 		MopidyService.next();
 	}
 	$scope.previous = function(){
@@ -146,84 +147,7 @@ angular.module('spotmop.player', [
 				$scope.volume = 0;
 			MopidyService.setVolume( $scope.volume );
 		}
-    });
-	
-	
-	/**
-	 * Fullscreen player panel
-	 **/
-	
-	$scope.fullscreenPlayerExpanded = false;
-	
-	// when we trigger a expand/collapse event
-	$scope.toggleFullscreenPlayer = function(){
-		
-		var player = $(document).find('#player');
-		
-		// collapse
-		if( $scope.fullscreenPlayerExpanded ){
-			
-			// specify the height of the collapsed player
-			var collapsedHeightForAnimation = '90px';				
-			if( $scope.mediumScreen() )
-				collapsedHeightForAnimation = '56px';
-			
-			// if we're a touch device, simplify the animation
-			if( $scope.isTouchDevice() ){
-				player.css({ height: collapsedHeightForAnimation });
-				player.find('.fullscreen-player').hide();
-				player.find('.slim-player').show();
-			}else{
-				// animate the transition
-				player.animate(
-					{
-						height: collapsedHeightForAnimation
-					},
-					300,
-					function(){
-						// remove the hardcoded height we used for animation
-						// this ensures we can change our window dimensions and css responsive layouts will work without a refresh
-						player.removeAttr('style');
-					}
-				);			
-				player.find('.fullscreen-player').fadeOut('fast');
-				player.find('.slim-player').fadeIn('fast');
-			}
-			
-			$scope.fullscreenPlayerExpanded = false;
-		
-		// expand
-		}else{
-			// if we're a touch device, simplify the animation
-			if( $scope.isTouchDevice() ){
-				player.css({ height: '100%' });
-				player.find('.fullscreen-player').show();
-				player.find('.slim-player').hide();
-			}else{
-				player.animate(
-					{
-						height: $(document).height()
-					},
-					200,
-					function(){
-						// now we've animated, let's set it to full-height (also helps with window resizing when expanded)
-						player.css('height','100%');
-					}
-				);			
-				player.find('.fullscreen-player').fadeIn();
-				player.find('.slim-player').fadeOut('fast');
-			}
-			
-			$scope.fullscreenPlayerExpanded = true;
-		}
-	};
-	
-	// listen for esc key press, if expanded, collapse
-    $scope.$on('spotmop:keyboardShortcut:esc', function(event){
-		if( $scope.fullscreenPlayerExpanded )
-			$scope.toggleFullscreenPlayer();
-	});
-	
+    });	
 	
 	
 	/** 

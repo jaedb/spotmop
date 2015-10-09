@@ -1,11 +1,12 @@
 <ul class="main-menu">
-	<li class="menu-item top-level">
-		<a href="/queue" class="droppable" data-type="queue" ng-class="{ active: $state.is('queue') }">
+	<li class="menu-item top-level" ng-class="{ active: isActive('queue') }">
+		<a href="/queue" class="droppable" data-type="queue">
 			<i class="fa fa-play"></i>
 			Now playing
 		</a>
-	</li>	
-	<li class="menu-item top-level">
+	</li>
+	
+	<li class="menu-item top-level" ng-class="{ active: isActive('discover') }">
 		<a href="/discover/browse">
 			<i class="fa fa-star"></i>
 			Discover
@@ -15,13 +16,13 @@
 			<li class="menu-item"><a href="/discover/new">New releases</a></li>
 		</ul>
 	</li>
-	<li class="menu-item top-level">
+	<li class="menu-item top-level" ng-class="{ active: isActive('library') }">
 		<a href="/library" class="droppable" data-type="library">
 			<i class="fa fa-music"></i>
 			Library
 		</a>
 	</li>
-	<li class="menu-item top-level">
+	<li class="menu-item top-level" ng-class="{ active: isActive('browse.playlist') || isActive('myplaylists') }">
 		<a href="/my-playlists" data-type="playlists">
 			<i class="fa fa-folder"></i>
 			Playlists

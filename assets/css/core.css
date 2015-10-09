@@ -217,7 +217,7 @@ body {
 	padding: 2px;
 	color: #000000;
 	opacity: 0.5;
-	font-size: 22px;
+	font-size: 30px;
 	border: none !important;
 	z-index: 9;
 }
@@ -698,6 +698,17 @@ h1 .flag {
 	background-size: cover;
 }
 
+.square-panel .image-container .overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	max-width: 100%;
+	max-height: 100%;
+}
+
 .square-panel .image-container .image.placeholder {
 	background-color: #CCCCCC;
 	background-image: url('../image-not-found.png');
@@ -839,11 +850,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  
 .queue-intro {
 	padding-bottom: 20px;
-}
- 
-.queue-intro .info-text {
-	margin-top: -15px;
-	padding: 0;
 }
 
 
@@ -1164,25 +1170,26 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	color: #FFFFFF;
 }
 
-#player .button {
+.player .button {
 	padding: 5px;
 	margin: 0 5px;
 	font-size: 14px;
 	opacity: 0.75;
 	display: inline-block;
+	background: transparent;
 }
 
-#player .button.active,
-#player .button:hover {
+.player .button.active,
+.player .button:hover {
 	opacity: 1;
 	cursor: pointer;
 }
 
-#player .button.active {
+.player .button.active {
     color: #1cf4c4;
 }
 
-#player .track-info {
+.player .track-info {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
@@ -1191,26 +1198,26 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	padding-right: 15px;
 }
 
-#player .track-info .track {
+.player .track-info .track {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-#player .track-info .artist {
+.player .track-info .artist {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	opacity: 0.5;
 }
 
-#player .track-info .artist a{
+.player .track-info .artist a{
 	text-decoration: none;
 	color: #FFFFFF;
 	border-bottom: 1px dotted transparent;
 }
 
-#player .track-info .artist a:hover {
+.player .track-info .artist a:hover {
 	border-color: #FFFFFF;
 }
 
@@ -1237,7 +1244,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	vertical-align: middle;
 }
 
-#player .slider {
+.player .slider {
 	cursor: pointer;
 }
 
@@ -1265,13 +1272,13 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: rgba(0,0,0,0.15);
 }
 
-#player .slider .track {
+.player .slider .track {
 	position: relative;
 	height: 2px;
 	background: rgba(255,255,255,0.3);
 }
 
-#player .slider .track .fill {
+.player .slider .track .fill {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -1279,11 +1286,88 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #1cf4c4;
 }
 
-#player .slider  .track .fill.animate {
+.player .slider  .track .fill.animate {
 	-webkit-transition: all 1s;
 	-moz-transition: all 1s;
 	-o-transition: all 1s;
 	transition: all 1s;
+}
+
+
+/**
+ * Full player
+ **/
+ 
+#full-player {
+	text-align: center;
+}
+ 
+#full-player .artwork {
+	width: 400px;
+	height: 400px;
+	margin: 0 auto 20px;
+	position: relative;
+	background: #EEEEEE;
+	display: block;
+	border: 0;
+}
+
+#full-player .controls {
+	width: 400px;
+	margin: 0 auto;
+}
+ 
+#full-player .artwork .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-size: cover;
+	background-position: 50% 50%;
+}
+ 
+#full-player .track-info {
+	color: #000000;
+	font-weight: 600;
+}
+
+#full-player .track-info .artist a {
+	color: #000000;
+}
+
+#full-player .track-info .artist a:hover {
+	border-color: #000000;
+}
+
+#full-player .button {
+	color: #000000;
+	font-size: 18px;
+}
+
+#full-player .button.active {
+	color: #1cf4c4;
+}
+
+#full-player .button:hover {
+	opacity: 1;
+	background: transparent;
+}
+
+#full-player .progress.slider {
+	margin: 35px 0;
+	position: relative;
+}
+
+#full-player .progress.slider .track-duration {
+	position: absolute;
+	top: -20px;
+	right: 0;
+}
+
+#full-player .progress.slider .track {
+	background: #DDDDDD;
+	height: 4px;
 }
 
 

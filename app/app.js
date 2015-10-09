@@ -364,14 +364,26 @@ angular.module('spotmop', [
 	};
     
     
+	/**
+	 * Detect if we're an active menu item
+	 * We have to wrap this as it's not (for some reason) available to the template
+	 * @return boolean
+	 **/
+	$scope.isActive = function( state ){
+		return $state.includes( state );
+	};
+	
+	
     /**
      * Application navigation success event
      * Gives us a chance to identify the new $state, and highlight in the nav
      **/
     $rootScope.$on('$stateChangeSuccess', function( event, toState, toParams ){
+	/*
         $(document).find('#sidebar .menu-item').removeClass('active');
         $(document).find('#sidebar a[href="'+window.location.pathname+'"]').parent().addClass('active');
-    });
+
+*/		});
 
     
     /**
