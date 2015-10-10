@@ -977,16 +977,17 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background-size: cover;
 }
 
-.artist-intro .submenu {
+.artist-intro .sub-page-navigation {
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	right: 0;
 	padding-left: 10px;
+	margin-bottom: 0;
 	background: rgba(0,0,0,0.2);
 }
 
-.artist-intro .submenu .menu-item {
+.artist-intro .sub-page-navigation .menu-item {
 	display: inline-block;
 	padding: 10px;
 	color: #FFFFFF;
@@ -996,9 +997,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	opacity: 0.75;
 }
 
-.artist-intro .submenu .menu-item.active,
-.artist-intro .submenu .menu-item:hover {
+.artist-intro .sub-page-navigation .menu-item.active,
+.artist-intro .sub-page-navigation .menu-item:hover {
 	opacity: 1;
+	color: #FFFFFF;
 }
 
 .tracklist.top-track-items {
@@ -1193,7 +1195,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
-	padding-bottom: 10px;
+	padding-bottom: 20px;
 	padding-left: 15px;
 	padding-right: 15px;
 }
@@ -1334,6 +1336,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #full-player .track-info .artist a {
 	color: #000000;
+	display: inline-block;
 }
 
 #full-player .track-info .artist a:hover {
@@ -1342,7 +1345,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #full-player .button {
 	color: #000000;
-	font-size: 18px;
+	font-size: 20px;
 }
 
 #full-player .button.active {

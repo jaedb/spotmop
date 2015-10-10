@@ -94,7 +94,7 @@ angular.module('spotmop.browse.artist', [])
 	// get the artist's albums
 	SpotifyService.getAlbums( $stateParams.uri )
 		.success( function( response ){
-			$scope.albums = response;
+			$scope.$parent.albums = response;
 			
 			// get the artist's top tracks
 			SpotifyService.getTopTracks( $stateParams.uri )

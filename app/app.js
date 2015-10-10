@@ -370,6 +370,10 @@ angular.module('spotmop', [
 	 * @return boolean
 	 **/
 	$scope.isActive = function( state ){
+		
+		if( state == 'discover' && $state.includes('browse' ) && !$state.includes('browse.playlist') )
+			return true;
+		
 		return $state.includes( state );
 	};
 	

@@ -21,46 +21,9 @@
 /* ================================================================================================ */
 
 @media( max-height: 500px ){
-
-	
-	/** 
-	 * Player
-	 **/
-	 
-	#player .fullscreen-player .artwork-wrapper {
-		width: 40%;
-		top: 20%;
-	}
-
-	#player .fullscreen-player .info-wrapper {
-		top: 20%;
-		left: 40%;
-		width: 60%;
-	}
-
-	#player .fullscreen-player .artwork {
-		max-height: 200px;
-		max-width: 200px;
-	}
 }
 
 @media( max-height: 300px ){
-	/** 
-	 * Player
-	 **/
-	 
-	#player .fullscreen-player .artwork-wrapper,
-	#player .fullscreen-player .info-wrapper {
-		top: 15%;
-	}
-
-	#player .fullscreen-player .track-info {
-		padding: 30px 0 20px;
-	}
-
-	#player .fullscreen-player .volume {
-		padding-top: 20px;
-	}
 }
 
 
@@ -79,7 +42,6 @@
 	 **/
 	
 	#body {
-		bottom: 56px;
 		left: 0;
 		width: 100%;
 	}
@@ -87,7 +49,10 @@
 	#sidebar {
 		width: 50%;
 		left: -50%;
-		bottom: 56px;
+	}
+	
+	#player .progress {
+		display: none;
 	}
 	
 	
@@ -98,37 +63,6 @@
 		left: 0;
 	}
 	
-	
-	/**
-	 * Player bar
-	 **/
-	
-	#player {
-		height: 56px;
-	}
-	
-	#player .button {
-		margin: 0 3px;
-	}
-	
-	#player > .slim-player.inner {
-		padding: 0;
-		top: 0;
-	}
-	
-	#player .track-info {
-		padding: 22px 40px 0;
-		font-size: 14px;
-	}
-	
-	#player .playback {
-		padding-top: 24px;
-	}
-	
-	#player .expand-player {
-		bottom: 8px;
-		right: 15px;
-	}
 	
 	
 	/**
@@ -300,14 +234,6 @@
 		font-size: 13px;
 	}
 	
-
-	/**
-	 * Player
-	 **/
-	
-	#player .fullscreen-player .artwork {
-		height: 300px;
-	}
 	
 	
 	/**
@@ -336,24 +262,6 @@
 	
 	.body .button {
 		padding: 6px 12px;
-	}
-	
-	
-	/**
-	 * Search results
-	 **/
-	
-	.search-form input.query {
-		font-size: 40px;
-	}
-	
-	.search-form .dropdown {
-		font-size: 28px;
-		top: 12px;
-	}
-	
-	.search-form .dropdown .arrow {
-		top: 32%;
 	}
 	
 }
@@ -434,30 +342,6 @@
 	
 	.add-to-playlist-dialog .playlist {
 		width: 29.3333%;
-	}
-	
-	
-	/** 
-	 * Player
-	 **/
-	 
-	#player .fullscreen-player .track-info {
-		padding-bottom: 15px;
-	}
-	
-	#player .track-info {
-		font-size: 12px;
-		line-height: 1.2em;
-		padding-top: 17px;
-	}
-	
-	#player .track-info .track,
-	#player .track-info .artist {
-		display: block;
-		padding: 0 10px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 	
 }
