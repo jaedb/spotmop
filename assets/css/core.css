@@ -166,6 +166,13 @@ body {
 	background-repeat: no-repeat;
 }
 
+.main-menu > .menu-item .info {
+	font-size: 12px;
+	opacity: 0.5;
+	padding: 2px 20px 0 0;
+	float: right;
+}
+
 .main-menu > .menu-item > a > i {
 	width: 15px;
 	padding-right: 5px;

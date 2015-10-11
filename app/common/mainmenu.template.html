@@ -3,6 +3,9 @@
 		<a href="/queue" class="droppable" data-type="queue">
 			<i class="fa fa-play"></i>
 			Now playing
+			<div class="info" ng-show="currentTracklist.length > 0">
+				<span ng-bind="currentTracklist.length"></span> tracks
+			</div>
 		</a>
 	</li>
 	
