@@ -23,7 +23,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
-	'spotmop.myplaylists',
+	'spotmop.playlists',
 	'spotmop.search',
 	'spotmop.settings',
 	
@@ -370,9 +370,6 @@ angular.module('spotmop', [
 	 * @return boolean
 	 **/
 	$scope.isActive = function( state ){
-		
-		if( state == 'discover' && $state.includes('browse' ) && !$state.includes('browse.playlist') )
-			return true;
 		
 		return $state.includes( state );
 	};

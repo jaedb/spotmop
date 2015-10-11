@@ -18,7 +18,7 @@ angular.module('spotmop.discover', [])
 			controller: 'DiscoverController'
 		})
 		.state('discover.category', {
-			url: "/category/:categoryid",
+			url: "/browse/:categoryid",
 			templateUrl: "app/discover/category.template.html",
 			controller: 'CategoryController'
 		});
