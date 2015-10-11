@@ -374,18 +374,6 @@ angular.module('spotmop', [
 		
 		return $state.includes( state );
 	};
-	
-	
-    /**
-     * Application navigation success event
-     * Gives us a chance to identify the new $state, and highlight in the nav
-     **/
-    $rootScope.$on('$stateChangeSuccess', function( event, toState, toParams ){
-	/*
-        $(document).find('#sidebar .menu-item').removeClass('active');
-        $(document).find('#sidebar a[href="'+window.location.pathname+'"]').parent().addClass('active');
-
-*/		});
 
     
     /**
@@ -450,24 +438,43 @@ angular.module('spotmop', [
 	);
     
     
+	// watch for re-authorizations of spotify
+	$scope.$watch(
+		function(){
+			return $localStorage.spotify;
+		},
+		function(newVal,oldVal){
+			getSpotifyAccount();
+		}
+	);
     
     // figure out who we are on Spotify
     // TODO: Hold back on this to make sure we're authorized
-    SpotifyService.getMe()
-        .success( function(response){
-            $scope.spotifyUser = response;
-			$rootScope.spotifyOnline = true;
-        
-            // save user to settings
-            SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-			
-			// update my playlists
-			$scope.updatePlaylists();
-        })
-        .error(function( error ){
-            $scope.status = 'Unable to look you up';
-			$rootScope.spotifyOnline = false;
-        });
+	
+	getSpotifyAccount();
+	
+	function getSpotifyAccount(){
+		SpotifyService.getMe()
+			.success( function(response){
+				$scope.spotifyUser = response;
+				
+				if( typeof(response.error) !== 'undefined' ){
+					$scope.$broadcast('spotmop:notifyUser', {type: 'error', message: response.error.message});
+				}else{
+					$rootScope.spotifyOnline = true;
+				
+					// save user to settings
+					SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
+					
+					// update my playlists
+					$scope.updatePlaylists();
+				}
+			})
+			.error(function( error ){
+				$scope.status = 'Unable to look you up';
+				$rootScope.spotifyOnline = false;
+			});
+	}
 	
 	
 	/**

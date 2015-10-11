@@ -59,8 +59,8 @@ angular.module('spotmop.settings', [])
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
+		$scope.$parent.spotifyOnline = false;
         $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out"});
-        $timeout( function(){ window.location = window.location }, 1000 );
     };
     $scope.toggleMopidyConsume = function(){
     	if( $scope.settings.mopidyconsume ){
