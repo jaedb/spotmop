@@ -159,13 +159,14 @@ angular.module('spotmop.browse.playlist', [])
 				tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
 			});
 			
+			// remove tracks from DOM immediately (for snappier UX)
+			// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
+			$scope.$apply( function(){
+				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+			});
+			
 			// parse these uris to spotify and delete these tracks
 			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
-				.success(function( response ){
-					// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
-					// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
-					$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-				})
 				.error(function( error ){
 					console.log( error );
 				});

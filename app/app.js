@@ -412,28 +412,40 @@ angular.module('spotmop', [
      * User notifications
      * Displays a user-friendly notification. Can be error, loader or tip
      **/
+	$scope.loadingCounter = 0;
 	$scope.$on('spotmop:notifyUser', function( event, data ){
-        
+	
         if( typeof(data.type) === 'undefined' )
             data.type = '';
         
-		var container = $(document).find('#notifications');
-		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
-        container.append( notification );
-		notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
+		// do we require a loader?
+		if( data.type == 'loading' ){
+			$scope.loadingCounter++;
 		
-		if( data.autoremove ){
-			$timeout(
-				function(){
-					notification.fadeOut(200, function(){ notification.remove() } );
-				},
-				2500
-			);
-										
+		}else{
+			
+			var container = $(document).find('#notifications');
+			var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
+			container.append( notification );
+			notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
+			
+			if( data.autoremove ){
+				$timeout(
+					function(){
+						notification.fadeOut(200, function(){ notification.remove() } );
+					},
+					2500
+				);
+											
+			}
 		}
 	});
 	
 	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){
+	
+		// remove the loader
+		$scope.loadingCounter--;
+		
         var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
 		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
 	});
@@ -541,51 +553,6 @@ angular.module('spotmop', [
         }
     );
     
-	
-	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
-	// TODO: Fire off a $broadcast, so the current activated tracklist can handle this functionality
-	// DELETE ME
-	function deleteKeyReleased(){
-		
-		var tracksDOM = $(document).find('.track.selected');
-		var tracks = [];
-		
-		// --- DELETE FROM PLAYLIST --- //
-		
-		if( $state.current.controller == 'PlaylistController' ){
-			
-			// TODO: add check of userid. We want to disallow deletes if the playlist owner.id
-			// does not match the logged in user.id. Currently we just get an error from SpotifyService
-			
-			// construct each track into a json object to delete
-			$.each( $(document).find('.track'), function(trackKey, track){
-				if( $(track).hasClass('selected') ){
-					tracks.push( {uri: $(track).attr('data-uri'), positions: [trackKey]} );
-				}
-			});
-			
-			// parse these uris to spotify and delete these tracks
-			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracks )
-				.success(function( response ) {
-					tracksDOM.remove();
-				})
-				.error(function( error ){
-					console.log( error );
-				});
-		
-			
-		// --- DELETE FROM QUEUE --- //
-			
-		}else if( $state.current.controller == 'QueueController' ){
-		
-			// fetch each tlid and put into delete array
-			$.each( $(document).find('.track.selected'), function(trackKey, track){
-				tracks.push( parseInt($(track).attr('data-tlid')) );
-			});
-			
-			MopidyService.removeFromTrackList( tracks );
-		}
-	}
     
 	
 	/**

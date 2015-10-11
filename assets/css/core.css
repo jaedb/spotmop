@@ -58,25 +58,34 @@ body {
 	background: #303030;
 }
 
-#app > .background-image {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background-position: 50% 50%;
-	background-size: cover;
-	opacity: 0.3;
-}
-
 #sidebar {
 	position: absolute;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	width: 20%;
-	overflow-y: auto;
-	overflow-x: hidden;
+	overflow: hidden;
+}
+
+#sidebar > .background-image {
+	position: absolute;
+	top: -20px;
+	right: 0;
+	bottom: -20px;
+	left: -20px;
+	background-position: 0 50%;
+	background-size: cover;
+	opacity: 0.3;
+	z-index: 1;
+}
+
+#sidebar > .inner {
+	z-index: 2;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	position: absolute;
 }
 
 #player {
@@ -210,16 +219,28 @@ body {
 	padding-top: 5px;
 }
 
-.settings-menu-item {
+#utilities {
 	position: fixed;
 	top: 5px;
 	right: 22px;
+	z-index: 9;
+}
+
+#utilities .loader,
+#utilities .settings-menu-item {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+	display: inline-block;
+	vertical-align: bottom;
+}
+
+.settings-menu-item {
 	padding: 2px;
 	color: #000000;
 	opacity: 0.5;
-	font-size: 30px;
+	font-size: 26px;
 	border: none !important;
-	z-index: 9;
 }
 
 .settings-menu-item.active {
@@ -765,7 +786,7 @@ h1 .flag {
 	text-align: center;
 	color: #FFFFFF;
 	font-weight: bold;
-	font-size: 14px;
+	font-size: 16px;
 }
  
 .square-panel.category:hover .name {
@@ -995,6 +1016,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-transform: uppercase;
 	border: 0;
 	opacity: 0.75;
+	margin-right: 0;
 }
 
 .artist-intro .sub-page-navigation .menu-item.active,
@@ -1101,7 +1123,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .sub-page-navigation {
-	margin-bottom: 20px;
+	margin-bottom: 30px;
+	margin-top: -10px;
 }
 
 .sub-page-navigation .menu-item {
