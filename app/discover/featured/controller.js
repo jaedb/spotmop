@@ -19,16 +19,15 @@ angular.module('spotmop.discover.featured', [])
 	
 	// set the default items
 	$scope.playlists = [];
-    
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-featured-playlists', message: 'Loading'});
+	$rootScope.requestsLoading++;
 	
 	SpotifyService.featuredPlaylists()
 		.success(function( response ) {
 			$scope.playlists = response.playlists.items;
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-featured-playlists'});
+            $rootScope.requestsLoading--;
 		})
         .error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-featured-playlists'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-featured-playlists', message: error.error.message});
         });
 });

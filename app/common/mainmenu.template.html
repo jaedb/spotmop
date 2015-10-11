@@ -33,9 +33,11 @@
 			</li>
 		</ul>-->
 	</li>
+	<li class="menu-item top-level" ng-class="{ active: isActive('settings') }">
+		<a href="/settings">
+			<i class="fa fa-cog"></i>
+			Settings
+			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotifyOnline || !mopidyOnline"></i>
+		</a>
+	</li>
 </ul>
-
-<div class="critical-services-status">
-	<p ng-show="!mopidyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Mopidy offline</p>
-	<p ng-show="!spotifyOnline" class="red-text"><i class="fa fa-exclamation-triangle"></i>&nbsp; Spotify offline</p>
-</div>

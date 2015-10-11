@@ -254,6 +254,7 @@ angular.module('spotmop', [
 		if( $location.host() == mopidyhost )
 			return true;
 		}
+	$rootScope.requestsLoading = 0;
 	$scope.currentTlTrack = {};
 	$scope.getCurrentTlTrack = function(){ return $scope.currentTlTrack };
 	$scope.currentTracklist = [];
@@ -409,46 +410,31 @@ angular.module('spotmop', [
      * User notifications
      * Displays a user-friendly notification. Can be error, loader or tip
      **/
-	$scope.loadingCounter = 0;
 	$scope.$on('spotmop:notifyUser', function( event, data ){
 	
         if( typeof(data.type) === 'undefined' )
             data.type = '';
-        
-		// do we require a loader?
-		if( data.type == 'loading' ){
-			$scope.loadingCounter++;
+	
+        if( typeof(data.autoremove) === 'undefined' )
+            data.autoremove = true;
+			
+		var container = $(document).find('#notifications');
+		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
+		container.append( notification );
+		notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
 		
-		}else{
-			
-			var container = $(document).find('#notifications');
-			var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
-			container.append( notification );
-			notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
-			
-			if( data.autoremove ){
-				$timeout(
-					function(){
-						notification.fadeOut(200, function(){ notification.remove() } );
-					},
-					2500
-				);
-											
-			}
+		if( data.autoremove ){
+			$timeout(
+				function(){
+					notification.fadeOut(200, function(){ notification.remove() } );
+				},
+				2500
+			);
 		}
 	});
-	
-	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){
-	
-		// remove the loader
-		$scope.loadingCounter--;
-		
-        var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
-		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
-	});
     
     
-		
+
     /**
      * All systems go!
      *

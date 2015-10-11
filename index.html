@@ -85,10 +85,7 @@
 		</div>
 		
 		<div id="utilities">
-			<img src="/assets/svg/spinner-black.svg" class="loader" ng-show="loadingCounter > 0" />
-			<a href="/settings" class="settings-menu-item animate" ng-class="{ active: $state.is('spotify') }">
-				<i class="fa fa-cog"></i>
-			</a>
+			<img src="/assets/svg/spinner-black.svg" class="loader" ng-show="requestsLoading > 0" />
 		</div>
 		
 		<contextmenu></contextmenu>

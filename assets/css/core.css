@@ -172,6 +172,11 @@ body {
 	font-size: 12px;
 }
 
+.main-menu > .menu-item > a > i.services-alert {
+	float: right;
+	padding: 3px 12px 0 0;
+}
+
 .main-menu > .menu-item.active > a {
 	border-color: #08d58f;
 	background-color: rgba(255,255,255,0.1);
@@ -366,13 +371,6 @@ input[type='submit'] {
 	border-radius: 100px;
 }
 
-#notifications .notification-item.loading {
-    padding-left: 40px;
-    background-image: url('../svg/spinner.svg');
-    background-repeat: no-repeat;
-    background-position: 10px 8px;
-}
-
 #notifications .notification-item.bad,
 #notifications .notification-item.error {
     background-color: rgba(214,47,47,0.9);
@@ -380,6 +378,16 @@ input[type='submit'] {
 
 #notifications .notification-item.good {
     background-color: rgba(53,204,53,0.9);
+}
+
+
+/**
+ * Full-page notifications (ie just for a certain page)
+ **/
+.page-notification {
+	margin: -40px -40px 30px -40px;
+	padding: 20px 40px;
+	font-size: 16px;
 }
 
 
@@ -438,11 +446,13 @@ h4.section-title {
  * Text colour variations
  **/
 
+.white-text {						color: #FFFFFF; }
 .black-text {						color: #000000; }
 .red-text {							color: rgb(214,47,47); }
 .green-text {						color: rgb(53,204,53); }
 .primary-colour-text {				color: #1cf4c4; }
 
+.white-background {					background-color: #FFFFFF; }
 .black-background {					background-color: #000000; }
 .red-background {					background-color: rgb(214,47,47); }
 .green-background {					background-color: rgb(53,204,53); }

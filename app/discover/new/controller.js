@@ -19,16 +19,15 @@ angular.module('spotmop.discover.new', [])
 	
 	// set the default items
 	$scope.albums = [];
-    
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-new-releases', message: 'Loading'});
+	$rootScope.requestsLoading++;
 	
 	SpotifyService.newReleases()
 		.success(function( response ) {
 			$scope.albums = response.albums;
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-new-releases'});
+            $rootScope.requestsLoading--;
 		})
         .error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-new-releases'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-new-releases', message: error.error.message});
         });
     
@@ -48,8 +47,7 @@ angular.module('spotmop.discover.new', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreNewReleases = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-new-releases', message: 'Loading more releases'});
+        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -62,11 +60,11 @@ angular.module('spotmop.discover.new', [])
                 $scope.albums.next = response.albums.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-new-releases'});
+                $rootScope.requestsLoading--;
                 loadingMoreNewReleases = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-new-releases'});
+                $rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-new-releases', message: error.error.message});
                 loadingMoreNewReleases = false;
             });
