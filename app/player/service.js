@@ -56,8 +56,9 @@ angular.module('spotmop.services.player', [])
 		updatePlayPosition( position.time_position );
 	});
 	
-	$rootScope.$on('mopidy:event:volumeChanged', function( event, state ){
-		updateVolume();
+	$rootScope.$on('mopidy:event:volumeChanged', function( event, volume ){
+		if( volume.volume != state.volume )
+			updateVolume( volume.volume );
 	});
 	
 	
@@ -111,19 +112,27 @@ angular.module('spotmop.services.player', [])
 	
 	/**
 	 * Update volume
-	 * Fetches the volume from mopidy and sets to state
+	 * Fetches (if required) the volume from mopidy and sets to state
+	 * @param volume = int (optional)
 	 **/
-	function updateVolume(){
+	function updateVolume( newVolume ){
 	
-		MopidyService.getVolume().then(function( volume ){
-			state.volume = volume;
-		});
+		// if we've been told what the new volume is, let's just use that
+		if( typeof( newVolume ) !== 'undefined' ){
+			state.volume = newVolume;
+			
+		// not told what new vol is, so let's fetch and set
+		}else{
+			MopidyService.getVolume().then(function( volume ){
+				state.volume = volume;
+			});
+		}
 	}
 	
 	
 	/**
 	 * Update the state of the player
-	 * @param new state (optional)
+	 * @param newState = string (optional)
 	 **/
 	function updatePlayerState( newState ){
 		
