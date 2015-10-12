@@ -1,50 +1,31 @@
 'use strict';
 
 angular.module('spotmop.player', [
+	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, MopidyService, SpotifyService, EchonestService, SettingsService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, EchonestService, SettingsService ){
 	
-	// setup template containers
-	$scope.muted = false;
-	$scope.playing = false;
-	$scope.isRepeat = false;
-	$scope.isRandom = false;
-	$scope.isMute = false;
-	$scope.volume = 100;
-	$scope.playPosition = 0;
-	$scope.playPositionPercent = function(){
-		if( typeof($scope.currentTlTrack.track) !== 'undefined' )
-			return ( $scope.playPosition / $scope.currentTlTrack.track.length * 100 ).toFixed(2);
-	};
-    
+	$scope.state = PlayerService.state;
+	    
 	
 	/**
 	 * Core player controls
 	 **/
 	
 	$scope.playPause = function(){
-        if( $scope.playing )
-            MopidyService.pause();
-        else
-            MopidyService.play();
+		PlayerService.playPause();
 	}
     $scope.stop = function(){
-        MopidyService.stopPlayback();
+		PlayerService.stop();
     },
 	$scope.next = function(){
-		
-		// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-		if( SettingsService.getSetting('echonestenabled',false) )
-			EchonestService.addToTasteProfile( 'skip', $scope.currentTlTrack.track.uri );
-	
-		MopidyService.play();
-		MopidyService.next();
+		PlayerService.next();
 	}
 	$scope.previous = function(){
-		MopidyService.previous();
+		PlayerService.previous();
 	}
 	$scope.seek = function( event ){
 		var slider, offset, position, percent, seekTime;
@@ -62,7 +43,7 @@ angular.module('spotmop.player', [
 		// tell mopidy to make it so
 		MopidyService.seek( seekTime );
 	}	
-	$scope.setVolume = function( event ){	
+	$scope.setVolume = function( event ){
 		var slider, offset, position, percent;
 		if( $(event.target).hasClass('slider') )
 			slider = $(event.target);
@@ -75,8 +56,7 @@ angular.module('spotmop.player', [
 		percent = position / slider.innerWidth() * 100;
 		percent = parseInt(percent);
 		
-		$scope.volume = percent;
-		MopidyService.setVolume( percent );
+		PlayerService.setVolume( percent );
 	};
 	
 	
@@ -85,33 +65,14 @@ angular.module('spotmop.player', [
 	 **/
 	
     $scope.toggleRepeat = function(){
-        if( $scope.isRepeat )
-            MopidyService.setRepeat( false ).then( function(response){ $scope.isRepeat = false; } );
-        else
-            MopidyService.setRepeat( true ).then( function(response){ $scope.isRepeat = true; } );
+		PlayerService.toggleRepeat();
     };
     $scope.toggleRandom = function(){
-        if( $scope.isRandom )
-            MopidyService.setRandom( false ).then( function(response){ $scope.isRandom = false; } );
-        else
-            MopidyService.setRandom( true ).then( function(response){ $scope.isRandom = true; } );
+		PlayerService.toggleRandom();
     };
     $scope.toggleMute = function(){
-        if( $scope.isMute )
-            MopidyService.setMute( false ).then( function(response){ $scope.isMute = false; } );
-        else
-            MopidyService.setMute( true ).then( function(response){ $scope.isMute = true; } );
+		PlayerService.toggleMute();
     };
-	
-	// listen for changes from other clients
-	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
-		MopidyService.getRandom().then( function( isRandom ){
-			$scope.isRandom = isRandom;
-		});
-		MopidyService.getMute().then( function( isMute ){
-			$scope.isMute = isMute;
-		});
-	});
 	
     
 	/**

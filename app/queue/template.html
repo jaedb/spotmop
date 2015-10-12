@@ -20,17 +20,17 @@
 			<div class="pull-left">
 				<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
 				<span class="button play-pause" ng-click="playPause()">
-					<i class="fa fa-play" ng-show="!playing"></i>
-					<i class="fa fa-pause" ng-show="playing"></i>
+					<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
+					<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
 				</span>
 				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 			</div>
 			
 			<div class="pull-right">
-				<span class="button random" ng-click="toggleRandom()" ng-class="{active: isRandom}">
+				<span class="button random" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
 					<i class="fa fa-random"></i>
 				</span>
-				<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: isRepeat}">
+				<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
 					<i class="fa fa-repeat"></i>
 				</span>
 			</div>
@@ -40,7 +40,7 @@
 			<div class="progress slider" ng-click="seek($event)">
 				<span class="track-duration" ng-bind="currentTlTrack.track.length | formatMilliseconds"></span>
 				<div class="track animate">
-					<div class="fill animate" style="width: {{ playPositionPercent() }}%"></div>
+					<div class="fill animate" style="width: {{ state().playPositionPercent }}%"></div>
 				</div>
 			</div>
 		

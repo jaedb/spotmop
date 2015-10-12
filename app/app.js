@@ -15,6 +15,7 @@ angular.module('spotmop', [
 	'spotmop.common.tracklist',
     
 	'spotmop.services.settings',
+	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
 	'spotmop.services.echonest',
