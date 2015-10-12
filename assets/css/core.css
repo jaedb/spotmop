@@ -201,6 +201,7 @@ body {
 
 .main-menu .submenu {
 	padding-left: 41px;
+	padding-bottom: 10px;
 }
 
 .main-menu .submenu > .menu-item {
