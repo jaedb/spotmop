@@ -76,7 +76,9 @@ angular.module('spotmop.common.tracklist', [
 		templateUrl: '/app/common/tracklist/tltrack.template.html',
 		link: function( $scope, element, attrs ){			
 		},
-		controller: function( $element, $scope, $rootScope, MopidyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
+			
+			$scope.state = PlayerService.state;
 			
 			/**
 			 * Single click
