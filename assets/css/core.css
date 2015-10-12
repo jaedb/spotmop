@@ -69,10 +69,10 @@ body {
 
 #sidebar > .background-image {
 	position: absolute;
-	top: -20px;
+	top: -50px;
 	right: 0;
-	bottom: -20px;
-	left: -20px;
+	bottom: -50px;
+	left: -50px;
 	background-position: 0 50%;
 	background-size: cover;
 	opacity: 0.3;
