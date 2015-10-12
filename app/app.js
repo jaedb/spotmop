@@ -237,7 +237,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService ){
 
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -256,8 +256,7 @@ angular.module('spotmop', [
 			return true;
 		}
 	$rootScope.requestsLoading = 0;
-	$scope.currentTlTrack = {};
-	$scope.getCurrentTlTrack = function(){ return $scope.currentTlTrack };
+	$scope.state = PlayerService.state;
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
