@@ -1142,7 +1142,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .search-results-section .square-panel {
-	width: 29%;
+	width: 46%;
 }
 
 .search-results-section.playlists .square-panel .info > .name {

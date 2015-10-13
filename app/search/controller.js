@@ -87,81 +87,73 @@ angular.module('spotmop.search', [])
 		switch( type ){
 			
 			case 'track' :
-				$scope.loading = true;
+				$rootScope.requestsLoading++;
 				SpotifyService.getSearchResults( 'track', query, 50 )
 					.success( function(response){
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.tracks = response.tracks.items;
 						$scope.tracklist.type = 'track';
 						$scope.next = response.tracks.next;
-						$scope.loading = false;
+						$rootScope.requestsLoading--;
 					});
 				break;
 			
 			case 'album' :
-				$scope.loading = true;
+				$rootScope.requestsLoading++;
 				SpotifyService.getSearchResults( 'album', query, 20 )
 					.success( function(response){		
 						$scope.albums = response.albums;
 						$scope.next = response.albums.next;
-						$scope.loading = false;
+						$rootScope.requestsLoading--;
 					});
 				break;
 					
 			case 'artist' :
-				$scope.loading = true;
+				$rootScope.requestsLoading++;
 				SpotifyService.getSearchResults( 'artist', query, 20 )
 					.success( function(response){		
 						$scope.artists = response.artists;
 						$scope.next = response.artists.next;
-						$scope.loading = false;
+						$rootScope.requestsLoading--;
 					});
 				break;
 					
 			case 'playlist' :
-				$scope.loading = true;
+				$rootScope.requestsLoading++;
 				SpotifyService.getSearchResults( 'playlist', query, 20 )
 					.success( function(response){		
 						$scope.playlists = response.playlists;
 						$scope.next = response.playlists.next;
-						$scope.loading = false;
+						$rootScope.requestsLoading--;
 					});
 				break;
 			
 			default :
-				$scope.loading = 4;
+				$rootScope.requestsLoading + 4;
 				SpotifyService.getSearchResults( 'track', query, 20 )
 					.success( function(response){
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.type = 'track';
 						$scope.tracklist.tracks = response.tracks.items;
-						
-						// handle loading (remembering that these queries may finish in a different order)
-						$scope.loading = $scope.loading - 1;
+						$rootScope.requestsLoading--;
 					});	
 					
-				SpotifyService.getSearchResults( 'album', query, 6 )
+				SpotifyService.getSearchResults( 'album', query, 20 )
 					.success( function(response){		
 						$scope.albums = response.albums;
-						
-						// handle loading (remembering that these queries may finish in a different order)
-						$scope.loading = $scope.loading - 1;
+						$rootScope.requestsLoading--;
 					});
 					
-				SpotifyService.getSearchResults( 'artist', query, 6 )
+				SpotifyService.getSearchResults( 'artist', query, 20 )
 					.success( function(response){		
 						$scope.artists = response.artists;
-						
-						// handle loading (remembering that these queries may finish in a different order)
-						$scope.loading = $scope.loading - 1;
+						$rootScope.requestsLoading--;
 					});
 					
-				SpotifyService.getSearchResults( 'playlist', query, 6 )
+				SpotifyService.getSearchResults( 'playlist', query, 20 )
 					.success( function(response){		
 						$scope.playlists = response.playlists;
-						
-						// handle loading (remembering that these queries may finish in a different order)
-						$scope.loading = $scope.loading - 1;
+						$rootScope.requestsLoading--;
 							
 					});
 				break;
@@ -183,8 +175,7 @@ angular.module('spotmop.search', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreResults = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more', message: 'Loading more'});
+		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -211,11 +202,11 @@ angular.module('spotmop.search', [])
 				}
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more'});
+				$rootScope.requestsLoading--;
                 loadingMoreResults = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more'});
+				$rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more', message: error.error.message});
                 loadingMoreResults = false;
             });

@@ -109,7 +109,7 @@
 			<div class="search-results-section artists" ng-hide="loading">
 				<h4 class="section-title"><a href="/search/{{ query }}/artist">Artists</a></h4>	
 				<div class="artist-items square-panels">
-					<div class="item-container" ng-repeat="artist in artists.items">
+					<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4">
 						<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
 							<div class="image-container">
 								<thumbnail images="artist.images" size="small"></thumbnail>
@@ -126,7 +126,7 @@
 			<div class="search-results-section albums" ng-hide="loading">
 				<h4 class="section-title"><a href="/search/{{ query }}/album">Albums</a></h4>	
 				<div class="album-items square-panels">
-					<div class="item-container" ng-repeat="album in albums.items">
+					<div class="item-container" ng-repeat="album in albums.items | limitTo: 4">
 						<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 							<div class="image-container">
 								<thumbnail images="album.images" size="small"></thumbnail>
@@ -143,7 +143,7 @@
 			<div class="search-results-section playlists" ng-hide="loading">
 				<h4 class="section-title"><a href="/search/{{ query }}/playlist">Playlists</a></h4>		
 				<div class="playlist-items square-panels">
-					<div class="item-container" ng-repeat="playlist in playlists.items">
+					<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4">
 						<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 							<div class="image-container">
 								<thumbnail images="playlist.images" size="small"></thumbnail>
