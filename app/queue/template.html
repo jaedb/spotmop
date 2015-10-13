@@ -38,7 +38,7 @@
 			<div class="clear-both"></div>
 			
 			<div class="progress slider" ng-click="seek($event)">
-				<span class="track-duration" ng-bind="state().currentTlTrack.track.length | formatMilliseconds"></span>
+				<span class="track-duration" ng-show="state().currentTlTrack.track" ng-bind="state().currentTlTrack.track.length | formatMilliseconds"></span>
 				<div class="track animate">
 					<div class="fill animate" style="width: {{ state().playPositionPercent() }}%"></div>
 				</div>
