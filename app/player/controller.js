@@ -77,37 +77,6 @@ angular.module('spotmop.player', [
 	/**
 	 * Shortcut keys
 	 **/
-	$scope.$on('spotmop:keyboardShortcut:space', function( event ){        
-		$scope.playPause();
-    });
-	$scope.$on('spotmop:keyboardShortcut:right', function( event ){		
-		if( $rootScope.ctrlKeyHeld )
-			$scope.next();
-    });
-	$scope.$on('spotmop:keyboardShortcut:left', function( event ){    
-		if( $rootScope.ctrlKeyHeld )    
-			$scope.previous();
-    });
-	$scope.$on('spotmop:keyboardShortcut:up', function( event ){
-		if( $rootScope.ctrlKeyHeld ){
-			$scope.volume += 10;
-			
-			// don't let the volume exceed maximum possible, 100%
-			if( $scope.volume >= 100 )
-				$scope.volume = 100;
-			MopidyService.setVolume( $scope.volume );
-		}
-    });
-	$scope.$on('spotmop:keyboardShortcut:down', function( event ){
-		if( $rootScope.ctrlKeyHeld ){
-			$scope.volume -= 10;
-			
-			// don't let the volume below minimum possible, 0%
-			if( $scope.volume < 0 )
-				$scope.volume = 0;
-			MopidyService.setVolume( $scope.volume );
-		}
-    });	
 	
 	$scope.$on('mopidy:event:tracklistChanged', function( event ){
 		MopidyService.getCurrentTlTracks().then( function(tlTracks){

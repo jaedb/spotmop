@@ -250,12 +250,48 @@ angular.module('spotmop.services.player', [])
 		1000
 	);
 	
+    
+	/**
+	 * Shortcut keys
+	 **/
+	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
+		service.playPause();
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:right', function( event ){		
+		if( $rootScope.ctrlKeyHeld )
+			service.next();
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:left', function( event ){    
+		if( $rootScope.ctrlKeyHeld )    
+			service.previous();
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:up', function( event ){
+		if( $rootScope.ctrlKeyHeld ){
+			state.volume += 10;
+			
+			// don't let the volume exceed maximum possible, 100%
+			if( state.volume >= 100 )
+				state.volume = 100;
+			updateVolume( state.volume );
+		}
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:down', function( event ){
+		if( $rootScope.ctrlKeyHeld ){
+			state.volume -= 10;
+			
+			// don't let the volume below minimum possible, 0%
+			if( state.volume < 0 )
+				state.volume = 0;
+			updateVolume( state.volume );
+		}
+    });	
+	
 	
 	/**
 	 * Setup response object
 	 * This is the object that is available to all controllers
 	 **/
-	return {
+	var service = {
 		
 		state: function(){
 			return state;
@@ -324,6 +360,8 @@ angular.module('spotmop.services.player', [])
 		}
 		
 	};
+	 
+	return service;
 	
 }]);
 
