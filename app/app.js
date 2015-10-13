@@ -399,13 +399,23 @@ angular.module('spotmop', [
      * Displays a user-friendly notification. Can be error, loader or tip
      **/
 	$scope.$on('spotmop:notifyUser', function( event, data ){
-	
+		
+		// handle undefined errors
         if( typeof(data.type) === 'undefined' )
             data.type = '';
-	
+		
+		// if we're a keyboard shortcut notification, this requires icon injection
+		if( data.type == 'keyboard-shortcut' ){
+			data.message = '<i class="fa fa-'+data.icon+'"></i>';
+		}
+		
+		// default to autoremove
         if( typeof(data.autoremove) === 'undefined' )
             data.autoremove = true;
-			
+		
+		// remove any existing notifications of this type (using notification id)
+		$(document).find('#notifications .notification-item[data-id="'+data.id+'"]').remove();;
+		
 		var container = $(document).find('#notifications');
 		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
 		container.append( notification );

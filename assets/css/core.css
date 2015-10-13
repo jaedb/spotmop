@@ -367,15 +367,30 @@ input[type='submit'] {
 	margin: 0px 1px;
 }
 
-#notifications .notification-item:first-child {
+#notifications .notification-item.keyboard-shortcut {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	margin: -150px 0 0 -150px;
+	text-align: center;
+	border-radius: 10px;
+}
+
+#notifications .notification-item.keyboard-shortcut i {
+	line-height: 300px;
+	font-size: 120px;
+}
+
+#notifications .notification-item:not(.keyboard-shortcut):first-child {
 	border-radius: 100px 0 0 100px;
 }
 
-#notifications .notification-item:last-child {
+#notifications .notification-item:not(.keyboard-shortcut):last-child {
 	border-radius: 0 100px 100px 0;
 }
 
-#notifications .notification-item:only-child {
+#notifications .notification-item:not(.keyboard-shortcut):only-child {
 	border-radius: 100px;
 }
 

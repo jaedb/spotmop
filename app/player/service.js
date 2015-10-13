@@ -255,15 +255,21 @@ angular.module('spotmop.services.player', [])
 	 * Shortcut keys
 	 **/
 	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
+		if( state.playing ) var icon = 'pause'; else var icon = 'play';
 		service.playPause();
+		$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: icon });
     });
 	$rootScope.$on('spotmop:keyboardShortcut:right', function( event ){		
-		if( $rootScope.ctrlKeyHeld )
+		if( $rootScope.ctrlKeyHeld ){
 			service.next();
+			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'forward' });
+		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:left', function( event ){    
-		if( $rootScope.ctrlKeyHeld )    
+		if( $rootScope.ctrlKeyHeld ){
 			service.previous();
+			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'backward' });
+		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:up', function( event ){
 		if( $rootScope.ctrlKeyHeld ){
@@ -273,6 +279,7 @@ angular.module('spotmop.services.player', [])
 			if( state.volume >= 100 )
 				state.volume = 100;
 			updateVolume( state.volume );
+			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-up' });
 		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:down', function( event ){
@@ -283,6 +290,7 @@ angular.module('spotmop.services.player', [])
 			if( state.volume < 0 )
 				state.volume = 0;
 			updateVolume( state.volume );
+			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-down' });
 		}
     });	
 	
