@@ -502,6 +502,14 @@ angular.module('spotmop', [
             }else if( event.which === 17 ){
                 $rootScope.ctrlKeyHeld = true;
             }
+
+			// if we're about to fire a keyboard shortcut event, let's prevent default
+			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
+				if($.inArray(event.which, shortcutKeyCodes) > -1)
+					event.preventDefault();			
+			}
         })
     
         // when we release the key press
@@ -509,9 +517,6 @@ angular.module('spotmop', [
 
 			// make sure we're not typing in an input area
 			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
-				
-				// prevent default key behavior
-				event.preventDefault();
 				
 				// delete key
 				if( event.which === 46 )
