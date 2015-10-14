@@ -9,6 +9,7 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	'ngTouch',
+	'ngAnimate',
 	'ui.router',
 	
 	'spotmop.common.contextmenu',
@@ -181,6 +182,57 @@ angular.module('spotmop', [
 	};
 })
 
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('textOverImage', function() {
+    return {
+        restrict: 'A',
+        link: function($scope, $element, $attrs) {
+            
+            $scope.$on('spotmop:detectBackgroundColor', function(event){
+                BackgroundCheck.init({
+                    targets: $($element).parent(),
+                    images: $element.closest('.intro').find('img')
+                });
+                BackgroundCheck.refresh();
+            });
+        }
+    };
+})
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ **/
+.directive('preloadedimage', function() {
+    return {
+		restrict: 'E',
+		scope: {
+			url: '@'
+		},
+        link: function($scope, $element, $attrs){
+			var image = $('<img src="/vendor/resource-proxy.php?url='+$scope.url+'" />');
+			image.load(function() {
+				$scope.image = image;
+				$element.html( image );
+				$scope.$emit('spotmop:detectBackgroundColor');
+				$element.find('img').animate(
+					{
+						opacity: 1
+					},
+					200
+				);
+			});
+        },
+		template: ''
+    };
+})
 
 
 

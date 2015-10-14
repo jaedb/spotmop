@@ -38,23 +38,6 @@ angular.module('spotmop.browse.artist', [])
 })
 
 
-.directive('textOverImage', function() {
-    return {
-        restrict: 'A',
-        link: function($scope, $element, $attrs) {
-            
-            $scope.$on('spotmop:pageUpdated', function(event){
-                BackgroundCheck.init({
-                    targets: $($element).parent(),
-                    images: $(document).find('.artist-intro .image')
-                });
-                BackgroundCheck.refresh();
-            });
-        }
-    };
-})
-
-
 /**
  * Main controller
  **/

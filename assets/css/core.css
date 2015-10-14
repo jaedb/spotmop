@@ -902,10 +902,33 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
  
  
+/**
+ * Intro panels
+ * The key pages (Artist, Playlist, etc) have their own spin on this generic style
+ **/
+
+.intro preloadedimage {
+	position: absolute;
+	top: -50px;
+	right: -10px;
+	bottom: 0;
+	left: -10px;
+	overflow: hidden;
+}
+
+.intro preloadedimage img {
+	min-width: 100%;
+	opacity: 0;
+}
+ 
+ 
+ 
+ 
 
 
 /* ====================================================================== PAGE-SPECIFIC =========== */
 /* ================================================================================================ */
+
 
 /**
  * Queue
@@ -988,7 +1011,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 50vh;
+	height: 60vh;
 }
 
 .artist-intro > .inner {
@@ -1027,17 +1050,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	left: 0;
 	overflow: hidden;
 	z-index: -1;
-}
-
-.artist-intro .image {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background-color: #EEEEEE;
-	background-position: 50% 10%;
-	background-size: cover;
+	background: #EEEEEE;
 }
 
 .artist-intro .sub-page-navigation {
