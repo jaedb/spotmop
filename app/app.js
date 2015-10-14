@@ -217,8 +217,12 @@ angular.module('spotmop', [
 			url: '@'
 		},
         link: function($scope, $element, $attrs){
+			
+			$rootScope.requestsLoading++;
+		
 			var image = $('<img src="/vendor/resource-proxy.php?url='+$scope.url+'" />');
 			image.load(function() {
+				$rootScope.requestsLoading--;
 				$scope.image = image;
 				$element.html( image );
 				$scope.$emit('spotmop:detectBackgroundColor');
@@ -321,11 +325,13 @@ angular.module('spotmop', [
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
+		$rootScope.requestsLoading++;
+	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.success(function( response ) {
 				
-				$scope.myPlaylists = response.items;
-				
+				$rootScope.requestsLoading--;
+				$scope.myPlaylists = response.items;				
                 var newPlaylistsMenu = [];
             
 				// loop all of our playlists, and set up a menu item for each
@@ -344,6 +350,7 @@ angular.module('spotmop', [
                 $scope.playlistsMenu = newPlaylistsMenu;
 			})
 			.error(function( error ){
+				$rootScope.requestsLoading--;
 				$scope.status = 'Unable to load your playlists';
 			});	
 	}

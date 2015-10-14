@@ -194,8 +194,12 @@ angular.module('spotmop.services.player', [])
 			
 		// no track provided, so go fetch it first, then proceed
 		}else{
+			
+			$rootScope.requestsLoading++;
+			
 			MopidyService.getCurrentTlTrack().then( function( tlTrack ){
 				if(tlTrack !== null && tlTrack !== undefined){
+					$rootScope.requestsLoading--;
 					if(tlTrack.track.name.indexOf("[loading]") > -1){
 						MopidyService.lookup(tlTrack.track.uri).then(function(result){
 							setCurrentTrack(result[0]);
