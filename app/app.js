@@ -210,7 +210,7 @@ angular.module('spotmop', [
  * This let's us detect whether we need light text or dark text
  * Enhances readability when placed on dynamic background images
  **/
-.directive('preloadedimage', function() {
+.directive('preloadedimage', function( $rootScope ){
     return {
 		restrict: 'E',
 		scope: {
