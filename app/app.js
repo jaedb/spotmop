@@ -222,6 +222,7 @@ angular.module('spotmop', [
 			image.load(function(){
 				$element.attr('style', 'background-image: url("'+fullUrl+'");');
 				$scope.$emit('spotmop:detectBackgroundColor');
+				$element.animate(
 					{
 						opacity: 1
 					},
