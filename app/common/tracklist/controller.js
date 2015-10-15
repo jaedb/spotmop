@@ -230,7 +230,7 @@ angular.module('spotmop.common.tracklist', [
 			atPosition = 0;
 			
 			// fetch the currently playing track
-			var currentTrack = $scope.currentTlTrack;
+			var currentTrack = $scope.state().currentTlTrack;
 			
 			// make sure we have a current track
 			if( currentTrack ){

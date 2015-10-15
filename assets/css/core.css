@@ -73,10 +73,19 @@ body {
 	right: 0;
 	bottom: -50px;
 	left: -50px;
-	background-position: 0 50%;
-	background-size: cover;
 	opacity: 0.3;
 	z-index: 1;
+}
+
+#sidebar > .background-image .image {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	opacity: 0;
+	background-position: 0 50%;
+	background-size: cover;
 }
 
 #sidebar > .inner {
@@ -86,6 +95,7 @@ body {
 	bottom: 0;
 	right: 0;
 	position: absolute;
+	overflow-y: scroll;
 }
 
 #player {
@@ -914,11 +924,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	bottom: 0;
 	left: -10px;
 	overflow: hidden;
-}
-
-.intro preloadedimage img {
-	min-width: 100%;
 	opacity: 0;
+	background-position: 50% 10%;
+	background-repeat: no-repeat;
+	background-size: cover;
 }
  
  
@@ -1384,7 +1393,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  
 #full-player .artwork {
 	width: 400px;
-	height: 400px;
+	padding-bottom: 400px;
 	margin: 0 auto 20px;
 	position: relative;
 	background: #EEEEEE;
