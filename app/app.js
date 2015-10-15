@@ -197,7 +197,7 @@ angular.module('spotmop', [
             $scope.$on('spotmop:detectBackgroundColor', function(event){
                 BackgroundCheck.init({
                     targets: $($element).parent(),
-                    images: $element.closest('.intro').find('img')
+                    images: $element.closest('.intro').find('.image')
                 });
                 BackgroundCheck.refresh();
             });
@@ -217,12 +217,12 @@ angular.module('spotmop', [
 			url: '@'
 		},
         link: function($scope, $element, $attrs){
-			var image = $('<img src="/vendor/resource-proxy.php?url='+$scope.url+'" />');
+			var fullUrl = '/vendor/resource-proxy.php?url='+$scope.url;
+			var image = $('<img src="'+fullUrl+'" />');
 			image.load(function(){
-				$scope.image = image;
-				$element.html( image );
+				$element.attr('style', 'background-image: url("'+fullUrl+'");');
 				$scope.$emit('spotmop:detectBackgroundColor');
-				$element.find('img').animate(
+				$element.animate(
 					{
 						opacity: 1
 					},

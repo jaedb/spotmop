@@ -136,6 +136,14 @@
 @media( max-width: 600px ){
 	
 	/**
+	 * Body layout
+	 **/
+	#body > .inner {
+		padding: 20px;
+	}
+	
+	
+	/**
 	 * Tables and grids
 	 **/
 	
@@ -179,6 +187,12 @@
 	 **/
 	.playlist-intro .inner {
 		padding: 30px;
+	}
+	
+	.artist-intro {
+		margin-top: -20px;
+		margin-left: -20px;
+		margin-right: -20px;
 	}
 	
 	
@@ -264,6 +278,23 @@
 		padding: 6px 12px;
 	}
 	
+	
+	/**
+	 * Player
+	 **/
+	
+	#player {
+		display: none;
+	}
+	 
+	#full-player .artwork {
+		width: 75%;
+		padding-bottom: 75%;
+	}
+	
+	#full-player .controls {
+		width: 100%;
+	}
 }
 
 
