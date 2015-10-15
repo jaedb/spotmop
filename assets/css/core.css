@@ -95,7 +95,7 @@ body {
 	bottom: 0;
 	right: 0;
 	position: absolute;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 
 #player {
