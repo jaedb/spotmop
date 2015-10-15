@@ -65,7 +65,9 @@
 		<div id="notifications"></div>
 		
 		<div id="sidebar">
-			<div class="background-image blur animate" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1"></div>
+			<div class="background-image blur" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
+				<preloadedimage url="{{ image.url }}"></preloadedimage>
+			</div>
 			<div class="inner">
 				<div class="search-form">
 					<form ng-submit="searchSubmit( query )">

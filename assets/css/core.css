@@ -79,6 +79,15 @@ body {
 	z-index: 1;
 }
 
+#sidebar > .background-image img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	min-height: 100%;
+	opacity: 0;
+}
+
 #sidebar > .inner {
 	z-index: 2;
 	top: 0;

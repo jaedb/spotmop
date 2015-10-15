@@ -181,6 +181,10 @@ angular.module('spotmop.services.player', [])
 				.success(function( response ){
 					$rootScope.requestsLoading--;
 					state.currentTlTrack.track.album.images = response.album.images;
+				})
+				.error( function(response){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', { id: 'error', type: 'error', message: 'Failed to load track' });
 				});
 			
 			// update ui

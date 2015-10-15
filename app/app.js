@@ -218,7 +218,7 @@ angular.module('spotmop', [
 		},
         link: function($scope, $element, $attrs){
 			var image = $('<img src="/vendor/resource-proxy.php?url='+$scope.url+'" />');
-			image.load(function() {
+			image.load(function(){
 				$scope.image = image;
 				$element.html( image );
 				$scope.$emit('spotmop:detectBackgroundColor');
