@@ -296,6 +296,14 @@
 		padding: 6px 12px;
 	}
 	
+	.sub-page-navigation .menu-item {
+		margin-right: 10px;
+	}
+	
+	.touchDevice #utilities {
+		right: 5px;
+	}
+	
 	
 	/**
 	 * Player
@@ -312,6 +320,18 @@
 	
 	#full-player .controls {
 		width: 100%;
+	}
+	
+	
+	/**
+	 * Notifications
+	 **/
+	
+	.page-notification {
+		margin-top: -20px;
+		margin-right: -20px;
+		margin-left: -20px;
+		padding: 10px 20px;
 	}
 }
 

@@ -174,16 +174,12 @@ angular.module('spotmop.services.player', [])
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
 			
-			$rootScope.requestsLoading++;
-			
 			// now we have track info, let's get the spotify artwork	
 			SpotifyService.getTrack( tlTrack.track.uri )
 				.success(function( response ){
-					$rootScope.requestsLoading--;
 					state.currentTlTrack.track.album.images = response.album.images;
 				})
 				.error( function(response){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', { id: 'error', type: 'error', message: 'Failed to load track' });
 				});
 			
@@ -199,11 +195,8 @@ angular.module('spotmop.services.player', [])
 		// no track provided, so go fetch it first, then proceed
 		}else{
 			
-			$rootScope.requestsLoading++;
-			
 			MopidyService.getCurrentTlTrack().then( function( tlTrack ){
 				if(tlTrack !== null && tlTrack !== undefined){
-					$rootScope.requestsLoading--;
 					if(tlTrack.track.name.indexOf("[loading]") > -1){
 						MopidyService.lookup(tlTrack.track.uri).then(function(result){
 							setCurrentTrack(result[0]);
