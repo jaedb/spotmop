@@ -47,8 +47,8 @@
 	}
 	
 	#sidebar {
-		width: 50%;
-		left: -50%;
+		width: 30%;
+		left: -30%;
 	}
 	
 	#player .progress {
@@ -126,12 +126,30 @@
 	.add-to-playlist-dialog .playlist {
 		width: 21%;
 	}
+	
+	
+	/**
+	 * Player
+	 **/
+	
+	#player {
+		display: none;
+	}
 }
 
 
 
 /* ======================================================= INTERMEDIATE DEVICES (medium-small) ==== */
 /* ================================================================================================ */
+
+@media( max-width: 450px ){
+	
+	#sidebar {
+		width: 70%;
+		left: -70%;
+	}
+	
+}
 
 @media( max-width: 600px ){
 	

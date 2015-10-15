@@ -370,7 +370,9 @@ angular.module('spotmop', [
 		
 		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			$(document).find('#sidebar').css({ left: '-50%', width: '50%' });
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
+			$(document).find('#sidebar').css({ left: '-'+percentage+'%', width: percentage+'%' });
 			$(document).find('#body').css({ left: '0px', width: '100%' });
 			
 		// full-screen, so reset any animations/sliding/offsets
@@ -387,11 +389,13 @@ angular.module('spotmop', [
 	// show menu (this is triggered by swipe event)
 	$scope.showMenu = function(){
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
 			$(document).find('#sidebar').animate({
 				left: '0px'
 			}, 100);
 			$(document).find('#body').animate({
-				left: '50%'
+				left: percentage+'%'
 			}, 100);
 		}
 	}
@@ -399,8 +403,10 @@ angular.module('spotmop', [
 	// hide menu (typically triggered by swipe event)
 	$scope.hideMenu = function(){
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
 			$(document).find('#sidebar').animate({
-				left: '-50%'
+				left: '-'+percentage+'%'
 			}, 100);
 			$(document).find('#body').animate({
 				left: '0px'
