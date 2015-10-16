@@ -23,7 +23,9 @@ angular.module('spotmop.common.tracklist', [
 					if( !$scope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
 				}else if( $scope.track.selected && event.which === 3 ){
@@ -92,7 +94,9 @@ angular.module('spotmop.common.tracklist', [
 					if( !$scope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
 				}else if( $scope.track.selected && event.which === 3 ){

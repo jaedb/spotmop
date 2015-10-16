@@ -406,6 +406,11 @@
 		margin-bottom: 5%;
 	}
 	
+	.square-panel .info {
+		padding-top: 5px;
+		height: 60px;
+	}
+	
 	
 	/**
 	 * Dialogs and popups
