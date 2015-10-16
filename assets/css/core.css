@@ -231,6 +231,43 @@ body {
 }
 
 
+/**
+ * Sub-page navigation
+ **/
+
+.sub-page-navigation {
+	margin-bottom: 35px;
+	margin-top: -15px;
+}
+
+.sub-page-navigation .menu-item {
+	padding: 5px 0;
+	margin-right: 20px;
+	margin-bottom: -1px;
+	border-bottom: 2px solid transparent;
+	display: inline-block;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.sub-page-navigation .menu-item > i {
+	font-size: 6px;
+	vertical-align: middle;
+	margin-top: -4px;
+	padding-right: 2px;
+}
+
+.sub-page-navigation .menu-item:hover {
+	color: #555555;
+	cursor: pointer;
+}
+
+.sub-page-navigation .menu-item.active {
+	border-color: #1cf4c4;
+}
+
+
+
 
 /**
  * Critical services (Mopidy + Spotify)
@@ -1184,37 +1221,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .actions {
     clear: both;
     padding: 40px 0 0 15%;
-}
-
-.sub-page-navigation {
-	margin-bottom: 30px;
-	margin-top: -10px;
-}
-
-.sub-page-navigation .menu-item {
-	padding: 5px 0;
-	margin-right: 20px;
-	margin-bottom: -1px;
-	border-bottom: 2px solid transparent;
-	display: inline-block;
-	font-weight: bold;
-	text-transform: uppercase;
-}
-
-.sub-page-navigation .menu-item > i {
-	font-size: 6px;
-	vertical-align: middle;
-	margin-top: -4px;
-	padding-right: 2px;
-}
-
-.sub-page-navigation .menu-item:hover {
-	color: #555555;
-	cursor: pointer;
-}
-
-.sub-page-navigation .menu-item.active {
-	border-color: #1cf4c4;
 }
 
 .sub-page {
