@@ -1,9 +1,9 @@
 <div>
 	
-	<div class="playlist-items square-panels">		
+	<div class="playlist-items square-panels">
 		
 		<div ng-if="myPlaylists.length">
-			<div class="item-container" ng-repeat="playlist in myPlaylists | filter: { owner: {id: spotifyuser.id } }:true">
+			<div class="item-container" ng-repeat="playlist in myPlaylists | filter: { owner: {id: spotifyUser.id } }">
 				<a ui-sref="browse.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 					<div class="image-container">
 						<thumbnail images="playlist.images"></thumbnail>
