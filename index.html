@@ -10,11 +10,11 @@
 	<script type="text/javascript" src="/vendor/angular-resource.js"></script>
 	<script type="text/javascript" src="/vendor/angular-storage.min.js"></script>
 	<script type="text/javascript" src="/vendor/angular-touch.min.js"></script>
+	<script type="text/javascript" src="/vendor/angular-animate.min.js"></script>
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
 	<script type="text/javascript" src="/vendor/background-check.min.js"></script>
 	
 	<script type="text/javascript" src="/app/app.js"></script>
-	<script type="text/javascript" src="/app/services/settings/service.js"></script>
 	<script type="text/javascript" src="/app/services/mopidy/service.js"></script>
 	<script type="text/javascript" src="/app/services/spotify/service.js"></script>
 	<script type="text/javascript" src="/app/services/echonest/service.js"></script>
@@ -36,10 +36,12 @@
 	
 	<script type="text/javascript" src="/app/queue/controller.js"></script>	
 	<script type="text/javascript" src="/app/library/controller.js"></script>	
-	<script type="text/javascript" src="/app/my-playlists/controller.js"></script>	
+	<script type="text/javascript" src="/app/playlists/controller.js"></script>	
 	<script type="text/javascript" src="/app/player/controller.js"></script>	
+	<script type="text/javascript" src="/app/player/service.js"></script>	
 	<script type="text/javascript" src="/app/search/controller.js"></script>	
 	<script type="text/javascript" src="/app/settings/controller.js"></script>	
+	<script type="text/javascript" src="/app/settings/service.js"></script>	
 	
 	<link rel="stylesheet" type="text/css" href="/assets/css/font-awesome.min.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
@@ -56,25 +58,45 @@
 	<link rel="shortcut-icon" href="/assetes/favicon.ico" />
 	
 </head>
-<body ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
-        
-    <div id="notifications"></div>
-
-    <ng-include src="'/app/common/sidebar.template.html'"></ng-include>	
-
-    <div id="body" class="body">
-        <div class="inner">
-            <div ui-view></div>
-        </div>
-    </div>
-
-    <ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>
-	
-	<contextmenu></contextmenu>
-
-    <div class="drag-tracer"></div>
+<body>
     
-    <img class="hide" src="/assets/svg/spinner.svg" />
+	<div id="app" ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
+	
+		<div id="notifications"></div>
+		
+		<div id="sidebar">
+			<div class="background-image" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
+				<preloadedimage class="image blur" url="{{ image.url }}"></preloadedimage>
+			</div>
+			<div class="inner">
+				<div class="search-form">
+					<form ng-submit="searchSubmit( query )">
+						<input type="text" name="query" placeholder="Search" class="query" ng-model="query" />
+						<button class="submit" type="submit">
+							<i class="fa fa-search"></i>
+						</button>
+					</form>
+				</div>
+				<ng-include src="'/app/common/mainmenu.template.html'"></ng-include>
+				<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>		
+			</div>
+		</div>
+
+		<div id="body" class="body">
+			<div class="inner">
+				<div ui-view></div>
+			</div>
+		</div>
+		
+		<div id="utilities">
+			<img src="/assets/svg/spinner-black.svg" class="loader" ng-show="requestsLoading > 0" />
+		</div>
+		
+		<contextmenu></contextmenu>
+		<div class="drag-tracer"></div>		
+		<img class="hide" src="/assets/svg/spinner.svg" />
+		
+	</div>
     
 </body>
 </html>

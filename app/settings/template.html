@@ -1,27 +1,29 @@
 <div ng-controller="SettingsController">
-	
-	<h1>Settings</h1>
+    
+	<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
+		<i class="fa fa-exclamation-triangle white-text"></i>
+		&nbsp;
+		<span ng-show="!mopidyOnline">Mopidy is currently offline - check your settings</span>
+		<span ng-show="!spotifyOnline">Spotify is currently offline - make sure your browser allows popups</span>
+	</div>
 	
 	<div class="settings">
 		
 		<div class="sub-page-navigation">
 			<a class="menu-item" ui-sref="settings.mopidy" ui-sref-active="active">
-				<i class="fa fa-circle" ng-class="{ 'red-text': !mopidyOnline, 'green-text': mopidyOnline }"></i>
 				Mopidy
 			</a>
 			<a class="menu-item" ui-sref="settings.spotify" ui-sref-active="active">
-				<i class="fa fa-circle" ng-class="{ 'red-text': !spotifyOnline, 'green-text': spotifyOnline }"></i>
 				Spotify
 			</a>
 			<a class="menu-item" ui-sref="settings.echonest" ui-sref-active="active">
-				<i class="fa fa-circle" ng-class="{ 'red-text': !echonestOnline, 'green-text': echonestOnline }"></i>
 				Echonest
 			</a>
 			<a class="menu-item" ui-sref="settings.info" ui-sref-active="active">
 				Info
 			</a>
 		</div>
-        
+		
         <div ui-view></div>
         
 	</div>

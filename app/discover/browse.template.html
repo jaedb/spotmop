@@ -1,11 +1,9 @@
 <div>
-
-	<h1>Browse playlists</h1>
 	
 	<div class="category-items square-panels">
 		
 		<div class="item-container" ng-repeat="category in categories.items">
-			<a href="/discover/category/{{ category.id }}" class="square-panel category">
+			<a href="/discover/browse/{{ category.id }}" class="square-panel category">
 				<div class="image-container">
 					<thumbnail images="category.icons"></thumbnail>
 					<div class="name animate" ng-bind="category.name"></div>

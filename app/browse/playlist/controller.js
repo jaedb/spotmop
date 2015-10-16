@@ -103,14 +103,12 @@ angular.module('spotmop.browse.playlist', [])
 			
 			// and now we add our moved tracks, to their new position
 			angular.forEach( tracksToMove, function(trackToMove){
-				console.log( to_position );
 				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
 			});
 		});
 	});
 	
-    
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-playlist', message: 'Loading'});
+    $rootScope.requestsLoading++;
 
 	// on load, fetch the playlist
 	SpotifyService.getPlaylist( $stateParams.uri )
@@ -130,11 +128,11 @@ angular.module('spotmop.browse.playlist', [])
             SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
                 .success( function( isFollowing ){
                     $scope.following = $.parseJSON(isFollowing);
-                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlist'});
+					$rootScope.requestsLoading--;
                 });
 		})
         .error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-playlist'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlist', message: error.error.message});
         });
 		
@@ -159,13 +157,14 @@ angular.module('spotmop.browse.playlist', [])
 				tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
 			});
 			
+			// remove tracks from DOM immediately (for snappier UX)
+			// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
+			$scope.$apply( function(){
+				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+			});
+			
 			// parse these uris to spotify and delete these tracks
 			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
-				.success(function( response ){
-					// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
-					// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
-					$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-				})
 				.error(function( error ){
 					console.log( error );
 				});
@@ -206,9 +205,8 @@ angular.module('spotmop.browse.playlist', [])
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreTracks = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-tracks', message: 'Loading tracks'});
+        loadingMoreTracks = true;
+		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -221,11 +219,11 @@ angular.module('spotmop.browse.playlist', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+				$rootScope.requestsLoading--;
                 loadingMoreTracks = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+				$rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });

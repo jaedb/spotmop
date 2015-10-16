@@ -30,7 +30,7 @@ angular.module('spotmop.queue', [])
         },
         function(newTracklist, oldTracklist){
 			$scope.tracklist.tracks = newTracklist;
-            calculateTotalTime( newTracklist );
+			calculateTotalTime( newTracklist );
         }
     );
 	
@@ -60,6 +60,12 @@ angular.module('spotmop.queue', [])
 		// build an array of tlids to remove
 		angular.forEach( selectedTracks, function( selectedTrack, index ){
 			tracksToDelete.push( selectedTrack.tlid );
+		});
+		
+		// remove tracks from DOM (for snappier UX)
+		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
+		$scope.$apply( function(){
+			$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
 		});
 		
 		MopidyService.removeFromTrackList( tracksToDelete );

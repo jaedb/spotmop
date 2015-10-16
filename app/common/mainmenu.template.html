@@ -1,0 +1,46 @@
+<ul class="main-menu">
+	<li class="menu-item top-level" ng-class="{ active: isActive('queue') }">
+		<a href="/queue" class="droppable" data-type="queue">
+			<i class="fa fa-play"></i>
+			Now playing
+			<div class="info" ng-show="currentTracklist.length > 0">
+				<span ng-bind="currentTracklist.length"></span> tracks
+			</div>
+		</a>
+	</li>
+	
+	<li class="menu-item top-level" ng-class="{ active: isActive('discover') }">
+		<a href="/discover/browse">
+			<i class="fa fa-star"></i>
+			Discover
+		</a>
+		<ul class="submenu">
+			<li class="menu-item"><a href="/discover/featured">Featured playlists</a></li>
+			<li class="menu-item"><a href="/discover/new">New releases</a></li>
+		</ul>
+	</li>
+	<li class="menu-item top-level" ng-class="{ active: isActive('library') }">
+		<a href="/library" class="droppable" data-type="library">
+			<i class="fa fa-music"></i>
+			Library
+		</a>
+	</li>
+	<li class="menu-item top-level" ng-class="{ active: isActive('browse.playlist') || isActive('playlists') }">
+		<a href="/playlists" data-type="playlists">
+			<i class="fa fa-folder"></i>
+			Playlists
+		</a>
+		<!--<ul ng-show="playlistsMenu.length" class="submenu">
+			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
+				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
+			</li>
+		</ul>-->
+	</li>
+	<li class="menu-item top-level" ng-class="{ active: isActive('settings') }">
+		<a href="/settings">
+			<i class="fa fa-cog"></i>
+			Settings
+			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotifyOnline || !mopidyOnline"></i>
+		</a>
+	</li>
+</ul>

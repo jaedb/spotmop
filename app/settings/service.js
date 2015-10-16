@@ -39,7 +39,7 @@ angular.module('spotmop.services.settings', [])
 		getVersion: function(){
 			return $http({
 				method: 'GET',
-				url: '/app/services/settings/version.php'
+				url: '/app/settings/version.php'
 			});	
 		}
 	};

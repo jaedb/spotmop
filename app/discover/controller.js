@@ -18,7 +18,7 @@ angular.module('spotmop.discover', [])
 			controller: 'DiscoverController'
 		})
 		.state('discover.category', {
-			url: "/category/:categoryid",
+			url: "/browse/:categoryid",
 			templateUrl: "app/discover/category.template.html",
 			controller: 'CategoryController'
 		});
@@ -29,17 +29,16 @@ angular.module('spotmop.discover', [])
  **/
 .controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService ){
 	
-	$scope.categories = [];
-    
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-categories', message: 'Loading'});
+	$scope.categories = [];    
+    $rootScope.requestsLoading++;
 	
 	SpotifyService.discoverCategories()
 		.success(function( response ) {
 			$scope.categories = response.categories;
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
+            $rootScope.requestsLoading--;
 		})
         .error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-categories'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-categories', message: error.error.message});
         });
     
@@ -58,9 +57,8 @@ angular.module('spotmop.discover', [])
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreCategories = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-categories', message: 'Loading more categories'});
+        loadingMoreCategories = true;
+		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -73,11 +71,11 @@ angular.module('spotmop.discover', [])
                 $scope.categories.next = response.categories.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-categories'});
+				$rootScope.requestsLoading--;
                 loadingMoreCategories = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-categories'});
+                $rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-categories', message: error.error.message});
                 loadingMoreCategories = false;
             });
@@ -99,8 +97,7 @@ angular.module('spotmop.discover', [])
 	
 	$scope.category = {};
 	$scope.playlists = [];
-    
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-category', message: 'Loading'});
+	$rootScope.requestsLoading++;
 	
 	SpotifyService.getCategory( $stateParams.categoryid )
 		.success(function( response ) {
@@ -109,15 +106,15 @@ angular.module('spotmop.discover', [])
             SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
                 .success(function( response ) {
                     $scope.playlists = response.playlists;
-                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+                    $rootScope.requestsLoading--;
                 })
                 .error(function( error ){
-                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+                    $rootScope.requestsLoading--;
                     $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
                 });
 		})
         .error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-category'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
         });
     
@@ -137,8 +134,7 @@ angular.module('spotmop.discover', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMorePlaylists = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-playlists', message: 'Loading more playlists'});
+        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -151,11 +147,11 @@ angular.module('spotmop.discover', [])
                 $scope.playlists.next = response.playlists.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-playlists'});
+                $rootScope.requestsLoading--;
                 loadingMorePlaylists = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-playlists'});
+                $rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-playlists', message: error.error.message});
                 loadingMorePlaylists = false;
             });

@@ -1,26 +1,14 @@
 <div class="search">
 	
-	<div class="search-form">
-		<form>
-			<input type="text" ng-model="query" class="query" placeholder="Search" />
-			<div class="dropdown" ng-class="{ active: dropdownActive }">
-				<div class="value" ng-click="toggleDropdown()">
-					<span ng-bind="type"></span>
-					<span class="arrow">
-						<i class="fa fa-caret-right" ng-hide="dropdownActive"></i>
-						<i class="fa fa-caret-down" ng-show="dropdownActive"></i>
-					</span>
-				</div>
-				<div class="options" ng-show="dropdownActive">
-					<a class="option"
-						ng-repeat="option in ['all','artist','album','playlist','track']"
-						href="/search/{{ option }}/{{ query }}">
-							{{ option }}
-					</a>
-				</div>
-			</div>
-		</form>
-		<div class="clear: both;"></div>
+
+	<div class="sub-page-navigation">
+		<a class="menu-item"
+			ng-repeat="option in ['all','artist','album','playlist','track']"
+			href="/search/{{ query }}/{{ option }}"
+			ng-class="{active: type == option}">
+				{{ option }}<span ng-hide="option == 'all'">s</span>
+		</a>
+		<div class="clear-both"></div>
 	</div>
 	
 	<div ng-if="query">
@@ -119,9 +107,9 @@
 			</div>
 		
 			<div class="search-results-section artists" ng-hide="loading">
-				<h4 class="section-title"><a href="/search/artist/{{ query }}">Artists</a></h4>	
+				<h4 class="section-title"><a href="/search/{{ query }}/artist">Artists</a></h4>	
 				<div class="artist-items square-panels">
-					<div class="item-container" ng-repeat="artist in artists.items">
+					<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4">
 						<a href="/browse/artist/{{ artist.uri }}" class="square-panel artist">
 							<div class="image-container">
 								<thumbnail images="artist.images" size="small"></thumbnail>
@@ -136,9 +124,9 @@
 			</div>
 			
 			<div class="search-results-section albums" ng-hide="loading">
-				<h4 class="section-title"><a href="/search/album/{{ query }}">Albums</a></h4>	
+				<h4 class="section-title"><a href="/search/{{ query }}/album">Albums</a></h4>	
 				<div class="album-items square-panels">
-					<div class="item-container" ng-repeat="album in albums.items">
+					<div class="item-container" ng-repeat="album in albums.items | limitTo: 4">
 						<a href="/browse/album/{{ album.uri }}" class="square-panel album">
 							<div class="image-container">
 								<thumbnail images="album.images" size="small"></thumbnail>
@@ -153,9 +141,9 @@
 			</div>	
 			
 			<div class="search-results-section playlists" ng-hide="loading">
-				<h4 class="section-title"><a href="/search/playlist/{{ query }}">Playlists</a></h4>		
+				<h4 class="section-title"><a href="/search/{{ query }}/playlist">Playlists</a></h4>		
 				<div class="playlist-items square-panels">
-					<div class="item-container" ng-repeat="playlist in playlists.items">
+					<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4">
 						<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
 							<div class="image-container">
 								<thumbnail images="playlist.images" size="small"></thumbnail>
@@ -173,7 +161,7 @@
 			<div class="clear-both"></div>
 			
 			<div class="search-results-section tracks" ng-hide="loading">
-				<h4 class="section-title"><a href="/search/track/{{ query }}">Tracks</a></h4>	
+				<h4 class="section-title"><a href="/search/{{ query }}/track">Tracks</a></h4>	
 				<div class="search-items tracklist"  ng-controller="TracklistController">			
 				
 					<track ng-repeat="track in tracklist.tracks"></track>

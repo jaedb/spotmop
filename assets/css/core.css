@@ -5,13 +5,14 @@
  **/
 
 @import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Archivo+Narrow:400,400italic,700,700italic);
 
 body,
 html {
 	background: ##FFFFFF;
 	color: #000000;
-	font-family: 'Roboto', Helvetica, Arial, sans-serif;
-	font-size: 12px;
+	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
+	font-size: 14px;
 }
 
 body {
@@ -48,13 +49,60 @@ body {
 	left: 0;
 }
 
+#app {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #303030;
+}
+
 #sidebar {
 	position: absolute;
 	top: 0;
 	left: 0;
-	bottom: 90px;
+	bottom: 0;
 	width: 20%;
+	overflow: hidden;
+}
+
+#sidebar > .background-image {
+	position: absolute;
+	top: -50px;
+	right: 0;
+	bottom: -50px;
+	left: -50px;
+	opacity: 0.3;
+	z-index: 1;
+}
+
+#sidebar > .background-image .image {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	opacity: 0;
+	background-position: 0 50%;
+	background-size: cover;
+}
+
+#sidebar > .inner {
+	z-index: 2;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	position: absolute;
 	overflow-y: auto;
+}
+
+#player {
+	position: absolute;
+	bottom: 20px;
+	left: 0;
+	width: 100%;
 }
 
 #body {
@@ -62,29 +110,17 @@ body {
 	top: 0;
 	right: 0;
 	width: 80%;
-	bottom: 90px;
+	bottom: 0;
+	background: #f5f5f5;
 	overflow-y: scroll;
 	-webkit-perspective: 1px;
 	-moz-perspective: 1px;
 	perspective: 1px;
 }
 
-#player {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	height: 90px;
-}
-
 #body > .inner {
 	overflow-x: hidden;
-}
-
-#sidebar > .inner,
-#body > .inner,
-#player > .inner {
-	padding: 20px;
+	padding: 40px;
 }
 
 
@@ -128,65 +164,72 @@ body {
 /* ================================================================================================ */
 
 
-.main-menu {
-    margin-left: -20px;
-}
-
-.main-menu a {
-	padding: 3px 6px;
-	display: inline-block;
-	border-radius: 3px;
+.main-menu > .menu-item > a {
+	display: block;
+	border-left: 4px solid transparent;
+	padding: 10px 0 10px 15px;
+	color: #FFFFFF;
 	text-decoration: none;
-	color: inherit;
+	font-size: 16px;
+	background-image: url('../svg/white-diamond.svg');
+	background-position: 110% 50%;
+	background-repeat: no-repeat;
 }
 
-.main-menu a:hover {
-	background: #EEEEEE;
+.main-menu > .menu-item .info {
+	font-size: 12px;
+	opacity: 0.5;
+	padding: 2px 20px 0 0;
+	float: right;
 }
 
-.main-menu .menu-item-wrapper {
-    border-left: 3px solid transparent;
-    padding-left: 20px;
-    display: inline-block;
+.main-menu > .menu-item > a > i {
+	width: 15px;
+	padding-right: 5px;
+	font-size: 12px;
 }
 
-.main-menu .menu-item-wrapper.active {
-    border-color: #1cf4c4;
+.main-menu > .menu-item > a > i.services-alert {
+	float: right;
+	padding: 3px 12px 0 0;
 }
 
-.main-menu a.dropping {
-    background: #333333;
-    color: #FFFFFF;
+.main-menu > .menu-item.active > a {
+	border-color: #08d58f;
+	background-color: rgba(255,255,255,0.1);
+	background-position: 100% 50%;
 }
 
-.main-menu li {
-	padding-top: 2px;
+.main-menu > .menu-item > a:hover {
+	background-color: rgba(255,255,255,0.05);
+}
+
+
+/**
+ * Nested menus
+ **/
+
+.main-menu .submenu {
+	padding-left: 41px;
+	padding-bottom: 10px;
+}
+
+.main-menu .submenu > .menu-item {
 	list-style-type: none;
 }
 
-.main-menu .menu-item-wrapper.top-level a {
-	font-size: 17px;
-	font-weight: 300;
+.main-menu .submenu > .menu-item > a {
+	color: rgba(255,255,255,0.5);
+	font-size: 14px;
+	padding: 3px;
+	text-decoration: none;
+	display: block;
 }
 
-.main-menu .menu-item-wrapper.top-level a i {
-	font-size: 12px;
-	width: 1.5em;
-	vertical-align: top;
-	margin-top: 5px;
+.main-menu .submenu > .menu-item > a:hover {
+	color: rgba(255,255,255,1);
 }
 
-.main-menu li > ul {
-	padding-bottom: 5px;
-}
-
-.main-menu li > ul .menu-item-wrapper {
-    padding-left: 43px;
-}
-
-.main-menu li > ul a {
-	color: #555555;
-}
 
 
 /**
@@ -199,6 +242,38 @@ body {
 	padding-top: 5px;
 }
 
+#utilities {
+	position: fixed;
+	top: 5px;
+	right: 22px;
+	z-index: 9;
+}
+
+#utilities .loader,
+#utilities .settings-menu-item {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+	display: inline-block;
+	vertical-align: bottom;
+}
+
+.settings-menu-item {
+	padding: 2px;
+	color: #000000;
+	opacity: 0.5;
+	font-size: 26px;
+	border: none !important;
+}
+
+.settings-menu-item.active {
+	color: #08d58f;
+	opacity: 1;
+}
+
+.settings-menu-item:hover {
+	opacity: 1;
+}
 
 
 
@@ -227,6 +302,7 @@ body {
 .animate,
 .button,
 button,
+.main-menu a,
 input[type='submit'] {
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
@@ -238,6 +314,7 @@ input[type='submit'] {
 .loading .animate,
 .loading .button,
 .loading button,
+.loading .main-menu a,
 .loading input[type='submit'] {
 	-webkit-transition: none !important;
 	-moz-transition: none !important;
@@ -300,23 +377,31 @@ input[type='submit'] {
 	margin: 0px 1px;
 }
 
-#notifications .notification-item:first-child {
+#notifications .notification-item.keyboard-shortcut {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	margin: -150px 0 0 -150px;
+	text-align: center;
+	border-radius: 10px;
+}
+
+#notifications .notification-item.keyboard-shortcut i {
+	line-height: 300px;
+	font-size: 120px;
+}
+
+#notifications .notification-item:not(.keyboard-shortcut):first-child {
 	border-radius: 100px 0 0 100px;
 }
 
-#notifications .notification-item:last-child {
+#notifications .notification-item:not(.keyboard-shortcut):last-child {
 	border-radius: 0 100px 100px 0;
 }
 
-#notifications .notification-item:only-child {
+#notifications .notification-item:not(.keyboard-shortcut):only-child {
 	border-radius: 100px;
-}
-
-#notifications .notification-item.loading {
-    padding-left: 40px;
-    background-image: url('../svg/spinner.svg');
-    background-repeat: no-repeat;
-    background-position: 10px 8px;
 }
 
 #notifications .notification-item.bad,
@@ -330,14 +415,29 @@ input[type='submit'] {
 
 
 /**
+ * Full-page notifications (ie just for a certain page)
+ **/
+.page-notification {
+	margin: -40px -40px 30px -40px;
+	padding: 20px 40px;
+	font-size: 16px;
+}
+
+
+/**
  * Base-level typography
  * Standardise the font styles
  **/
 
 h1 {
-	font-size: 30px;
+	font-size: 40px;
 	font-weight: 200;
-	padding-bottom: 20px;
+	padding-bottom: 35px;
+	margin-top: -10px;
+}
+
+.heading-wrapper > h1 {
+	display: inline-block;
 }
 
 h2 {
@@ -383,11 +483,13 @@ h4.section-title {
  * Text colour variations
  **/
 
+.white-text {						color: #FFFFFF; }
 .black-text {						color: #000000; }
 .red-text {							color: rgb(214,47,47); }
 .green-text {						color: rgb(53,204,53); }
 .primary-colour-text {				color: #1cf4c4; }
 
+.white-background {					background-color: #FFFFFF; }
 .black-background {					background-color: #000000; }
 .red-background {					background-color: rgb(214,47,47); }
 .green-background {					background-color: rgb(53,204,53); }
@@ -504,6 +606,11 @@ h1 .flag {
 	vertical-align: top;
 }
 
+.body .heading-wrapper .button {
+	vertical-align: top;
+	margin-left: 10px;
+}
+
 
 /* variations */
 
@@ -514,10 +621,10 @@ h1 .flag {
 .body .button.destructive:hover {		background: #bc1f1f; }
 
 
-.body .button.disabled {
+.body .button.disabled,
+.body .button.disabled:hover {
 	cursor: not-allowed;
-	color: #DDDDDD !important;
-	border-color: #DDDDDD !important;
+	opacity: 0.5;
 }
 
 
@@ -606,7 +713,7 @@ h1 .flag {
 	background-position: 50% 50%;
 	background-size: cover;
 	background-color: #777777;
-	border: 2px solid #FFFFFF;
+	border: 2px solid #f5f5f5;
 }
 
 .related-artist:hover .thumbnail {
@@ -662,6 +769,17 @@ h1 .flag {
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+
+.square-panel .image-container .overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	max-width: 100%;
+	max-height: 100%;
 }
 
 .square-panel .image-container .image.placeholder {
@@ -720,7 +838,7 @@ h1 .flag {
 	text-align: center;
 	color: #FFFFFF;
 	font-weight: bold;
-	font-size: 14px;
+	font-size: 16px;
 }
  
 .square-panel.category:hover .name {
@@ -794,10 +912,32 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
  
  
+/**
+ * Intro panels
+ * The key pages (Artist, Playlist, etc) have their own spin on this generic style
+ **/
+
+.intro preloadedimage {
+	position: absolute;
+	top: -50px;
+	right: -10px;
+	bottom: 0;
+	left: -10px;
+	overflow: hidden;
+	opacity: 0;
+	background-position: 50% 10%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+ 
+ 
+ 
+ 
 
 
 /* ====================================================================== PAGE-SPECIFIC =========== */
 /* ================================================================================================ */
+
 
 /**
  * Queue
@@ -805,11 +945,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  
 .queue-intro {
 	padding-bottom: 20px;
-}
- 
-.queue-intro .info-text {
-	margin-top: -15px;
-	padding: 0;
 }
 
 
@@ -846,34 +981,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .playlist-intro {
 	position: relative;
-	margin: -20px -20px 30px -20px;
-}
-
-.playlist-intro .image-container {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	overflow: hidden;
-	z-index: -1;
-}
-
-.playlist-intro .image {
-	position: absolute;
-	top: -10px;
-	right: -10px;
-	bottom: -10px;
-	left: -10px;
-	background-color: #EEEEEE;
-	background-size: cover;
-	background-position: 50% 100%;
-}
-
-.playlist-intro .inner {
-	background: rgba(0,0,0,0.65);
-	color: #FFFFFF;
-	padding: 50px;
+	margin: 0 0 30px 0;
 }
 
 .playlist-intro .content {
@@ -884,13 +992,14 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	width: 200px;
 	height: 200px;
 	float: left;
-	margin: -20px 0 -20px -20px;
+	margin: 0;
 	background-position: 50% 50%;
 	background-size: cover;
 }
 
 .playlist-intro h1 {
 	padding-bottom: 0;
+	padding-top: 15px;
 	margin-bottom: -5px;
 }
 
@@ -909,7 +1018,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .artist-intro {
 	position: relative;
-	margin: -20px -20px 30px -20px;
+	margin: -40px -40px 30px;
 	padding: 0 20px;
 	height: 60vh;
 }
@@ -950,29 +1059,20 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	left: 0;
 	overflow: hidden;
 	z-index: -1;
+	background: #EEEEEE;
 }
 
-.artist-intro .image {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background-color: #EEEEEE;
-	background-position: 50% 50%;
-	background-size: cover;
-}
-
-.artist-intro .submenu {
+.artist-intro .sub-page-navigation {
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	right: 0;
 	padding-left: 10px;
+	margin-bottom: 0;
 	background: rgba(0,0,0,0.2);
 }
 
-.artist-intro .submenu .menu-item {
+.artist-intro .sub-page-navigation .menu-item {
 	display: inline-block;
 	padding: 10px;
 	color: #FFFFFF;
@@ -980,11 +1080,13 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	text-transform: uppercase;
 	border: 0;
 	opacity: 0.75;
+	margin-right: 0;
 }
 
-.artist-intro .submenu .menu-item.active,
-.artist-intro .submenu .menu-item:hover {
+.artist-intro .sub-page-navigation .menu-item.active,
+.artist-intro .sub-page-navigation .menu-item:hover {
 	opacity: 1;
+	color: #FFFFFF;
 }
 
 .tracklist.top-track-items {
@@ -1046,6 +1148,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	height: 100%;
 }
 
+.search .sub-page-navigation {
+	margin: -10px 0 30px;
+}
+
 .search-results-section.artists,
 .search-results-section.albums,
 .search-results-section.playlists {
@@ -1058,7 +1164,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .search-results-section .square-panel {
-	width: 29%;
+	width: 46%;
 }
 
 .search-results-section.playlists .square-panel .info > .name {
@@ -1081,14 +1187,15 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .sub-page-navigation {
-	border-bottom: 1px solid #666666;
+	margin-bottom: 30px;
+	margin-top: -10px;
 }
 
 .sub-page-navigation .menu-item {
-	padding: 10px 0;
-	margin-left: 20px;
+	padding: 5px 0;
+	margin-right: 20px;
 	margin-bottom: -1px;
-	border-bottom: 1px solid transparent;
+	border-bottom: 2px solid transparent;
 	display: inline-block;
 	font-weight: bold;
 	text-transform: uppercase;
@@ -1149,76 +1256,57 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 /* ================================================================================================ */
 
 #player {
-	background: #000000;
 	color: #FFFFFF;
 }
 
-#player .background-container {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	opacity: 0.25;
-}
-
-#player .background-container .image {
-	width: 100%;
-	height: 100%;
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
-	background-size: cover;
-}
-
-#player > .slim-player.inner {
-	padding: 10px 10px 19px 10px;
-	position: absolute;
-	bottom: 0;
-	right: 0;
-	left: 0;
-	top: 0;
-}
-
-#player .button {
+.player .button {
 	padding: 5px;
 	margin: 0 5px;
 	font-size: 14px;
 	opacity: 0.75;
+	display: inline-block;
+	background: transparent;
 }
 
-#player .button.active,
-#player .button:hover {
+.player .button.active,
+.player .button:hover {
 	opacity: 1;
 	cursor: pointer;
 }
 
-#player .button.active {
+.player .button.active {
     color: #1cf4c4;
 }
 
-#player .track-info {
+.player .track-info {
 	text-align: center;
 	font-size: 16px;
 	text-transform: uppercase;
-	padding: 28px 200px 0;
+	padding-bottom: 20px;
+	padding-left: 15px;
+	padding-right: 15px;
 }
 
-#player .track-info .track {
-	display: inline-block;
+.player .track-info .track {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-#player .track-info .artist {
-	display: inline-block;
+.player .track-info .artist {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	opacity: 0.5;
 }
 
-#player .track-info .artist a{
+.player .track-info .artist a{
 	text-decoration: none;
 	color: #FFFFFF;
 	border-bottom: 1px dotted transparent;
 }
 
-#player .track-info .artist a:hover {
+.player .track-info .artist a:hover {
 	border-color: #FFFFFF;
 }
 
@@ -1227,36 +1315,40 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  **/
  
 #player .controls {
-	float: left;
-	margin-left: 15px;
 }
  
 #player .playback {
-	padding-top: 32px;
 	float: left;
+	padding-left: 15px;
 }
 
 #player .volume {
-	padding-top: 32px;
-	padding-right: 48px;
 	float: right;
-	width: 180px;
+	padding-right: 20px;
 }
 
-#player .slider {
-	padding: 8px 0;
-	margin-left: 120px;
-	margin-right: 20px;
+#player .volume .slider {
+	display: inline-block;
+	width: 40px;
+	vertical-align: middle;
+}
+
+.player .slider {
 	cursor: pointer;
 }
 
+
+/**
+ * Scrobbling
+ **/
+
 #player .slider.progress {
-	position: absolute;
-	top: -8px;
+	padding-top: 5px;
+	position: fixed;
+	bottom: 0;
 	left: 0;
 	right: 0;
-	margin: 0;
-	z-index: 3;
+	z-index: 8;
 }
 
 #player .slider.progress .track {
@@ -1265,17 +1357,17 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #player .slider.progress:hover .track {
-	height: 8px;
-	background: rgba(255,255,255,0.15);
+	height: 12px;
+	background: rgba(0,0,0,0.15);
 }
 
-#player .slider  .track {
+.player .slider .track {
 	position: relative;
 	height: 2px;
 	background: rgba(255,255,255,0.3);
 }
 
-#player .slider  .track .fill {
+.player .slider .track .fill {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -1283,7 +1375,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #1cf4c4;
 }
 
-#player .slider  .track .fill.animate {
+.player .slider  .track .fill.animate {
 	-webkit-transition: all 1s;
 	-moz-transition: all 1s;
 	-o-transition: all 1s;
@@ -1292,93 +1384,86 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 
 /**
- * Fullscreen player
+ * Full player
  **/
-
-#player.expanded {
-	top: 0;
-	height: auto;
-}
-
-#player .expand-player {
-	position: absolute;
-	bottom: 25px;
-	right: 20px;
-	padding: 10px;
-	font-size: 16px;
-	cursor: pointer;
-	display: block;
-	z-index: 9;
-	color: #FFFFFF;
-}
-
-#player .fullscreen-player {
-	display: none;
-	z-index: 2;
-}
-
-#player .fullscreen-player .info-wrapper {
-	position: absolute;
-	top: 60%;
-	left: 0;
-	right: 0;
-	height: 50%;
-}
-
-#player .fullscreen-player .track-info {
-	padding: 40px 0;
-}
-
-#player .fullscreen-player .player-controls {
-	float: none;
+ 
+#full-player {
 	text-align: center;
-	margin: 0;
+}
+ 
+#full-player .artwork {
+	width: 400px;
+	padding-bottom: 400px;
+	margin: 0 auto 20px;
+	position: relative;
+	background: #EEEEEE;
+	display: block;
+	border: 0;
 }
 
-#player .fullscreen-player .controls .button {
+#full-player .controls {
+	width: 400px;
+	margin: 0 auto;
+}
+ 
+#full-player .artwork .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-size: cover;
+	background-position: 50% 50%;
+}
+ 
+#full-player .track-info {
+	color: #000000;
+	font-weight: 600;
+}
+
+#full-player .track-info .artist a {
+	color: #000000;
+	display: inline-block;
+}
+
+#full-player .track-info .artist a:hover {
+	border-color: #000000;
+}
+
+#full-player .button {
+	color: #000000;
 	font-size: 20px;
 }
 
-#player .fullscreen-player .artwork-wrapper {
-	position: absolute;
-	top: 5%;
-	left: 0;
-	right: 0;
-	height: 50%;
-	text-align: center;
+#full-player .button.active {
+	color: #1cf4c4;
 }
 
-#player .fullscreen-player .artwork {
-	height: 100%;
-	margin: 0 auto;
-	padding-top: 30px;
-    display: block;
-    border: 0 !important;
-    text-decoration: none;
+#full-player .button:hover {
+	opacity: 1;
+	background: transparent;
 }
 
-#player .fullscreen-player .artwork > .image {
-	height: 100%;
-	width: auto;
+#full-player .track-timer {
+	float: right;
+	margin-top: 12px;
 }
 
-#player .fullscreen-player .volume {
-	margin: 0 auto;
-	max-width: 500px;
-	width: 80%;
-	float: none;
-	padding: 40px 0 0 0;
+#full-player .track-timer .current {
+	opacity: 0.5;
+	padding-right: 2px;
+	display: inline-block;
 }
 
-#player .fullscreen-player .volume .controls {
-	margin: -5px 0 0 0;
+#full-player .progress.slider {
+	margin: 35px 0;
+	position: relative;
 }
 
-#player .fullscreen-player .volume .slider {
-	margin: 0 0 0 45px;
+#full-player .progress.slider .track {
+	background: #DDDDDD;
+	height: 4px;
 }
-
-
 
 
 

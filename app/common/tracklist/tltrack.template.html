@@ -1,4 +1,4 @@
-<div class="track" ng-class="{ 'playing': track.tlid == currentTlTrack.tlid, 'selected': track.selected }" data-uri="{{ track.track.uri }}">
+<div class="track" ng-class="{ 'playing': track.tlid == state().currentTlTrack.tlid, 'selected': track.selected }" data-uri="{{ track.track.uri }}">
 
 	<div class="selected-state">
 		<i class="fa fa-check-square-o" ng-show="track.selected"></i>

@@ -49,7 +49,7 @@ angular.module('spotmop.browse.album', [])
 	
 	// add album to library
 	$scope.addToLibrary = function(){
-		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+		$rootScope.requestsLoading++;
 		
 		var trackids = [];
 		angular.forEach( $scope.tracklist.tracks, function( track ){
@@ -58,13 +58,13 @@ angular.module('spotmop.browse.album', [])
 		
 		SpotifyService.addTracksToLibrary( trackids )
 			.success( function(response){
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+				$rootScope.requestsLoading--;
 			});
 	}
     
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-album', message: 'Loading'});
+    $rootScope.requestsLoading++;
 	
-	// get the artist
+	// get the album
 	SpotifyService.getAlbum( $stateParams.uri )
 		.success(function( response ) {
 		
@@ -73,10 +73,14 @@ angular.module('spotmop.browse.album', [])
 			$scope.tracklist.type = 'track';
 			$scope.tracklist.tracks = response.tracks.items;
 			
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});
+			angular.forEach( $scope.tracklist.tracks, function(track){
+				track.album = $scope.album;
+			});
+			
+            $rootScope.requestsLoading--;
 		})
 		.error(function( error ){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-album'});
+            $rootScope.requestsLoading--;
             $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-album', message: error.error.message});
 		});
     
@@ -96,8 +100,7 @@ angular.module('spotmop.browse.album', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-tracks', message: 'Loading tracks'});
+        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -110,11 +113,11 @@ angular.module('spotmop.browse.album', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+                $rootScope.requestsLoading--;
                 loadingMoreTracks = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+                $rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });

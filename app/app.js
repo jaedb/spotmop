@@ -9,12 +9,14 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	'ngTouch',
+	'ngAnimate',
 	'ui.router',
 	
 	'spotmop.common.contextmenu',
 	'spotmop.common.tracklist',
     
 	'spotmop.services.settings',
+	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
 	'spotmop.services.echonest',
@@ -23,7 +25,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
-	'spotmop.myplaylists',
+	'spotmop.playlists',
 	'spotmop.search',
 	'spotmop.settings',
 	
@@ -182,6 +184,57 @@ angular.module('spotmop', [
 
 
 
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('textOverImage', function() {
+    return {
+        restrict: 'A',
+        link: function($scope, $element, $attrs) {
+            
+            $scope.$on('spotmop:detectBackgroundColor', function(event){
+                BackgroundCheck.init({
+                    targets: $($element).parent(),
+                    images: $element.closest('.intro').find('.image')
+                });
+                BackgroundCheck.refresh();
+            });
+        }
+    };
+})
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ **/
+.directive('preloadedimage', function( $rootScope ){
+    return {
+		restrict: 'E',
+		scope: {
+			url: '@'
+		},
+        link: function($scope, $element, $attrs){
+			var fullUrl = '/vendor/resource-proxy.php?url='+$scope.url;
+			var image = $('<img src="'+fullUrl+'" />');
+			image.load(function(){
+				$element.attr('style', 'background-image: url("'+fullUrl+'");');
+				$scope.$emit('spotmop:detectBackgroundColor');
+				$element.animate(
+					{
+						opacity: 1
+					},
+					200
+				);
+			});
+        },
+		template: ''
+    };
+})
+
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
@@ -229,6 +282,10 @@ angular.module('spotmop', [
 })
 
 
+.run( function($rootScope, SettingsService){
+	// this code is run before any controllers
+})
+
 
 /* ==================================================================== APP CONTROLLER ======== */
 /* ============================================================================================ */
@@ -236,8 +293,8 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, SettingsService ){
-
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService ){		
+		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
 			return true;
@@ -254,8 +311,8 @@ angular.module('spotmop', [
 		if( $location.host() == mopidyhost )
 			return true;
 		}
-	$scope.currentTlTrack = {};
-	$scope.getCurrentTlTrack = function(){ return $scope.currentTlTrack };
+	$rootScope.requestsLoading = 0;
+	$scope.state = PlayerService.state;
 	$scope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
@@ -268,11 +325,13 @@ angular.module('spotmop', [
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
+		$rootScope.requestsLoading++;
+	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.success(function( response ) {
 				
-				$scope.myPlaylists = response.items;
-				
+				$rootScope.requestsLoading--;
+				$scope.myPlaylists = response.items;				
                 var newPlaylistsMenu = [];
             
 				// loop all of our playlists, and set up a menu item for each
@@ -291,9 +350,24 @@ angular.module('spotmop', [
                 $scope.playlistsMenu = newPlaylistsMenu;
 			})
 			.error(function( error ){
+				$rootScope.requestsLoading--;
 				$scope.status = 'Unable to load your playlists';
 			});	
 	}
+	
+	
+	/**
+	 * Detect if we've just loaded a new version and prompt user to clear cache
+	 **/
+	var currentVersion = SettingsService.getSetting('version',null);	
+	SettingsService.getVersion()
+		.success( function(response){
+			if( !currentVersion || currentVersion != response.versionCode ){
+				SettingsService.setSetting('version',response.versionCode)
+				$scope.$broadcast('spotmop:notifyUser', {id: 'updated', message: 'Spotmop has been updated - please clear your browser cache', autoremove: false});
+			}
+		});
+		
     
 	/**
 	 * Responsive
@@ -317,7 +391,9 @@ angular.module('spotmop', [
 		
 		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			$(document).find('#sidebar').css({ left: '-50%', width: '50%' });
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
+			$(document).find('#sidebar').css({ left: '-'+percentage+'%', width: percentage+'%' });
 			$(document).find('#body').css({ left: '0px', width: '100%' });
 			
 		// full-screen, so reset any animations/sliding/offsets
@@ -334,11 +410,13 @@ angular.module('spotmop', [
 	// show menu (this is triggered by swipe event)
 	$scope.showMenu = function(){
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
 			$(document).find('#sidebar').animate({
 				left: '0px'
 			}, 100);
 			$(document).find('#body').animate({
-				left: '50%'
+				left: percentage+'%'
 			}, 100);
 		}
 	}
@@ -346,8 +424,10 @@ angular.module('spotmop', [
 	// hide menu (typically triggered by swipe event)
 	$scope.hideMenu = function(){
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
+			var percentage = 30;
+			if( $scope.smallScreen() ) percentage = 70;
 			$(document).find('#sidebar').animate({
-				left: '-50%'
+				left: '-'+percentage+'%'
 			}, 100);
 			$(document).find('#body').animate({
 				left: '0px'
@@ -364,14 +444,15 @@ angular.module('spotmop', [
 	};
     
     
-    /**
-     * Application navigation success event
-     * Gives us a chance to identify the new $state, and highlight in the nav
-     **/
-    $rootScope.$on('$stateChangeSuccess', function( event, toState, toParams ){
-        $(document).find('#sidebar .menu-item-wrapper').removeClass('active');
-        $(document).find('#sidebar a[href="'+window.location.pathname+'"]').parent().addClass('active');
-    });
+	/**
+	 * Detect if we're an active menu item
+	 * We have to wrap this as it's not (for some reason) available to the template
+	 * @return boolean
+	 **/
+	$scope.isActive = function( state ){
+		
+		return $state.includes( state );
+	};
 
     
     /**
@@ -397,13 +478,26 @@ angular.module('spotmop', [
      * Displays a user-friendly notification. Can be error, loader or tip
      **/
 	$scope.$on('spotmop:notifyUser', function( event, data ){
-        
+		
+		// handle undefined errors
         if( typeof(data.type) === 'undefined' )
             data.type = '';
-        
+		
+		// if we're a keyboard shortcut notification, this requires icon injection
+		if( data.type == 'keyboard-shortcut' ){
+			data.message = '<i class="fa fa-'+data.icon+'"></i>';
+		}
+		
+		// default to autoremove
+        if( typeof(data.autoremove) === 'undefined' )
+            data.autoremove = true;
+		
+		// remove any existing notifications of this type (using notification id)
+		$(document).find('#notifications .notification-item[data-id="'+data.id+'"]').remove();;
+		
 		var container = $(document).find('#notifications');
 		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
-        container.append( notification );
+		container.append( notification );
 		notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
 		
 		if( data.autoremove ){
@@ -413,17 +507,11 @@ angular.module('spotmop', [
 				},
 				2500
 			);
-										
 		}
 	});
-	
-	$scope.$on('spotmop:notifyUserRemoval', function( event, data ){
-        var notificationItem = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
-		notificationItem.fadeOut(200, function(){ notificationItem.remove() });
-	});
     
     
-		
+
     /**
      * All systems go!
      *
@@ -439,24 +527,43 @@ angular.module('spotmop', [
 	);
     
     
+	// watch for re-authorizations of spotify
+	$scope.$watch(
+		function(){
+			return $localStorage.spotify;
+		},
+		function(newVal,oldVal){
+			getSpotifyAccount();
+		}
+	);
     
     // figure out who we are on Spotify
     // TODO: Hold back on this to make sure we're authorized
-    SpotifyService.getMe()
-        .success( function(response){
-            $scope.spotifyUser = response;
-			$rootScope.spotifyOnline = true;
-        
-            // save user to settings
-            SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-			
-			// update my playlists
-			$scope.updatePlaylists();
-        })
-        .error(function( error ){
-            $scope.status = 'Unable to look you up';
-			$rootScope.spotifyOnline = false;
-        });
+	
+	getSpotifyAccount();
+	
+	function getSpotifyAccount(){
+		SpotifyService.getMe()
+			.success( function(response){
+				$scope.spotifyUser = response;
+				
+				if( typeof(response.error) !== 'undefined' ){
+					$scope.$broadcast('spotmop:notifyUser', {type: 'error', message: response.error.message});
+				}else{
+					$rootScope.spotifyOnline = true;
+				
+					// save user to settings
+					SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
+					
+					// update my playlists
+					$scope.updatePlaylists();
+				}
+			})
+			.error(function( error ){
+				$scope.status = 'Unable to look you up';
+				$rootScope.spotifyOnline = false;
+			});
+	}
 	
 	
 	/**
@@ -474,6 +581,14 @@ angular.module('spotmop', [
             }else if( event.which === 17 ){
                 $rootScope.ctrlKeyHeld = true;
             }
+
+			// if we're about to fire a keyboard shortcut event, let's prevent default
+			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
+				if($.inArray(event.which, shortcutKeyCodes) > -1)
+					event.preventDefault();			
+			}
         })
     
         // when we release the key press
@@ -482,34 +597,31 @@ angular.module('spotmop', [
 			// make sure we're not typing in an input area
 			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
 				
-				// prevent default key behavior
-				event.preventDefault();
-				
 				// delete key
 				if( event.which === 46 )
-					$scope.$broadcast('spotmop:keyboardShortcut:delete');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:delete');
 					
 				// spacebar
 				if( event.which === 32 )
-					$scope.$broadcast('spotmop:keyboardShortcut:space');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:space');
 					
 				// enter
 				if( event.which === 13 )
-					$scope.$broadcast('spotmop:keyboardShortcut:enter');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:enter');
 
 				// navigation arrows
 				if( event.which === 37 )
-					$scope.$broadcast('spotmop:keyboardShortcut:left');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:left');
 				if( event.which === 38 )
-					$scope.$broadcast('spotmop:keyboardShortcut:up');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:up');
 				if( event.which === 39 )
-					$scope.$broadcast('spotmop:keyboardShortcut:right');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:right');
 				if( event.which === 40 )
-					$scope.$broadcast('spotmop:keyboardShortcut:down');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:down');
 
 				// esc key
 				if( event.which === 27 ){
-					$scope.$broadcast('spotmop:keyboardShortcut:esc');
+					$rootScope.$broadcast('spotmop:keyboardShortcut:esc');
 					if( dragging ){
 						dragging = false;
 						$(document).find('.drag-tracer').hide();
@@ -525,51 +637,6 @@ angular.module('spotmop', [
         }
     );
     
-	
-	// not in tracklistcontroller because multiple tracklists are stored in memory at any given time
-	// TODO: Fire off a $broadcast, so the current activated tracklist can handle this functionality
-	// DELETE ME
-	function deleteKeyReleased(){
-		
-		var tracksDOM = $(document).find('.track.selected');
-		var tracks = [];
-		
-		// --- DELETE FROM PLAYLIST --- //
-		
-		if( $state.current.controller == 'PlaylistController' ){
-			
-			// TODO: add check of userid. We want to disallow deletes if the playlist owner.id
-			// does not match the logged in user.id. Currently we just get an error from SpotifyService
-			
-			// construct each track into a json object to delete
-			$.each( $(document).find('.track'), function(trackKey, track){
-				if( $(track).hasClass('selected') ){
-					tracks.push( {uri: $(track).attr('data-uri'), positions: [trackKey]} );
-				}
-			});
-			
-			// parse these uris to spotify and delete these tracks
-			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracks )
-				.success(function( response ) {
-					tracksDOM.remove();
-				})
-				.error(function( error ){
-					console.log( error );
-				});
-		
-			
-		// --- DELETE FROM QUEUE --- //
-			
-		}else if( $state.current.controller == 'QueueController' ){
-		
-			// fetch each tlid and put into delete array
-			$.each( $(document).find('.track.selected'), function(trackKey, track){
-				tracks.push( parseInt($(track).attr('data-tlid')) );
-			});
-			
-			MopidyService.removeFromTrackList( tracks );
-		}
-	}
     
 	
 	/**

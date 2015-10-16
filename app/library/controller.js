@@ -21,24 +21,22 @@ angular.module('spotmop.library', [])
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-	
-    $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-library', message: 'Loading'});
+	$rootScope.requestsLoading++;
     
 	SpotifyService.getMyTracks( userid )
 		.then(
 			function( response ){ // successful
 				$scope.tracklist = response.data;
 				$scope.tracklist.tracks = reformatTracks( response.data.items );
-				
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-library'});
+				$rootScope.requestsLoading--;
 			},
 			function( response ){ // error
 			
 				// if it was 401, refresh token
 				if( error.error.status == 401 )
 					Spotify.refreshToken();
-			
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-library'});
+				
+				$rootScope.requestsLoading--;
 				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-library', message: error.error.message});
 			}
 		);
@@ -51,6 +49,7 @@ angular.module('spotmop.library', [])
 		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
 		var tracksToDelete = [];
+		$rootScope.requestsLoading++;
 		
 		// construct each track into a json object to delete
 		angular.forEach( selectedTracks, function( selectedTrack, index ){
@@ -59,13 +58,16 @@ angular.module('spotmop.library', [])
 		
 		// parse these uris to spotify and delete these tracks
 		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
-			.success(function( response ){
+			.success(function( response ){				
+				$rootScope.requestsLoading--;
+				
 				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
 				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
 				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
 			})
 			.error(function( error ){
-				console.log( error );
+				$rootScope.requestsLoading--;
+				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleting-tracks', message: error.error.message});
 			});
 	});
 	
@@ -103,9 +105,8 @@ angular.module('spotmop.library', [])
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreTracks = true;   
-        
-        $rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'loading-more-tracks', message: 'Loading tracks'});
+        loadingMoreTracks = true;
+		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
@@ -118,11 +119,11 @@ angular.module('spotmop.library', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+				$rootScope.requestsLoading--;
                 loadingMoreTracks = false;
             })
             .error(function( error ){
-                $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'loading-more-tracks'});
+                $rootScope.requestsLoading--;
                 $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });

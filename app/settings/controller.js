@@ -51,15 +51,16 @@ angular.module('spotmop.settings', [])
 		$scope.currentSubpage = subpage;
 	};
     $scope.refreshSpotifyToken = function(){
-        $rootScope.$broadcast('spotmop:notifyUser', {id: 'refreshtoken', message: "Refreshing token", type: 'loading'});
+        $rootScope.requestsLoading++;
+        $rootScope.$broadcast('spotmop:notifyUser', {id: 'refreshtoken', message: "Refreshing token", type: 'loading', autoremove: true});
         $.when(SpotifyService.getNewToken()).then( function(){
-            $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'refreshtoken'});
+            $rootScope.requestsLoading--;
         });
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
-        $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out", type: 'bad loading'});
-        $timeout( function(){ window.location = window.location }, 1000 );
+		$scope.$parent.spotifyOnline = false;
+        $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out"});
     };
     $scope.toggleMopidyConsume = function(){
     	if( $scope.settings.mopidyconsume ){
@@ -93,14 +94,16 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
+		
+		$rootScope.requestsLoading++;
+		
 		MopidyService.startServer()
 			.success( function(response){
-				console.log( response );
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
-				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Starting", type: 'loading', autoremove: true});	
+				$rootScope.requestsLoading--;
+				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Attempting to start Mopidy server'});	
 			})
 			.error( function(response){
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.requestsLoading--;
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
 			});
 	};
@@ -109,14 +112,16 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
+		
+		$rootScope.requestsLoading++;
+		
 		MopidyService.restartServer()
 			.success( function(response){
 				console.log( response );
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
-				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Restarting", type: 'loading', autoremove: true});	
+				$rootScope.requestsLoading--;	
 			})
 			.error( function(response){
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.requestsLoading--;
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
 			});
 	};
@@ -125,14 +130,16 @@ angular.module('spotmop.settings', [])
 			$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Button disabled', type: 'error', autoremove: true});	
 			return false;
 		}
+		
+		$rootScope.requestsLoading++;
+		
 		MopidyService.stopServer()
 			.success( function(response){
 				console.log( response );
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});
-				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: "Stopping", type: 'loading', autoremove: true});	
+				$rootScope.requestsLoading--;
 			})
 			.error( function(response){
-				$rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'mopidyserver'});	
+				$rootScope.requestsLoading--;
 				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: response.responseText, type: 'error'});	
 			});
 	};
@@ -148,7 +155,7 @@ angular.module('spotmop.settings', [])
     	if( $scope.settings.echonestenabled ){
             EchonestService.stop();
         }else{
-			$rootScope.$broadcast('spotmop:notifyUser', {id: 'start-echonest', message: "Connecting to Echonest", type: 'loading'});	
+			$rootScope.requestsLoading++;	
             EchonestService.start();
         }
         $scope.$watch(
@@ -159,7 +166,7 @@ angular.module('spotmop.settings', [])
             // and the processor function
             function(newState, oldState){
                 if( newState === true )
-                    $rootScope.$broadcast('spotmop:notifyUserRemoval', {id: 'start-echonest'});	
+                    $rootScope.requestsLoading--;
             }
         );
     };
@@ -175,6 +182,7 @@ angular.module('spotmop.settings', [])
 		}
 	};
 	$scope.resetSettings = function(){
+		$rootScope.requestsLoading++;
 		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
 		localStorage.clear();		
 		window.location = window.location;
