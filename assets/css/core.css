@@ -1064,7 +1064,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: absolute;
 	left: 20px;
 	right: 20px;
-	bottom: 50px;
+	bottom: 56px;
 }
 
 .artist-intro h1 {
@@ -1104,16 +1104,16 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding-left: 10px;
+	padding-left: 12px;
 	margin-bottom: 0;
 	background: rgba(0,0,0,0.2);
 }
 
 .artist-intro .sub-page-navigation .menu-item {
 	display: inline-block;
-	padding: 10px;
+	padding: 12px 8px;
 	color: #FFFFFF;
-	font-size: 12px;
+	font-size: 14px;
 	text-transform: uppercase;
 	border: 0;
 	opacity: 0.75;
