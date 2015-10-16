@@ -1444,15 +1444,20 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: transparent;
 }
 
+#full-player .track-timer {
+	float: right;
+	margin-top: 12px;
+}
+
+#full-player .track-timer .current {
+	opacity: 0.5;
+	padding-right: 2px;
+	display: inline-block;
+}
+
 #full-player .progress.slider {
 	margin: 35px 0;
 	position: relative;
-}
-
-#full-player .progress.slider .track-duration {
-	position: absolute;
-	top: -20px;
-	right: 0;
 }
 
 #full-player .progress.slider .track {
