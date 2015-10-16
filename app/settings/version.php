@@ -16,8 +16,8 @@ $commit = exec('git rev-parse --short HEAD');
 if( $tag ){
 	$version = $tag;
 }else{
-	$version = 'Latest development version';
+	$version = 'dev';
 }
 
-echo json_encode(array( 'version' => $version, 'commit' => $commit ));
+echo json_encode(array( 'version' => $version, 'commit' => $commit, 'versionCode' => $version.'-'.$commit ));
 return;

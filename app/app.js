@@ -282,6 +282,10 @@ angular.module('spotmop', [
 })
 
 
+.run( function($rootScope, SettingsService){
+	// this code is run before any controllers
+})
+
 
 /* ==================================================================== APP CONTROLLER ======== */
 /* ============================================================================================ */
@@ -289,8 +293,8 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService ){
-
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService ){		
+		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
 			return true;
@@ -350,6 +354,20 @@ angular.module('spotmop', [
 				$scope.status = 'Unable to load your playlists';
 			});	
 	}
+	
+	
+	/**
+	 * Detect if we've just loaded a new version and prompt user to clear cache
+	 **/
+	var currentVersion = SettingsService.getSetting('version',null);	
+	SettingsService.getVersion()
+		.success( function(response){
+			if( !currentVersion || currentVersion != response.versionCode ){
+				SettingsService.setSetting('version',response.versionCode)
+				$scope.$broadcast('spotmop:notifyUser', {id: 'updated', message: 'Spotmop has been updated - please clear your browser cache', autoremove: false});
+			}
+		});
+		
     
 	/**
 	 * Responsive
