@@ -386,20 +386,27 @@ angular.module('spotmop', [
 		return false;
 	}
 	
-    angular.element(window).resize(function () {
-		$scope.windowWidth = $(document).width();
+    angular.element(window).resize(function(){
 		
-		// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
-		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			var percentage = 30;
-			if( $scope.smallScreen() ) percentage = 70;
-			$(document).find('#sidebar').css({ left: '-'+percentage+'%', width: percentage+'%' });
-			$(document).find('#body').css({ left: '0px', width: '100%' });
+		// detect if the width has changed 
+		// we only check width because soft keyboard reveal shouldn't hide/show the menu (ie search form)
+		if( $(document).width() != $scope.windowWidth ){
 			
-		// full-screen, so reset any animations/sliding/offsets
-		}else{
-			$(document).find('#sidebar').attr('style','');
-			$(document).find('#body').attr('style','')
+			// update stored value
+			$scope.windowWidth = $(document).width();
+			
+			// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
+			if( $scope.mediumScreen() || $scope.smallScreen() ){
+				var percentage = 30;
+				if( $scope.smallScreen() ) percentage = 70;
+				$(document).find('#sidebar').css({ left: '-'+percentage+'%', width: percentage+'%' });
+				$(document).find('#body').css({ left: '0px', width: '100%' });
+				
+			// full-screen, so reset any animations/sliding/offsets
+			}else{
+				$(document).find('#sidebar').attr('style','');
+				$(document).find('#body').attr('style','')
+			}
 		}
     });
 	
@@ -412,9 +419,6 @@ angular.module('spotmop', [
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
 			var percentage = 30;
 			if( $scope.smallScreen() ) percentage = 70;
-			$(document).find('#sidebar').animate({
-				left: '0px'
-			}, 100);
 			$(document).find('#body').animate({
 				left: percentage+'%'
 			}, 100);
@@ -424,14 +428,9 @@ angular.module('spotmop', [
 	// hide menu (typically triggered by swipe event)
 	$scope.hideMenu = function(){
 		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			var percentage = 30;
-			if( $scope.smallScreen() ) percentage = 70;
-			$(document).find('#sidebar').animate({
-				left: '-'+percentage+'%'
-			}, 100);
 			$(document).find('#body').animate({
 				left: '0px'
-			}, 100);
+			}, 200);
 		}
 	}
 	
