@@ -231,6 +231,43 @@ body {
 }
 
 
+/**
+ * Sub-page navigation
+ **/
+
+.sub-page-navigation {
+	margin-bottom: 35px;
+	margin-top: -15px;
+}
+
+.sub-page-navigation .menu-item {
+	padding: 5px 0;
+	margin-right: 20px;
+	margin-bottom: -1px;
+	border-bottom: 2px solid transparent;
+	display: inline-block;
+	font-weight: bold;
+	text-transform: uppercase;
+}
+
+.sub-page-navigation .menu-item > i {
+	font-size: 6px;
+	vertical-align: middle;
+	margin-top: -4px;
+	padding-right: 2px;
+}
+
+.sub-page-navigation .menu-item:hover {
+	color: #555555;
+	cursor: pointer;
+}
+
+.sub-page-navigation .menu-item.active {
+	border-color: #1cf4c4;
+}
+
+
+
 
 /**
  * Critical services (Mopidy + Spotify)
@@ -820,7 +857,6 @@ h1 .flag {
 .square-panel .info .tracks {
 	overflow: hidden;
 	max-height: 2.6em;
-	line-height: 1.3em;
 }
 
 /**
@@ -1027,7 +1063,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: absolute;
 	left: 20px;
 	right: 20px;
-	bottom: 50px;
+	bottom: 56px;
 }
 
 .artist-intro h1 {
@@ -1067,16 +1103,16 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding-left: 10px;
+	padding-left: 12px;
 	margin-bottom: 0;
 	background: rgba(0,0,0,0.2);
 }
 
 .artist-intro .sub-page-navigation .menu-item {
 	display: inline-block;
-	padding: 10px;
+	padding: 12px 8px;
 	color: #FFFFFF;
-	font-size: 12px;
+	font-size: 14px;
 	text-transform: uppercase;
 	border: 0;
 	opacity: 0.75;
@@ -1184,37 +1220,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .actions {
     clear: both;
     padding: 40px 0 0 15%;
-}
-
-.sub-page-navigation {
-	margin-bottom: 30px;
-	margin-top: -10px;
-}
-
-.sub-page-navigation .menu-item {
-	padding: 5px 0;
-	margin-right: 20px;
-	margin-bottom: -1px;
-	border-bottom: 2px solid transparent;
-	display: inline-block;
-	font-weight: bold;
-	text-transform: uppercase;
-}
-
-.sub-page-navigation .menu-item > i {
-	font-size: 6px;
-	vertical-align: middle;
-	margin-top: -4px;
-	padding-right: 2px;
-}
-
-.sub-page-navigation .menu-item:hover {
-	color: #555555;
-	cursor: pointer;
-}
-
-.sub-page-navigation .menu-item.active {
-	border-color: #1cf4c4;
 }
 
 .sub-page {

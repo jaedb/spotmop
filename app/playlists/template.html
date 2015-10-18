@@ -1,33 +1,7 @@
-<div>
-	
-	<div class="heading-wrapper">
-		<h1>Playlists</h1>
-		<span class="button primary animate"
-			ng-click="createPlaylist()">
-			New playlist
-		</span>
-	</div>
-	
-	<div class="playlist-items square-panels">
-		
-		<div class="item-container" ng-repeat="playlist in myPlaylists">
-			<a ui-sref="browse.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
-				<div class="image-container">
-					<thumbnail images="playlist.images"></thumbnail>
-				</div>
-				<div class="info animate">
-					<div class="name" ng-bind="playlist.name"></div>
-					<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
-				</div>
-			</a>
-		</div>
-	
-		<div ng-hide="myPlaylists.length" class="no-items">
-			No items
-		</div>
-		
-		<div class="clear-both"></div>
-	
-	</div>
-	
+
+<div class="sub-page-navigation">
+	<a class="menu-item" ui-sref="playlists.my" ng-class="{ active: isActive('playlists.my') }">My Playlists</a>
+	<a class="menu-item" ui-sref="playlists.following" ng-class="{ active: isActive('playlists.following') }">Following</a>
 </div>
+
+<div ui-view></div>

@@ -279,7 +279,7 @@ angular.module('spotmop.services.player', [])
 			// don't let the volume exceed maximum possible, 100%
 			if( state.volume >= 100 )
 				state.volume = 100;
-			updateVolume( state.volume );
+			service.setVolume( state.volume );
 			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-up' });
 		}
     });
@@ -290,7 +290,7 @@ angular.module('spotmop.services.player', [])
 			// don't let the volume below minimum possible, 0%
 			if( state.volume < 0 )
 				state.volume = 0;
-			updateVolume( state.volume );
+			service.setVolume( state.volume );
 			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-down' });
 		}
     });	
