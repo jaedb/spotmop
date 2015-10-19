@@ -176,6 +176,10 @@ body {
 	background-repeat: no-repeat;
 }
 
+.main-menu > .menu-item > a.droppable.dropping {
+	background-color: #08d58f;
+}
+
 .main-menu > .menu-item .info {
 	font-size: 12px;
 	opacity: 0.5;
