@@ -755,21 +755,22 @@ angular.module('spotmop', [
 				
 				// dropping on queue
 				if( isMenuItem && target.attr('data-type') === 'queue' ){
+				
+                    $rootScope.requestsLoading++;
 			
-					var message = 'Adding '+uris.length+' track(s) to queue';
-					if( uris.length > 10 )
-						message += '... this could take some time';
-				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message});
+					if( uris.length > 10 ){
+						$scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+uris.length+' track(s) to queue... this could take some time'});
+					}
                     
 					MopidyService.addToTrackList( uris ).then( function(response){
+                        $rootScope.requestsLoading--;
                         $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
                     });
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
 				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+                    $rootScope.requestsLoading++;
 				
 					// convert all our URIs to IDs
 					var trackids = new Array();
@@ -779,21 +780,21 @@ angular.module('spotmop', [
 					
 					SpotifyService.addTracksToLibrary( trackids )
                         .success( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                            $rootScope.requestsLoading--;
                         })
                         .error( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                            $rootScope.requestsLoading--;
                             $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
                         });	
 					
 				// dropping on playlist
 				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
 				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-playlist', message: 'Adding to playlist'});
-				
+                    $rootScope.requestsLoading++;
+					
 					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris )
                         .success( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-playlist'});
+                            $rootScope.requestsLoading--;
                         })
                         .error( function(response){
                             $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
@@ -887,6 +888,9 @@ angular.module('spotmop', [
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
                     dragTracer.addClass('good').html('Add to library');
+                    target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
+                    dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     dragTracer.addClass('good').html('Add to playlist');

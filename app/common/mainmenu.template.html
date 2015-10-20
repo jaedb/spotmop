@@ -25,16 +25,16 @@
 			Library
 		</a>
 	</li>
-	<li class="menu-item top-level" ng-class="{ active: isActive('browse.playlist') || isActive('playlists') }">
-		<a href="/playlists/my" data-type="playlists">
+	<li class="menu-item top-level playlists" ng-class="{ active: isActive('browse.playlist') || isActive('playlists') }">
+		<a href="/playlists/my" class="droppable" data-type="playlists">
 			<i class="fa fa-folder"></i>
 			Playlists
 		</a>
-		<!--<ul ng-show="playlistsMenu.length" class="submenu">
+		<ul class="submenu playlists" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
 			</li>
-		</ul>-->
+		</ul>
 	</li>
 	<li class="menu-item top-level" ng-class="{ active: isActive('settings') }">
 		<a href="/settings">

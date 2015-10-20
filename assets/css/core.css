@@ -180,6 +180,14 @@ body {
 	background-color: #08d58f;
 }
 
+.main-menu .submenu.playlists {
+	display: none;
+}
+
+.dragging .main-menu > .menu-item.top-level.playlists:hover .submenu.playlists {
+	display: block;
+}
+
 .main-menu > .menu-item .info {
 	font-size: 12px;
 	opacity: 0.5;
