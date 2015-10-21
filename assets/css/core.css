@@ -248,7 +248,7 @@ body {
 	bottom: 0;
 	left: 100%;
 	overflow: hidden;
-	background: rgba(48,48,48,0.8);
+	background: rgba(48,48,48,0.95);
 	padding: 20px 0;
 	z-index: 1;
 }
@@ -258,10 +258,6 @@ body {
 	font-size: 16px;
 	padding: 10px 0 10px 20px;
 }
-
-.main-menu .submenu.playlists .menu-item > a:not(.dropping) {
-	background-color: rgba(255,255,255,0.05);
-}	
 
 .dragging .main-menu > .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
