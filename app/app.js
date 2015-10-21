@@ -34,14 +34,13 @@ angular.module('spotmop', [
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',
-	
-	'spotmop.discover',
-	'spotmop.discover.featured',
-	'spotmop.discover.new'
+    'spotmop.browse.genre',
+	'spotmop.browse.featured',
+	'spotmop.browse.new'
 ])
 
 .config(function($stateProvider, $locationProvider, $urlRouterProvider){
-	$locationProvider.html5Mode(true)
+	$locationProvider.html5Mode(true);
 	$urlRouterProvider.otherwise("/queue");
 })
 

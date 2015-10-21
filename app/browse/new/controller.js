@@ -1,13 +1,13 @@
-angular.module('spotmop.discover.new', [])
+angular.module('spotmop.browse.new', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('discover.new', {
+		.state('browse.new', {
 			url: "/new",
-			templateUrl: "app/discover/new/template.html",
+			templateUrl: "app/browse/new/template.html",
 			controller: 'NewController'
 		});
 })

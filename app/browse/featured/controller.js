@@ -1,13 +1,13 @@
-angular.module('spotmop.discover.featured', [])
+angular.module('spotmop.browse.featured', [])
 
 /**
  * Routing 
  **/
 .config(function($stateProvider) {
 	$stateProvider
-		.state('discover.featured', {
+		.state('browse.featured', {
 			url: "/featured",
-			templateUrl: "app/discover/featured/template.html",
+			templateUrl: "app/browse/featured/template.html",
 			controller: 'FeaturedController'
 		});
 })

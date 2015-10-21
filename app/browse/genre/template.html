@@ -1,0 +1,21 @@
+<div>
+	
+	<div class="category-items square-panels">
+		
+		<div class="item-container" ng-repeat="category in categories.items">
+			<a href="/browse/genre/{{ category.id }}" class="square-panel category">
+				<div class="image-container">
+					<thumbnail images="category.icons"></thumbnail>
+					<div class="name animate" ng-bind="category.name"></div>
+				</div>
+			</a>
+		</div>
+	
+		<div ng-hide="categories.items.length" class="no-items">
+			No items
+		</div>
+		
+		<div class="clear-both"></div>
+	
+	</div>
+</div>
