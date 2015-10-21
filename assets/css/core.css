@@ -176,16 +176,8 @@ body {
 	background-repeat: no-repeat;
 }
 
-.main-menu > .menu-item > a.droppable.dropping {
+.main-menu .menu-item > a.droppable.dropping:hover {
 	background-color: #08d58f;
-}
-
-.main-menu .submenu.playlists {
-	display: none;
-}
-
-.dragging .main-menu > .menu-item.top-level.playlists:hover .submenu.playlists {
-	display: block;
 }
 
 .main-menu > .menu-item .info {
@@ -217,8 +209,9 @@ body {
 }
 
 
+
 /**
- * Nested menus
+ * Submenus
  **/
 
 .main-menu .submenu {
@@ -241,6 +234,39 @@ body {
 .main-menu .submenu > .menu-item > a:hover {
 	color: rgba(255,255,255,1);
 }
+
+
+
+/**
+ * Playlist Submenu
+ **/
+
+.main-menu .submenu.playlists {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 100%;
+	overflow: hidden;
+	background: rgba(48,48,48,0.8);
+	padding: 20px 0;
+	z-index: 1;
+}
+
+.main-menu .submenu.playlists .menu-item > a {
+	color: #FFFFFF;
+	font-size: 16px;
+	padding: 10px 0 10px 20px;
+}
+
+.main-menu .submenu.playlists .menu-item > a:not(.dropping):hover {
+	background-color: rgba(255,255,255,0.05);
+}	
+
+.dragging .main-menu > .menu-item.top-level.playlists:hover .submenu.playlists {
+	left: 20%;
+}
+
 
 
 /**

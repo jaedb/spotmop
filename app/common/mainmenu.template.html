@@ -30,7 +30,7 @@
 			<i class="fa fa-folder"></i>
 			Playlists
 		</a>
-		<ul class="submenu playlists" ng-class="{ empty: playlistsMenu.length <= 0 }">
+		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
 			</li>
