@@ -176,7 +176,7 @@ body {
 	background-repeat: no-repeat;
 }
 
-.main-menu .menu-item > a.droppable.dropping:hover {
+.main-menu .menu-item > a.droppable.dropping {
 	background-color: #08d58f;
 }
 
@@ -259,11 +259,11 @@ body {
 	padding: 10px 0 10px 20px;
 }
 
-.main-menu .submenu.playlists .menu-item > a:not(.dropping):hover {
+.main-menu .submenu.playlists .menu-item > a:not(.dropping) {
 	background-color: rgba(255,255,255,0.05);
 }	
 
-.dragging .main-menu > .menu-item.top-level.playlists:hover .submenu.playlists {
+.dragging .main-menu > .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
 }
 

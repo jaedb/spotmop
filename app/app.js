@@ -878,6 +878,7 @@ angular.module('spotmop', [
                     });
                 
                 $(document).find('.droppable').removeClass('dropping');
+                $(document).find('.dropping-within').removeClass('dropping-within');
 			
 				var isMenuItem = false;
 				if( target && target.closest('.main-menu').length > 0 )
@@ -891,10 +892,12 @@ angular.module('spotmop', [
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
                     dragTracer.addClass('good').html('Add to playlist');
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
                 }else{
                     dragTracer.removeClass('good').html('Dragging '+dragging.tracks.length+' track(s)');
                 }
