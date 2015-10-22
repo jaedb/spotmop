@@ -78,14 +78,9 @@ angular.module('spotmop.services.player', [])
 	// listen for current track changes
 	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		state.currentTlTrack = tlTrack.tl_track;
-		
+		state.currentTlTrack = tlTrack.tl_track;		
 		updateCurrentTrack( tlTrack.tl_track );
 		updatePlayerState();
-		
-		// log this play
-		if( SettingsService.getSetting('echonestenabled',false) )
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
 	
 	

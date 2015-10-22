@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.echonest', [])
 
-.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, SettingsService ){
+.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$cacheFactory', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $cacheFactory, SettingsService ){
     
     var baseURL = 'http://developer.echonest.com/api/v4/';
     var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
@@ -136,10 +136,12 @@ angular.module('spotmop.services.echonest', [])
         
         /**
          * Recommended content
+		 * We disable caching on these calls because a single track play will alter the recommendations returned
          **/
-		recommendedArtists: function(){
+		recommendedArtists: function(){		
             return $.ajax({
                 url: baseURL+'artist/similar?api_key='+apiKey+'&seed_catalog='+profileID+'&format=json&bucket=id:spotify&results=10',
+				cache: false,
                 method: "GET"
             });
         }
