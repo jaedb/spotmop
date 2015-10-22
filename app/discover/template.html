@@ -1,8 +1,26 @@
+<div class="page-notification red-background white-text" ng-show="!echonestOnline">
+	<i class="fa fa-exclamation-triangle white-text"></i>
+	&nbsp;
+	<span>You need to enable EchoNest to discover new music</span>
+</div>
 
-<div class="sub-page-navigation">
-	<a class="menu-item" ui-sref="discover.browse" ng-class="{ active: isActive('discover.browse') || isActive('discover.category') }">Browse</a>
-	<a class="menu-item" ui-sref="discover.featured" ng-class="{ active: isActive('discover.featured') }">Featured Playlists</a>
-	<a class="menu-item" ui-sref="discover.new"  ng-class="{ active: isActive('discover.new') }">New Releases</a>
+<h1>Recommended artists</h1>
+
+<div class="album-items square-panels">
+	<div class="item-container" ng-repeat="artist in artists">
+		<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
+			<div class="image-container">
+				<thumbnail images="artist.images"></thumbnail>
+			</div>
+			<div class="info smaller animate">
+				<div class="name" ng-bind="artist.name"></div>
+			</div>
+		</a>
+	</div>
+</div>
+
+<div ng-hide="artists.length" class="no-items">
+	No items
 </div>
 
 <div ui-view></div>

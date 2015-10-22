@@ -500,6 +500,25 @@ angular.module('spotmop.services.spotify', [])
 				}
 			});
 		},
+		 
+		getArtists: function( artisturis ){
+			
+			var self = this;
+			var artistids = '';
+			angular.forEach( artisturis, function( artisturi ){
+				if( artistids != '' ) artistids += ',';
+				artistids += self.getFromUri( 'artistid', artisturi );
+			});
+			
+			return $http({
+				cache: true,
+				method: 'GET',
+				url: urlBase+'artists/?ids='+artistids,
+				headers: {
+					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+				}
+			});
+		},
 		
 		getAlbums: function( artisturi ){
 				

@@ -131,6 +131,17 @@ angular.module('spotmop.services.echonest', [])
                 url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid,
                 method: "GET"
             });
+        },
+		
+        
+        /**
+         * Recommended content
+         **/
+		recommendedArtists: function(){
+            return $.ajax({
+                url: baseURL+'artist/similar?api_key='+apiKey+'&seed_catalog='+profileID+'&format=json&bucket=id:spotify&results=10',
+                method: "GET"
+            });
         }
 	};
 }]);

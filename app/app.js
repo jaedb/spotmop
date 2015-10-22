@@ -29,6 +29,8 @@ angular.module('spotmop', [
 	'spotmop.search',
 	'spotmop.settings',
 	
+	'spotmop.discover',
+	
 	'spotmop.browse',
 	'spotmop.browse.artist',
 	'spotmop.browse.album',
