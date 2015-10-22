@@ -9,6 +9,11 @@ angular.module('spotmop.browse.new', [])
 			url: "/new",
 			templateUrl: "app/browse/new/template.html",
 			controller: 'NewController'
+		})
+		.state('browse.newalbum', {
+			url: "/new/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
 		});
 })
 	

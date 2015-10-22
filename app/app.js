@@ -443,13 +443,29 @@ angular.module('spotmop', [
     
     
 	/**
-	 * Detect if we're an active menu item
-	 * We have to wrap this as it's not (for some reason) available to the template
-	 * @return boolean
+	 * Generate a template-friendly representation of whether this state is active or parent of active
+	 * @param states = array of strings
+	 * @return string
 	 **/
-	$scope.isActive = function( state ){
+	$scope.linkingMode = function( states ){
 		
-		return $state.includes( state );
+		var mode = '';
+		
+		// if we're not an array, make it an array (of one)
+		if( !$.isArray(states) )
+			states = [states];
+		
+		// loop our array
+		angular.forEach( states, function(state){
+			if( mode == '' ){
+				if( $state.is( state ) )
+					mode = 'active';
+				else if( $state.includes( state ) )
+					mode = 'section';
+			};
+		});
+		
+		return mode;
 	};
 
     

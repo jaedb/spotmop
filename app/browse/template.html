@@ -1,7 +1,7 @@
-<div class="sub-page-navigation">
-	<a class="menu-item" ui-sref="browse.genre" ng-class="{ active: isActive('browse.genre') || isActive('browse.genrecategory') }">Genre / Mood</a>
-	<a class="menu-item" ui-sref="browse.featured" ng-class="{ active: isActive('browse.featured') }">Featured Playlists</a>
-	<a class="menu-item" ui-sref="browse.new"  ng-class="{ active: isActive('browse.new') }">New Releases</a>
+<div class="sub-page-navigation" ng-if="mediumScreen()">
+	<a class="menu-item {{ linkingMode(['browse.genre','browse.category','browse.categoryplaylist']) }}" ui-sref="browse.genre">Genre / Mood</a>
+	<a class="menu-item {{ linkingMode(['browse.featured', 'browse.featuredplaylist']) }}" ui-sref="browse.featured">Featured Playlists</a>
+	<a class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}" ui-sref="browse.new">New Releases</a>
 </div>
 
 <div ui-view></div>

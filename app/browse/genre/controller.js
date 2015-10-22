@@ -17,6 +17,11 @@ angular.module('spotmop.browse.genre', [])
 			url: "/genre/:categoryid",
 			templateUrl: "app/browse/genre/category.template.html",
 			controller: 'GenreCategoryController'
+		})
+		.state('browse.categoryplaylist', {
+			url: "/genre/:categoryid/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
 		});
 })
 	

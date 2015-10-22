@@ -5,7 +5,7 @@
 	<div class="playlist-items square-panels">
 		
 		<div class="item-container" ng-repeat="playlist in playlists.items">
-			<a href="/browse/playlist/{{ playlist.uri }}" class="square-panel playlist">
+			<a href="/browse/genre/{{ category.id }}/{{ playlist.uri }}" class="square-panel playlist">
 				<div class="image-container">
 					<thumbnail images="playlist.images"></thumbnail>
 				</div>

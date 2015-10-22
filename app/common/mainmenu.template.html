@@ -1,5 +1,5 @@
 <ul class="main-menu">
-	<li class="menu-item top-level" ng-class="{ active: isActive('queue') }">
+	<li class="menu-item top-level {{ linkingMode('queue') }}">
 		<a href="/queue" class="droppable" data-type="queue">
 			<i class="fa fa-play"></i>
 			Now playing
@@ -8,28 +8,32 @@
 			</div>
 		</a>
 	</li>	
-	<li class="menu-item top-level" ng-class="{ active: isActive('browse') }">
+	<li class="menu-item top-level {{ linkingMode('browse') }}">
 		<a href="/browse/genre">
 			<i class="fa fa-star"></i>
 			Browse
 		</a>
-		<ul class="submenu hide">
-			<li class="menu-item"><a href="/browse/genre">Genre / Mood</a></li>
-			<li class="menu-item"><a href="/browse/featured">Featured playlists</a></li>
-			<li class="menu-item"><a href="/browse/new">New releases</a></li>
+		<ul class="submenu animate">
+			<li class="menu-item {{ linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist']) }}"><a href="/browse/genre">Genre / Mood</a></li>
+			<li class="menu-item {{ linkingMode(['browse.featured','browse.featuredplaylist']) }}"><a href="/browse/featured">Featured playlists</a></li>
+			<li class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}"><a href="/browse/new">New releases</a></li>
 		</ul>
 	</li>
-	<li class="menu-item top-level" ng-class="{ active: isActive('library') }">
+	<li class="menu-item top-level {{ linkingMode('library') }}">
 		<a href="/library" class="droppable" data-type="library">
 			<i class="fa fa-music"></i>
 			Library
 		</a>
 	</li>
-	<li class="menu-item top-level playlists" ng-class="{ active: isActive('browse.playlist') || isActive('playlists') }">
+	<li class="menu-item top-level playlists {{ linkingMode('playlists') }}">
 		<a href="/playlists/my" class="droppable" data-type="playlists">
 			<i class="fa fa-folder"></i>
 			Playlists
 		</a>
+		<ul class="submenu animate">
+			<li class="menu-item {{ linkingMode(['playlists.my','playlists.myplaylist']) }}"><a href="/playlists/my">My Playlists</a></li>
+			<li class="menu-item {{ linkingMode(['playlists.following','playlists.followingplaylist']) }}"><a href="/playlists/following">Following</a></li>
+		</ul>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>

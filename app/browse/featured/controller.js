@@ -9,6 +9,11 @@ angular.module('spotmop.browse.featured', [])
 			url: "/featured",
 			templateUrl: "app/browse/featured/template.html",
 			controller: 'FeaturedController'
+		})
+		.state('browse.featuredplaylist', {
+			url: "/featured/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
 		});
 })
 	

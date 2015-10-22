@@ -163,10 +163,8 @@ body {
 /* ================================================================================ SIDEBAR ======= */
 /* ================================================================================================ */
 
-
-.main-menu > .menu-item > a {
+.main-menu .menu-item > a {
 	display: block;
-	border-left: 4px solid transparent;
 	padding: 10px 0 10px 15px;
 	color: #FFFFFF;
 	text-decoration: none;
@@ -174,20 +172,21 @@ body {
 	background-image: url('../svg/white-diamond.svg');
 	background-position: 110% 50%;
 	background-repeat: no-repeat;
+	border-left: 4px solid transparent;
 }
 
 .main-menu .menu-item > a.droppable.dropping {
 	background-color: #08d58f;
 }
 
-.main-menu > .menu-item .info {
+.main-menu .menu-item .info {
 	font-size: 12px;
 	opacity: 0.5;
 	padding: 2px 20px 0 0;
 	float: right;
 }
 
-.main-menu > .menu-item > a > i {
+.main-menu .menu-item > a > i {
 	width: 15px;
 	padding-right: 5px;
 	font-size: 12px;
@@ -198,13 +197,14 @@ body {
 	padding: 3px 12px 0 0;
 }
 
-.main-menu > .menu-item.active > a {
+.main-menu .menu-item.active > a {
+	background-color: rgba(0,0,0,0.15);
+	background-position: 100% 50%;
 	border-color: #08d58f;
-	background-color: rgba(255,255,255,0.1);
 	background-position: 100% 50%;
 }
 
-.main-menu > .menu-item > a:hover {
+.main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
 }
 
@@ -215,26 +215,21 @@ body {
  **/
 
 .main-menu .submenu {
-	padding-left: 41px;
-	padding-bottom: 10px;
+	display: none;
+}
+
+.main-menu .menu-item.section .submenu,
+.main-menu .menu-item.active .submenu {
+	display: block;
 }
 
 .main-menu .submenu > .menu-item {
 	list-style-type: none;
 }
 
-.main-menu .submenu > .menu-item > a {
-	color: rgba(255,255,255,0.5);
-	font-size: 14px;
-	padding: 3px;
-	text-decoration: none;
-	display: block;
+.main-menu .submenu > .menu-item a {
+	padding-left: 39px;
 }
-
-.main-menu .submenu > .menu-item > a:hover {
-	color: rgba(255,255,255,1);
-}
-
 
 
 /**
