@@ -46,7 +46,7 @@
 			</li>
 		</ul>
 	</li>
-	<li class="menu-item top-level" ng-class="{ active: isActive('settings') }">
+	<li class="menu-item top-level {{ linkingMode(['settings.mopidy','settings.spotify','settings.echonest','settings.info']) }}"">
 		<a href="/settings">
 			<i class="fa fa-cog"></i>
 			Settings
