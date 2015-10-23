@@ -218,7 +218,7 @@ angular.module('spotmop', [
 			url: '@'
 		},
         link: function($scope, $element, $attrs){
-			var fullUrl = '/vendor/resource-proxy.php?url='+$scope.url;
+			var fullUrl = /*'/vendor/resource-proxy.php?url='+*/$scope.url;
 			var image = $('<img src="'+fullUrl+'" />');
 			image.load(function(){
 				$element.attr('style', 'background-image: url("'+fullUrl+'");');
