@@ -246,6 +246,7 @@ body {
 	background: rgba(48,48,48,0.95);
 	padding: 20px 0;
 	z-index: 1;
+	display: block;
 }
 
 .main-menu .submenu.playlists .menu-item > a {
@@ -254,7 +255,7 @@ body {
 	padding: 10px 0 10px 20px;
 }
 
-.dragging .main-menu > .menu-item.top-level.playlists.dropping-within .submenu.playlists {
+.dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
 }
 
