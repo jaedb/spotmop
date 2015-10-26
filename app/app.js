@@ -190,17 +190,16 @@ angular.module('spotmop', [
  * Enhances readability when placed on dynamic background images
  * Requires spotmop:detectBackgroundColour broadcast to initiate check
  **/
-.directive('textOverImage', function() {
+.directive('textOverImage', function(){
     return {
         restrict: 'A',
-        link: function($scope, $element, $attrs) {
-            
+        link: function($scope, $element){
             $scope.$on('spotmop:detectBackgroundColor', function(event){
                 BackgroundCheck.init({
                     targets: $($element).parent(),
                     images: $element.closest('.intro').find('.image')
                 });
-                BackgroundCheck.refresh();
+				BackgroundCheck.refresh();
             });
         }
     };
@@ -211,24 +210,37 @@ angular.module('spotmop', [
  * This let's us detect whether we need light text or dark text
  * Enhances readability when placed on dynamic background images
  **/
-.directive('preloadedimage', function( $rootScope ){
+.directive('preloadedimage', function( $rootScope, $timeout ){
     return {
 		restrict: 'E',
 		scope: {
-			url: '@'
+			url: '@',
+			useproxy: '@',
+			detectbackground: '@'
 		},
         link: function($scope, $element, $attrs){
-			var fullUrl = /*'/vendor/resource-proxy.php?url='+*/$scope.url;
-			var image = $('<img src="'+fullUrl+'" />');
+			var fullUrl = '';
+			if( $scope.useproxy )
+				fullUrl += '/vendor/resource-proxy.php?url=';
+			fullUrl += $scope.url;
+			
+			var image = $('<img src="'+fullUrl+'" />');		
 			image.load(function(){
 				$element.attr('style', 'background-image: url("'+fullUrl+'");');
-				$scope.$emit('spotmop:detectBackgroundColor');
 				$element.animate(
 					{
 						opacity: 1
 					},
 					200
 				);
+				
+				// only broadcast to detect background if required (otherwise "href not defined" error)
+				if( $scope.detectbackground ){
+					// wait for 100ms (ie image half loaded), then check colours
+					$timeout( function(){
+						$rootScope.$broadcast('spotmop:detectBackgroundColor');
+					}, 100);
+				}
 			});
         },
 		template: ''
