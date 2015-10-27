@@ -72,7 +72,7 @@ angular.module('spotmop.services.echonest', [])
         
 		getTasteProfile: function(){
             return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID+'&bucket=audio_summary',
+                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
                 method: "GET"
             });
         },
@@ -141,6 +141,14 @@ angular.module('spotmop.services.echonest', [])
 		recommendedArtists: function(){		
             return $.ajax({
                 url: baseURL+'artist/similar?api_key='+apiKey+'&seed_catalog='+profileID+'&format=json&bucket=id:spotify&results=10',
+				cache: false,
+                method: "GET"
+            });
+        },
+		
+		catalogRadio: function(){		
+            return $.ajax({
+                url: baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20',
 				cache: false,
                 method: "GET"
             });
