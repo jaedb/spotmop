@@ -23,6 +23,13 @@ angular.module('spotmop.discover', [])
 	$scope.artists = [];
 	$scope.playlists = [];
 	$scope.albums = [];
+	$scope.recommendations = {
+		currentArtist: {
+			names: [],
+			recommendations: []
+		},
+		suggestions: []
+	};
 	
 	// get our recommended artists
 	if( SettingsService.getSetting('echonestenabled','false') ){
@@ -30,11 +37,9 @@ angular.module('spotmop.discover', [])
 		
 		// ================= CATALOG RADIO ==== //
 		
-		$rootScope.requestsLoading++;
-		
-		EchonestService.catalogRadio()
-			.success(function( response ){
-				$rootScope.requestsLoading--;
+		/*
+		EchonestService.favoriteArtists()
+			.then(function( response ){
 			
 				// convert our echonest list into an array to get from spotify
 				var echonestSongs = response.response.songs;
@@ -63,21 +68,21 @@ angular.module('spotmop.discover', [])
 							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 						});
 				}
-			})
-			.error(function( error ){
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 			});
+			*/
 			
-			
-		// ================= RECOMMENDED ARTISTS ==== //
-		/*
-		$rootScope.requestsLoading++;
-			
-		EchonestService.recommendedArtists()
-			.success(function( response ){
-				
-				$rootScope.requestsLoading--;
+		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
+		
+		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
+			var artistNames = [];
+			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
+				artistNames.push( artist.name );
+			});
+			$scope.recommendations.currentArtist.names = artistNames;
+		}
+		
+		EchonestService.recommendedArtists( $scope.recommendations.currentArtist.names )
+			.then(function( response ){
 			
 				// convert our echonest list into an array to get from spotify
 				var echonestArtists = response.response.artists;
@@ -99,19 +104,50 @@ angular.module('spotmop.discover', [])
 					SpotifyService.getArtists( artisturis )
 						.success( function( response ){
 							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
+							$scope.recommendations.currentArtist.recommendations = response.artists;
 						})
 						.error(function( error ){
 							$rootScope.requestsLoading--;
 							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 						});
 				}
-			})
-			.error(function( error ){
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 			});
-		*/
+			
+			
+			
+		// ================= GENERAL RECOMMENDED ARTISTS ==== //
+		
+		EchonestService.recommendedArtists()
+			.then(function( response ){
+			
+				// convert our echonest list into an array to get from spotify
+				var echonestArtists = response.response.artists;
+				var artisturis = [];
+				
+				// make sure we got some artists
+				if( echonestArtists.length <= 0 ){
+				
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+					
+				}else{
+				
+					$rootScope.requestsLoading++;
+					
+					angular.forEach( echonestArtists, function( echonestArtist ){
+						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
+					});
+					
+					SpotifyService.getArtists( artisturis )
+						.success( function( response ){
+							$rootScope.requestsLoading--;
+							$scope.recommendations.suggestions = response.artists;
+						})
+						.error(function( error ){
+							$rootScope.requestsLoading--;
+							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
+						});
+				}
+			});
 	}
 	
 });
