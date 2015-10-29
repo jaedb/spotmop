@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, SettingsService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, SettingsService ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.spotify) === 'undefined' )
@@ -314,11 +314,18 @@ angular.module('spotmop.services.spotify', [])
 			});
 		},
 		
-		featuredPlaylists: function(){
+		featuredPlaylists: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
+			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
+			var country = SettingsService.getSetting('countrycode','NZ');
+		
 			return $http({
 				cache: true,
 				method: 'GET',
-				url: urlBase+'browse/featured-playlists',
+				url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}

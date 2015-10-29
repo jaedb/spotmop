@@ -1231,6 +1231,38 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	padding-bottom: 20px;
 }
 
+
+
+/**
+ * Featured playlists
+ **/
+ 
+.featured-playlists-intro {
+	position: relative;
+	margin: -40px -40px 40px;
+	padding: 0 20px;
+	height: 30vh;
+	background: #303030;
+}
+
+.featured-playlists-intro > .inner {
+	z-index: 1;
+	position: relative;
+	color: #FFFFFF;
+	text-align: center;
+	padding-top: 13vh;
+}
+
+.featured-playlists-intro > .background-image {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	opacity: 0.6;
+	background-position: 50% 50%;
+	background-size: cover;
+}
  
     
 
