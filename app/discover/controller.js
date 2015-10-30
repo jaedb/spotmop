@@ -104,7 +104,8 @@ angular.module('spotmop.discover', [])
 					$rootScope.requestsLoading++;
 					
 					angular.forEach( echonestArtists, function( echonestArtist ){
-						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
+						if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
+							artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
 					});
 					
 					SpotifyService.getArtists( artisturis )
