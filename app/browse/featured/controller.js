@@ -35,11 +35,15 @@ angular.module('spotmop.browse.featured', [])
 			return 'commute';
 		else if( hour >= 9.3 && hour < 11 )
 			return 'morning';
-		else if( hour >= 11 && hour < 15 )
+		else if( hour >= 11 && hour < 13.5 )
 			return 'midday';
-		else if( hour >= 15 && hour < 22 )
+		else if( hour >= 13.5 && hour < 16 )
+			return 'afternoon';
+		else if( hour >= 16 && hour < 18 )
+			return 'evening';
+		else if( hour >= 18 && hour < 21 )
 			return 'dinner';
-		else if( hour >= 22 && hour < 23 || hour >= 0 && hour < 4  )
+		else if( hour >= 21 && hour < 23 || hour >= 0 && hour < 4  )
 			return 'late';
 	};
 	
