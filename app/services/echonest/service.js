@@ -141,20 +141,20 @@ angular.module('spotmop.services.echonest', [])
 		 
 		/**
 		 * Recommend artists based on another artist (or on our taste profile)
-		 * @param artistname = array of strings (optional)
+		 * @param artistname = array of artist objects (optional)
 		 * @return promise
 		 **/
-		recommendedArtists: function( artistNames ){
+		recommendedArtists: function( artists ){
 			
 			// no artist provided, so seed based on our taste profile
-			if( typeof( artistNames ) === 'undefined' || !artistNames || artistNames.length <= 0 ){				
+			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
 				var seed = '&seed_catalog='+profileID;
 				
 			// the artist name
 			}else{
 				var seed = '';				
-				angular.forEach( artistNames, function(artistName){
-					seed += '&name='+artistName;
+				angular.forEach( artists, function(artist){
+					seed += '&name='+artist.name_encoded;
 				});
 			}
 		

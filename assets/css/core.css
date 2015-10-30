@@ -199,9 +199,8 @@ body {
 
 .main-menu .menu-item.active > a {
 	background-color: rgba(0,0,0,0.15);
-	background-position: 100% 50%;
+	/*background-position: 100% 50%;*/
 	border-color: #08d58f;
-	background-position: 100% 50%;
 }
 
 .main-menu .menu-item:not(.active) > a:hover {

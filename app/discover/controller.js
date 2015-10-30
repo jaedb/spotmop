@@ -25,7 +25,7 @@ angular.module('spotmop.discover', [])
 	$scope.albums = [];
 	$scope.recommendations = {
 		currentArtist: {
-			names: [],
+			artists: [],
 			recommendations: []
 		},
 		suggestions: []
@@ -74,14 +74,20 @@ angular.module('spotmop.discover', [])
 		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
 		
 		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
-			var artistNames = [];
+			var artists = [];
 			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
-				artistNames.push( artist.name );
+				artists.push(
+					{
+						'name': artist.name,
+						'name_encoded': encodeURIComponent(artist.name),
+						'uri': artist.uri
+					}
+				);
 			});
-			$scope.recommendations.currentArtist.names = artistNames;
+			$scope.recommendations.currentArtist.artists = artists;
 		}
 		
-		EchonestService.recommendedArtists( $scope.recommendations.currentArtist.names )
+		EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
 			.then(function( response ){
 			
 				// convert our echonest list into an array to get from spotify
