@@ -29,19 +29,20 @@ angular.module('spotmop', [
 	'spotmop.search',
 	'spotmop.settings',
 	
+	'spotmop.discover',
+	
 	'spotmop.browse',
 	'spotmop.browse.artist',
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',
-	
-	'spotmop.discover',
-	'spotmop.discover.featured',
-	'spotmop.discover.new'
+    'spotmop.browse.genre',
+	'spotmop.browse.featured',
+	'spotmop.browse.new'
 ])
 
 .config(function($stateProvider, $locationProvider, $urlRouterProvider){
-	$locationProvider.html5Mode(true)
+	$locationProvider.html5Mode(true);
 	$urlRouterProvider.otherwise("/queue");
 })
 
@@ -172,13 +173,14 @@ angular.module('spotmop', [
 		},
 		scope: {
 			text: '@',
+			extraClasses: '@',
 			confirmationText: '@',
 			defaultText: '@',
 			onConfirmation: '@'
 		},
 		replace: true, 		// Replace with the template below
 		transclude: true, 	// we want to insert custom content inside the directive
-		template: '<span ng-bind="text" class="button" ng-class="{ destructive: confirming }"></span>'
+		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
 	};
 })
 
@@ -189,17 +191,16 @@ angular.module('spotmop', [
  * Enhances readability when placed on dynamic background images
  * Requires spotmop:detectBackgroundColour broadcast to initiate check
  **/
-.directive('textOverImage', function() {
+.directive('textOverImage', function(){
     return {
         restrict: 'A',
-        link: function($scope, $element, $attrs) {
-            
+        link: function($scope, $element){
             $scope.$on('spotmop:detectBackgroundColor', function(event){
                 BackgroundCheck.init({
                     targets: $($element).parent(),
                     images: $element.closest('.intro').find('.image')
                 });
-                BackgroundCheck.refresh();
+				BackgroundCheck.refresh();
             });
         }
     };
@@ -210,24 +211,37 @@ angular.module('spotmop', [
  * This let's us detect whether we need light text or dark text
  * Enhances readability when placed on dynamic background images
  **/
-.directive('preloadedimage', function( $rootScope ){
+.directive('preloadedimage', function( $rootScope, $timeout ){
     return {
 		restrict: 'E',
 		scope: {
-			url: '@'
+			url: '@',
+			useproxy: '@',
+			detectbackground: '@'
 		},
         link: function($scope, $element, $attrs){
-			var fullUrl = '/vendor/resource-proxy.php?url='+$scope.url;
-			var image = $('<img src="'+fullUrl+'" />');
+			var fullUrl = '';
+			if( $scope.useproxy )
+				fullUrl += '/vendor/resource-proxy.php?url=';
+			fullUrl += $scope.url;
+			
+			var image = $('<img src="'+fullUrl+'" />');		
 			image.load(function(){
 				$element.attr('style', 'background-image: url("'+fullUrl+'");');
-				$scope.$emit('spotmop:detectBackgroundColor');
 				$element.animate(
 					{
 						opacity: 1
 					},
 					200
 				);
+				
+				// only broadcast to detect background if required (otherwise "href not defined" error)
+				if( $scope.detectbackground ){
+					// wait for 100ms (ie image half loaded), then check colours
+					$timeout( function(){
+						$rootScope.$broadcast('spotmop:detectBackgroundColor');
+					}, 100);
+				}
 			});
         },
 		template: ''
@@ -444,13 +458,29 @@ angular.module('spotmop', [
     
     
 	/**
-	 * Detect if we're an active menu item
-	 * We have to wrap this as it's not (for some reason) available to the template
-	 * @return boolean
+	 * Generate a template-friendly representation of whether this state is active or parent of active
+	 * @param states = array of strings
+	 * @return string
 	 **/
-	$scope.isActive = function( state ){
+	$scope.linkingMode = function( states ){
 		
-		return $state.includes( state );
+		var mode = '';
+		
+		// if we're not an array, make it an array (of one)
+		if( !$.isArray(states) )
+			states = [states];
+		
+		// loop our array
+		angular.forEach( states, function(state){
+			if( mode == '' ){
+				if( $state.is( state ) )
+					mode = 'active';
+				else if( $state.includes( state ) )
+					mode = 'section';
+			};
+		});
+		
+		return mode;
 	};
 
     
@@ -469,6 +499,13 @@ angular.module('spotmop', [
 	
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
+	});
+	
+	// when playback finishes, log this to EchoNest (if enabled)
+	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
+	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
+		if( SettingsService.getSetting('echonestenabled',false) )
+			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
 	
     
@@ -755,21 +792,22 @@ angular.module('spotmop', [
 				
 				// dropping on queue
 				if( isMenuItem && target.attr('data-type') === 'queue' ){
+				
+                    $rootScope.requestsLoading++;
 			
-					var message = 'Adding '+uris.length+' track(s) to queue';
-					if( uris.length > 10 )
-						message += '... this could take some time';
-				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message});
+					if( uris.length > 10 ){
+						$scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+uris.length+' track(s) to queue... this could take some time'});
+					}
                     
 					MopidyService.addToTrackList( uris ).then( function(response){
+                        $rootScope.requestsLoading--;
                         $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
                     });
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
 				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-library', message: 'Adding to library'});
+                    $rootScope.requestsLoading++;
 				
 					// convert all our URIs to IDs
 					var trackids = new Array();
@@ -779,21 +817,21 @@ angular.module('spotmop', [
 					
 					SpotifyService.addTracksToLibrary( trackids )
                         .success( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                            $rootScope.requestsLoading--;
                         })
                         .error( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-library'});
+                            $rootScope.requestsLoading--;
                             $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
                         });	
 					
 				// dropping on playlist
 				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
 				    
-                    $scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-playlist', message: 'Adding to playlist'});
-				
+                    $rootScope.requestsLoading++;
+					
 					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris )
                         .success( function(response){
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-playlist'});
+                            $rootScope.requestsLoading--;
                         })
                         .error( function(response){
                             $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
@@ -877,6 +915,7 @@ angular.module('spotmop', [
                     });
                 
                 $(document).find('.droppable').removeClass('dropping');
+                $(document).find('.dropping-within').removeClass('dropping-within');
 			
 				var isMenuItem = false;
 				if( target && target.closest('.main-menu').length > 0 )
@@ -888,9 +927,14 @@ angular.module('spotmop', [
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
                     dragTracer.addClass('good').html('Add to library');
                     target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
+                    dragTracer.addClass('good').html('Add to playlist');
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
+                    target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
                 }else{
                     dragTracer.removeClass('good').html('Dragging '+dragging.tracks.length+' track(s)');
                 }

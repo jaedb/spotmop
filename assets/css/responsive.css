@@ -241,6 +241,22 @@
 		padding-top: 20px;
 	}
 	
+	.browse.album .info-text .wrapper{
+		display: inline-block;
+		vertical-align: top;
+		line-height: 1.2em;
+	}
+	
+	.browse.album .info-text .wrapper:not(:first-child){
+		padding-left: 7px;
+		margin-left: 5px;
+		border-left: 1px solid #aaaaaa;
+	}
+	
+	.browse.album .info-text .duration {
+		display: none;
+	}
+	
 	
 	/**
 	 * Playlist page

@@ -22,12 +22,16 @@ angular.module('spotmop.browse.album', [])
 	$scope.album = {};
 	$scope.tracklist = {type: 'track'};
     $scope.convertedDate = function(){
-        if( $scope.album.release_date_precision == 'day' )
-            return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
-        if( $scope.album.release_date_precision == 'month' )
-            return $filter('date')($scope.album.release_date, "MMMM yyyy");
-        if( $scope.album.release_date_precision == 'year' )
-            return $scope.album.release_date;
+		if( $scope.mediumScreen() ){
+			return $filter('date')($scope.album.release_date, "yyyy");
+		}else{
+			if( $scope.album.release_date_precision == 'day' )
+				return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
+			if( $scope.album.release_date_precision == 'month' )
+				return $filter('date')($scope.album.release_date, "MMMM yyyy");
+			if( $scope.album.release_date_precision == 'year' )
+				return $scope.album.release_date;
+		}
         return null;
     }
 	

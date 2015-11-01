@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.echonest', [])
 
-.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, SettingsService ){
+.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$cacheFactory', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $cacheFactory, $q, SettingsService ){
     
     var baseURL = 'http://developer.echonest.com/api/v4/';
     var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
@@ -72,7 +72,7 @@ angular.module('spotmop.services.echonest', [])
         
 		getTasteProfile: function(){
             return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID+'&bucket=audio_summary',
+                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
                 method: "GET"
             });
         },
@@ -131,6 +131,84 @@ angular.module('spotmop.services.echonest', [])
                 url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid,
                 method: "GET"
             });
+        },
+		
+        
+        /**
+         * Recommended content
+		 * We disable caching on these calls because a single track play will alter the recommendations returned
+         **/
+		 
+		/**
+		 * Recommend artists based on another artist (or on our taste profile)
+		 * @param artistname = array of artist objects (optional)
+		 * @return promise
+		 **/
+		recommendedArtists: function( artists ){
+			
+			// no artist provided, so seed based on our taste profile
+			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
+				var seed = '&seed_catalog='+profileID;
+				
+			// the artist name
+			}else{
+				var seed = '';				
+				angular.forEach( artists, function(artist){
+					seed += '&name='+artist.name_encoded;
+				});
+			}
+		
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		favoriteArtists: function(){		
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		catalogRadio: function(){		
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20')
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
         }
 	};
 }]);

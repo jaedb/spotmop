@@ -19,17 +19,21 @@
 			</h2>
 			
 			<div class="info-text">
-				<div>
-					Released: <span ng-bind="convertedDate()"></span>
-				</div>
-				<div>
+				<div class="wrapper">
 					<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>
-					(<span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes)
+					<span class="duration">
+						(<span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes)
+					</span>
 				</div>
-				<div>
+				<div class="wrapper released">
+					<span class="label">Released: </span>
+					<span class="date" ng-bind="convertedDate()"></span>
+				</div>
+				<div class="wrapper">
 					<span class="bar-track">
 						<span class="bar" style="width: {{ album.popularity }}%;"></span>
 					</span>
+					&nbsp;
 				</div>
 			</div>			
 		</div>

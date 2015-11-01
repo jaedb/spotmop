@@ -27,23 +27,27 @@ Features
 Screenshots
 -----------
 
-![Overview](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/overview.jpg)
+![Overview](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/overview.jpg)
 
-![Discover](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-discover.jpg)
+![Browse](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-browse.jpg)
 
-![Artist](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-artist.jpg)
+![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
 
-![My Playlists](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-my-playlists.jpg)
+![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
 
-![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-playlist.jpg)
+![Dragging tracks](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-dragging.jpg)
 
-![User profile](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-user-profile.jpg)
-
-![Settings](https://raw.githubusercontent.com/jaedb/spotmop/release/2.1/Screenshots/desktop-settings.jpg)
+![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
 
 
 Changelog
 --------
+
+*2.4*
+* Redesign of interface (vertical bars)
+* Basic implementation of artist discovery
+* Drag-and-drop to playlists
+* Performance improvement
 
 *2.1.2 (beta)*
 * Upstart script that allows start/stop/restart of Mopidy server from HTTP interface

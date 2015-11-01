@@ -10,31 +10,7 @@ angular.module('spotmop.settings', [])
 	$stateProvider
 		.state('settings', {
 			url: "/settings",
-            abstract: true,
-			templateUrl: "app/settings/template.html",
-            controller: ['$scope', '$state', 
-                function( $scope, $state) {
-					// if we're at the index level, go to the mopidy sub-state by default
-					// this prevents re-routing on refresh even if the URL is a valid sub-state
-					if( $state.current.name === 'settings' )
-                    	$state.go('settings.mopidy');
-                }]
-		})
-		.state('settings.mopidy', {
-			url: "",
-			templateUrl: "app/settings/mopidy.template.html"
-		})
-		.state('settings.spotify', {
-			url: "/spotify",
-			templateUrl: "app/settings/spotify.template.html"
-		})
-		.state('settings.echonest', {
-			url: "/echonest",
-			templateUrl: "app/settings/echonest.template.html"
-		})
-		.state('settings.info', {
-			url: "/info",
-			templateUrl: "app/settings/info.template.html"
+			templateUrl: "app/settings/template.html"
 		});
 })
 	
@@ -62,31 +38,33 @@ angular.module('spotmop.settings', [])
 		$scope.$parent.spotifyOnline = false;
         $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out"});
     };
-    $scope.toggleMopidyConsume = function(){
-    	if( $scope.settings.mopidyconsume ){
-            MopidyService.setConsume( false ).then( function(){
-                SettingsService.setSetting('mopidyconsume',false);
-            });
+	$scope.toggleSetting = function( setting ){
+    	if( SettingsService.getSetting(setting, false) ){
+            SettingsService.setSetting(setting, false);
+			
+			// handle server switches
+			switch( setting ){
+				case 'mopidyconsume':
+					MopidyService.setConsume( false );
+					break;
+				case 'echonestenabled':
+					EchonestService.stop();
+					break;
+			}
         }else{
-            MopidyService.setConsume( true ).then( function(){
-                SettingsService.setSetting('mopidyconsume',true);
-            });
+            SettingsService.setSetting(setting, true);
+			
+			// handle server switches
+			switch( setting ){
+				case 'mopidyconsume':
+					MopidyService.setConsume( true );
+					break;
+				case 'echonestenabled':
+					EchonestService.start();
+					break;
+			}
         }
-    };
-    $scope.toggleKeyboardShortcuts = function(){
-    	if( SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
-            SettingsService.setSetting('keyboardShortcutsEnabled',false);
-        }else{
-            SettingsService.setSetting('keyboardShortcutsEnabled',true);
-        }
-    };
-    $scope.toggleEmulateTouchDevice = function(){
-    	if( SettingsService.getSetting('emulateTouchDevice',true) ){
-            SettingsService.setSetting('emulateTouchDevice',false);
-        }else{
-            SettingsService.setSetting('emulateTouchDevice',true);
-        }
-    };
+	};
 	
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
@@ -151,25 +129,6 @@ angular.module('spotmop.settings', [])
 		});
 	});
 	
-    $scope.toggleEchonestEnabled = function(){
-    	if( $scope.settings.echonestenabled ){
-            EchonestService.stop();
-        }else{
-			$rootScope.requestsLoading++;	
-            EchonestService.start();
-        }
-        $scope.$watch(
-            // the value function
-            function(scope){
-                return scope.echonestOnline
-            },
-            // and the processor function
-            function(newState, oldState){
-                if( newState === true )
-                    $rootScope.requestsLoading--;
-            }
-        );
-    };
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
 			$rootScope.$broadcast('spotmop:notifyUser', {
@@ -182,7 +141,6 @@ angular.module('spotmop.settings', [])
 		}
 	};
 	$scope.resetSettings = function(){
-		$rootScope.requestsLoading++;
 		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
 		localStorage.clear();		
 		window.location = window.location;

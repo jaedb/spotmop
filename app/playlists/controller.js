@@ -14,9 +14,19 @@ angular.module('spotmop.playlists', [])
 			url: "/my",
 			templateUrl: "app/playlists/my.template.html"
 		})
+		.state('playlists.myplaylist', {
+			url: "/my/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		})
 		.state('playlists.following', {
 			url: "/following",
 			templateUrl: "app/playlists/following.template.html"
+		})
+		.state('playlists.followingplaylist', {
+			url: "/following/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
 		});
 })
 
@@ -26,8 +36,7 @@ angular.module('spotmop.playlists', [])
  **/
 .controller('PlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
-	// note: we use the existing playlist list to show playlists on this page
-	
+	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
         DialogService.create('createPlaylist', $scope);
 	}
