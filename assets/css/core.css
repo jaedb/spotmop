@@ -587,6 +587,7 @@ h4.section-title {
 .primary-colour-text {				color: #1cf4c4; }
 
 .white-background {					background-color: #FFFFFF; }
+.grey-background {					background-color: #DDDDDD; }
 .black-background {					background-color: #000000; }
 .red-background {					background-color: rgb(214,47,47); }
 .green-background {					background-color: rgb(53,204,53); }
@@ -1349,6 +1350,13 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .settings > .section {
 	padding-bottom: 40px;
 }
+
+.settings .section-title .state-label {
+	display: inline-block;
+	padding: 1px 3px;
+	font-size: 11px;
+	margin-left: 5px;
+}
  
 .actions {
     clear: both;
@@ -1374,6 +1382,17 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
     background-position: 50% 50%;
     background-repeat: no-repeat;
 	background-color: #CCCCCC;
+}
+
+.settings .field .view-my-profile {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	z-index: 1;
+	margin-top: 1px;
+	margin-left: -35px;
+	padding: 10px;
+	border: 0;
 }
 
 .settings .field.shortcut-keys .shortcuts {

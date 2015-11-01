@@ -43,8 +43,8 @@ Screenshots
 Changelog
 --------
 
-*2.4
-* Redesign of interface (verical bars)
+*2.4*
+* Redesign of interface (vertical bars)
 * Basic implementation of artist discovery
 * Drag-and-drop to playlists
 * Performance improvement

@@ -10,31 +10,7 @@ angular.module('spotmop.settings', [])
 	$stateProvider
 		.state('settings', {
 			url: "/settings",
-            abstract: true,
-			templateUrl: "app/settings/template.html",
-            controller: ['$scope', '$state', 
-                function( $scope, $state) {
-					// if we're at the index level, go to the mopidy sub-state by default
-					// this prevents re-routing on refresh even if the URL is a valid sub-state
-					if( $state.current.name === 'settings' )
-                    	$state.go('settings.mopidy');
-                }]
-		})
-		.state('settings.mopidy', {
-			url: "",
-			templateUrl: "app/settings/mopidy.template.html"
-		})
-		.state('settings.spotify', {
-			url: "/spotify",
-			templateUrl: "app/settings/spotify.template.html"
-		})
-		.state('settings.echonest', {
-			url: "/echonest",
-			templateUrl: "app/settings/echonest.template.html"
-		})
-		.state('settings.info', {
-			url: "/info",
-			templateUrl: "app/settings/info.template.html"
+			templateUrl: "app/settings/template.html"
 		});
 })
 	
@@ -67,14 +43,26 @@ angular.module('spotmop.settings', [])
             SettingsService.setSetting(setting, false);
 			
 			// handle server switches
-			if( setting == 'mopidyconsume' )
-				MopidyService.setConsume( false );
+			switch( setting ){
+				case 'mopidyconsume':
+					MopidyService.setConsume( false );
+					break;
+				case 'echonestenabled':
+					EchonestService.stop();
+					break;
+			}
         }else{
             SettingsService.setSetting(setting, true);
 			
 			// handle server switches
-			if( setting == 'mopidyconsume' )
-				MopidyService.setConsume( true );
+			switch( setting ){
+				case 'mopidyconsume':
+					MopidyService.setConsume( true );
+					break;
+				case 'echonestenabled':
+					EchonestService.start();
+					break;
+			}
         }
 	};
 	
@@ -140,15 +128,6 @@ angular.module('spotmop.settings', [])
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
 	});
-	
-    $scope.toggleEchonestEnabled = function(){
-    	if( $scope.settings.echonestenabled ){
-            EchonestService.stop();
-        }else{
-			$rootScope.requestsLoading++;	
-            EchonestService.start();
-        }
-    };
 	
 	// listen for changes to the echonestOnline switch (ie we've just enabled it, now listen for success)
 	$scope.$watch(

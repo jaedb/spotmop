@@ -11,7 +11,11 @@
 		
 		<div class="section mopidy">
 		
-			<h4 class="section-title underline">Mopidy Server</h4>
+			<h4 class="section-title underline">
+				Mopidy Server
+				<span class="state-label green-background white-text" ng-if="mopidyOnline">Connected</span>
+				<span class="state-label red-background white-text" ng-if="!mopidyOnline">Offline</span>
+			</h4>
 
 			<div class="field">
 				<div class="label">Hostname</div>
@@ -37,6 +41,85 @@
 			</div>
 
 			<div class="clear-both"></div>		
+		</div>
+		
+		<!-- SECTION -->
+		
+		<div class="section spotify">
+		
+			<h4 class="section-title underline">
+				Spotify
+				<span class="state-label green-background white-text" ng-if="spotifyOnline">Connected</span>
+				<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
+			</h4>
+
+			<div class="field">
+				<div class="label">Application Client ID</div>
+				<div class="input">
+					<input type="readonly" name="clientid" placeholder="a87fb4dbed30475b8cec38523dff53e2" ng-model="settings.spotifyclientid" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="label">Country code</div>
+				<div class="input">
+					<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="label">Locale</div>
+				<div class="input">
+					<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="field current-user">
+				<div class="label">Current user</div>
+				<div class="input">
+					<span class="my-profile">
+						<span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+							<div class="image animate" style="background-image: url({{ image.url }});"></div>
+						</span>
+						<span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+					</span>
+				</div>
+			</div>
+
+			<div class="clear-both"></div>
+		
+		</div>
+		
+		<!-- SECTION -->
+		
+		<div class="section echonest">
+		
+			<h4 class="section-title underline">
+				Echonest
+				<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonestenabled">Connected</span>
+				<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonestenabled">Offline</span>
+				<span class="state-label grey-background white-text" ng-if="!settings.echonestenabled">Disabled</span>
+			</h4>
+			
+			<div class="field">
+				<div class="label">Enabled</div>
+				<div class="input">
+					<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleSetting('echonestenabled')"><span class="switch animate"></span></span>
+				</div>
+			</div>
+
+			<div class="field" ng-show="echonestOnline">
+				<div class="label">Taste profile ID</div>
+				<div class="input">
+					<input type="text" name="echonesttasteprofileid" ng-model="settings.echonesttasteprofileid" />
+					<a class="view-my-profile" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i></a>
+				</div>
+			</div>
+
+			<div class="clear-both"></div>
 		</div>
 		
 		<!-- SECTION -->
@@ -130,7 +213,7 @@
 					</div>
 				</div>
 
-				<div class="field mopidy-server" ng-if="settings.advancedMode">
+				<div class="field mopidy-server">
 					<div class="label">Mopidy server</div>
 					<div class="input">
 						<a class="button primary" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
@@ -150,13 +233,36 @@
 					</div>
 				</div>
 
-				<div class="actions">
+				<div class="field">
+					<div class="label">Spotify authentication</div>
+					<div class="input">
+						<a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+						<a class="button destructive" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Echonest taste profile</div>
+					<div class="input">
+						<confirmation-button
+							extra-classes="destructive"
+							default-text="Delete taste profile"
+							confirmation-text="Are you sure?"
+							on-confirmation="deleteEchonestTasteProfile()">
+						</confirmation-button>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">System reset</div>
+					<div class="input">
 					<confirmation-button
 						extra-classes="destructive"
 						default-text="Reset all settings"
 						confirmation-text="Are you sure?"
 						on-confirmation="resetSettings">
 					</confirmation-button>
+					</div>
 				</div>
 			
 			</div>
