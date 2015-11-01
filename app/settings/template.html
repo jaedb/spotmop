@@ -9,22 +9,158 @@
 	
 	<div class="settings">
 		
-		<div class="sub-page-navigation">
-			<a class="menu-item" ui-sref="settings.mopidy" ui-sref-active="active">
-				Mopidy
-			</a>
-			<a class="menu-item" ui-sref="settings.spotify" ui-sref-active="active">
-				Spotify
-			</a>
-			<a class="menu-item" ui-sref="settings.echonest" ui-sref-active="active">
-				Echonest
-			</a>
-			<a class="menu-item" ui-sref="settings.info" ui-sref-active="active">
-				Info
-			</a>
+		<div class="section mopidy">
+		
+			<h4 class="section-title underline">Mopidy Server</h4>
+
+			<div class="field">
+				<div class="label">Hostname</div>
+				<div class="input">
+					<input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="label">Port</div>
+				<div class="input">
+					<input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
+					<i class="fa fa-check autosave-success"></i>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="label">Consume mode</div>
+				<div class="input">
+					<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleSetting('mopidyconsume')"><span class="switch animate"></span></span>
+				</div>
+			</div>
+
+			<div class="clear-both"></div>		
 		</div>
 		
-        <div ui-view></div>
+		<!-- SECTION -->
+		
+		<div class="section info">
+		
+			<h4 class="section-title underline">Spotmop</h4>
+			
+			<div class="field">
+				<div class="label">Author</div>
+				<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
+				<div class="clear-both"></div>
+			</div>
+
+			<div class="field">
+				<div class="label">Current version</div>
+				<div class="input readonly">
+					<span class="spotmop-version" ng-bind="version.version"></span>
+					(<a class="spotmop-version" ng-bind="version.commit" target="_blank" href="https://github.com/jaedb/spotmop/commit/{{ version.commit }}"></a>)
+				</div>
+				<div class="clear-both"></div>
+			</div>
+
+			<div class="field shortcut-keys">
+				<div class="label">Keyboard shortcuts</div>
+				<div class="input">
+				
+					<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
+					
+					<div class="shortcuts" ng-show="settings.keyboardShortcutsEnabled">
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey"><i class="fa fa-minus"></i> Spacebar</span></div>
+							<div class="col w80">Play/pause</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey"><i class="fa fa-level-down fa-rotate-90"></i>&nbsp; Enter</span></div>
+							<div class="col w80">Play selected tracks</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey"><i class="fa fa-close"></i> Delete</span></div>
+							<div class="col w80">Delete selected tracks</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-up"></i> Up arrow</span></div>
+							<div class="col w80">Volume up by 10%</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-down"></i> Down arrow</span></div>
+							<div class="col w80">Volume down by 10%</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-left"></i> Left arrow</span></div>
+							<div class="col w80">Previous track</div>
+							<div class="clear-both"></div>
+						</div>
+						<div class="row collapse-for-mobile">
+							<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-right"></i> Right arrow</span></div>
+							<div class="col w80">Next track</div>
+							<div class="clear-both"></div>
+						</div>
+					</div>
+				</div>
+				<div class="clear-both"></div>
+			</div>
+		</div>
+		
+		<!-- SECTION -->
+		
+		<div class="section advanced">
+		
+			<h4 class="section-title underline">Advanced</h4>
+
+			<div class="field">
+				<div class="label">Enable advanced settings</div>
+				<div class="input">
+					<span class="switch-button" ng-class="{on: settings.advancedMode}" ng-click="toggleSetting('advancedMode')"><span class="switch animate"></span></span>
+				</div>
+			</div>
+			
+			<div ng-if="settings.advancedMode">
+			
+				<div class="field">
+					<div class="label">Emulate touch device</div>
+					<div class="input">		
+						<span class="switch-button" ng-class="{on: settings.emulateTouchDevice}" ng-click="toggleEmulateTouchDevice()"><span class="switch animate"></span></span>
+					</div>
+				</div>
+
+				<div class="field mopidy-server" ng-if="settings.advancedMode">
+					<div class="label">Mopidy server</div>
+					<div class="input">
+						<a class="button primary" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+							<i class="fa fa-check"></i>&nbsp; Start
+						</a>
+						<a class="button" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+							<i class="fa fa-refresh"></i>&nbsp; Restart
+						</a>
+						<a class="button" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+							<i class="fa fa-close"></i>&nbsp; Stop
+						</a>
+						<div ng-hide="isSameDomainAsMopidy()" class="red-text">
+							<br />
+							<br />
+							Cannot control Mopidy daemon unless Spotmop is running on the same machine as Mopidy
+						</div>
+					</div>
+				</div>
+
+				<div class="actions">
+					<confirmation-button
+						extra-classes="destructive"
+						default-text="Reset all settings"
+						confirmation-text="Are you sure?"
+						on-confirmation="resetSettings">
+					</confirmation-button>
+				</div>
+			
+			</div>
+		</div>
         
 	</div>
 	

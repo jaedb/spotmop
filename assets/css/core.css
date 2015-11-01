@@ -549,7 +549,13 @@ h4 {
 h4.section-title {
 	text-transform: uppercase;
 	font-weight: 600;
-	padding-bottom: 10px;
+	padding-bottom: 5px;
+}
+
+.underline {
+	border-bottom: 1px solid #999999;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 }
 
 .body a {
@@ -1340,6 +1346,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Settings
  **/
 
+.settings > .section {
+	padding-bottom: 40px;
+}
+ 
 .actions {
     clear: both;
     padding: 40px 0 0 15%;

@@ -173,13 +173,14 @@ angular.module('spotmop', [
 		},
 		scope: {
 			text: '@',
+			extraClasses: '@',
 			confirmationText: '@',
 			defaultText: '@',
 			onConfirmation: '@'
 		},
 		replace: true, 		// Replace with the template below
 		transclude: true, 	// we want to insert custom content inside the directive
-		template: '<span ng-bind="text" class="button" ng-class="{ destructive: confirming }"></span>'
+		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
 	};
 })
 

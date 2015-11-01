@@ -62,31 +62,21 @@ angular.module('spotmop.settings', [])
 		$scope.$parent.spotifyOnline = false;
         $rootScope.$broadcast('spotmop:notifyUser', {id: 'spotify-loggingout', message: "Logging you out"});
     };
-    $scope.toggleMopidyConsume = function(){
-    	if( $scope.settings.mopidyconsume ){
-            MopidyService.setConsume( false ).then( function(){
-                SettingsService.setSetting('mopidyconsume',false);
-            });
+	$scope.toggleSetting = function( setting ){
+    	if( SettingsService.getSetting(setting, false) ){
+            SettingsService.setSetting(setting, false);
+			
+			// handle server switches
+			if( setting == 'mopidyconsume' )
+				MopidyService.setConsume( false );
         }else{
-            MopidyService.setConsume( true ).then( function(){
-                SettingsService.setSetting('mopidyconsume',true);
-            });
+            SettingsService.setSetting(setting, true);
+			
+			// handle server switches
+			if( setting == 'mopidyconsume' )
+				MopidyService.setConsume( true );
         }
-    };
-    $scope.toggleKeyboardShortcuts = function(){
-    	if( SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
-            SettingsService.setSetting('keyboardShortcutsEnabled',false);
-        }else{
-            SettingsService.setSetting('keyboardShortcutsEnabled',true);
-        }
-    };
-    $scope.toggleEmulateTouchDevice = function(){
-    	if( SettingsService.getSetting('emulateTouchDevice',true) ){
-            SettingsService.setSetting('emulateTouchDevice',false);
-        }else{
-            SettingsService.setSetting('emulateTouchDevice',true);
-        }
-    };
+	};
 	
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
@@ -158,18 +148,21 @@ angular.module('spotmop.settings', [])
 			$rootScope.requestsLoading++;	
             EchonestService.start();
         }
-        $scope.$watch(
-            // the value function
-            function(scope){
-                return scope.echonestOnline
-            },
-            // and the processor function
-            function(newState, oldState){
-                if( newState === true )
-                    $rootScope.requestsLoading--;
-            }
-        );
     };
+	
+	// listen for changes to the echonestOnline switch (ie we've just enabled it, now listen for success)
+	$scope.$watch(
+		// the value function
+		function( $scope ){
+			return $scope.echonestOnline
+		},
+		// and the processor function
+		function(newState, oldState){
+			if( newState === true )
+				$rootScope.requestsLoading--;
+		}
+	);
+	
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
 			$rootScope.$broadcast('spotmop:notifyUser', {
