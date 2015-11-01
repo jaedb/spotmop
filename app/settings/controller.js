@@ -129,19 +129,6 @@ angular.module('spotmop.settings', [])
 		});
 	});
 	
-	// listen for changes to the echonestOnline switch (ie we've just enabled it, now listen for success)
-	$scope.$watch(
-		// the value function
-		function( $scope ){
-			return $scope.echonestOnline
-		},
-		// and the processor function
-		function(newState, oldState){
-			if( newState === true )
-				$rootScope.requestsLoading--;
-		}
-	);
-	
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
 			$rootScope.$broadcast('spotmop:notifyUser', {
@@ -154,7 +141,6 @@ angular.module('spotmop.settings', [])
 		}
 	};
 	$scope.resetSettings = function(){
-		$rootScope.requestsLoading++;
 		$rootScope.$broadcast('spotmop:notifyUser', {id: 'reset-settings', message: "All settings reset... reloading"});			
 		localStorage.clear();		
 		window.location = window.location;
