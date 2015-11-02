@@ -48,17 +48,17 @@
 	 
 	#sidebar {
 		width: 30%;
-		left: 0%;
+		left: -30%;
+		z-index: 2;
 	}
 	
 	#body {
 		width: 100%;
 		left: 0;
-		z-index: 2;
 	}
 
-	.menu-revealed #body {
-		left: 30%;
+	.menu-revealed #sidebar {
+		left: 0%;
 	}
 	
 	
@@ -157,10 +157,7 @@
 	 
 	#sidebar {
 		width: 50%;
-	}
-
-	.menu-revealed #body {
-		left: 50%;
+		left: -50%;
 	}
 	
 	
@@ -390,14 +387,7 @@
 	 
 	#sidebar {
 		width: 70%;
-	}
-
-	.menu-revealed #body {
-		left: 70%;
-	}
-
-	.menu-revealed #sidebar {
-		left: 0%;
+		left: -70%;
 	}
 	
 	

@@ -82,6 +82,7 @@ body {
 	bottom: 0;
 	width: 20%;
 	overflow: hidden;
+	background: #222222;
 }
 
 #sidebar > .background-image {
