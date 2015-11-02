@@ -120,7 +120,8 @@ body {
 	position: absolute;
 	bottom: 20px;
 	left: 0;
-	width: 100%;
+	width: 20%;
+	z-index: 3;
 }
 
 #body {
@@ -1429,6 +1430,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player {
 	color: #FFFFFF;
+}
+
+#player > .background-image {
+	display: none;
 }
 
 .player .button {

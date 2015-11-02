@@ -49,7 +49,7 @@
 	#sidebar {
 		width: 30%;
 		left: -30%;
-		z-index: 2;
+		z-index: 4;
 	}
 	
 	#body {
@@ -139,8 +139,45 @@
 	 **/
 	
 	#player {
-		display: none;
+		position: fixed;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		width: auto;
+		padding: 15px 0 15px;
+		background-color: #222222;
 	}
+	
+	#player .track-info {
+		padding-bottom: 5px;
+	}
+	
+	#player .track,
+	#player .artist {
+		display: inline-block;
+	}
+
+	#player > .background-image {
+		display: block;
+		position: absolute;
+		top: -20px;
+		right: -20px;
+		bottom: -20px;
+		left: -20px;
+		z-index: -1;
+		opacity: 0.3;
+	}
+
+	#player > .background-image .image {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-position: 0 50%;
+		background-size: cover;
+	}
+	
 }
 
 
@@ -333,23 +370,6 @@
 		right: 5px;
 	}
 	
-	
-	/**
-	 * Player
-	 **/
-	
-	#player {
-		display: none;
-	}
-	 
-	#full-player .artwork {
-		width: 75%;
-		padding-bottom: 75%;
-	}
-	
-	#full-player .controls {
-		width: 100%;
-	}
 	
 	
 	/**

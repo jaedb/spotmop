@@ -41,5 +41,9 @@
 			<div class="fill animate" style="width: {{ state().playPositionPercent() }}%"></div>
 		</div>
 	</div>
+	
+	<div class="background-image" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
+		<preloadedimage class="image blur" url="{{ image.url }}"></preloadedimage>
+	</div>
 
 </div>
