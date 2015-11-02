@@ -409,18 +409,8 @@ angular.module('spotmop', [
 			// update stored value
 			$scope.windowWidth = $(document).width();
 			
-			// if we're a small or medium screen, re-hide the sidebar and reset the body sliding
-			if( $scope.mediumScreen() || $scope.smallScreen() ){
-				var percentage = 30;
-				if( $scope.smallScreen() ) percentage = 70;
-				$(document).find('#sidebar').css({ left: '-'+percentage+'%', width: percentage+'%' });
-				$(document).find('#body').css({ left: '0px', width: '100%' });
-				
-			// full-screen, so reset any animations/sliding/offsets
-			}else{
-				$(document).find('#sidebar').attr('style','');
-				$(document).find('#body').attr('style','')
-			}
+			// re-hide the sidebar and reset the body sliding
+			$(document).find('body').removeClass('menu-revealed');
 		}
     });
 	
@@ -430,22 +420,12 @@ angular.module('spotmop', [
 	
 	// show menu (this is triggered by swipe event)
 	$scope.showMenu = function(){
-		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			var percentage = 30;
-			if( $scope.smallScreen() ) percentage = 70;
-			$(document).find('#body').animate({
-				left: percentage+'%'
-			}, 100);
-		}
+		$(document).find('body').addClass('menu-revealed');
 	}
 	
 	// hide menu (typically triggered by swipe event)
 	$scope.hideMenu = function(){
-		if( $scope.mediumScreen() || $scope.smallScreen() ){
-			$(document).find('#body').animate({
-				left: '0px'
-			}, 200);
-		}
+		$(document).find('body').removeClass('menu-revealed');
 	}
 	
 	

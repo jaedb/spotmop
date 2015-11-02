@@ -37,23 +37,28 @@
 		display: none;
 	}
 	
-	/**
-	 * Body elements
-	 **/
-	
-	#body {
-		left: 0;
-		width: 100%;
-		z-index: 2;
-	}
-	
-	#sidebar {
-		width: 30%;
-		z-index: 1;
-	}
-	
 	#player .progress {
 		display: none;
+	}
+	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
+	#sidebar {
+		width: 30%;
+		left: 0%;
+	}
+	
+	#body {
+		width: 100%;
+		left: 0;
+		z-index: 2;
+	}
+
+	.menu-revealed #body {
+		left: 30%;
 	}
 	
 	
@@ -143,15 +148,21 @@
 /* ======================================================= INTERMEDIATE DEVICES (medium-small) ==== */
 /* ================================================================================================ */
 
-@media( max-width: 450px ){
+@media( max-width: 600px ){
 	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
 	#sidebar {
-		width: 70%;
+		width: 50%;
+	}
+
+	.menu-revealed #body {
+		left: 50%;
 	}
 	
-}
-
-@media( max-width: 600px ){
 	
 	/**
 	 * Body layout
@@ -363,6 +374,7 @@
 
 @media( max-width: 450px ){
 	
+	
 	.mobile-hide {
 		display: none;
 	}
@@ -370,6 +382,24 @@
 	h1 {
 		font-size: 30px;
 	}
+	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
+	#sidebar {
+		width: 70%;
+	}
+
+	.menu-revealed #body {
+		left: 70%;
+	}
+
+	.menu-revealed #sidebar {
+		left: 0%;
+	}
+	
 	
 	/**
 	 * Artwork panels

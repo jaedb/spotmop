@@ -15,10 +15,6 @@ html {
 	font-size: 14px;
 }
 
-body {
-	perspective: 1px;
-}
-
 * {
 	border: 0;
 	padding: 0;
@@ -35,6 +31,27 @@ body.dragging *,
     -ms-user-select: none;
     user-select: none;
 }
+
+
+/**
+ * Hardware accelaration
+ **/
+
+#sidebar,
+#body {
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+	/* Other transform properties here */
+	-webkit-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	/* Other transform properties here */
+}
+ 
 
 
 
@@ -113,9 +130,6 @@ body {
 	bottom: 0;
 	background: #f5f5f5;
 	overflow-y: scroll;
-	-webkit-perspective: 1px;
-	-moz-perspective: 1px;
-	perspective: 1px;
 }
 
 #body > .inner {
