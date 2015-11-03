@@ -901,10 +901,11 @@ h1 .flag {
 	max-height: 100%;
 }
 
-.square-panel .image-container .image.placeholder {
+.image-container .image.placeholder {
 	background-color: #CCCCCC;
-	background-image: url('../image-not-found.png');
-	background-size: auto;
+	background-image: url('../svg/no-image.svg');
+	background-size: 80% 80%;
+	background-position: 50% 50%;
 }
 
 .square-panel:hover .image-container .image {
