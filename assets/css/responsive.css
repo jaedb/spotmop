@@ -137,6 +137,10 @@
 	/**
 	 * Player
 	 **/
+	 
+	#body {
+		bottom: 70px;
+	}
 	
 	#player {
 		position: fixed;
@@ -144,19 +148,29 @@
 		right: 0;
 		left: 0;
 		width: auto;
+		height: 40px;
 		padding: 15px 0 15px;
 		background-color: #222222;
+		overflow: hidden;
+	}
+	
+	#player .button.previous,
+	#player .volume {
+		display: none;
 	}
 	
 	#player .track-info {
-		padding-bottom: 5px;
+		float: right;
+		width: 80%;
+		padding: 0;
 	}
 	
-	#player .track,
-	#player .artist {
-		display: inline-block;
+	#player .playback {
+		position: absolute;
+		padding-left: 10px;
+		top: 24px;
 	}
-
+	
 	#player > .background-image {
 		display: block;
 		position: absolute;
@@ -328,6 +342,10 @@
 		font-size: 13px;
 	}
 	
+	.square-panels.smaller .square-panel {
+		width: 16%;
+		margin: 0 2% 5%;
+	}
 	
 	
 	/**
@@ -481,6 +499,22 @@
 		width: 29.3333%;
 	}
 	
+	
+	/**
+	 * Player
+	 **/
+	#full-player .artwork {
+		width: 100%;
+		padding-bottom: 100%;
+	}
+	
+	#full-player .controls {
+		width: 100%;
+	}
+	
+	#full-player .button {
+		padding: 3px 6px;
+	}
 }
 
 

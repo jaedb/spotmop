@@ -1250,6 +1250,11 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Discover
  **/
 
+.discover .discover-section {
+	clear: both;
+	padding-bottom: 20px;
+}
+
 .discover .discover-section .section-title {
 	padding-bottom: 20px;
 }
@@ -1283,7 +1288,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	right: 0px;
 	bottom: 0px;
 	opacity: 0.6;
-	background-position: 50% 50%;
+	background-position: 50% 0;
 	background-size: cover;
 }
  
