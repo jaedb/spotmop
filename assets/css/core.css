@@ -82,7 +82,7 @@ body {
 	bottom: 0;
 	width: 20%;
 	overflow: hidden;
-	background: #222222;
+	background: #111111;
 }
 
 #sidebar > .background-image {
@@ -191,7 +191,8 @@ body {
 	border-left: 4px solid transparent;
 }
 
-.main-menu .menu-item > a.droppable.dropping {
+.main-menu .menu-item > a.droppable.dropping,
+.main-menu .menu-item > a.droppable.dropping:hover {
 	background-color: #08d58f;
 }
 
