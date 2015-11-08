@@ -70,7 +70,9 @@ angular.module('spotmop.browse.album', [])
 	
 	// get the album
 	SpotifyService.getAlbum( $stateParams.uri )
-		.success(function( response ) {
+		.then(function( response ) {
+		
+            $rootScope.requestsLoading--;
 		
 			$scope.album = response;
 			$scope.tracklist = response.tracks;
@@ -81,11 +83,17 @@ angular.module('spotmop.browse.album', [])
 				track.album = $scope.album;
 			});
 			
-            $rootScope.requestsLoading--;
-		})
-		.error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-album', message: error.error.message});
+			var artisturis = [];
+			angular.forEach( response.artists, function( artist ){
+				artisturis.push( artist.uri );
+			});
+			
+			// now get the artist objects
+			SpotifyService.getArtists( artisturis )
+				.then( function( response ){
+					$scope.album.artists = response.artists;
+				});
+			
 		});
     
 	

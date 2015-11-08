@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, SettingsService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.spotify) === 'undefined' )
@@ -516,15 +516,28 @@ angular.module('spotmop.services.spotify', [])
 				if( artistids != '' ) artistids += ',';
 				artistids += self.getFromUri( 'artistid', artisturi );
 			});
-			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/?ids='+artistids,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+		
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'artists/?ids='+artistids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getAlbums: function( artisturi ){
@@ -542,17 +555,29 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getAlbum: function( albumuri ){
-			
+		
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();			
 			var albumid = this.getFromUri( 'albumid', albumuri );
-			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'albums/'+albumid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+
+            $http({
+					method: 'GET',
+					url: urlBase+'albums/'+albumid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getAlbum', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getTopTracks: function( artisturi ){
