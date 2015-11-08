@@ -15,10 +15,6 @@ html {
 	font-size: 14px;
 }
 
-body {
-	perspective: 1px;
-}
-
 * {
 	border: 0;
 	padding: 0;
@@ -35,6 +31,27 @@ body.dragging *,
     -ms-user-select: none;
     user-select: none;
 }
+
+
+/**
+ * Hardware accelaration
+ **/
+
+#sidebar,
+#body {
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+	/* Other transform properties here */
+	-webkit-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	/* Other transform properties here */
+}
+ 
 
 
 
@@ -65,6 +82,7 @@ body {
 	bottom: 0;
 	width: 20%;
 	overflow: hidden;
+	background: #111111;
 }
 
 #sidebar > .background-image {
@@ -102,7 +120,8 @@ body {
 	position: absolute;
 	bottom: 20px;
 	left: 0;
-	width: 100%;
+	width: 20%;
+	z-index: 3;
 }
 
 #body {
@@ -113,9 +132,6 @@ body {
 	bottom: 0;
 	background: #f5f5f5;
 	overflow-y: scroll;
-	-webkit-perspective: 1px;
-	-moz-perspective: 1px;
-	perspective: 1px;
 }
 
 #body > .inner {
@@ -175,7 +191,8 @@ body {
 	border-left: 4px solid transparent;
 }
 
-.main-menu .menu-item > a.droppable.dropping {
+.main-menu .menu-item > a.droppable.dropping,
+.main-menu .menu-item > a.droppable.dropping:hover {
 	background-color: #08d58f;
 }
 
@@ -885,10 +902,11 @@ h1 .flag {
 	max-height: 100%;
 }
 
-.square-panel .image-container .image.placeholder {
+.image-container .image.placeholder {
 	background-color: #CCCCCC;
-	background-image: url('../image-not-found.png');
-	background-size: auto;
+	background-image: url('../svg/no-image.svg');
+	background-size: 80% 80%;
+	background-position: 50% 50%;
 }
 
 .square-panel:hover .image-container .image {
@@ -1233,6 +1251,11 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Discover
  **/
 
+.discover .discover-section {
+	clear: both;
+	padding-bottom: 20px;
+}
+
 .discover .discover-section .section-title {
 	padding-bottom: 20px;
 }
@@ -1266,7 +1289,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	right: 0px;
 	bottom: 0px;
 	opacity: 0.6;
-	background-position: 50% 50%;
+	background-position: 50% 0;
 	background-size: cover;
 }
  
@@ -1414,6 +1437,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 #player {
 	color: #FFFFFF;
+}
+
+#player > .background-image {
+	display: none;
 }
 
 .player .button {

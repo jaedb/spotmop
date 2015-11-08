@@ -2,16 +2,22 @@
 
 	<div id="full-player" class="player" ng-controller="PlayerController">
 
-		<a class="artwork" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
-			<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1"></div>
+		<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
+			<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1" ng-if="state().currentTlTrack.track"></div>
+			<div class="image placeholder" ng-if="!state().currentTlTrack.track"></div>
 		</a>
 			
 		<div class="track-info">
-			<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
-			<div class="artist">
-				<span ng-repeat="artist in state().currentTlTrack.track.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
-				</span>
+			<div ng-if="state().currentTlTrack.track">
+				<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
+				<div class="artist">
+					<span ng-repeat="artist in state().currentTlTrack.track.artists">
+						<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+					</span>
+				</div>
+			</div>
+			<div ng-if="!state().currentTlTrack.track">
+				<div class="artist">Nothing playing</div>
 			</div>
 		</div>
 		
@@ -51,10 +57,9 @@
 		</div>
 	</div>
 	
-	<div class="queue-intro">
-		
+	<div class="queue-intro" ng-if="state().currentTlTrack.track">		
 		<div class="info-text">
-			<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length > 1">s</span>
+			<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length != 1">s</span>
 			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minute<span ng-show="totalTime != 1">s</span>
 		</div>
 	</div>

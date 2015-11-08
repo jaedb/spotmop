@@ -37,23 +37,28 @@
 		display: none;
 	}
 	
-	/**
-	 * Body elements
-	 **/
-	
-	#body {
-		left: 0;
-		width: 100%;
-		z-index: 2;
-	}
-	
-	#sidebar {
-		width: 30%;
-		z-index: 1;
-	}
-	
 	#player .progress {
 		display: none;
+	}
+	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
+	#sidebar {
+		width: 30%;
+		left: -30%;
+		z-index: 4;
+	}
+	
+	#body {
+		width: 100%;
+		left: 0;
+	}
+
+	.menu-revealed #sidebar {
+		left: 0%;
 	}
 	
 	
@@ -132,10 +137,61 @@
 	/**
 	 * Player
 	 **/
+	 
+	#body {
+		bottom: 70px;
+	}
 	
 	#player {
+		position: fixed;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		width: auto;
+		height: 40px;
+		padding: 15px 0 15px;
+		background-color: #222222;
+		overflow: hidden;
+	}
+	
+	#player .button.previous,
+	#player .volume {
 		display: none;
 	}
+	
+	#player .track-info {
+		float: right;
+		width: 80%;
+		padding: 0;
+	}
+	
+	#player .playback {
+		position: absolute;
+		padding-left: 10px;
+		top: 24px;
+	}
+	
+	#player > .background-image {
+		display: block;
+		position: absolute;
+		top: -20px;
+		right: -20px;
+		bottom: -20px;
+		left: -20px;
+		z-index: -1;
+		opacity: 0.3;
+	}
+
+	#player > .background-image .image {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-position: 0 50%;
+		background-size: cover;
+	}
+	
 }
 
 
@@ -143,15 +199,18 @@
 /* ======================================================= INTERMEDIATE DEVICES (medium-small) ==== */
 /* ================================================================================================ */
 
-@media( max-width: 450px ){
+@media( max-width: 600px ){
 	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
 	#sidebar {
-		width: 70%;
+		width: 50%;
+		left: -50%;
 	}
 	
-}
-
-@media( max-width: 600px ){
 	
 	/**
 	 * Body layout
@@ -283,6 +342,10 @@
 		font-size: 13px;
 	}
 	
+	.square-panels.smaller .square-panel {
+		width: 16%;
+		margin: 0 2% 5%;
+	}
 	
 	
 	/**
@@ -326,23 +389,6 @@
 	}
 	
 	
-	/**
-	 * Player
-	 **/
-	
-	#player {
-		display: none;
-	}
-	 
-	#full-player .artwork {
-		width: 75%;
-		padding-bottom: 75%;
-	}
-	
-	#full-player .controls {
-		width: 100%;
-	}
-	
 	
 	/**
 	 * Notifications
@@ -363,6 +409,7 @@
 
 @media( max-width: 450px ){
 	
+	
 	.mobile-hide {
 		display: none;
 	}
@@ -370,6 +417,17 @@
 	h1 {
 		font-size: 30px;
 	}
+	
+	
+	/**
+	 * Swipe menu
+	 **/
+	 
+	#sidebar {
+		width: 70%;
+		left: -70%;
+	}
+	
 	
 	/**
 	 * Artwork panels
@@ -441,6 +499,22 @@
 		width: 29.3333%;
 	}
 	
+	
+	/**
+	 * Player
+	 **/
+	#full-player .artwork {
+		width: 100%;
+		padding-bottom: 100%;
+	}
+	
+	#full-player .controls {
+		width: 100%;
+	}
+	
+	#full-player .button {
+		padding: 3px 6px;
+	}
 }
 
 

@@ -65,7 +65,7 @@
 	
 		<div id="notifications"></div>
 		
-		<div id="sidebar">
+		<div id="sidebar" class="animate">
 			<div class="background-image" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
 				<preloadedimage class="image blur" url="{{ image.url }}"></preloadedimage>
 			</div>
@@ -78,12 +78,13 @@
 						</button>
 					</form>
 				</div>
-				<ng-include src="'/app/common/mainmenu.template.html'"></ng-include>
-				<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>		
+				<ng-include src="'/app/common/mainmenu.template.html'"></ng-include>	
 			</div>
 		</div>
+		
+		<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>	
 
-		<div id="body" class="body">
+		<div id="body" class="body animate">
 			<div class="inner">
 				<div ui-view></div>
 			</div>

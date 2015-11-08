@@ -24,6 +24,9 @@ angular.module('spotmop.browse.featured', [])
 	
 	// set the default items
 	$scope.playlists = [];
+	$scope.featured = function(){
+		return $scope.playlists[0];
+	}
 	
 	// figure out the most appropriate background image to show (based on current local time)
 	$scope.partofday = function(){

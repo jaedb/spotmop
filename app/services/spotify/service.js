@@ -265,7 +265,7 @@ angular.module('spotmop.services.spotify', [])
 			return $http({
 				cache: true,
 				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
 				headers: {
 					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 				}
