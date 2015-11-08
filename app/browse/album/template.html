@@ -10,14 +10,14 @@
 		<div class="clear-left"></div>
 			
 		<div class="info">
-			<div class="info-item">
+			<div class="info-item capitalize">
 				<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
 			</div>
-			<div class="info-item">
+			<div class="info-item capitalize">
 				<span class="label">Released: </span>
 				<span class="date" ng-bind="convertedDate()"></span>
 			</div>
-			<div class="info-item">
+			<div class="info-item capitalize">
 				Popularity: 
 				<span class="bar-track">
 					<span class="bar" style="width: {{ album.popularity }}%;"></span>

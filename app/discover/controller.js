@@ -100,8 +100,6 @@ angular.module('spotmop.discover', [])
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
 					
 				}else{
-				
-					$rootScope.requestsLoading++;
 					
 					angular.forEach( echonestArtists, function( echonestArtist ){
 						if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
@@ -109,13 +107,8 @@ angular.module('spotmop.discover', [])
 					});
 					
 					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
+						.then( function( response ){
 							$scope.recommendations.currentArtist.recommendations = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 						});
 				}
 			});
@@ -137,21 +130,14 @@ angular.module('spotmop.discover', [])
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
 					
 				}else{
-				
-					$rootScope.requestsLoading++;
 					
 					angular.forEach( echonestArtists, function( echonestArtist ){
 						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
 					});
 					
 					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
+						.then( function( response ){
 							$scope.recommendations.suggestions = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
 						});
 				}
 			});

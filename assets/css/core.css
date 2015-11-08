@@ -372,14 +372,8 @@ body {
 .clear-both {		clear: both; }
 .clear-left {		clear: left; }
 .clear-right {		clear: right; }
-
-.hide {
-	display: none !important;
-}
-
-*:focus {
-    outline: none;
-}
+.hide {				display: none !important; }
+*:focus {		    outline: none; }
 
 
 /**
@@ -590,6 +584,10 @@ h4.section-title {
 	color: #AAAAAA;
 	text-transform: uppercase;
 	padding-top: 5px;
+}
+
+.capitalize {
+	text-transform: uppercase; 
 }
 
 
@@ -813,7 +811,7 @@ h1 .flag {
  * Artist lists (related artists, album artists, etc)
  **/
 
-.artist-list.related-artist {
+.artist-list .artist {
 	display: block;
 	clear: both;
 	padding: 10px 0;
@@ -1168,7 +1166,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .playlist-page .info,
 .album-page .info {
 	padding: 14px 0;
-	text-transform: uppercase;
 	margin-top: 1px;
 }
 
