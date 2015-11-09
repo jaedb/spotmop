@@ -16,13 +16,13 @@
 					  ng-click="unfollowPlaylist()"
 					  ng-mouseover="hovering = true"
 					  ng-mouseleave="hovering = false">
-					<span ng-show="hovering"><i class="fa fa-star"></i> Unfollow</span>
-					<span ng-show="!hovering"><i class="fa fa-star"></i> Following</span>
+					<span ng-show="hovering">Unfollow</span>
+					<span ng-show="!hovering">Following</span>
 				</a>
 				<a class="button"
 					  ng-show="!following"
 					  ng-click="followPlaylist()">
-					<span><i class="fa fa-star"></i> Follow</span>
+					<span>Follow</span>
 				</a>
 			</span>
 			
@@ -52,7 +52,7 @@
 				<span ng-bind="tracklist.total">0</span> tracks<span ng-show="tracks.next">+</span>, <span ng-bind="totalTime()">0</span> minutes
 			</div>
 			<div class="info-item capitalize">
-				<span ng-bind="playlist.followers.total">0</span> followers
+				<span ng-bind="playlist.followers.total | number:0"></span> followers
 			</div>
 			<div class="info-item capitalize">
 				Created by: <a ng-bind="playlist.owner.id" href="/browse/user/{{ playlist.owner.uri }}"></a>
