@@ -97,7 +97,7 @@ angular.module('spotmop.services.dialog', [])
 						$scope.$parent.spotifyUser.id,
 						{ name: $scope.playlistName, public: $scope.playlistPublic } 
 					)
-                    .success( function(response){
+                    .then( function(response){
                     
                         // save new playlist to our playlist array
                         $scope.$parent.playlists.unshift( response );
@@ -144,7 +144,7 @@ angular.module('spotmop.services.dialog', [])
                 
                 // actually perform the rename
                 SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .success( function(response){
+                    .then( function(response){
                     
                         // update the playlist's name
                         $scope.$parent.playlist.name = $scope.playlistNewName;
@@ -181,12 +181,9 @@ angular.module('spotmop.services.dialog', [])
 			var spotifyUserID = SettingsService.getSetting('spotifyuserid');
 			
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
-				.success(function( response ) {
+				.then(function( response ) {
 					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-				})
-				.error(function( error ){
-					$scope.status = 'Unable to load your playlists';
-				});	
+				});
 			
 			/**
 			 * When we select the playlist for these tracks
@@ -210,15 +207,12 @@ angular.module('spotmop.services.dialog', [])
 				
 				// get Spotify involved...
 				SpotifyService.addTracksToPlaylist( playlist.uri, selectedTracksUris )
-					.success( function(response){
+					.then( function(response){
 					
 						// remove this dialog, and initiate standard notification
 						DialogService.remove();
 						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
-					})
-					.error( function(response){
-						$scope.$emit('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
 					});
 			};
 		}

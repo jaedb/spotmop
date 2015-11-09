@@ -339,12 +339,9 @@ angular.module('spotmop', [
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 	
-		$rootScope.requestsLoading++;
-	
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
-			.success(function( response ) {
+			.then(function( response ) {
 				
-				$rootScope.requestsLoading--;
 				$scope.myPlaylists = response.items;				
                 var newPlaylistsMenu = [];
             
@@ -362,11 +359,7 @@ angular.module('spotmop', [
                 
                 // now reset our current list with this new list
                 $scope.playlistsMenu = newPlaylistsMenu;
-			})
-			.error(function( error ){
-				$rootScope.requestsLoading--;
-				$scope.status = 'Unable to load your playlists';
-			});	
+			});
 	}
 	
 	
@@ -560,7 +553,7 @@ angular.module('spotmop', [
 	
 	function getSpotifyAccount(){
 		SpotifyService.getMe()
-			.success( function(response){
+			.then( function(response){
 				$scope.spotifyUser = response;
 				
 				if( typeof(response.error) !== 'undefined' ){
@@ -574,10 +567,6 @@ angular.module('spotmop', [
 					// update my playlists
 					$scope.updatePlaylists();
 				}
-			})
-			.error(function( error ){
-				$scope.status = 'Unable to look you up';
-				$rootScope.spotifyOnline = false;
 			});
 	}
 	
@@ -786,8 +775,6 @@ angular.module('spotmop', [
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-				    
-                    $rootScope.requestsLoading++;
 				
 					// convert all our URIs to IDs
 					var trackids = new Array();
@@ -795,28 +782,12 @@ angular.module('spotmop', [
 						trackids.push( SpotifyService.getFromUri('trackid', value) );
 					});
 					
-					SpotifyService.addTracksToLibrary( trackids )
-                        .success( function(response){
-                            $rootScope.requestsLoading--;
-                        })
-                        .error( function(response){
-                            $rootScope.requestsLoading--;
-                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
-                        });	
+					SpotifyService.addTracksToLibrary( trackids );
 					
 				// dropping on playlist
 				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
-				    
-                    $rootScope.requestsLoading++;
 					
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris )
-                        .success( function(response){
-                            $rootScope.requestsLoading--;
-                        })
-                        .error( function(response){
-                            $scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-playlist-error', message: 'Error!'});
-                            $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-playlist'});
-                        });		
+					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );	
 					
 				// dropping within tracklist
 				}else if( track ){

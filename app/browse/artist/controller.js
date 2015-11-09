@@ -47,22 +47,16 @@ angular.module('spotmop.browse.artist', [])
 	$scope.tracklist = {type: 'track'};
 	$scope.albums = {};
 	$scope.relatedArtists = {};
-	$rootScope.requestsLoading++;
     
 	// get the artist
 	SpotifyService.getArtist( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.artist = response;
 		
 			// get the artist's related artists
 			SpotifyService.getRelatedArtists( $stateParams.uri )
-				.success( function( response ){
+				.then( function( response ){
 					$scope.relatedArtists = response.artists;
-					$rootScope.requestsLoading--;
-				})
-				.error(function( error ){
-					$rootScope.requestsLoading--;
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
 				});
 		});	
 })
@@ -72,17 +66,14 @@ angular.module('spotmop.browse.artist', [])
  **/
 .controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
-	$rootScope.requestsLoading++;
-	
 	// get the artist's albums
 	SpotifyService.getAlbums( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.$parent.albums = response;
 			
 			// get the artist's top tracks
 			SpotifyService.getTopTracks( $stateParams.uri )
-				.success( function( response ){
-					$rootScope.requestsLoading--;
+				.then( function( response ){
 					$scope.tracklist.tracks = response.tracks;
 				});
 		});	
@@ -102,11 +93,10 @@ angular.module('spotmop.browse.artist', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreAlbums = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist (using our unified format of course)
                 $scope.albums.items = $scope.albums.items.concat( response.items );
@@ -115,12 +105,6 @@ angular.module('spotmop.browse.artist', [])
                 $scope.albums.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMoreAlbums = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-albums', message: error.error.message});
                 loadingMoreAlbums = false;
             });
     }
@@ -145,14 +129,11 @@ angular.module('spotmop.browse.artist', [])
  * Biography controller
  **/
 .controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, EchonestService ){
-
-	$rootScope.requestsLoading++;
 	
 	// get the biography
 	EchonestService.getArtistBiography( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.artist.biography = response.response.biographies[0];
-			$rootScope.requestsLoading--;
 		});
 	
 });

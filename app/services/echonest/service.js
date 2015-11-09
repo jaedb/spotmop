@@ -127,10 +127,26 @@ angular.module('spotmop.services.echonest', [])
          * Get artist
          **/
 		getArtistBiography: function( artistid ){
-            return $.ajax({
-                url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid,
-                method: "GET"
-            });
+		
+			$rootScope.requestsLoading++;
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
 		
         

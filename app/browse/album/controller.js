@@ -53,17 +53,13 @@ angular.module('spotmop.browse.album', [])
 	
 	// add album to library
 	$scope.addToLibrary = function(){
-		$rootScope.requestsLoading++;
 		
 		var trackids = [];
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
 		});
 		
-		SpotifyService.addTracksToLibrary( trackids )
-			.success( function(response){
-				$rootScope.requestsLoading--;
-			});
+		SpotifyService.addTracksToLibrary( trackids );
 	}
     
     $rootScope.requestsLoading++;
@@ -112,11 +108,10 @@ angular.module('spotmop.browse.album', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;   
-        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
@@ -125,12 +120,6 @@ angular.module('spotmop.browse.album', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMoreTracks = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });
     }

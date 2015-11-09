@@ -49,7 +49,6 @@ angular.module('spotmop.library', [])
 		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
 		var tracksToDelete = [];
-		$rootScope.requestsLoading++;
 		
 		// construct each track into a json object to delete
 		angular.forEach( selectedTracks, function( selectedTrack, index ){
@@ -58,16 +57,11 @@ angular.module('spotmop.library', [])
 		
 		// parse these uris to spotify and delete these tracks
 		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
-			.success(function( response ){				
-				$rootScope.requestsLoading--;
+			.then(function( response ){
 				
 				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
 				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
 				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-			})
-			.error(function( error ){
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleting-tracks', message: error.error.message});
 			});
 	});
 	
@@ -110,7 +104,7 @@ angular.module('spotmop.library', [])
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
@@ -119,12 +113,6 @@ angular.module('spotmop.library', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-				$rootScope.requestsLoading--;
-                loadingMoreTracks = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });
     }
