@@ -1,9 +1,9 @@
-<div class="playlist-page">
+<div class="browse playlist-page">
 	
 	<div class="asset-sidebar">
 	
 		<div class="thumbnail playlist" ng-if="playlist.images.length > 0" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
-		<div class="thumbnail playlist placeholder" ng-if="playlist.images.length <= 0"></div>
+		<div class="thumbnail playlist placeholder" ng-if=" !playlist.images || playlist.images.length <= 0"></div>
 				
 		<div class="buttons">
 		

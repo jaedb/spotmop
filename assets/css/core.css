@@ -849,6 +849,39 @@ h1 .flag {
 
 
 /**
+ * Artist grid (ie album page)
+ **/
+
+.artist-grid {
+	padding: 0;
+	margin-top: 1px;
+}
+
+.artist-grid .artist {
+	display: inline-block;
+	clear: both;
+	border: 0 !important;
+	width: 50%;
+}
+
+.artist-grid .artist .image {
+	display: inline-block;
+	width: 100%;
+	padding-bottom: 100%;
+	background-image: url('../svg/no-image.svg');
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+	background-color: #777777;
+}
+
+.artist-grid .artist:nth-child(2n+2) .image{
+	margin-left: -1px;
+	border-left: 1px solid #F2F2F2;
+}
+
+
+/**
  * Square panels
  * The basis for all playlist, album and artist thumbnails
  **/

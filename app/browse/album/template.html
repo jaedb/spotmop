@@ -3,7 +3,16 @@
 	<div class="asset-sidebar">
 	
 		<div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
-		<div class="thumbnail album placeholder" ng-if="album.images.length <= 0"></div>
+		<div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
+		
+		<div class="artist-grid small">
+			<a
+			   ng-repeat="artist in album.artists"
+			   class="artist"
+			   href="/browse/artist/{{ artist.uri }}">
+					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
+			</a>
+		</div>
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
@@ -30,16 +39,6 @@
 		</div>
 		
 		<div class="clear-left"></div>
-		
-		<div class="info artist-list">
-			<a
-			   ng-repeat="artist in album.artists"
-			   class="artist"
-			   href="/browse/artist/{{ artist.uri }}">
-				<span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});"></span>
-				<span class="name" ng-bind="artist.name"></span>
-			</a>
-		</div>
 		
 	</div>
 	<div class="content">
