@@ -590,6 +590,12 @@ h4.section-title {
 	text-transform: uppercase; 
 }
 
+.asset-type {
+	margin-top: -20px;
+	color: #CCCCCC;
+	text-transform: uppercase;
+}
+
 
 /**
  * Text colour variations
@@ -1204,7 +1210,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	bottom: 0;
 	left: 25%;
 	overflow-y: auto;
-	padding: 40px 20px 10px 40px;
+	padding: 40px 20px 10px 20px;
 }
 
 .playlist-page .playlist.thumbnail,

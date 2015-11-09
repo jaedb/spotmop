@@ -21,25 +21,16 @@ angular.module('spotmop.library', [])
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-	$rootScope.requestsLoading++;
     
 	SpotifyService.getMyTracks( userid )
-		.then(
-			function( response ){ // successful
-				$scope.tracklist = response.data;
-				$scope.tracklist.tracks = reformatTracks( response.data.items );
-				$rootScope.requestsLoading--;
-			},
-			function( response ){ // error
-			
-				// if it was 401, refresh token
-				if( error.error.status == 401 )
-					Spotify.refreshToken();
+		.then( function( response ){ // successful
+				$scope.tracklist = response;
+				$scope.tracklist.tracks = reformatTracks( response.items );
 				
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-library', message: error.error.message});
-			}
-		);
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
 		
 		
 	/**
@@ -100,7 +91,6 @@ angular.module('spotmop.library', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )

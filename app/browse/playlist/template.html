@@ -65,11 +65,10 @@
 	</div>
 	<div class="content">
 		
-		<div class="intro">
-			<div class="inner">			
-				<h1 ng-bind="playlist.name"></h1>				
-				<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>				
-			</div>
+		<div class="intro">	
+			<div class="asset-type">Playlist</div>
+			<h1 ng-bind="playlist.name"></h1>
+			<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
 		</div>
 		
 		<div class="playlist-items tracklist droppable" ng-controller="TracklistController">

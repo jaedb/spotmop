@@ -45,7 +45,13 @@
 	<div class="content">
 	
 		<div class="intro">
+			<div class="asset-type">Album</div>
 			<h1 ng-bind="album.name"></h1>
+			<h2 class="description">
+				<span ng-repeat="artist in album.artists">
+					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+				</span>
+			</h2>	
 		</div>
 		
 		<div class="album-items tracklist" ng-controller="TracklistController" >
