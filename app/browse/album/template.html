@@ -11,6 +11,7 @@
 			   class="artist"
 			   href="/browse/artist/{{ artist.uri }}">
 					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
+					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
 		</div>
 		

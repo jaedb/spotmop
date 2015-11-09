@@ -862,6 +862,7 @@ h1 .flag {
 	clear: both;
 	border: 0 !important;
 	width: 50%;
+	position: relative;
 }
 
 .artist-grid .artist .image {
@@ -873,6 +874,27 @@ h1 .flag {
 	background-position: 50% 50%;
 	background-size: cover;
 	background-color: #777777;
+}
+
+.artist-grid .artist .name-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	text-align: center;
+	color: #FFFFFF;
+	opacity: 0;
+	background: rgba(0,0,0,0.8);
+}
+
+.artist-grid .artist:hover .name-wrapper {
+	opacity: 1;
+}
+
+.artist-grid .artist .name {
+	padding-top: 45%;
+	font-weight: bold;
 }
 
 .artist-grid .artist:nth-child(2n+2) .image{
