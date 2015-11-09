@@ -2,7 +2,8 @@
 	
 	<div class="asset-sidebar">
 	
-		<div class="thumbnail album" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+		<div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+		<div class="thumbnail album placeholder" ng-if="album.images.length <= 0"></div>
 		
 		<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
 		<a class="button" ng-click="addToLibrary()">Add to library</a>

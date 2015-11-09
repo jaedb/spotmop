@@ -826,6 +826,7 @@ h1 .flag {
 	border-radius: 100px;
 	float: left;
 	margin-right: 14px;
+	background-image: url('../svg/no-image.svg');
 	background-repeat: no-repeat;
 	background-position: 50% 50%;
 	background-size: cover;
@@ -899,7 +900,8 @@ h1 .flag {
 	max-height: 100%;
 }
 
-.image-container .image.placeholder {
+.image-container .image.placeholder,
+.thumbnail.placeholder {
 	background-color: #CCCCCC;
 	background-image: url('../svg/no-image.svg');
 	background-size: 80% 80%;
@@ -1127,16 +1129,21 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .playlist-page .asset-sidebar,
 .album-page .asset-sidebar {
 	width: 25%;
-	float: left;
-	margin-left: -10px;
-	margin-top: -10px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #EEEEEE;
 }
 
 .playlist-page .content,
 .album-page .content {
-	width: 72%;
-	padding-left: 3%;
-	float: left;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 25%;
+	padding: 40px 10px 10px 40px;
 }
 
 .playlist-page .playlist.thumbnail,
@@ -1165,7 +1172,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .playlist-page .info,
 .album-page .info {
-	padding: 14px 0;
+	padding: 14px 20px;
 	margin-top: 1px;
 }
 
