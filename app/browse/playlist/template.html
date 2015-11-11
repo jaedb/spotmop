@@ -66,7 +66,28 @@
 	<div class="content">
 		
 		<div class="intro">	
-			<div class="asset-type">Playlist</div>
+			<div class="breadcrumbs">
+				<span ng-if="linkingMode(['browse.featured'])">
+					<a class="item" ui-sref="browse.featured">Featured playlists</a>
+					<i class="fa fa-angle-right divider"></i>
+				</span>
+				<span ng-if="linkingMode(['playlists.my','playlists.myplaylist'])">
+					<a class="item" ui-sref="playlists.my">My playlists</a>
+					<i class="fa fa-angle-right divider"></i>
+				</span>
+				<span ng-if="linkingMode(['playlists.following','playlists.followingplaylist'])">
+					<a class="item" ui-sref="playlists.following">Following playlists</a>
+					<i class="fa fa-angle-right divider"></i>
+				</span>
+				<span ng-if="linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist'])">
+					<a class="item" ui-sref="browse.genre">Genre / Mood</a>
+					<i class="fa fa-angle-right divider"></i>
+					{{ parent.category.name }}
+					<a class="item" ui-sref="browse.genrecategory" ng-bind="category.name"></a>
+					<i class="fa fa-angle-right divider"></i>
+				</span>
+				<span class="item">Playlist</span>
+			</div>
 			<h1 ng-bind="playlist.name"></h1>
 			<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
 		</div>

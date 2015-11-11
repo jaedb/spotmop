@@ -598,10 +598,14 @@ h4.section-title {
 	text-transform: uppercase; 
 }
 
-.asset-type {
+.breadcrumbs {
 	margin-top: -20px;
 	color: #CCCCCC;
 	text-transform: uppercase;
+}
+
+.breadcrumbs .divider {
+	padding: 0 3px;
 }
 
 
