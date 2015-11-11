@@ -179,12 +179,20 @@ body {
 /* ================================================================================ SIDEBAR ======= */
 /* ================================================================================================ */
 
+.main-menu .divider {
+	padding: 20px 0 5px 10px;
+	font-size: 11px;
+	color: #FFFFFF;
+	opacity: 0.4;
+	text-transform: uppercase;
+}
+
 .main-menu .menu-item > a {
 	display: block;
-	padding: 10px 0 10px 15px;
+	padding: 8px 0 8px 10px;
 	color: #FFFFFF;
 	text-decoration: none;
-	font-size: 16px;
+	font-size: 14px;
 	background-image: url('../svg/white-diamond.svg');
 	background-position: 110% 50%;
 	background-repeat: no-repeat;
@@ -963,7 +971,7 @@ h1 .flag {
 
 .image-container .image.placeholder,
 .thumbnail.placeholder {
-	background-color: #CCCCCC;
+	background-color: #E9E9E9;
 	background-image: url('../svg/no-image.svg');
 	background-size: 80% 80%;
 	background-position: 50% 50%;
@@ -1623,6 +1631,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	display: inline-block;
 	width: 40px;
 	vertical-align: middle;
+	padding: 8px 0;
 }
 
 .player .slider {
