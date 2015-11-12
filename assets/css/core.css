@@ -1365,6 +1365,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
     width: 100%;
 	font-size: 18px;
 	line-height: 1.4em;
+	white-space: pre-wrap;
 }
 
 .biography .details {
