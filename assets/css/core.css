@@ -1130,7 +1130,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: absolute;
 	top: -50px;
 	right: -10px;
-	bottom: 0;
+	bottom: -100px;
 	left: -10px;
 	overflow: hidden;
 	opacity: 0;
