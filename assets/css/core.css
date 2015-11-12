@@ -1128,17 +1128,15 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .intro preloadedimage {
 	position: absolute;
-	top: -22%;
-	right: -22%;
-	bottom: -22%;
-	left: -22%;
+	top: -50px;
+	right: -10px;
+	bottom: 0;
+	left: -10px;
 	overflow: hidden;
 	opacity: 0;
-	background-position: 0% 50%;
+	background-position: 50% -100px;
 	background-repeat: no-repeat;
-	background-size: 116%;
-	background-attachment: fixed;
-	transform: scale(0.7);
+	background-size: cover;
 }
  
  
@@ -1279,7 +1277,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 70vh;
+	height: 60vh;
 }
 
 .artist-intro > .inner {

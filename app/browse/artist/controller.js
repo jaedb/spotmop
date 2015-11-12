@@ -41,7 +41,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $stateParams, $sce ){
+.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, $interval, SpotifyService, $stateParams, $sce ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -58,8 +58,36 @@ angular.module('spotmop.browse.artist', [])
 				.then( function( response ){
 					$scope.relatedArtists = response.artists;
 				});
-		});	
+		});
+		
+	
+	// setup initial variables
+	var	scrollTop = 0;
+	
+	$interval(
+		function(){	
+			window.requestAnimationFrame(function(){
+				
+				// if we've scrolled
+				if( scrollTop != $('#body').scrollTop() ){
+					scrollTop = $('#body').scrollTop();
+					
+					var bannerHeight = $(document).find('.artist-intro').outerHeight();
+
+					// and if we're within the bounds of our document
+					// this helps ensure we're only ever dealing with predictable whole numbers
+					if( scrollTop < bannerHeight ){
+						var percent = Math.round( scrollTop / bannerHeight * 100);
+						var position = percent - 100;
+						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
+					}
+				}
+			});
+		},
+		10
+	);
 })
+
 
 /**
  * Artist overview controller
