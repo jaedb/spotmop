@@ -197,7 +197,7 @@ angular.module('spotmop', [
         link: function($scope, $element){
             $scope.$on('spotmop:detectBackgroundColor', function(event){
                 BackgroundCheck.init({
-                    targets: $($element).parent(),
+                    targets: $.merge( $($element).parent(), $(document).find('#utilities') ),
                     images: $element.closest('.intro').find('.image')
                 });
 				BackgroundCheck.refresh();
@@ -417,6 +417,7 @@ angular.module('spotmop', [
 	
 	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
 		$scope.hideMenu();
+		BackgroundCheck.refresh();
 	});
 	
 	// show menu (this is triggered by swipe event)

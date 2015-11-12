@@ -213,7 +213,7 @@ angular.module('spotmop.services.echonest', [])
 			$rootScope.requestsLoading++;			
             var deferred = $q.defer();
 
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20')
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
                 .success(function( response ){
 					$rootScope.requestsLoading--;
                     deferred.resolve( response );

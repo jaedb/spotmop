@@ -349,6 +349,11 @@ body {
 	vertical-align: bottom;
 }
 
+#utilities:not(.background--dark) .loader.white,
+#utilities.background--dark .loader.black {
+	display: none;
+}
+
 #utilities .loader {
     -moz-animation: spin .5s infinite linear;
     -webkit-animation: spin .5s infinite linear;
@@ -381,6 +386,7 @@ body {
 .clear-left {		clear: left; }
 .clear-right {		clear: right; }
 .hide {				display: none !important; }
+.invisible {		visibility: hidden !important; }
 *:focus {		    outline: none; }
 
 
