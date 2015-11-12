@@ -45,7 +45,13 @@
 	<div class="content">
 	
 		<div class="intro">
-			<div class="asset-type">Album</div>
+			<div class="breadcrumbs">
+				<span ng-repeat="breadcrumb in breadcrumbs">
+					<a class="item" href="{{ breadcrumb.link }}" ng-bind="breadcrumb.name"></a>
+					<i class="fa fa-angle-right divider"></i>
+				</span>
+				<span class="item">Album</span>
+			</div>
 			<h1 ng-bind="album.name"></h1>
 			<h2 class="description">
 				<span ng-repeat="artist in album.artists">

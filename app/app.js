@@ -362,6 +362,14 @@ angular.module('spotmop', [
 			});
 	}
 	
+	// breadcrumbs
+	$scope.breadcrumbs = [
+		{
+			link: '/',
+			name: 'Home'
+		}
+	];
+	
 	
 	/**
 	 * Detect if we've just loaded a new version and prompt user to clear cache

@@ -180,7 +180,7 @@ body {
 /* ================================================================================================ */
 
 .main-menu .divider {
-	padding: 20px 0 5px 10px;
+	padding: 25px 0 5px 10px;
 	font-size: 11px;
 	color: #FFFFFF;
 	opacity: 0.4;
@@ -192,7 +192,7 @@ body {
 	padding: 8px 0 8px 10px;
 	color: #FFFFFF;
 	text-decoration: none;
-	font-size: 14px;
+	font-size: 16px;
 	background-image: url('../svg/white-diamond.svg');
 	background-position: 110% 50%;
 	background-repeat: no-repeat;
@@ -1128,15 +1128,17 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .intro preloadedimage {
 	position: absolute;
-	top: -50px;
-	right: -10px;
-	bottom: 0;
-	left: -10px;
+	top: -22%;
+	right: -22%;
+	bottom: -22%;
+	left: -22%;
 	overflow: hidden;
 	opacity: 0;
-	background-position: 50% 10%;
+	background-position: 0% 50%;
 	background-repeat: no-repeat;
-	background-size: cover;
+	background-size: 116%;
+	background-attachment: fixed;
+	transform: scale(0.7);
 }
  
  
@@ -1277,7 +1279,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 60vh;
+	height: 70vh;
 }
 
 .artist-intro > .inner {
