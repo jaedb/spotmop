@@ -68,6 +68,27 @@ angular.module('spotmop.browse.playlist', [])
         }
         return Math.round(totalTime / 100000);   
     }
+    
+    
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
+	 **/
+    $(document).find('.browse > .content').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
 	
 	/**
 	 * When the user changes the order of a playlist tracklist

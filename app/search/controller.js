@@ -97,7 +97,7 @@ angular.module('spotmop.search', [])
 				break;
 			
 			case 'album' :
-				SpotifyService.getSearchResults( 'album', query, 20 )
+				SpotifyService.getSearchResults( 'album', query, 50 )
 					.then( function(response){		
 						$scope.albums = response.albums;
 						$scope.next = response.albums.next;
@@ -105,7 +105,7 @@ angular.module('spotmop.search', [])
 				break;
 					
 			case 'artist' :
-				SpotifyService.getSearchResults( 'artist', query, 20 )
+				SpotifyService.getSearchResults( 'artist', query, 50 )
 					.then( function(response){		
 						$scope.artists = response.artists;
 						$scope.next = response.artists.next;
@@ -113,7 +113,7 @@ angular.module('spotmop.search', [])
 				break;
 					
 			case 'playlist' :
-				SpotifyService.getSearchResults( 'playlist', query, 20 )
+				SpotifyService.getSearchResults( 'playlist', query, 50 )
 					.then( function(response){		
 						$scope.playlists = response.playlists;
 						$scope.next = response.playlists.next;
@@ -121,24 +121,24 @@ angular.module('spotmop.search', [])
 				break;
 			
 			default :
-				SpotifyService.getSearchResults( 'track', query, 20 )
+				SpotifyService.getSearchResults( 'track', query, 50 )
 					.then( function(response){
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.type = 'track';
 						$scope.tracklist.tracks = response.tracks.items;
 					});	
 					
-				SpotifyService.getSearchResults( 'album', query, 20 )
+				SpotifyService.getSearchResults( 'album', query, 50 )
 					.then( function(response){		
 						$scope.albums = response.albums;
 					});
 					
-				SpotifyService.getSearchResults( 'artist', query, 20 )
+				SpotifyService.getSearchResults( 'artist', query, 50 )
 					.then( function(response){		
 						$scope.artists = response.artists;
 					});
 					
-				SpotifyService.getSearchResults( 'playlist', query, 20 )
+				SpotifyService.getSearchResults( 'playlist', query, 50 )
 					.then( function(response){		
 						$scope.playlists = response.playlists;
 							

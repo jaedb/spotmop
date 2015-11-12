@@ -43,33 +43,35 @@
 		
 	</div>
 	<div class="content">
-	
-		<div class="intro">
-			<div class="breadcrumbs">
-				<span ng-repeat="breadcrumb in breadcrumbs">
-					<a class="item" href="{{ breadcrumb.link }}" ng-bind="breadcrumb.name"></a>
-					<i class="fa fa-angle-right divider"></i>
-				</span>
-				<span class="item">Album</span>
-			</div>
-			<h1 ng-bind="album.name"></h1>
-			<h2 class="description">
-				<span ng-repeat="artist in album.artists">
-					<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-				</span>
-			</h2>	
-		</div>
+		<div class="inner">
 		
-		<div class="album-items tracklist" ng-controller="TracklistController" >
+			<div class="intro">
+				<div class="breadcrumbs">
+					<span ng-repeat="breadcrumb in breadcrumbs">
+						<a class="item" href="{{ breadcrumb.link }}" ng-bind="breadcrumb.name"></a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span class="item">Album</span>
+				</div>
+				<h1 ng-bind="album.name"></h1>
+				<h2 class="description">
+					<span ng-repeat="artist in album.artists">
+						<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+					</span>
+				</h2>	
+			</div>
 			
-			<track ng-repeat="track in tracklist.tracks"></track>
+			<div class="album-items tracklist" ng-controller="TracklistController" >
+				
+				<track ng-repeat="track in tracklist.tracks"></track>
 
-			<div ng-hide="tracklist.tracks.length" class="no-items">
-				No items
+				<div ng-hide="tracklist.tracks.length" class="no-items">
+					No items
+				</div>
+
 			</div>
-
+			
 		</div>
-		
 	</div>
 	
 </div>

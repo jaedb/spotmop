@@ -379,7 +379,7 @@ angular.module('spotmop', [
 		.success( function(response){
 			if( !currentVersion || currentVersion != response.versionCode ){
 				SettingsService.setSetting('version',response.versionCode)
-				$scope.$broadcast('spotmop:notifyUser', {id: 'updated', message: 'Spotmop has been updated - please clear your browser cache', autoremove: false});
+				$scope.$broadcast('spotmop:notifyUser', {id: 'updated', message: 'Spotmop has been updated - please clear your browser cache', autoremove: 5000});
 			}
 		});
 		
@@ -668,6 +668,7 @@ angular.module('spotmop', [
 		if( distanceFromBottom <= 100 )
         	$scope.$broadcast('spotmop:loadMore');
     });
+	
 	
 	/**
 	 * When we click anywhere
