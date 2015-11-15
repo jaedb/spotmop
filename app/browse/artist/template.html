@@ -1,20 +1,38 @@
-<div ng-controller="ArtistController">
+<div ng-controller="ArtistController" class="artist-page">
 
 	<div class="intro artist-intro">
+	
 		<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
-			<preloadedimage class="image" url="{{ image.url }}" useproxy="true" detectbackground="true"></preloadedimage>
+			<preloadedimage class="image blur" url="{{ image.url }}" useproxy="true" detectbackground="true"></preloadedimage>
 		</div>
+		
 		<div class="inner" text-over-image>
-			<h1 ng-bind="artist.name" class="background-check"></h1>
-			<div class="info-text" class="background-check">
-				<span ng-bind="albums.items.length"></span> albums
-				&nbsp;|&nbsp; {{ artist.followers.total | number:0 }} followers
+			
+			<div class="title-panel">
+			
+				<h1 ng-bind="artist.name" class="background-check"></h1>
+				
+				<div class="sub-page-navigation">
+					<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
+					<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related artists</a>
+					<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</a>
+				</div>
+				
 			</div>
+			
 		</div>
-		<div class="sub-page-navigation">
-			<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
-			<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related artists</a>
-			<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</a>
+		
+	</div>
+			
+	<div class="info-panel">
+		
+		<preloadedimage ng-if="artist.images.length > 0" ng-repeat="image in artist.images | limitTo:1" class="thumbnail artist" url="{{ image.url }}" useproxy="true"></preloadedimage>
+		<div class="thumbnail artist placeholder" ng-if="!artist.images || artist.images.length <= 0"></div>
+		
+		<span class="buttons">
+		
+			<a class="button primary" ng-click="playArtist()"><i class="fa fa-play"></i>&nbsp; Play</a>		
+			
 			<span class="follow-unfollow">
 				<a class="button"
 					  ng-class="{destructive: hovering}"
@@ -31,7 +49,17 @@
 					<span>Follow</span>
 				</a>
 			</span>
-		</div>
+			
+		</span>		
+		
+		<span class="info-text" class="background-check">
+			<div class="info-item capitalize">
+				<span class="albums" ng-bind="albums.items.length"></span> albums
+			</div>
+			<div class="info-item capitalize">
+				<span class="followers" ng-bind="artist.followers.total | number:0"></span> followers
+			</div>
+		</span>	
 		
 	</div>
 	

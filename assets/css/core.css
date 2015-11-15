@@ -295,13 +295,11 @@ body {
 }
 
 .sub-page-navigation .menu-item {
-	padding: 5px 0;
-	margin-right: 20px;
-	margin-bottom: -1px;
-	border-bottom: 2px solid transparent;
+	padding: 12px 0;
+	margin-right: 25px;
+	border-bottom: 3px solid transparent;
 	display: inline-block;
-	font-weight: bold;
-	text-transform: uppercase;
+	font-size: 18px;
 }
 
 .sub-page-navigation .menu-item > i {
@@ -312,7 +310,7 @@ body {
 }
 
 .sub-page-navigation .menu-item:hover {
-	color: #555555;
+	border-color: rgba(255,255,255,0.5);
 	cursor: pointer;
 }
 
@@ -1286,75 +1284,61 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	height: 60vh;
 }
 
-.artist-intro > .inner {
-	position: absolute;
-	left: 20px;
-	right: 20px;
-	bottom: 56px;
-}
-
 .artist-intro h1 {
-	padding-bottom: 0;
-    font-size: 32px;
+	padding-bottom: 10px;
 }
 
-.artist-intro.background--dark h1 {             color: #FFFFFF; }
-.artist-intro.background--dark .info-text {     color: rgba(255,255,255,0.6); }
+.artist-intro.background--dark h1,
+.artist-intro.background--dark .menu-item {             color: #FFFFFF; }
 
-.artist-intro.background--dark.background--complex h1,
-.artist-intro.background--dark.background--complex .info-text {
-    text-shadow: 1px 1px 3px #000000;
-}
-
-.artist-intro.background--light h1 {             color: #000000; }
-.artist-intro.background--light .info-text {     color: rgba(0,0,0,0.6); }
-
-.artist-intro.background--light.background--complex h1,
-.artist-intro.background--light.background--complex .info-text {
-    text-shadow: 1px 1px 3px #FFFFFF;
-}
+.artist-intro.background--light h1,
+.artist-intro.background--light .menu-item {             color: #000000; }
 
 .artist-intro .image-container {
 	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
+	top: 0px;
+	right: -10px;
+	bottom: 0px;
+	left: -10px;
 	overflow: hidden;
 	z-index: -1;
 	background: #EEEEEE;
 }
 
-.artist-intro .sub-page-navigation {
+.artist-page .title-panel {
 	position: absolute;
 	bottom: 0;
 	left: 0;
-	right: 0;
-	padding-left: 12px;
-	margin-bottom: 0;
-	background: rgba(0,0,0,0.2);
-	vertical-align: top;
+	padding-left: 330px;
 }
 
-.artist-intro .sub-page-navigation .menu-item {
+.artist-page .sub-page-navigation {
+	margin: 0;
+}
+
+.artist-page .info-panel {
+	padding-left: 290px;
+	margin-bottom: 50px;
+	position: relative;
+}
+
+.artist-page .info-panel .thumbnail {
+	width: 250px;
+	height: 250px;
+	background-size: cover;
+	background-position: 50% 50%;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+.artist-page .info-panel .buttons {
+	padding-right: 20px;
+}
+
+.artist-page .info-panel .info-text {
 	display: inline-block;
-	padding: 12px 8px;
-	color: #FFFFFF;
-	font-size: 14px;
-	text-transform: uppercase;
-	border: 0;
-	opacity: 0.75;
-	margin-right: 0;
-}
-
-.artist-intro .sub-page-navigation .menu-item.active,
-.artist-intro .sub-page-navigation .menu-item:hover {
-	opacity: 1;
-	color: #FFFFFF;
-}
-
-.artist-intro .sub-page-navigation .follow-unfollow {
-	float: right;
+	vertical-align: top;
 }
 
 .tracklist.top-track-items {

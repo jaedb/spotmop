@@ -93,10 +93,10 @@ angular.module('spotmop.browse.artist', [])
 					var bannerHeight = $(document).find('.artist-intro').outerHeight();
 
 					// and if we're within the bounds of our document
-					// this helps ensure we're only ever dealing with predictable whole numbers
+					// this helps prevent us animating when the objects in question are off-screen
 					if( scrollTop < bannerHeight ){
 						var percent = Math.round( scrollTop / bannerHeight * 100);
-						var position = percent - 100;
+						var position = Math.round( scrollTop ) - 100;
 						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
 					}
 				}
