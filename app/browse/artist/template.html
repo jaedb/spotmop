@@ -15,7 +15,24 @@
 			<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
 			<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related artists</a>
 			<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</a>
+			<span class="follow-unfollow">
+				<a class="button"
+					  ng-class="{destructive: hovering}"
+					  ng-show="following === true"
+					  ng-click="unfollowArtist()"
+					  ng-mouseover="hovering = true"
+					  ng-mouseleave="hovering = false">
+					<span ng-show="hovering">Unfollow</span>
+					<span ng-show="!hovering">Following</span>
+				</a>
+				<a class="button"
+					  ng-show="following === false"
+					  ng-click="followArtist()">
+					<span>Follow</span>
+				</a>
+			</span>
 		</div>
+		
 	</div>
 	
 	<div ui-view></div>

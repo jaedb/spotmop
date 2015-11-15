@@ -35,10 +35,16 @@
 	<li class="divider">
 		My music
 	</li>
-	<li class="menu-item top-level {{ linkingMode('library') }}">
-		<a href="/library" class="droppable" data-type="library">
-			<i class="fa fa-folder-open"></i>
-			Library
+	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
+		<a href="/library/tracks" class="droppable" data-type="library">
+			<i class="fa fa-music"></i>
+			Tracks
+		</a>
+	</li>
+	<li class="menu-item top-level {{ linkingMode('library.artists') }}">
+		<a href="/library/artists" class="droppable" data-type="library">
+			<i class="fa fa-user"></i>
+			Artists
 		</a>
 	</li>
 	<li class="menu-item top-level playlists {{ linkingMode(['playlists.my','playlists.myplaylist']) }}">

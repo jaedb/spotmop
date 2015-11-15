@@ -1,0 +1,20 @@
+<div class="library-artists">
+
+	<div class="album-items square-panels">
+		<div class="item-container" ng-repeat="artist in artists.items">
+			<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
+				<div class="image-container">
+					<thumbnail images="artist.images"></thumbnail>
+				</div>
+				<div class="info smaller animate">
+					<div class="name" ng-bind="artist.name"></div>
+				</div>
+			</a>
+		</div>
+	</div>
+	
+	<div ng-hide="artists.items.length" class="no-items">
+		No items
+	</div>	
+	
+</div>

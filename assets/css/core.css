@@ -1333,6 +1333,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	padding-left: 12px;
 	margin-bottom: 0;
 	background: rgba(0,0,0,0.2);
+	vertical-align: top;
 }
 
 .artist-intro .sub-page-navigation .menu-item {
@@ -1350,6 +1351,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .artist-intro .sub-page-navigation .menu-item:hover {
 	opacity: 1;
 	color: #FFFFFF;
+}
+
+.artist-intro .sub-page-navigation .follow-unfollow {
+	float: right;
 }
 
 .tracklist.top-track-items {

@@ -41,23 +41,41 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, $interval, SpotifyService, $stateParams, $sce ){
+.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, $interval, SpotifyService, SettingsService, $stateParams, $sce ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
 	$scope.albums = {};
 	$scope.relatedArtists = {};
+    $scope.followArtist = function(){
+        SpotifyService.followArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = true;
+            });
+    }
+    $scope.unfollowArtist = function(){
+        SpotifyService.unfollowArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = false;
+            });
+    }
     
 	// get the artist
 	SpotifyService.getArtist( $stateParams.uri )
 		.then( function( response ){
 			$scope.artist = response;
+		});
+
+	// figure out if we're following this playlist
+	SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+		.then( function( isFollowing ){
+			$scope.following = $.parseJSON(isFollowing);
+		});
 		
-			// get the artist's related artists
-			SpotifyService.getRelatedArtists( $stateParams.uri )
-				.then( function( response ){
-					$scope.relatedArtists = response.artists;
-				});
+	// get the artist's related artists
+	SpotifyService.getRelatedArtists( $stateParams.uri )
+		.then( function( response ){
+			$scope.relatedArtists = response.artists;
 		});
 		
 	
