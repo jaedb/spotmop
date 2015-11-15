@@ -457,7 +457,7 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 
             $http({
-					cache: true,
+					cache: false,
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
 					headers: {
