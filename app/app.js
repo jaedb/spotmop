@@ -338,7 +338,7 @@ angular.module('spotmop', [
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
-	
+		
 		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
 			.then(function( response ) {
 				
@@ -658,7 +658,6 @@ angular.module('spotmop', [
 	 * so that our current controller knows when to load more content
 	 **/
     $(document).find('#body').on('scroll', function(evt){
-        
         // get our ducks in a row - these are all the numbers we need
         var scrollPosition = $(this).scrollTop();
         var frameHeight = $(this).outerHeight();
@@ -667,6 +666,9 @@ angular.module('spotmop', [
         
 		if( distanceFromBottom <= 100 )
         	$scope.$broadcast('spotmop:loadMore');
+    });
+    $(document).find('.browse.playlist-page > .content').on('scroll', function(evt){
+        console.log( evt );
     });
 	
 	/**

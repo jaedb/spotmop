@@ -11,7 +11,7 @@ $url = 'http://'.$_SERVER["SERVER_NAME"].'/spotify-authorization';
 */
 function getAuthorizationCode( $url ){
 	
-	header('Location: https://accounts.spotify.com/authorize?client_id=a87fb4dbed30475b8cec38523dff53e2&redirect_uri='.$url.'&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-library-read%20user-library-modify&response_type=code&show_dialog=true');
+	header('Location: https://accounts.spotify.com/authorize?client_id=a87fb4dbed30475b8cec38523dff53e2&redirect_uri='.$url.'&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-library-read%20user-library-modify%20user-follow-modify&response_type=code&show_dialog=true');
 	die();
 }
 

@@ -7,15 +7,29 @@ angular.module('spotmop.library', [])
 	$stateProvider
 		.state('library', {
 			url: "/library",
-			templateUrl: "app/library/template.html",
-			controller: 'LibraryController'
+			templateUrl: "app/library/template.html"
+		})
+		.state('library.tracks', {
+			url: "/tracks",
+			templateUrl: "app/library/tracks.template.html",
+			controller: 'LibraryTracksController'
+		})
+		.state('library.artists', {
+			url: "/artists",
+			templateUrl: "app/library/artists.template.html",
+			controller: 'LibraryArtistsController'
+		})
+		.state('library.albums', {
+			url: "/albums",
+			templateUrl: "app/library/albums.template.html",
+			controller: 'LibraryAlbumsController'
 		});
 })
 	
 /**
- * Main controller
+ * Library tracks
  **/
-.controller('LibraryController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
 	$scope.tracklist = {tracks: []};
 	
@@ -114,4 +128,28 @@ angular.module('spotmop.library', [])
         }
 	});
 	
+})
+	
+/**
+ * Library artists
+ **/
+.controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	
+	$scope.artists = [];
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getMyArtists( userid )
+		.then( function( response ){ // successful
+				$scope.artists = response.artists;
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+		
 });
+
+
+

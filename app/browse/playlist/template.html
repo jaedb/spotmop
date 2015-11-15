@@ -12,7 +12,7 @@
 			<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id">
 				<a class="button"
 					  ng-class="{destructive: hovering}"
-					  ng-show="following"
+					  ng-show="following === true"
 					  ng-click="unfollowPlaylist()"
 					  ng-mouseover="hovering = true"
 					  ng-mouseleave="hovering = false">
@@ -20,7 +20,7 @@
 					<span ng-show="!hovering">Following</span>
 				</a>
 				<a class="button"
-					  ng-show="!following"
+					  ng-show="following === false"
 					  ng-click="followPlaylist()">
 					<span>Follow</span>
 				</a>

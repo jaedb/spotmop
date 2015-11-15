@@ -51,7 +51,7 @@ angular.module('spotmop.services.spotify', [])
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.spotify.ClientID;
 		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify-authorization';
-		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify';
+		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify%20user-follow-modify';
 		newURL += '&response_type=code&show_dialog=true';
 		
 		// open a new window to handle this authentication
@@ -332,6 +332,111 @@ angular.module('spotmop.services.spotify', [])
                 .error(function( response ){
 					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromLibrary', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getMyArtists: function( userid ){
+			$rootScope.requestsLoading++;
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/following?type=artist',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		isFollowingArtist: function( artisturi, userid ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			$rootScope.requestsLoading++;
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		followArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			$rootScope.requestsLoading++;
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		unfollowArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			$rootScope.requestsLoading++;
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowArtist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
 				
