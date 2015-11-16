@@ -1,27 +1,29 @@
-<div>
+<div class="page following-playlists-page scrolling-panel">
+	<div class="inner">
 	
-	<div class="playlist-items square-panels">
-		
-		<div ng-if="myPlaylists.length">
-			<div class="item-container" ng-repeat="playlist in myPlaylists | filter: { owner: {id: '!'+spotifyUser.id } }">
-				<a ui-sref="playlists.followingplaylist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
-					<div class="image-container">
-						<thumbnail images="playlist.images"></thumbnail>
-					</div>
-					<div class="info animate">
-						<div class="name" ng-bind="playlist.name"></div>
-						<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
-					</div>
-				</a>
+		<div class="playlist-items square-panels">
+			
+			<div ng-if="myPlaylists.length">
+				<div class="item-container" ng-repeat="playlist in myPlaylists | filter: { owner: {id: '!'+spotifyUser.id } }">
+					<a ui-sref="playlists.followingplaylist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
+						<div class="image-container">
+							<thumbnail images="playlist.images"></thumbnail>
+						</div>
+						<div class="info animate">
+							<div class="name" ng-bind="playlist.name"></div>
+							<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+						</div>
+					</a>
+				</div>
 			</div>
-		</div>
-	
-		<div ng-hide="myPlaylists.length" class="no-items">
-			No items
+		
+			<div ng-hide="myPlaylists.length" class="no-items">
+				No items
+			</div>
+			
+			<div class="clear-both"></div>
+		
 		</div>
 		
-		<div class="clear-both"></div>
-	
 	</div>
-	
 </div>

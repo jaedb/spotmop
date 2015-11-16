@@ -90,14 +90,15 @@ angular.module('spotmop.browse.artist', [])
 				if( scrollTop != $('#body').scrollTop() ){
 					scrollTop = $('#body').scrollTop();
 					
-					var bannerHeight = $(document).find('.artist-intro').outerHeight();
-
+					var windowHeight = $(window).height();
+					var height = Math.round( windowHeight * 0.6 ) - scrollTop;
+					
+					console.log( height );
+					
 					// and if we're within the bounds of our document
 					// this helps prevent us animating when the objects in question are off-screen
-					if( scrollTop < bannerHeight ){
-						var percent = Math.round( scrollTop / bannerHeight * 100);
-						var position = Math.round( scrollTop ) - 100;
-						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
+					if( height > 0 ){
+						$(document).find('.background-image').css('height', height+'px');
 					}
 				}
 			});
