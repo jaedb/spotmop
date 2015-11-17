@@ -243,7 +243,8 @@ angular.module('spotmop', [
 		scope: {
 			url: '@',
 			useproxy: '@',
-			detectbackground: '@'
+			detectbackground: '@',
+			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
 			var fullUrl = '';
@@ -254,9 +255,13 @@ angular.module('spotmop', [
 			var image = $('<img src="'+fullUrl+'" />');		
 			image.load(function(){
 				$element.attr('style', 'background-image: url("'+fullUrl+'");');
+				var destinationOpacity = 1;
+				if( $scope.opacity )
+					destinationOpacity = $scope.opacity;
+					
 				$element.animate(
 					{
-						opacity: 1
+						opacity: $scope.opacity
 					},
 					200
 				);
