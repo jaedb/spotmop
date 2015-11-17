@@ -84,11 +84,11 @@ angular.module('spotmop.browse.artist', [])
 	
 	$interval(
 		function(){	
-			window.requestAnimationFrame(function(){
-				
+			window.requestAnimationFrame(function( event ){
+			
 				// if we've scrolled
-				if( scrollTop != $('#body').scrollTop() ){
-					scrollTop = $('#body').scrollTop();
+				if( scrollTop != $('.scrolling-panel').scrollTop() ){
+					scrollTop = $('.scrolling-panel').scrollTop();
 					
 					var bannerHeight = $(document).find('.artist-intro').outerHeight();
 

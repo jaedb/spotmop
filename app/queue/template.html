@@ -1,77 +1,79 @@
-<div>
+<div class="page now-playing-page scrolling-panel">
+	<div class="inner">
 
-	<div id="full-player" class="player" ng-controller="PlayerController">
+		<div id="full-player" class="player" ng-controller="PlayerController">
 
-		<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
-			<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1" ng-if="state().currentTlTrack.track"></div>
-			<div class="image placeholder" ng-if="!state().currentTlTrack.track"></div>
-		</a>
+			<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
+				<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1" ng-if="state().currentTlTrack.track"></div>
+				<div class="image placeholder" ng-if="!state().currentTlTrack.track"></div>
+			</a>
+				
+			<div class="track-info">
+				<div ng-if="state().currentTlTrack.track">
+					<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
+					<div class="artist">
+						<span ng-repeat="artist in state().currentTlTrack.track.artists">
+							<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+						</span>
+					</div>
+				</div>
+				<div ng-if="!state().currentTlTrack.track">
+					<div class="artist">Nothing playing</div>
+				</div>
+			</div>
 			
-		<div class="track-info">
-			<div ng-if="state().currentTlTrack.track">
-				<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
-				<div class="artist">
-					<span ng-repeat="artist in state().currentTlTrack.track.artists">
-						<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+			<div class="controls">
+				
+				<div class="pull-left">
+					<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
+					<span class="button play-pause" ng-click="playPause()">
+						<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
+						<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
+					</span>
+					<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+				</div>
+				
+				<div class="pull-right">
+					<span class="button random" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
+						<i class="fa fa-random"></i>
+					</span>
+					<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
+						<i class="fa fa-repeat"></i>
 					</span>
 				</div>
-			</div>
-			<div ng-if="!state().currentTlTrack.track">
-				<div class="artist">Nothing playing</div>
-			</div>
-		</div>
-		
-		<div class="controls">
-			
-			<div class="pull-left">
-				<span class="button previous" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
-				<span class="button play-pause" ng-click="playPause()">
-					<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
-					<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
-				</span>
-				<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
-			</div>
-			
-			<div class="pull-right">
-				<span class="button random" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
-					<i class="fa fa-random"></i>
-				</span>
-				<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
-					<i class="fa fa-repeat"></i>
-				</span>
-			</div>
-			
-			<div class="clear-both"></div>
-			
-			<div class="track-timer">
-				<span class="current" ng-show="state().currentTlTrack.track" ng-bind="state().playPosition | formatMilliseconds"></span>
-				<span class="duration" ng-show="state().currentTlTrack.track" ng-bind="state().currentTlTrack.track.length | formatMilliseconds"></span>
-			</div>
-			
-			<div class="progress slider" ng-click="seek($event)">
-				<div class="track animate">
-					<div class="fill animate" style="width: {{ state().playPositionPercent() }}%"></div>
+				
+				<div class="clear-both"></div>
+				
+				<div class="track-timer">
+					<span class="current" ng-show="state().currentTlTrack.track" ng-bind="state().playPosition | formatMilliseconds"></span>
+					<span class="duration" ng-show="state().currentTlTrack.track" ng-bind="state().currentTlTrack.track.length | formatMilliseconds"></span>
 				</div>
+				
+				<div class="progress slider" ng-click="seek($event)">
+					<div class="track animate">
+						<div class="fill animate" style="width: {{ state().playPositionPercent() }}%"></div>
+					</div>
+				</div>
+			
 			</div>
+		</div>
 		
+		<div class="queue-intro" ng-if="state().currentTlTrack.track">		
+			<div class="info-text">
+				<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length != 1">s</span>
+				&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minute<span ng-show="totalTime != 1">s</span>
+			</div>
 		</div>
-	</div>
-	
-	<div class="queue-intro" ng-if="state().currentTlTrack.track">		
-		<div class="info-text">
-			<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length != 1">s</span>
-			&nbsp;|&nbsp; <span ng-bind="totalTime"></span> minute<span ng-show="totalTime != 1">s</span>
-		</div>
-	</div>
-	
-	<div class="queue-items tracklist droppable" ng-controller="TracklistController" data-type="queue">		
-	
-		<tltrack ng-repeat="track in tracklist.tracks"></tltrack>
+		
+		<div class="queue-items tracklist droppable" ng-controller="TracklistController" data-type="queue">		
+		
+			<tltrack ng-repeat="track in tracklist.tracks"></tltrack>
 
-		<div ng-hide="tracklist.tracks.length" class="no-items">
-			No items
+			<div ng-hide="tracklist.tracks.length" class="no-items">
+				No items
+			</div>
+			
 		</div>
 		
 	</div>
-	
 </div>

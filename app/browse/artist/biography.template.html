@@ -1,10 +1,4 @@
-<div class="gallery col w30" ng-if="artist.images.length > 0">
-	<a href="{{ image.url }}" class="gallery-item" target="_blank" ng-repeat="image in artist.images | limitTo:1">
-		<img src="{{ image.url }}" />
-	</a>
-</div>
-
-<div class="biography" ng-class="{ 'col w70': artist.images.length > 0 }">
+<div class="biography">
 
 	<h4 class="section-title">Biography</h4>	
 	<div class="content" ng-bind="artist.biography.text"></div>
