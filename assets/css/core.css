@@ -323,7 +323,7 @@ body {
 }
 
 .sub-page-navigation .menu-item.active {
-	border-color: #1cf4c4;
+	border-color: #08d58f;
 }
 
 
@@ -629,14 +629,14 @@ h4.section-title {
 .black-text {						color: #000000; }
 .red-text {							color: rgb(214,47,47); }
 .green-text {						color: rgb(53,204,53); }
-.primary-colour-text {				color: #1cf4c4; }
+.primary-colour-text {				color: #08d58f; }
 
 .white-background {					background-color: #FFFFFF; }
 .grey-background {					background-color: #DDDDDD; }
 .black-background {					background-color: #000000; }
 .red-background {					background-color: rgb(214,47,47); }
 .green-background {					background-color: rgb(53,204,53); }
-.primary-colour-background {		background-color: #1cf4c4; }
+.primary-colour-background {		background-color: #08d58f; }
 
 
 /**
@@ -681,7 +681,7 @@ h1 .flag {
 }
 
 .flag.blue{
-	background: #1cf4c4;
+	background: #08d58f;
 	color: #FFFFFF;
 }
 
@@ -805,7 +805,7 @@ h1 .flag {
 .switch-button.on > .switch {
     left: auto;
     right: 3px;
-    background: #1cf4c4;
+    background: #08d58f;
 }
 
 
@@ -857,16 +857,16 @@ h1 .flag {
 	float: left;
 	margin-right: 14px;
 	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
 	background-repeat: no-repeat;
 	background-position: 50% 50%;
 	background-size: cover;
-	background-color: #777777;
 	border: 2px solid #f5f5f5;
 }
 
 .artist-list .artist:hover .thumbnail {
 	opacity: 0.75;
-	border-color: #1cf4c4;
+	border-color: #08d58f;
 }
 
 .artist-list .artist .name {
@@ -948,9 +948,6 @@ h1 .flag {
 	margin: 0 2% 3% 2%;
 	display: block;
 	float: left;
-	background-size: cover;
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
 	text-decoration: none;
 	color: inherit;
 	border: none !important;
@@ -968,7 +965,8 @@ h1 .flag {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background-color: #777777;
+	background-color: #E9E9E9;
+	background-image: url('../svg/no-image.svg');
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -1013,7 +1011,7 @@ h1 .flag {
 }
 
 .square-panel:hover .info {
-	border-color: #1cf4c4;
+	border-color: #08d58f;
 }
 
 .square-panel .info .secondary {
@@ -1063,7 +1061,7 @@ h1 .flag {
 }
  
 .square-panel.category:hover .name {
-	border-color: #1cf4c4;
+	border-color: #08d58f;
 	padding-bottom: 21%;
 }
 
@@ -1241,6 +1239,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	width: 100%;
 	padding-bottom: 100%;
 	margin: 0;
+	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
 	background-position: 50% 50%;
 	background-size: cover;
 }
@@ -1288,7 +1288,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 60vh;
+	height: 50vh;
 }
 
 .artist-intro h1 {
@@ -1299,7 +1299,9 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .artist-intro.background--dark .menu-item {             color: #FFFFFF; }
 
 .artist-intro.background--light h1,
-.artist-intro.background--light .menu-item {             color: #000000; }
+.artist-intro.background--light .menu-item,
+.artist-intro.background--complex h1,
+.artist-intro.background--complex .menu-item {             color: #000000; }
 
 .artist-intro .image-container {
 	position: absolute;
@@ -1309,7 +1311,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	left: -10px;
 	overflow: hidden;
 	z-index: -1;
-	background: #EEEEEE;
+	background: #CCCCCC;
 }
 
 .artist-page .title-panel {
@@ -1332,6 +1334,8 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 .artist-page .info-panel .thumbnail {
 	width: 250px;
 	height: 250px;
+	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
 	background-size: cover;
 	background-position: 50% 50%;
 	position: absolute;
@@ -1582,7 +1586,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .player .button.active {
-    color: #1cf4c4;
+    color: #08d58f;
 }
 
 .player .track-info {
@@ -1680,7 +1684,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	top: 0;
 	left: 0;
 	bottom: 0;
-	background: #1cf4c4;
+	background: #08d58f;
 }
 
 .player .slider  .track .fill.animate {
@@ -1720,6 +1724,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	right: 0;
 	bottom: 0;
 	left: 0;
+	background-image: url('../svg/no-image.svg');
 	background-size: cover;
 	background-position: 50% 50%;
 }
@@ -1744,7 +1749,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 #full-player .button.active {
-	color: #1cf4c4;
+	color: #08d58f;
 }
 
 #full-player .button:hover {
