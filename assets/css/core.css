@@ -1198,11 +1198,6 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
  * Playlist
  **/
 
-.playlist-page,
-.album-page {
-	margin-right: -40px;
-}
-
 .playlist-page .intro,
 .album-page .intro {
 	position: relative;

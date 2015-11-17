@@ -215,7 +215,7 @@
 	/**
 	 * Body layout
 	 **/
-	#body > .inner {
+	.page > .inner {
 		padding: 20px;
 	}
 	
@@ -260,76 +260,33 @@
 	
 	
 	/**
-	 * Intro panels
-	 **/
-
-	.playlist-intro .inner {
-		padding: 30px;
-	}
-	
-	.artist-intro {
-		margin-top: -20px;
-		margin-left: -20px;
-		margin-right: -20px;
-	}
-	
-	
-	/**
-	 * Album page
+	 * Album/playlist page
 	 **/
 	
-	.browse.album .album-intro h1 {
-		padding-top: 0;
+	.playlist-page,
+	.album-page {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		overflow-y: scroll;
 	}
 	
-	.browse.album .album-intro .square-panel {
-		width: 140px;
-		height: 140px;
+	.playlist-page .asset-sidebar,
+	.album-page .asset-sidebar {
+		position: static;
+		width: auto;
+		overflow: visible;
 	}
 	
-	.browse.album .album-intro .info-text {
-		clear: none;
+	.playlist-page .content,
+	.album-page .content {
+		position: static;
+		width: auto;
+		overflow: visible;
 	}
 	
-	.browse.album .album-intro .info-text .label {
-		display: none;
-	}
-	
-	.browse.album .album-content {
-		clear: both;
-		padding-top: 20px;
-	}
-	
-	.browse.album .info-text .wrapper{
-		display: inline-block;
-		vertical-align: top;
-		line-height: 1.2em;
-	}
-	
-	.browse.album .info-text .wrapper:not(:first-child){
-		padding-left: 7px;
-		margin-left: 5px;
-		border-left: 1px solid #aaaaaa;
-	}
-	
-	.browse.album .info-text .duration {
-		display: none;
-	}
-	
-	
-	/**
-	 * Playlist page
-	 **/
-	.playlist-intro .thumbnail {
-		width: 120px;
-		height: 120px;
-		margin-left: -10px;
-		margin-top: -10px;
-	}
-
-	.playlist-intro .content {
-		padding-left: 150px;
-	}
 	
 	
 	/**
