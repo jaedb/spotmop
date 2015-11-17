@@ -54,6 +54,32 @@ angular.module('spotmop', [
 
 
 /** 
+ * Scrollable panels
+ * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
+ **/
+.directive('scrollingPanel', function() {
+	return {
+		restrict: 'C',
+		link: function($scope, $element, $attrs){
+		
+			$element.on('scroll', function( event ){
+				
+				// get our ducks in a row - these are all the numbers we need
+				var scrollPosition = $(this).scrollTop();
+				var frameHeight = $(this).outerHeight();
+				var contentHeight = $(this).children('.inner').outerHeight();
+				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+				
+				if( distanceFromBottom <= 100 )
+					$scope.$broadcast('spotmop:loadMore');
+			});
+		}
+	}
+})
+		
+		
+		
+/** 
  * Thumbnail image
  * Figure out the best image to use for this set of image sizes
  * @return image obj
@@ -650,27 +676,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-    
-    
-	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 **/
-    $(document).find('#body').on('scroll', function(evt){
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
-    $(document).find('.browse.playlist-page > .content').on('scroll', function(evt){
-        console.log( evt );
-    });
 	
 	
 	/**

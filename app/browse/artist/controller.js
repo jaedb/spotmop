@@ -41,7 +41,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, $interval, SpotifyService, SettingsService, $stateParams, $sce ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -59,6 +59,14 @@ angular.module('spotmop.browse.artist', [])
                 $scope.following = false;
             });
     }
+	$scope.playArtistRadio = function(){
+		/*
+		EchonestService.startArtistRadio( $scope.artist.name )
+			.then( function( response ){
+				console.log( response.response );
+			});
+			*/
+	}
     
 	// get the artist
 	SpotifyService.getArtist( $stateParams.uri )
@@ -95,8 +103,8 @@ angular.module('spotmop.browse.artist', [])
 					// and if we're within the bounds of our document
 					// this helps prevent us animating when the objects in question are off-screen
 					if( scrollTop < bannerHeight ){
-						var percent = Math.round( scrollTop / bannerHeight * 100);
-						var position = Math.round( scrollTop ) - 100;
+						var percent = Math.round( scrollTop / bannerHeight * 100 );
+						var position = Math.round( (bannerHeight / 2) * (percent/100) ) - 100;
 						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
 					}
 				}
@@ -123,6 +131,9 @@ angular.module('spotmop.browse.artist', [])
 					$scope.tracklist.tracks = response.tracks;
 				});
 		});	
+	
+	
+	
 	
     /**
      * Load more of the playlist's tracks

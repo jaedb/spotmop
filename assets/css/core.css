@@ -1138,10 +1138,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 
 .intro preloadedimage {
 	position: absolute;
-	top: -50px;
-	right: -10px;
-	bottom: -100px;
-	left: -10px;
+	top: -30px;
+	right: -30px;
+	bottom: -30px;
+	left: -30px;
 	overflow: hidden;
 	opacity: 0;
 	background-position: 50% -100px;
@@ -1283,30 +1283,43 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 50vh;
+	height: 40vh;
 }
 
 .artist-intro h1 {
 	padding-bottom: 10px;
 }
 
+/*
 .artist-intro.background--dark h1,
 .artist-intro.background--dark .menu-item {             color: #FFFFFF; }
-
 .artist-intro.background--light h1,
 .artist-intro.background--light .menu-item,
 .artist-intro.background--complex h1,
 .artist-intro.background--complex .menu-item {             color: #000000; }
+*/
+
+.artist-intro h1,
+.artist-intro .menu-item {             color: #FFFFFF; }
 
 .artist-intro .image-container {
 	position: absolute;
 	top: 0px;
-	right: -10px;
+	right: 0px;
 	bottom: 0px;
-	left: -10px;
+	left: 0px;
 	overflow: hidden;
 	z-index: -1;
-	background: #CCCCCC;
+	background: #EEEEEE;
+}
+
+.artist-intro .image-container .image > .overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: rgba(0,0,0,0.5);
 }
 
 .artist-page .title-panel {

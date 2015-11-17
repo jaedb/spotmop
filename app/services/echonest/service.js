@@ -225,6 +225,24 @@ angular.module('spotmop.services.echonest', [])
                 });
 				
             return deferred.promise;
+        },
+		
+		startArtistRadio: function( artistname ){
+			$rootScope.requestsLoading++;			
+            var deferred = $q.defer();
+			
+            $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
+                .success(function( response ){
+					$rootScope.requestsLoading--;
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.requestsLoading--;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
+                    deferred.reject("Failed to create artist radio");
+                });
+				
+            return deferred.promise;
         }
 	};
 }]);
