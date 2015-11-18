@@ -2,7 +2,7 @@
 	<div class="inner">
 		
 		<div class="library-tracks tracklist droppable"  ng-controller="TracklistController">
-			<track ng-repeat="track in tracklist.tracks"></track>
+			<track ng-repeat="track in tracklist.tracks track by $index"></track>
 			<div ng-hide="tracklist.tracks.length" class="no-items">
 				No items
 			</div>				

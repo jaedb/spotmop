@@ -16,7 +16,7 @@
 				<h4 class="section-title">Recommended for you</h4>
 
 				<div class="album-items square-panels smaller">
-					<div class="item-container" ng-repeat="artist in recommendations.suggestions | limitTo: 7">
+					<div class="item-container" ng-repeat="artist in recommendations.suggestions | limitTo: 7 track by $index">
 						<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
 							<div class="image-container">
 								<thumbnail images="artist.images"></thumbnail>
@@ -41,7 +41,7 @@
 				</h4>
 
 				<div class="album-items square-panels smaller">
-					<div class="item-container" ng-repeat="artist in recommendations.currentArtist.recommendations | limitTo: 7">
+					<div class="item-container" ng-repeat="artist in recommendations.currentArtist.recommendations | limitTo: 7  track by $index">
 						<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
 							<div class="image-container">
 								<thumbnail images="artist.images"></thumbnail>

@@ -2,7 +2,7 @@
 	<div class="inner">
 
 		<div class="album-items square-panels">
-			<div class="item-container" ng-repeat="artist in artists.items">
+			<div class="item-container" ng-repeat="artist in artists.items track by $index">
 				<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
 					<div class="image-container">
 						<thumbnail images="artist.images"></thumbnail>

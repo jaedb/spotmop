@@ -63,7 +63,7 @@
 			
 			<div class="album-items tracklist" ng-controller="TracklistController" >
 				
-				<track ng-repeat="track in tracklist.tracks"></track>
+				<track ng-repeat="track in tracklist.tracks track by $index"></track>
 
 				<div ng-hide="tracklist.tracks.length" class="no-items">
 					No items
