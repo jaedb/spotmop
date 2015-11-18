@@ -43,6 +43,16 @@
 	
 	
 	/**
+	 * Menus
+	 **/
+	
+	.sub-page-navigation .menu-item.active {
+		border-color: #FFFFFF;
+	}
+	
+	
+	
+	/**
 	 * Swipe menu
 	 **/
 	 
@@ -82,6 +92,68 @@
 	
 	
 	/**
+	 * Album/playlist page
+	 **/
+	
+	.playlist-page,
+	.album-page {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		overflow-y: scroll;
+	}
+	
+	.playlist-page .asset-sidebar,
+	.album-page .asset-sidebar {
+		position: static;
+		width: auto;
+		overflow: visible;
+		background: transparent;
+	}
+	
+	.playlist-page .content,
+	.album-page .content {
+		position: static;
+		width: auto;
+		overflow: visible;
+	}
+	
+	.playlist-page .artist-grid,
+	.album-page .artist-grid {
+		display: none;
+	}
+	
+	
+	
+	/**
+	 * Artist intro panel
+	 **/
+	 
+	.artist-page .artist-intro {
+		margin-bottom: 1px;
+	}
+	 
+	.artist-page .info-panel .thumbnail {
+		display: none;
+	}
+	
+	.artist-page .title-panel {
+		padding-left: 40px;
+	}
+	
+	.artist-page .info-panel {
+		padding-left: 0;
+		margin-top: 20px;
+	}
+	
+	.artist-page .info-panel .buttons {
+		padding-right: 10px;
+	}
+	
+	
+	/**
 	 * Forms
 	 **/
 	
@@ -101,6 +173,7 @@
 	.field input {
 		width: 98%;
 	}
+	
 	
 	/**
 	 * Square panels
@@ -260,33 +333,13 @@
 	
 	
 	/**
-	 * Album/playlist page
+	 * Artist intro panel
 	 **/
-	
-	.playlist-page,
-	.album-page {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		overflow-y: scroll;
+	 
+	.artist-page .info-panel {
+		margin-left: -20px;
+		margin-top: 0;
 	}
-	
-	.playlist-page .asset-sidebar,
-	.album-page .asset-sidebar {
-		position: static;
-		width: auto;
-		overflow: visible;
-	}
-	
-	.playlist-page .content,
-	.album-page .content {
-		position: static;
-		width: auto;
-		overflow: visible;
-	}
-	
 	
 	
 	/**
@@ -327,10 +380,6 @@
 	 **/
 	.actions {
 		padding-left: 0;
-	}
-	
-	.body .button {
-		padding: 6px 12px;
 	}
 	
 	.sub-page-navigation {
