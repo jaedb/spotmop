@@ -769,6 +769,18 @@ h1 .flag {
 	opacity: 0.5;
 }
 
+/* follow/unfollow */
+
+.body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */
+	min-width: 50px;
+	text-align: center;
+}
+
+.body .follow-unfollow:not(.following) > .unfollow,
+.body .follow-unfollow.following > .follow {
+	display: none;
+}
+
 
 /**
  * Switch buttons

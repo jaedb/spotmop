@@ -34,18 +34,16 @@
 			
 				<a class="button primary" ng-click="playArtistRadio()"><i class="fa fa-play"></i>&nbsp; Play</a>		
 				
-				<span class="follow-unfollow">
-					<a class="button"
+				<span class="follow-unfollow" ng-class="{ 'following': following }">
+					<a class="button unfollow"
 						  ng-class="{destructive: hovering}"
-						  ng-show="following === true"
 						  ng-click="unfollowArtist()"
 						  ng-mouseover="hovering = true"
 						  ng-mouseleave="hovering = false">
 						<span ng-show="hovering">Unfollow</span>
 						<span ng-show="!hovering">Following</span>
 					</a>
-					<a class="button"
-						  ng-show="following === false"
+					<a class="button follow"
 						  ng-click="followArtist()">
 						<span>Follow</span>
 					</a>
