@@ -60,6 +60,7 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
+		$scope.$emit('spotmop:notifyUser', {id: 'notimplemented', message: 'This functionality has not yet been implemented', autoremove: 2000});
 		/*
 		EchonestService.startArtistRadio( $scope.artist.name )
 			.then( function( response ){

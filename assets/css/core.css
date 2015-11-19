@@ -308,6 +308,7 @@ body {
 	border-bottom: 3px solid transparent;
 	display: inline-block;
 	font-size: 18px;
+	text-transform: capitalize;
 }
 
 .sub-page-navigation .menu-item > i {
