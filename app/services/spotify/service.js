@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, SettingsService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService ){
 
 	// set container for spotify storage
 	if( typeof($localStorage.spotify) === 'undefined' )
@@ -51,7 +51,7 @@ angular.module('spotmop.services.spotify', [])
 		var newURL = '';
 		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.spotify.ClientID;
 		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify-authorization';
-		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify';
+		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify%20user-follow-modify';
 		newURL += '&response_type=code&show_dialog=true';
 		
 		// open a new window to handle this authentication
@@ -123,13 +123,27 @@ angular.module('spotmop.services.spotify', [])
          * Generic calls
          */
         getUrl: function( $url ){
-			return $http({
-				method: 'GET',
-				url: $url,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: $url,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUrl', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
         
         /**
@@ -137,41 +151,79 @@ angular.module('spotmop.services.spotify', [])
          **/
         
         getMe: function(){
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'me/',
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMe', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
         
         getUser: function( useruri ){
 		
 			var userid = this.getFromUri( 'userid', useruri );
-            
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'users/'+userid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'users/'+userid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUser', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
 		
 		isFollowing: function( type, uri ){
 			
 			var id = this.getFromUri( type+'id', uri );
-		
-			return $http({
-				method: 'GET',
-				url: urlBase+'me/following/contains?type='+type+'&ids='+id,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/following/contains?type='+type+'&ids='+id,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowing', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
         
         
@@ -183,14 +235,26 @@ angular.module('spotmop.services.spotify', [])
 			
 			var trackid = this.getFromUri('trackid', trackuri);
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'tracks/'+trackid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'tracks/'+trackid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTrack', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
         
 	
@@ -200,40 +264,177 @@ angular.module('spotmop.services.spotify', [])
 		 **/   
 		
 		getMyTracks: function( userid ){
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'me/tracks/',
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/tracks/',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyTracks', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		}, 
 		
-		addTracksToLibrary: function( trackids ){			
-			return $http({
-				method: 'PUT',
-				url: urlBase+'me/tracks',
-				dataType: "json",
-				data: JSON.stringify( { ids: trackids } ),
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+		addTracksToLibrary: function( trackids ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/tracks',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToLibrary', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
-		deleteTracksFromLibrary: function( trackids ){			
-			return $http({
-				method: 'DELETE',
-				url: urlBase+'me/tracks',
-				dataType: "json",
-				data: JSON.stringify( { ids: trackids } ),
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+		deleteTracksFromLibrary: function( trackids ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					url: urlBase+'me/tracks',
+					dataType: "json",
+					data: JSON.stringify( { ids: trackids } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromLibrary', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getMyArtists: function( userid ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/following?type=artist',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		isFollowingArtist: function( artisturi, userid ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		followArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		unfollowArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 	
@@ -245,15 +446,27 @@ angular.module('spotmop.services.spotify', [])
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
+				
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists?limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getPlaylist: function( playlisturi ){
@@ -261,57 +474,106 @@ angular.module('spotmop.services.spotify', [])
 			// get the user and playlist ids from the uri
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-		
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+				
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		isFollowingPlaylist: function( playlisturi, ids ){
 			
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-		
-			return $http({
-				method: 'GET',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		followPlaylist: function( playlisturi ){
 			
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-		
-			return $http({
-				method: 'PUT',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		unfollowPlaylist: function( playlisturi ){
 			
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-		
-			return $http({
-				method: 'DELETE',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		featuredPlaylists: function( limit ){
@@ -321,15 +583,27 @@ angular.module('spotmop.services.spotify', [])
 			
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
 			var country = SettingsService.getSetting('countrycode','NZ');
-		
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'featuredPlaylists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		addTracksToPlaylist: function( playlisturi, tracks ){
@@ -338,17 +612,29 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			return $http({
-				method: 'POST',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-				//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
-				dataType: "json",
-				data: JSON.stringify( { uris: tracks } ),
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'POST',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify( { uris: tracks } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
@@ -359,20 +645,32 @@ angular.module('spotmop.services.spotify', [])
             if( userid != SettingsService.getSetting('spotifyuserid',null) )
                 return false;
 			
-			return $http({
-				method: 'PUT',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-				dataType: "json",
-				data: JSON.stringify({
-                    range_start: range_start,
-                    range_length: range_length,
-                    insert_before: insert_before
-                }),
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify({
+						range_start: range_start,
+						range_length: range_length,
+						insert_before: insert_before
+					}),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'movePlaylistTracks', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		deleteTracksFromPlaylist: function( playlisturi, tracks ){
@@ -381,33 +679,57 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			return $http({
-				method: 'DELETE',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-				//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
-				dataType: "json",
-				data: JSON.stringify( { tracks: tracks } ),
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify( { tracks: tracks } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		// create a new playlist
 		// @param userid id of the user to own this playlist (usually self)
 		// @param data json array {name: "Name", public: boolean}
 		createPlaylist: function( userid, data ){
-			return $http({
-				method: 'POST',
-				url: urlBase+'users/'+userid+'/playlists/',
-				dataType: "json",
-				data: data,
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'POST',
+					url: urlBase+'users/'+userid+'/playlists/',
+					dataType: "json",
+					data: data,
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'createPlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		// update a playlist's details
@@ -418,17 +740,28 @@ angular.module('spotmop.services.spotify', [])
 			// get the user and playlist ids from the uri
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-            
-			return $http({
-				method: 'PUT',
-				url: urlBase+'users/'+userid+'/playlists/'+playlistid,
-				dataType: "json",
-				data: data,
-				contentType: "application/json; charset=utf-8",
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+					dataType: "json",
+					data: data,
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'updatePlaylist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		/**
@@ -438,15 +771,26 @@ angular.module('spotmop.services.spotify', [])
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
-            
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'newReleases', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		discoverCategories: function( limit ){
@@ -454,40 +798,74 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'browse/categories?limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discoverCategories', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getCategory: function( categoryid ){
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'browse/categories/'+categoryid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories/'+categoryid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategory', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getCategoryPlaylists: function( categoryid, limit ){
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
-            
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategoryPlaylists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		/**
@@ -498,14 +876,25 @@ angular.module('spotmop.services.spotify', [])
 			
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/'+artistid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtist', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		 
 		getArtists: function( artisturis ){
@@ -517,70 +906,119 @@ angular.module('spotmop.services.spotify', [])
 				artistids += self.getFromUri( 'artistid', artisturi );
 			});
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/?ids='+artistids,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'artists/?ids='+artistids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getAlbums: function( artisturi ){
-				
-			var artistid = this.getFromUri( 'artistid', artisturi );
 			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getAlbum: function( albumuri ){
-			
+						
+            var deferred = $q.defer();			
 			var albumid = this.getFromUri( 'albumid', albumuri );
-			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'albums/'+albumid,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+
+            $http({
+					method: 'GET',
+					url: urlBase+'albums/'+albumid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getAlbum', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getTopTracks: function( artisturi ){
 		
-			var artistid = this.getFromUri( 'artistid', artisturi );
-			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTopTracks', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		getRelatedArtists: function( artisturi ){
 		
 			var artistid = this.getFromUri( 'artistid', artisturi );
-			
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'artists/'+artistid+'/related-artists',
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/related-artists',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getRelatedArtists', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		},
 		
 		/**
@@ -592,15 +1030,25 @@ angular.module('spotmop.services.spotify', [])
 		getSearchResults: function( type, query, limit ){
 		
 			if( typeof( limit ) === 'undefined' ) limit = 10;
-		
-			return $http({
-				cache: true,
-				method: 'GET',
-				url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
-				headers: {
-					Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-				}
-			});
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getSearchResults', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
 		}
 	};
 }]);

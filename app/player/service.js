@@ -171,11 +171,8 @@ angular.module('spotmop.services.player', [])
 			
 			// now we have track info, let's get the spotify artwork	
 			SpotifyService.getTrack( tlTrack.track.uri )
-				.success(function( response ){
+				.then(function( response ){
 					state.currentTlTrack.track.album.images = response.album.images;
-				})
-				.error( function(response){
-					$rootScope.$broadcast('spotmop:notifyUser', { id: 'error', type: 'error', message: 'Failed to load track' });
 				});
 			
 			// update ui

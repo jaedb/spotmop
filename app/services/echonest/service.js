@@ -127,10 +127,23 @@ angular.module('spotmop.services.echonest', [])
          * Get artist
          **/
 		getArtistBiography: function( artistid ){
-            return $.ajax({
-                url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid,
-                method: "GET"
-            });
+		
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
 		
         
@@ -157,17 +170,14 @@ angular.module('spotmop.services.echonest', [])
 					seed += '&name='+artist.name_encoded;
 				});
 			}
-		
-			$rootScope.requestsLoading++;			
+			
             var deferred = $q.defer();
 
             $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
                     deferred.reject("Failed to get albums");
                 });
@@ -176,16 +186,14 @@ angular.module('spotmop.services.echonest', [])
         },
 		
 		favoriteArtists: function(){		
-			$rootScope.requestsLoading++;			
+		
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
                     deferred.reject("Failed to get albums");
                 });
@@ -194,18 +202,32 @@ angular.module('spotmop.services.echonest', [])
         },
 		
 		catalogRadio: function(){		
-			$rootScope.requestsLoading++;			
+		
             var deferred = $q.defer();
 
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20')
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
                     deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		startArtistRadio: function( artistname ){
+		
+            var deferred = $q.defer();
+			
+            $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
+                    deferred.reject("Failed to create artist radio");
                 });
 				
             return deferred.promise;

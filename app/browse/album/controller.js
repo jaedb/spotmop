@@ -45,6 +45,26 @@ angular.module('spotmop.browse.album', [])
         }
         return Math.round(totalTime / 100000);   
     }
+    
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
+	 **/
+    $(document).find('.browse > .content').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
 	
 	// play the whole album
 	$scope.playAlbum = function(){
@@ -53,24 +73,18 @@ angular.module('spotmop.browse.album', [])
 	
 	// add album to library
 	$scope.addToLibrary = function(){
-		$rootScope.requestsLoading++;
 		
 		var trackids = [];
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
 		});
 		
-		SpotifyService.addTracksToLibrary( trackids )
-			.success( function(response){
-				$rootScope.requestsLoading--;
-			});
+		SpotifyService.addTracksToLibrary( trackids );
 	}
-    
-    $rootScope.requestsLoading++;
 	
 	// get the album
 	SpotifyService.getAlbum( $stateParams.uri )
-		.success(function( response ) {
+		.then(function( response ) {
 		
 			$scope.album = response;
 			$scope.tracklist = response.tracks;
@@ -81,11 +95,17 @@ angular.module('spotmop.browse.album', [])
 				track.album = $scope.album;
 			});
 			
-            $rootScope.requestsLoading--;
-		})
-		.error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-album', message: error.error.message});
+			var artisturis = [];
+			angular.forEach( response.artists, function( artist ){
+				artisturis.push( artist.uri );
+			});
+			
+			// now get the artist objects
+			SpotifyService.getArtists( artisturis )
+				.then( function( response ){
+					$scope.album.artists = response.artists;
+				});
+			
 		});
     
 	
@@ -104,11 +124,10 @@ angular.module('spotmop.browse.album', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;   
-        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
@@ -117,12 +136,6 @@ angular.module('spotmop.browse.album', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMoreTracks = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });
     }

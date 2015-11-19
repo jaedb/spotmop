@@ -7,39 +7,44 @@ angular.module('spotmop.library', [])
 	$stateProvider
 		.state('library', {
 			url: "/library",
-			templateUrl: "app/library/template.html",
-			controller: 'LibraryController'
+			templateUrl: "app/library/template.html"
+		})
+		.state('library.tracks', {
+			url: "/tracks",
+			templateUrl: "app/library/tracks.template.html",
+			controller: 'LibraryTracksController'
+		})
+		.state('library.artists', {
+			url: "/artists",
+			templateUrl: "app/library/artists.template.html",
+			controller: 'LibraryArtistsController'
+		})
+		.state('library.albums', {
+			url: "/albums",
+			templateUrl: "app/library/albums.template.html",
+			controller: 'LibraryAlbumsController'
 		});
 })
 	
 /**
- * Main controller
+ * Library tracks
  **/
-.controller('LibraryController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
 	$scope.tracklist = {tracks: []};
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-	$rootScope.requestsLoading++;
     
 	SpotifyService.getMyTracks( userid )
-		.then(
-			function( response ){ // successful
-				$scope.tracklist = response.data;
-				$scope.tracklist.tracks = reformatTracks( response.data.items );
-				$rootScope.requestsLoading--;
-			},
-			function( response ){ // error
-			
-				// if it was 401, refresh token
-				if( error.error.status == 401 )
-					Spotify.refreshToken();
+		.then( function( response ){ // successful
+				$scope.tracklist = response;
+				$scope.tracklist.tracks = reformatTracks( response.items );
 				
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-library', message: error.error.message});
-			}
-		);
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
 		
 		
 	/**
@@ -49,7 +54,6 @@ angular.module('spotmop.library', [])
 		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
 		var tracksToDelete = [];
-		$rootScope.requestsLoading++;
 		
 		// construct each track into a json object to delete
 		angular.forEach( selectedTracks, function( selectedTrack, index ){
@@ -58,16 +62,11 @@ angular.module('spotmop.library', [])
 		
 		// parse these uris to spotify and delete these tracks
 		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
-			.success(function( response ){				
-				$rootScope.requestsLoading--;
+			.then(function( response ){
 				
 				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
 				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
 				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-			})
-			.error(function( error ){
-				$rootScope.requestsLoading--;
-				$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleting-tracks', message: error.error.message});
 			});
 	});
 	
@@ -106,11 +105,10 @@ angular.module('spotmop.library', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
@@ -119,12 +117,6 @@ angular.module('spotmop.library', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-				$rootScope.requestsLoading--;
-                loadingMoreTracks = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });
     }
@@ -136,4 +128,28 @@ angular.module('spotmop.library', [])
         }
 	});
 	
+})
+	
+/**
+ * Library artists
+ **/
+.controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	
+	$scope.artists = [];
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getMyArtists( userid )
+		.then( function( response ){ // successful
+				$scope.artists = response.artists;
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+		
 });
+
+
+

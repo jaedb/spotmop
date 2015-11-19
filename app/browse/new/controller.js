@@ -24,17 +24,11 @@ angular.module('spotmop.browse.new', [])
 	
 	// set the default items
 	$scope.albums = [];
-	$rootScope.requestsLoading++;
 	
 	SpotifyService.newReleases()
-		.success(function( response ) {
+		.then(function( response ) {
 			$scope.albums = response.albums;
-            $rootScope.requestsLoading--;
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-new-releases', message: error.error.message});
-        });
+		});
     
     
     /**
@@ -51,12 +45,11 @@ angular.module('spotmop.browse.new', [])
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreNewReleases = true;   
-        $rootScope.requestsLoading++;
+        loadingMoreNewReleases = true;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.albums.items = $scope.albums.items.concat( response.albums.items );
@@ -65,12 +58,6 @@ angular.module('spotmop.browse.new', [])
                 $scope.albums.next = response.albums.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMoreNewReleases = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-new-releases', message: error.error.message});
                 loadingMoreNewReleases = false;
             });
     }

@@ -31,17 +31,11 @@ angular.module('spotmop.browse.genre', [])
 .controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService ){
 	
 	$scope.categories = [];    
-    $rootScope.requestsLoading++;
 	
 	SpotifyService.discoverCategories()
-		.success(function( response ) {
+		.then(function( response ) {
 			$scope.categories = response.categories;
-            $rootScope.requestsLoading--;
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-categories', message: error.error.message});
-        });
+		});
     
     
     /**
@@ -59,11 +53,10 @@ angular.module('spotmop.browse.genre', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreCategories = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new categories to the main scope
                 $scope.categories.items = $scope.categories.items.concat( response.categories.items );
@@ -72,12 +65,6 @@ angular.module('spotmop.browse.genre', [])
                 $scope.categories.next = response.categories.next;
                 
                 // update loader and re-open for further pagination objects
-				$rootScope.requestsLoading--;
-                loadingMoreCategories = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-categories', message: error.error.message});
                 loadingMoreCategories = false;
             });
     }
@@ -98,26 +85,16 @@ angular.module('spotmop.browse.genre', [])
 
 	$scope.category = {};
 	$scope.playlists = [];
-	$rootScope.requestsLoading++;
 	
 	SpotifyService.getCategory( $stateParams.categoryid )
-		.success(function( response ) {
+		.then(function( response ) {
 			$scope.category = response;
 	
             SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
-                .success(function( response ) {
+                .then(function( response ) {
                     $scope.playlists = response.playlists;
-                    $rootScope.requestsLoading--;
-                })
-                .error(function( error ){
-                    $rootScope.requestsLoading--;
-                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
                 });
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-category', message: error.error.message});
-        });
+		});
     
     
     /**
@@ -135,11 +112,10 @@ angular.module('spotmop.browse.genre', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMorePlaylists = true;   
-        $rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
@@ -148,12 +124,6 @@ angular.module('spotmop.browse.genre', [])
                 $scope.playlists.next = response.playlists.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMorePlaylists = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-playlists', message: error.error.message});
                 loadingMorePlaylists = false;
             });
     }

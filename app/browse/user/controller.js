@@ -21,30 +21,20 @@ angular.module('spotmop.browse.user', [])
 	
 	$scope.user = {};
 	$scope.playlists = [];
-    $rootScope.requestsLoading++;
 	
 	// get the user
 	SpotifyService.getUser( $stateParams.uri )
-		.success(function( response ) {
+		.then(function( response ) {
 			$scope.user = response;
         
             // get their playlists
             SpotifyService.getPlaylists( response.id )
-                .success(function( response ) {
+                .then(function( response ) {
                     $scope.playlists = response.items;
                     $scope.next = response.next;
                     $scope.totalPlaylists = response.total;
-                    $rootScope.requestsLoading--;
-                })
-                .error(function( error ){
-                    $rootScope.requestsLoading--;
-                    $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-user', message: error.error.message});
                 });
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-user', message: error.error.message});
-        });
+		});
     
     /**
      * Load more of the user's playlists
@@ -61,11 +51,10 @@ angular.module('spotmop.browse.user', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMorePlaylists = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new playlists to our existing array
                 $scope.playlists = $scope.playlists.concat( response.items );
@@ -74,12 +63,6 @@ angular.module('spotmop.browse.user', [])
                 $scope.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-				$rootScope.requestsLoading--;
-                loadingMorePlaylists = false;
-            })
-            .error(function( error ){
-				$rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-playlists', message: error.error.message});
                 loadingMorePlaylists = false;
             });
     }

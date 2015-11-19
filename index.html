@@ -13,6 +13,7 @@
 	<script type="text/javascript" src="/vendor/angular-animate.min.js"></script>
 	<script type="text/javascript" src="/vendor/mopidy.min.js"></script>
 	<script type="text/javascript" src="/vendor/background-check.min.js"></script>
+	<script type="text/javascript" src="/vendor/loading-bar.js"></script>
 	
 	<script type="text/javascript" src="/app/app.js"></script>
 	<script type="text/javascript" src="/app/services/mopidy/service.js"></script>
@@ -20,6 +21,7 @@
 	<script type="text/javascript" src="/app/services/echonest/service.js"></script>
 	<script type="text/javascript" src="/app/services/dialog/service.js"></script>
 	
+	<script type="text/javascript" src="/app/common/directives.js"></script>
 	<script type="text/javascript" src="/app/common/contextmenu/directive.js"></script>
 	<script type="text/javascript" src="/app/common/tracklist/controller.js"></script>
 	<script type="text/javascript" src="/app/common/tracklist/service.js"></script>
@@ -51,6 +53,7 @@
 	<link rel="stylesheet" type="text/css" href="/assets/css/context-menu.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/touch-devices.css" />
 	<link rel="stylesheet" type="text/css" href="/assets/css/responsive.css" />
+	<link rel="stylesheet" type="text/css" href="/vendor/loading-bar.css" />
 	
 	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scaleable=no" name="viewport" />
 	
@@ -85,18 +88,11 @@
 		<ng-include src="'/app/player/template.html'" ng-controller="PlayerController"></ng-include>	
 
 		<div id="body" class="body animate">
-			<div class="inner">
-				<div ui-view></div>
-			</div>
-		</div>
-		
-		<div id="utilities">
-			<img src="/assets/svg/spinner-black-static.svg" class="loader" ng-show="requestsLoading > 0" />
+			<div ui-view></div>
 		</div>
 		
 		<contextmenu></contextmenu>
-		<div class="drag-tracer"></div>		
-		<img class="hide" src="/assets/svg/spinner.svg" />
+		<div class="drag-tracer"></div>
 		
 	</div>
     

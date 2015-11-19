@@ -3,49 +3,68 @@
 		<a href="/queue" class="droppable" data-type="queue">
 			<i class="fa fa-play"></i>
 			Now playing
-			<div class="info" ng-show="currentTracklist.length > 0">
-				<span ng-bind="currentTracklist.length"></span> tracks
-			</div>
 		</a>
-	</li>	
+	</li>
+	<li class="divider">
+		Browse
+	</li>
 	<li class="menu-item top-level {{ linkingMode('discover') }}">
 		<a href="/discover">
 			<i class="fa fa-send"></i>
 			Discover
 		</a>
 	</li>
-	<li class="menu-item top-level {{ linkingMode('browse') }}">
+	<li class="menu-item {{ linkingMode(['browse.featured','browse.featuredplaylist']) }}">
 		<a href="/browse/featured">
-			<i class="fa fa-star"></i>
-			Browse
+			<i class="fa fa-bookmark"></i>
+			Featured playlists
 		</a>
-		<ul class="submenu animate">
-			<li class="menu-item {{ linkingMode(['browse.featured','browse.featuredplaylist']) }}"><a href="/browse/featured">Featured playlists</a></li>
-			<li class="menu-item {{ linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist']) }}"><a href="/browse/genre">Genre / Mood</a></li>
-			<li class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}"><a href="/browse/new">New releases</a></li>
-		</ul>
 	</li>
-	<li class="menu-item top-level {{ linkingMode('library') }}">
-		<a href="/library" class="droppable" data-type="library">
+	<li class="menu-item {{ linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist']) }}">
+		<a href="/browse/genre">
 			<i class="fa fa-folder"></i>
-			Library
+			Genre / Mood
 		</a>
 	</li>
-	<li class="menu-item top-level playlists {{ linkingMode('playlists') }}">
+	<li class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}">
+		<a href="/browse/new">
+			<i class="fa fa-star"></i>
+			New releases
+		</a>
+	</li>
+	<li class="divider">
+		My music
+	</li>
+	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
+		<a href="/library/tracks" class="droppable" data-type="library">
+			<i class="fa fa-music"></i>
+			Tracks
+		</a>
+	</li>
+	<li class="menu-item top-level {{ linkingMode('library.artists') }}">
+		<a href="/library/artists" class="droppable" data-type="library">
+			<i class="fa fa-user"></i>
+			Artists
+		</a>
+	</li>
+	<li class="menu-item top-level playlists {{ linkingMode(['playlists.my','playlists.myplaylist']) }}">
 		<a href="/playlists/my" class="droppable" data-type="playlists">
 			<i class="fa fa-music"></i>
-			Playlists
+			My playlists
 		</a>
-		<ul class="submenu animate">
-			<li class="menu-item {{ linkingMode(['playlists.my','playlists.myplaylist']) }}"><a href="/playlists/my">My Playlists</a></li>
-			<li class="menu-item {{ linkingMode(['playlists.following','playlists.followingplaylist']) }}"><a href="/playlists/following">Following</a></li>
-		</ul>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
 			</li>
 		</ul>
 	</li>
+	<li class="menu-item top-level playlists {{ linkingMode(['playlists.following','playlists.followingplaylist']) }}">	
+		<a href="/playlists/following">
+			<i class="fa fa-music"></i>
+			Following playlists
+		</a>
+	</li>
+	<li class="divider"></li>
 	<li class="menu-item top-level {{ linkingMode('settings') }}"">
 		<a href="/settings">
 			<i class="fa fa-cog"></i>

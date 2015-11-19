@@ -50,16 +50,9 @@ angular.module('spotmop.browse.featured', [])
 			return 'late';
 	};
 	
-	$rootScope.requestsLoading++;
-	
 	SpotifyService.featuredPlaylists()
-		.success(function( response ) {
+		.then(function( response ) {
 			$scope.message = response.message;
 			$scope.playlists = response.playlists.items;
-            $rootScope.requestsLoading--;
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-featured-playlists', message: error.error.message});
-        });
+		});
 });

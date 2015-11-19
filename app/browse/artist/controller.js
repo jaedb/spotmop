@@ -41,51 +41,100 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ArtistController( $scope, $rootScope, $timeout, SpotifyService, $stateParams, $sce ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
 	$scope.albums = {};
 	$scope.relatedArtists = {};
-	$rootScope.requestsLoading++;
+    $scope.followArtist = function(){
+        SpotifyService.followArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = true;
+            });
+    }
+    $scope.unfollowArtist = function(){
+        SpotifyService.unfollowArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = false;
+            });
+    }
+	$scope.playArtistRadio = function(){
+		$scope.$emit('spotmop:notifyUser', {id: 'notimplemented', message: 'This functionality has not yet been implemented', autoremove: 2000});
+		/*
+		EchonestService.startArtistRadio( $scope.artist.name )
+			.then( function( response ){
+				console.log( response.response );
+			});
+			*/
+	}
     
 	// get the artist
 	SpotifyService.getArtist( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.artist = response;
+		});
+
+	// figure out if we're following this playlist
+	SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+		.then( function( isFollowing ){
+			$scope.following = $.parseJSON(isFollowing);
+		});
 		
-			// get the artist's related artists
-			SpotifyService.getRelatedArtists( $stateParams.uri )
-				.success( function( response ){
-					$scope.relatedArtists = response.artists;
-					$rootScope.requestsLoading--;
-				})
-				.error(function( error ){
-					$rootScope.requestsLoading--;
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-artist', message: error.error.message});
-				});
-		});	
+	// get the artist's related artists
+	SpotifyService.getRelatedArtists( $stateParams.uri )
+		.then( function( response ){
+			$scope.relatedArtists = response.artists;
+		});
+		
+	
+	// setup initial variables
+	var	scrollTop = 0;
+	
+	$interval(
+		function(){	
+			window.requestAnimationFrame(function( event ){
+			
+				// if we've scrolled
+				if( scrollTop != $('.scrolling-panel').scrollTop() ){
+					scrollTop = $('.scrolling-panel').scrollTop();
+					
+					var bannerHeight = $(document).find('.artist-intro').outerHeight();
+
+					// and if we're within the bounds of our document
+					// this helps prevent us animating when the objects in question are off-screen
+					if( scrollTop < bannerHeight ){
+						var percent = Math.round( scrollTop / bannerHeight * 100 );
+						var position = Math.round( (bannerHeight / 2) * (percent/100) ) - 100;
+						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
+					}
+				}
+			});
+		},
+		10
+	);
 })
+
 
 /**
  * Artist overview controller
  **/
 .controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
-	$rootScope.requestsLoading++;
-	
 	// get the artist's albums
 	SpotifyService.getAlbums( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.$parent.albums = response;
 			
 			// get the artist's top tracks
 			SpotifyService.getTopTracks( $stateParams.uri )
-				.success( function( response ){
-					$rootScope.requestsLoading--;
+				.then( function( response ){
 					$scope.tracklist.tracks = response.tracks;
 				});
 		});	
+	
+	
+	
 	
     /**
      * Load more of the playlist's tracks
@@ -102,11 +151,10 @@ angular.module('spotmop.browse.artist', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreAlbums = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist (using our unified format of course)
                 $scope.albums.items = $scope.albums.items.concat( response.items );
@@ -115,12 +163,6 @@ angular.module('spotmop.browse.artist', [])
                 $scope.albums.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-                $rootScope.requestsLoading--;
-                loadingMoreAlbums = false;
-            })
-            .error(function( error ){
-                $rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-albums', message: error.error.message});
                 loadingMoreAlbums = false;
             });
     }
@@ -145,14 +187,11 @@ angular.module('spotmop.browse.artist', [])
  * Biography controller
  **/
 .controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, EchonestService ){
-
-	$rootScope.requestsLoading++;
 	
 	// get the biography
 	EchonestService.getArtistBiography( $stateParams.uri )
-		.success( function( response ){
+		.then( function( response ){
 			$scope.artist.biography = response.response.biographies[0];
-			$rootScope.requestsLoading--;
 		});
 	
 });

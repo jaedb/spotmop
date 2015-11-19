@@ -26,7 +26,7 @@ angular.module('spotmop.browse.playlist', [])
     $scope.following = false;
     $scope.followPlaylist = function(){
         SpotifyService.followPlaylist( $stateParams.uri )
-            .success( function(response){
+            .then( function(response){
                 $scope.following = true;
     			$rootScope.$broadcast('spotmop:notifyUser', {id: 'following-playlist', message: 'Following playlist', autoremove: true});
 				$scope.updatePlaylists();
@@ -34,7 +34,7 @@ angular.module('spotmop.browse.playlist', [])
     }
     $scope.unfollowPlaylist = function(){
         SpotifyService.unfollowPlaylist( $stateParams.uri )
-            .success( function(response){
+            .then( function(response){
                 $scope.following = false;
     			$rootScope.$broadcast('spotmop:notifyUser', {id: 'removing-playlist', message: 'Playlist removed', autoremove: true});
 				$scope.updatePlaylists();
@@ -42,7 +42,7 @@ angular.module('spotmop.browse.playlist', [])
     }
     $scope.recoverPlaylist = function(){
         SpotifyService.followPlaylist( $stateParams.uri )
-            .success( function(response){
+            .then( function(response){
                 $scope.following = true;
     			$rootScope.$broadcast('spotmop:notifyUser', {id: 'recovering-playlist', message: 'Playlist recovered', autoremove: true});
 				$scope.updatePlaylists();
@@ -68,6 +68,27 @@ angular.module('spotmop.browse.playlist', [])
         }
         return Math.round(totalTime / 100000);   
     }
+    
+    
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
+	 **/
+    $(document).find('.browse > .content').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
 	
 	/**
 	 * When the user changes the order of a playlist tracklist
@@ -107,12 +128,10 @@ angular.module('spotmop.browse.playlist', [])
 			});
 		});
 	});
-	
-    $rootScope.requestsLoading++;
 
 	// on load, fetch the playlist
 	SpotifyService.getPlaylist( $stateParams.uri )
-		.success(function( response ) {
+		.then(function( response ) {
 		
 			$scope.playlist = response;			
 			$scope.tracklist.next = response.tracks.next;
@@ -126,15 +145,10 @@ angular.module('spotmop.browse.playlist', [])
         
             // figure out if we're following this playlist
             SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-                .success( function( isFollowing ){
+                .then( function( isFollowing ){
                     $scope.following = $.parseJSON(isFollowing);
-					$rootScope.requestsLoading--;
                 });
-		})
-        .error(function( error ){
-            $rootScope.requestsLoading--;
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-playlist', message: error.error.message});
-        });
+		});
 		
 	
 	/**
@@ -206,11 +220,10 @@ angular.module('spotmop.browse.playlist', [])
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreTracks = true;
-		$rootScope.requestsLoading++;
 
         // go get our 'next' URL
         SpotifyService.getUrl( $nextUrl )
-            .success(function( response ){
+            .then(function( response ){
             
                 // append these new tracks to the main tracklist (using our unified format of course)
                 $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
@@ -219,12 +232,6 @@ angular.module('spotmop.browse.playlist', [])
                 $scope.tracklist.next = response.next;
                 
                 // update loader and re-open for further pagination objects
-				$rootScope.requestsLoading--;
-                loadingMoreTracks = false;
-            })
-            .error(function( error ){
-				$rootScope.requestsLoading--;
-                $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-more-tracks', message: error.error.message});
                 loadingMoreTracks = false;
             });
     }
