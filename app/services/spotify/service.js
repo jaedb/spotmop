@@ -123,7 +123,7 @@ angular.module('spotmop.services.spotify', [])
          * Generic calls
          */
         getUrl: function( $url ){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -134,11 +134,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUrl', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -151,7 +151,7 @@ angular.module('spotmop.services.spotify', [])
          **/
         
         getMe: function(){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -162,11 +162,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMe', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -177,7 +177,7 @@ angular.module('spotmop.services.spotify', [])
         getUser: function( useruri ){
 		
 			var userid = this.getFromUri( 'userid', useruri );
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -188,11 +188,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUser', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -203,7 +203,7 @@ angular.module('spotmop.services.spotify', [])
 		isFollowing: function( type, uri ){
 			
 			var id = this.getFromUri( type+'id', uri );
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -214,11 +214,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowing', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -234,7 +234,7 @@ angular.module('spotmop.services.spotify', [])
 		getTrack: function( trackuri ){
 			
 			var trackid = this.getFromUri('trackid', trackuri);
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -245,11 +245,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTrack', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -264,7 +264,7 @@ angular.module('spotmop.services.spotify', [])
 		 **/   
 		
 		getMyTracks: function( userid ){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -275,11 +275,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyTracks', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -288,7 +288,7 @@ angular.module('spotmop.services.spotify', [])
 		}, 
 		
 		addTracksToLibrary: function( trackids ){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -299,11 +299,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToLibrary', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -312,7 +312,7 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		deleteTracksFromLibrary: function( trackids ){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -326,11 +326,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromLibrary', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -339,7 +339,7 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getMyArtists: function( userid ){
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -350,11 +350,11 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
+					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyArtists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -365,7 +365,7 @@ angular.module('spotmop.services.spotify', [])
 		isFollowingArtist: function( artisturi, userid ){
 			
 			var artistid = this.getFromUri( 'artistid', artisturi );			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -377,11 +377,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingArtist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -392,7 +390,7 @@ angular.module('spotmop.services.spotify', [])
 		followArtist: function( artisturi ){
 			
 			var artistid = this.getFromUri( 'artistid', artisturi );			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -404,11 +402,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followArtist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -419,7 +415,7 @@ angular.module('spotmop.services.spotify', [])
 		unfollowArtist: function( artisturi ){
 			
 			var artistid = this.getFromUri( 'artistid', artisturi );			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -430,12 +426,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowArtist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -453,7 +447,7 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
 				
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -464,12 +458,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -483,7 +475,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 				
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -494,12 +486,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -512,7 +502,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -523,12 +513,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -541,7 +529,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -551,12 +539,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -569,7 +555,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -579,12 +565,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -600,7 +584,7 @@ angular.module('spotmop.services.spotify', [])
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
 			var country = SettingsService.getSetting('countrycode','NZ');
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -611,12 +595,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'featuredPlaylists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -630,7 +612,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -644,12 +626,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -665,7 +645,7 @@ angular.module('spotmop.services.spotify', [])
             if( userid != SettingsService.getSetting('spotifyuserid',null) )
                 return false;
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -682,12 +662,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'movePlaylistTracks', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -701,7 +679,7 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -715,12 +693,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -733,7 +709,6 @@ angular.module('spotmop.services.spotify', [])
 		// @param data json array {name: "Name", public: boolean}
 		createPlaylist: function( userid, data ){
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -746,12 +721,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'createPlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -768,7 +741,6 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -781,12 +753,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'updatePlaylist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -802,7 +772,6 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -813,12 +782,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'newReleases', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -831,7 +798,6 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -842,12 +808,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discoverCategories', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -857,7 +821,6 @@ angular.module('spotmop.services.spotify', [])
 		
 		getCategory: function( categoryid ){
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -868,12 +831,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategory', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -886,7 +847,6 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -897,12 +857,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategoryPlaylists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -918,7 +876,6 @@ angular.module('spotmop.services.spotify', [])
 			
 			var artistid = this.getFromUri( 'artistid', artisturi );
 			
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -929,12 +886,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtist', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -950,8 +905,7 @@ angular.module('spotmop.services.spotify', [])
 				if( artistids != '' ) artistids += ',';
 				artistids += self.getFromUri( 'artistid', artisturi );
 			});
-		
-			$rootScope.requestsLoading++;
+			
             var deferred = $q.defer();
 
             $http({
@@ -961,12 +915,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -975,8 +927,7 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getAlbums: function( artisturi ){
-					
-			$rootScope.requestsLoading++;
+			
 			var artistid = this.getFromUri( 'artistid', artisturi );
             var deferred = $q.defer();
 
@@ -988,12 +939,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -1002,8 +951,7 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		getAlbum: function( albumuri ){
-		
-			$rootScope.requestsLoading++;			
+						
             var deferred = $q.defer();			
 			var albumid = this.getFromUri( 'albumid', albumuri );
 
@@ -1014,12 +962,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getAlbum', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -1029,8 +975,7 @@ angular.module('spotmop.services.spotify', [])
 		
 		getTopTracks: function( artisturi ){
 		
-			var artistid = this.getFromUri( 'artistid', artisturi );
-			$rootScope.requestsLoading++;
+			var artistid = this.getFromUri( 'artistid', artisturi );			
             var deferred = $q.defer();
 
             $http({
@@ -1042,11 +987,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTopTracks', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -1057,7 +1000,6 @@ angular.module('spotmop.services.spotify', [])
 		getRelatedArtists: function( artisturi ){
 		
 			var artistid = this.getFromUri( 'artistid', artisturi );
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -1069,11 +1011,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getRelatedArtists', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -1090,7 +1030,6 @@ angular.module('spotmop.services.spotify', [])
 		getSearchResults: function( type, query, limit ){
 		
 			if( typeof( limit ) === 'undefined' ) limit = 10;
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -1101,12 +1040,10 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
-					$rootScope.requestsLoading--;
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					$rootScope.requestsLoading--;
+                .error(function( response ){					
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getSearchResults', message: response.error.message});
                     deferred.reject( response.error.message );
                 });

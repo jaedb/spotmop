@@ -128,7 +128,6 @@ angular.module('spotmop.services.echonest', [])
          **/
 		getArtistBiography: function( artistid ){
 		
-			$rootScope.requestsLoading++;
             var deferred = $q.defer();
 
             $http({
@@ -137,11 +136,9 @@ angular.module('spotmop.services.echonest', [])
 					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
 				})
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
                     deferred.reject( response.error.message );
                 });
@@ -173,17 +170,14 @@ angular.module('spotmop.services.echonest', [])
 					seed += '&name='+artist.name_encoded;
 				});
 			}
-		
-			$rootScope.requestsLoading++;			
+			
             var deferred = $q.defer();
 
             $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
                     deferred.reject("Failed to get albums");
                 });
@@ -192,16 +186,14 @@ angular.module('spotmop.services.echonest', [])
         },
 		
 		favoriteArtists: function(){		
-			$rootScope.requestsLoading++;			
+		
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
                     deferred.reject("Failed to get albums");
                 });
@@ -210,16 +202,14 @@ angular.module('spotmop.services.echonest', [])
         },
 		
 		catalogRadio: function(){		
-			$rootScope.requestsLoading++;			
+		
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
                     deferred.reject("Failed to get albums");
                 });
@@ -228,16 +218,14 @@ angular.module('spotmop.services.echonest', [])
         },
 		
 		startArtistRadio: function( artistname ){
-			$rootScope.requestsLoading++;			
+		
             var deferred = $q.defer();
 			
             $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
                 .success(function( response ){
-					$rootScope.requestsLoading--;
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.requestsLoading--;
 					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
                     deferred.reject("Failed to create artist radio");
                 });
