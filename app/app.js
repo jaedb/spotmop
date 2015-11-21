@@ -408,12 +408,12 @@ angular.module('spotmop', [
 	 * When we click anywhere
 	 * This allows us to kill context menus, unselect tracks, etc
 	 **/
-	$(document).on('mouseup', 'body', function( evt ){
+	$(document).on('mouseup', 'body', function( event ){
 		
 		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
 		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(evt.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:hideContextMenu');
+		if( $(event.target).closest('.tracklist').length <= 0 ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
 		}
 	});
     
@@ -547,6 +547,10 @@ angular.module('spotmop', [
                     
                     // sorting queue tracklist
                     if( track.closest('.tracklist').hasClass('queue-items') ){
+						
+						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
+						if( to_position >= end )
+							to_position = to_position - uris.length;
 						
 						// note: mopidy want's the first track AFTER our range, so we need to +1
                         MopidyService.moveTlTracks( start, end + 1, to_position );

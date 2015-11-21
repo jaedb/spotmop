@@ -1125,6 +1125,10 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
 }
 
+body.dragging .tracklist .track.selected {
+	opacity: 0.5;
+}
+
 .tracklist .track.selected,
 .tracklist .track.selected:hover {
 	background: #FFF39C;
@@ -1135,8 +1139,7 @@ body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 }
 
 .tracklist .track.drag-hovering {
-	border-top: 2px solid #000000;
-	margin-top: -2px;
+	border-top: 38px solid #DDDDDD;
 }
 
 .tracklist .track.drag-hovering:first-child {
