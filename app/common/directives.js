@@ -3,6 +3,16 @@
 angular.module('spotmop.directives', [])
 
 
+/* ============================================================ CONFIG FOR 3rd PARTIES ======== */
+/* ============================================================================================ */
+
+.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider){
+
+	// wait 250ms before showing loader
+	cfpLoadingBarProvider.latencyThreshold = 250;
+}])
+  
+  
 
 
 /* ======================================================================== DIRECTIVES ======== */

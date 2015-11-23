@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', function( $rootScope, $interval, SettingsService, MopidyService, SpotifyService, EchonestService ){
+.factory("PlayerService", ['$rootScope', '$interval', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', function( $rootScope, $interval, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService ){
 	
 	// setup initial states
 	var state = {
@@ -250,18 +250,18 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
 		if( state.playing ) var icon = 'pause'; else var icon = 'play';
 		service.playPause();
-		$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: icon });
+		NotifyService.create( 'keyboard-shortcut', false, 2500, icon );
     });
 	$rootScope.$on('spotmop:keyboardShortcut:right', function( event ){		
 		if( $rootScope.ctrlKeyHeld ){
 			service.next();
-			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'forward' });
+			NotifyService.create( 'keyboard-shortcut', false, 2500, 'forward' );
 		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:left', function( event ){    
 		if( $rootScope.ctrlKeyHeld ){
 			service.previous();
-			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'backward' });
+			NotifyService.create( 'keyboard-shortcut', false, 2500, 'backward' );
 		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:up', function( event ){
@@ -272,7 +272,7 @@ angular.module('spotmop.services.player', [])
 			if( state.volume >= 100 )
 				state.volume = 100;
 			service.setVolume( state.volume );
-			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-up' });
+			NotifyService.create( 'keyboard-shortcut', false, 2500, 'volume-up' );
 		}
     });
 	$rootScope.$on('spotmop:keyboardShortcut:down', function( event ){
@@ -283,7 +283,7 @@ angular.module('spotmop.services.player', [])
 			if( state.volume < 0 )
 				state.volume = 0;
 			service.setVolume( state.volume );
-			$rootScope.$broadcast('spotmop:notifyUser', { id: 'keyboard-shortcut', type: 'keyboard-shortcut', icon: 'volume-down' });
+			NotifyService.create( 'keyboard-shortcut', false, 2500, 'volume-down' );
 		}
     });	
 	

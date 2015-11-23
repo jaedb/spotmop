@@ -18,7 +18,7 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
 	$scope.artists = [];
 	$scope.playlists = [];
@@ -96,7 +96,7 @@ angular.module('spotmop.discover', [])
 					// make sure we got some artists
 					if( echonestArtists.length <= 0 ){
 					
-						$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+						NotifyService.create( 'error', 'Your taste profile is empty. Play some more music!' );
 						
 					}else{
 						
@@ -127,7 +127,7 @@ angular.module('spotmop.discover', [])
 				// make sure we got some artists
 				if( echonestArtists.length <= 0 ){
 				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+					NotifyService.create( 'error', 'Your taste profile is empty. Play some more music!' );
 					
 				}else{
 					

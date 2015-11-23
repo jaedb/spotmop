@@ -41,7 +41,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -60,7 +60,7 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
-		$scope.$emit('spotmop:notifyUser', {id: 'notimplemented', message: 'This functionality has not yet been implemented', autoremove: 2000});
+		NotifyService.create( 'error', 'This functionality has not yet been implemented' );
 		/*
 		EchonestService.startArtistRadio( $scope.artist.name )
 			.then( function( response ){

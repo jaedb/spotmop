@@ -492,7 +492,7 @@ input[type='submit'] {
     text-align: center;
 }
 
-#notifications .notification-item {
+#notifications .notification {
     color: #FFFFFF;
     display: inline-block;
     padding: 10px 18px;
@@ -500,7 +500,7 @@ input[type='submit'] {
 	margin: 0px 1px;
 }
 
-#notifications .notification-item.keyboard-shortcut {
+#notifications .notification.keyboard-shortcut {
 	position: fixed;
 	top: 50%;
 	left: 50%;
@@ -510,29 +510,29 @@ input[type='submit'] {
 	border-radius: 10px;
 }
 
-#notifications .notification-item.keyboard-shortcut i {
+#notifications .notification.keyboard-shortcut i {
 	line-height: 300px;
 	font-size: 120px;
 }
 
-#notifications .notification-item:not(.keyboard-shortcut):first-child {
+#notifications .notification:not(.keyboard-shortcut):first-child {
 	border-radius: 100px 0 0 100px;
 }
 
-#notifications .notification-item:not(.keyboard-shortcut):last-child {
+#notifications .notification:not(.keyboard-shortcut):last-child {
 	border-radius: 0 100px 100px 0;
 }
 
-#notifications .notification-item:not(.keyboard-shortcut):only-child {
+#notifications .notification:not(.keyboard-shortcut):only-child {
 	border-radius: 100px;
 }
 
-#notifications .notification-item.bad,
-#notifications .notification-item.error {
+#notifications .notification.bad,
+#notifications .notification.error {
     background-color: rgba(214,47,47,0.9);
 }
 
-#notifications .notification-item.good {
+#notifications .notification.good {
     background-color: rgba(53,204,53,0.9);
 }
 

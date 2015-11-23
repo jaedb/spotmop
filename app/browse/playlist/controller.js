@@ -17,7 +17,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
 	
 	// setup base variables
 	$scope.playlist = {images: []};
@@ -28,7 +28,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.followPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = true;
-    			$rootScope.$broadcast('spotmop:notifyUser', {id: 'following-playlist', message: 'Following playlist', autoremove: true});
+				NotifyService.create( false, 'Following playlist' );
 				$scope.updatePlaylists();
             });
     }
@@ -36,7 +36,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.unfollowPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = false;
-    			$rootScope.$broadcast('spotmop:notifyUser', {id: 'removing-playlist', message: 'Playlist removed', autoremove: true});
+				NotifyService.create( false, 'Playlist removed' );
 				$scope.updatePlaylists();
             });
     }
@@ -44,7 +44,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.followPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = true;
-    			$rootScope.$broadcast('spotmop:notifyUser', {id: 'recovering-playlist', message: 'Playlist recovered', autoremove: true});
+				NotifyService.create( false, 'Playlist recovered' );
 				$scope.updatePlaylists();
             });
     }
@@ -158,7 +158,7 @@ angular.module('spotmop.browse.playlist', [])
 		
 		// make sure the current spotify user owns this playlist
 		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
-            $rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleting-from-playlist', message: 'Cannot delete from a playlist you don\'t own', autoremove: true});
+			NotifyService.create( 'error', 'Cannot delete from a playlist you don\'t own' );
 			
 		// we own it, proceed sir
 		}else{
