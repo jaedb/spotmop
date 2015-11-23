@@ -54,9 +54,18 @@ angular.module('spotmop.directives', [])
 			// fetch this instance's best thumbnail
 			$scope.image = getThumbnailImage( $scope.images );
 			
-			$http.get($scope.image.url).then( function(response){
-				$element.css('background-image', 'url('+$scope.image.url+')' );
-			});
+			// now actually go get the image
+			if( $scope.image ){
+				$http({
+					method: 'GET',
+					url: $scope.image.url,
+					cache: true
+					}).success( function(){
+					
+						// inject to DOM once loaded
+						$element.css('background-image', 'url('+$scope.image.url+')' );
+					});
+			}
 			
 			/**
 			 * Get the most appropriate thumbnail image
@@ -112,7 +121,7 @@ angular.module('spotmop.directives', [])
 			}
 			
 		},
-		template: '<div class="image animate" ng-show="image"></div>'
+		template: '<div class="image animate"></div>'
 	};
 })
 
