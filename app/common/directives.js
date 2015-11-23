@@ -40,7 +40,7 @@ angular.module('spotmop.directives', [])
  * Figure out the best image to use for this set of image sizes
  * @return image obj
  **/
-.directive('thumbnail', function() {
+.directive('thumbnail', function( $timeout, $http ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -53,6 +53,10 @@ angular.module('spotmop.directives', [])
 			
 			// fetch this instance's best thumbnail
 			$scope.image = getThumbnailImage( $scope.images );
+			
+			$http.get($scope.image.url).then( function(response){
+				$element.css('background-image', 'url('+$scope.image.url+')' );
+			});
 			
 			/**
 			 * Get the most appropriate thumbnail image
@@ -108,7 +112,7 @@ angular.module('spotmop.directives', [])
 			}
 			
 		},
-		template: '<div><div class="image animate" style="background-image: url({{ image.url }});" ng-show="image"></div><div class="image animate placeholder" ng-show="!image"></div></div>'
+		template: '<div class="image animate" ng-show="image"></div>'
 	};
 })
 
