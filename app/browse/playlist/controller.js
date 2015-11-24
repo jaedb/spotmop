@@ -28,7 +28,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.followPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = true;
-				NotifyService.create( false, 'Following playlist' );
+				NotifyService.notify( 'Following playlist' );
 				$scope.updatePlaylists();
             });
     }
@@ -36,7 +36,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.unfollowPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = false;
-				NotifyService.create( false, 'Playlist removed' );
+				NotifyService.notify( 'Playlist removed' );
 				$scope.updatePlaylists();
             });
     }
@@ -44,7 +44,7 @@ angular.module('spotmop.browse.playlist', [])
         SpotifyService.followPlaylist( $stateParams.uri )
             .then( function(response){
                 $scope.following = true;
-				NotifyService.create( false, 'Playlist recovered' );
+				NotifyService.notify( 'Playlist recovered' );
 				$scope.updatePlaylists();
             });
     }
@@ -158,7 +158,7 @@ angular.module('spotmop.browse.playlist', [])
 		
 		// make sure the current spotify user owns this playlist
 		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
-			NotifyService.create( 'error', 'Cannot delete from a playlist you don\'t own' );
+			NotifyService.error( 'Cannot delete from a playlist you don\'t own' );
 			
 		// we own it, proceed sir
 		}else{

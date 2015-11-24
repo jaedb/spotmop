@@ -28,7 +28,6 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
-	'spotmop.playlists',
 	'spotmop.search',
 	'spotmop.settings',
 	
@@ -132,7 +131,7 @@ angular.module('spotmop', [
 		.success( function(response){
 			if( !currentVersion || currentVersion != response.versionCode ){
 				SettingsService.setSetting('version',response.versionCode);
-				NotifyService.create( false, 'Spotmop has been updated - please clear your browser cache' );
+				NotifyService.notify( 'Spotmop has been updated - please clear your browser cache' );
 			}
 		});
 		
@@ -281,7 +280,7 @@ angular.module('spotmop', [
 				$scope.spotifyUser = response;
 				
 				if( typeof(response.error) !== 'undefined' ){
-					NotifyService.create( 'error', response.error.message );
+					NotifyService.error( response.error.message );
 				}else{
 					$rootScope.spotifyOnline = true;
 				
@@ -469,7 +468,7 @@ angular.module('spotmop', [
 				if( isMenuItem && target.attr('data-type') === 'queue' ){
 			
 					if( uris.length > 10 ){
-						NotifyService.create( 'loading', 'Adding '+uris.length+' track(s) to queue... this could take some time' );
+						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
 					}
                     
 					MopidyService.addToTrackList( uris );

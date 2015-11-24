@@ -17,7 +17,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', function SettingsController( $scope, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService ){
+.controller('SettingsController', function SettingsController( $scope, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -27,16 +27,13 @@ angular.module('spotmop.settings', [])
 		$scope.currentSubpage = subpage;
 	};
     $scope.refreshSpotifyToken = function(){
-        $rootScope.requestsLoading++;
-		NotifyService.create( 'loading', 'Refreshing token' );
-        $.when(SpotifyService.getNewToken()).then( function(){
-            $rootScope.requestsLoading--;
-        });
+		NotifyService.notify( 'Refreshing token' );
+        $.when(SpotifyService.getNewToken()).then( function(){});
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
 		$scope.$parent.spotifyOnline = false;
-		NotifyService.create( 'loading', 'Logging you out' );
+		NotifyService.notify( 'Logging you out' );
     };
 	$scope.toggleSetting = function( setting ){
     	if( SettingsService.getSetting(setting, false) ){
@@ -69,22 +66,21 @@ angular.module('spotmop.settings', [])
 	// commands to parse to the mopidy server
 	$scope.startMopidyServer = function(){
 		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.create( 'error', 'Button disabled' );
+			NotifyService.error( 'Button disabled' );
 			return false;
 		}
 		
 		MopidyService.startServer()
 			.success( function(response){
-				NotifyService.create( 'loading', 'Attempting to start Mopidy server' );
-				$rootScope.$broadcast('spotmop:notifyUser', {id: 'mopidyserver', message: 'Attempting to start Mopidy server'});	
+				NotifyService.notify( 'Attempting to start Mopidy server' );
 			})
 			.error( function(response){
-				NotifyService.create( 'error', response.responseText );
+				NotifyService.error( response.responseText );
 			});
 	};
 	$scope.restartMopidyServer = function(){
 		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.create( 'error', 'Button disabled' );
+			NotifyService.error( 'Button disabled' );
 			return false;
 		}
 		
@@ -93,12 +89,12 @@ angular.module('spotmop.settings', [])
 				console.log( response );
 			})
 			.error( function(response){
-				NotifyService.create( 'error', response.responseText );
+				NotifyService.error( response.responseText );
 			});
 	};
 	$scope.stopMopidyServer = function(){
 		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.create( 'error', 'Button disabled' );
+			NotifyService.error( 'Button disabled' );
 			return false;
 		}
 		
@@ -107,7 +103,7 @@ angular.module('spotmop.settings', [])
 				console.log( response );
 			})
 			.error( function(response){
-				NotifyService.create( 'error', response.responseText );
+				NotifyService.error( response.responseText );
 			});
 	};
 	
@@ -120,13 +116,13 @@ angular.module('spotmop.settings', [])
 	
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
-			NotifyService.create( false, 'Profile deleted and Echonest disabled' );
+			NotifyService.notify( 'Profile deleted and Echonest disabled' );
 			SettingsService.setSetting('echonesttasteprofileid',null);
             EchonestService.stop();			
 		}
 	};
 	$scope.resetSettings = function(){
-		NotifyService.create( false, 'All settings reset... reloading' );		
+		NotifyService.notify( 'All settings reset... reloading' );		
 		localStorage.clear();		
 		window.location = window.location;
 	};

@@ -17,22 +17,15 @@ angular.module('spotmop.services.notify', [])
 	
 		/**
 		 * Create a new notification item
-		 * @param type = string (loader, good, bad, keyboard-shortcut, etc)
 		 * @param message = string (body of message)
-		 * @param icon = string (icon type to use) optional
 		 * @param duration = int (how long to hold message) optional
 		 **/
-		create: function( type, message, durationm, icon ){
+		notify: function( message, duration ){
 		
 			if( typeof(duration) === 'undefined' )
 				var duration = 2500;
-				
-			// if we're a keyboard shortcut notification, this requires icon injection
-			if( type == 'keyboard-shortcut' ){
-				message = '<i class="fa fa-'+icon+'"></i>';
-			}
 			
-			var notification = $('<notification class="notification '+type+'">'+message+'</notification>');
+			var notification = $('<notification class="notification default">'+message+'</notification>');
 			$('#notifications').append( notification );
 			
 			// hide in when we meet our duration
@@ -44,6 +37,49 @@ angular.module('spotmop.services.notify', [])
 					},
 					duration
 				);
+		},
+	
+		/**
+		 * Error message
+		 * @param icon = string (icon type to use)
+		 * @param duration = int (how long to hold message) optional
+		 **/
+		error: function( message, duration ){
+		
+			if( typeof(duration) === 'undefined' )
+				var duration = 2500;
+			
+			var notification = $('<notification class="notification error">'+message+'</notification>');
+			$('#notifications').append( notification );
+			
+			// hide in when we meet our duration
+			// remember that we can disable hide by parsing duration=false
+			if( duration )
+				$timeout(
+					function(){
+						notification.fadeOut(200, function(){ notification.remove() } );
+					},
+					duration
+				);
+		},
+	
+		/**
+		 * When a shortcut is triggered, notify, growl styles
+		 * @param icon = string (icon type to use)
+		 **/
+		shortcut: function( icon ){
+			
+			$('#notifications').find('notification.keyboard-shortcut').remove();
+			
+			var notification = $('<notification class="notification keyboard-shortcut"><i class="fa fa-'+icon+'"></i></notification>');
+			$('#notifications').append( notification );
+			
+			$timeout(
+				function(){
+					notification.fadeOut(200, function(){ notification.remove() } );
+				},
+				1500
+			);
 		}
 	};
 }])

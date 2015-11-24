@@ -96,7 +96,7 @@ angular.module('spotmop.discover', [])
 					// make sure we got some artists
 					if( echonestArtists.length <= 0 ){
 					
-						NotifyService.create( 'error', 'Your taste profile is empty. Play some more music!' );
+						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
 						
 					}else{
 						
@@ -127,7 +127,7 @@ angular.module('spotmop.discover', [])
 				// make sure we got some artists
 				if( echonestArtists.length <= 0 ){
 				
-					NotifyService.create( 'error', 'Your taste profile is empty. Play some more music!' );
+					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
 					
 				}else{
 					
