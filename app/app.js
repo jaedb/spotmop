@@ -475,7 +475,7 @@ angular.module('spotmop', [
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-				
+					
 					// convert all our URIs to IDs
 					var trackids = new Array();
 					$.each( uris, function(key,value){
