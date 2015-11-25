@@ -261,6 +261,119 @@ angular.module('spotmop.directives', [])
 })
 
 
+/**
+ **/
+.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http ){
+    return {
+		restrict: 'E',
+        terminal: true,
+		scope: {
+			image: '@',				// object
+			useproxy: '@',
+			detectbackground: '@',
+			opacity: '@'
+		},
+        link: function($scope, $element, $attrs){
+			
+			// when we're destroyed, make sure we drop our animation interval
+			// otherwise we get huge memory leaks for old instances of this directive
+			$scope.$on(
+				"$destroy",
+				function handleDestroyEvent() {
+					$interval.cancel(animateInterval);
+				}
+			);
+				
+			// setup initial variables
+			var	scrollTop = 0;
+			var canvasDOM = document.getElementById('backgroundparallax');
+			var context = canvasDOM.getContext('2d');
+			
+			// load our image data from the json string attribute
+			var image = $.parseJSON($scope.image);
+		
+			if( $scope.useproxy )
+				image.url = '/vendor/resource-proxy.php?url='+image.url;
+			
+			// create our new image object (to be plugged into canvas)
+			image.asObject = new Image();
+			image.asObject.src = image.url;
+			image.asObject.onload = function(){
+				
+				// load destination opacity from attribute (if specified)
+				var destinationOpacity = 1;				
+				if( typeof($scope.opacity) !== 'undefined' )
+					destinationOpacity = $scope.opacity;
+				
+				// plug our image into the canvas
+				positionArtistBackground( image );
+				
+				// fade the whole directive in, now that we're positioned and loaded
+				$element.animate({ opacity: destinationOpacity }, 500 );
+			}
+			
+			/**
+			 * Process the image object, and plug it in to our canvas, in the appropriate place
+			 * Also resizes the canvas to fill the parent element
+			 * @param image = custom image object
+			 **/
+			function positionArtistBackground( image ){
+				
+				// set our canvas dimensions (if necessary)
+				var canvasWidth = $element.outerWidth();
+				var canvasHeight = $element.outerHeight();
+				if( context.canvas.width != canvasWidth || context.canvas.height != canvasHeight ){
+					context.canvas.width = canvasWidth;
+					context.canvas.height = canvasHeight;
+				}
+				
+				// zoom image to fill canvas
+				// TODO: test tall skinny images and different device sizes
+				if( image.width < canvasWidth ){
+					var upscale = canvasWidth / image.width;
+					image.width = image.width * upscale;
+					image.height = image.height * upscale;
+				}
+				
+				// figure out where we want the image to be, based on scroll position
+				var percent = Math.round( scrollTop / canvasHeight * 100 );
+				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
+				
+				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
+				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
+				
+				// actually draw the image on the canvas
+				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+			}
+			
+			// poll for scroll changes
+			var animateInterval = $interval(
+				function(){	
+					window.requestAnimationFrame(function( event ){
+					
+						// if we've scrolled
+						if( scrollTop != $('.scrolling-panel').scrollTop() ){
+							scrollTop = $('.scrolling-panel').scrollTop();
+							
+							var bannerHeight = $(document).find('.artist-intro').outerHeight();
+
+							// and if we're within the bounds of our document
+							// this helps prevent us animating when the objects in question are off-screen
+							if( scrollTop < bannerHeight ){								
+								positionArtistBackground( image );
+							}
+						}
+					});
+				},
+				10
+			);
+			
+        },
+		template: '<canvas id="backgroundparallax"></canvas>'
+    };
+})
+
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
