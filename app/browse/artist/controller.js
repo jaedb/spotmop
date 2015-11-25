@@ -73,6 +73,8 @@ angular.module('spotmop.browse.artist', [])
 	SpotifyService.getArtist( $stateParams.uri )
 		.then( function( response ){
 			$scope.artist = response;
+			
+			$timeout( function(){ positionArtistBackground() }, 5);
 		});
 
 	// figure out if we're following this playlist
@@ -90,6 +92,47 @@ angular.module('spotmop.browse.artist', [])
 	
 	// setup initial variables
 	var	scrollTop = 0;
+	var canvas,canvasDOM,context;
+	
+	function positionArtistBackground(){
+		
+		var canvas = $(document).find('#artistBackground');
+		var canvasDOM = document.getElementById('artistBackground');
+		var context = canvasDOM.getContext('2d');
+		
+		// set our canvas dimensions
+		var width = $(document).find('.artist-intro').outerWidth();
+		var height = $(document).find('.artist-intro').outerHeight();
+		context.canvas.width = width;
+		context.canvas.height = height;
+		
+		var percent = Math.round( scrollTop / height * 100 );
+		var position = Math.round( (height / 2) * (percent/100) ) - 100;
+		
+		// clear the workspace
+		context.clearRect(0, 0, width, height);
+		
+		var image = {
+			url: canvas.attr('image-url'),
+			width: canvas.attr('image-width'),
+			height: canvas.attr('image-height'),
+			x: 0,
+			y: 0
+		};
+		var imageObject = new Image();
+		imageObject.src = image.url;
+		
+		if( image.width < width ){
+			var upscale = width / image.width;
+			image.width = image.width * upscale;
+			image.height = image.height * upscale;
+		}
+		
+		image.x = ( width / 2 ) - ( image.width / 2 );
+		image.y = ( ( height / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
+	
+		context.drawImage(imageObject, image.x, image.y, image.width, image.height);		
+	}
 	
 	$interval(
 		function(){	
@@ -104,9 +147,17 @@ angular.module('spotmop.browse.artist', [])
 					// and if we're within the bounds of our document
 					// this helps prevent us animating when the objects in question are off-screen
 					if( scrollTop < bannerHeight ){
+						
+						positionArtistBackground( scrollTop );		
+						
+						
+						/*
 						var percent = Math.round( scrollTop / bannerHeight * 100 );
+						//var position = Math.round( (bannerHeight / 2) * (percent/100) ) - 100;
 						var position = Math.round( (bannerHeight / 2) * (percent/100) ) - 100;
-						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
+						
+						$(document).find('.intro preloadedimage').css('top', position+'px');
+						*/
 					}
 				}
 			});

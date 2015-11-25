@@ -1329,6 +1329,15 @@ body.dragging .tracklist .track.selected {
 	background: #444444;
 }
 
+.artist-intro .image-container .image {
+	position: absolute;
+	top: -100px;
+	right: 0;
+	bottom: -100px;
+	left: 0;
+	-webkit-transform: translateZ(0);
+}
+
 .artist-page .title-panel {
 	position: absolute;
 	bottom: 0;

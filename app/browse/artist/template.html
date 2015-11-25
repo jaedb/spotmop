@@ -4,7 +4,8 @@
 		<div class="intro artist-intro">
 		
 			<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
-				<preloadedimage class="image" url="{{ image.url }}" useproxy="true" detectbackground="true" opacity="0.5"></preloadedimage>
+				<canvas id="artistBackground" image-url="{{ image.url }}" image-height="{{ image.height }}" image-width="{{ image.width }}" style="opacity: 0.5"></canvas>
+				<!--<preloadedimage class="image" url="{{ image.url }}" useproxy="true" detectbackground="true" opacity="0.5"></preloadedimage>-->
 			</div>
 			
 			<div class="inner" text-over-image>
