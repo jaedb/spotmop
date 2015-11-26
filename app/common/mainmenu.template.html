@@ -41,28 +41,22 @@
 			Tracks
 		</a>
 	</li>
-	<li class="menu-item top-level {{ linkingMode('library.artists') }}">
+	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
 		<a href="/library/artists" class="droppable" data-type="library">
 			<i class="fa fa-user"></i>
 			Artists
 		</a>
 	</li>
-	<li class="menu-item top-level playlists {{ linkingMode(['playlists.my','playlists.myplaylist']) }}">
-		<a href="/playlists/my" class="droppable" data-type="playlists">
-			<i class="fa fa-music"></i>
-			My playlists
+	<li class="menu-item top-level playlists {{ linkingMode(['library.playlists', 'library.playlist']) }}">
+		<a href="/library/playlists" class="droppable" data-type="playlists">
+			<i class="fa fa-tags"></i>
+			Playlists
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
 			</li>
 		</ul>
-	</li>
-	<li class="menu-item top-level playlists {{ linkingMode(['playlists.following','playlists.followingplaylist']) }}">	
-		<a href="/playlists/following">
-			<i class="fa fa-music"></i>
-			Following playlists
-		</a>
 	</li>
 	<li class="divider"></li>
 	<li class="menu-item top-level {{ linkingMode('settings') }}"">

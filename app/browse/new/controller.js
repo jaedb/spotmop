@@ -29,8 +29,8 @@ angular.module('spotmop.browse.new', [])
 		.then(function( response ) {
 			$scope.albums = response.albums;
 		});
-    
-    
+	
+	
     /**
      * Load more of the category's playlists
      * Triggered by scrolling to the bottom

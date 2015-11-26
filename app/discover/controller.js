@@ -18,7 +18,7 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
 	$scope.artists = [];
 	$scope.playlists = [];
@@ -85,33 +85,33 @@ angular.module('spotmop.discover', [])
 				);
 			});
 			$scope.recommendations.currentArtist.artists = artists;
-		}
 		
-		EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = response.response.artists;
-				var artisturis = [];
+			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
+				.then(function( response ){
 				
-				// make sure we got some artists
-				if( echonestArtists.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+					// convert our echonest list into an array to get from spotify
+					var echonestArtists = response.response.artists;
+					var artisturis = [];
 					
-				}else{
+					// make sure we got some artists
+					if( echonestArtists.length <= 0 ){
 					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-							artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( response ){
-							$scope.recommendations.currentArtist.recommendations = response.artists;
+						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
+						
+					}else{
+						
+						angular.forEach( echonestArtists, function( echonestArtist ){
+							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
+								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
 						});
-				}
-			});
+						
+						SpotifyService.getArtists( artisturis )
+							.then( function( response ){
+								$scope.recommendations.currentArtist.recommendations = response.artists;
+							});
+					}
+				});
+		}
 			
 			
 			
@@ -127,7 +127,7 @@ angular.module('spotmop.discover', [])
 				// make sure we got some artists
 				if( echonestArtists.length <= 0 ){
 				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
 					
 				}else{
 					

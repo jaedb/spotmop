@@ -41,7 +41,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -60,7 +60,7 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
-		$scope.$emit('spotmop:notifyUser', {id: 'notimplemented', message: 'This functionality has not yet been implemented', autoremove: 2000});
+		NotifyService.error( 'This functionality has not yet been implemented' );
 		/*
 		EchonestService.startArtistRadio( $scope.artist.name )
 			.then( function( response ){
@@ -86,33 +86,6 @@ angular.module('spotmop.browse.artist', [])
 		.then( function( response ){
 			$scope.relatedArtists = response.artists;
 		});
-		
-	
-	// setup initial variables
-	var	scrollTop = 0;
-	
-	$interval(
-		function(){	
-			window.requestAnimationFrame(function( event ){
-			
-				// if we've scrolled
-				if( scrollTop != $('.scrolling-panel').scrollTop() ){
-					scrollTop = $('.scrolling-panel').scrollTop();
-					
-					var bannerHeight = $(document).find('.artist-intro').outerHeight();
-
-					// and if we're within the bounds of our document
-					// this helps prevent us animating when the objects in question are off-screen
-					if( scrollTop < bannerHeight ){
-						var percent = Math.round( scrollTop / bannerHeight * 100 );
-						var position = Math.round( (bannerHeight / 2) * (percent/100) ) - 100;
-						$(document).find('.intro preloadedimage').css('background-position', '50% '+position+'px');
-					}
-				}
-			});
-		},
-		10
-	);
 })
 
 

@@ -9,6 +9,16 @@ angular.module('spotmop.library', [])
 			url: "/library",
 			templateUrl: "app/library/template.html"
 		})
+		.state('library.playlists', {
+			url: "/playlists",
+			templateUrl: "app/library/playlists.template.html",
+			controller: 'LibraryPlaylistsController'
+		})
+		.state('library.playlist', {
+			url: "/playlist/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		})
 		.state('library.tracks', {
 			url: "/tracks",
 			templateUrl: "app/library/tracks.template.html",
@@ -19,6 +29,14 @@ angular.module('spotmop.library', [])
 			templateUrl: "app/library/artists.template.html",
 			controller: 'LibraryArtistsController'
 		})
+		/*
+		 MORE COMPLEX THAN THE ALIAS TO PLAYLISTS (NESTED STATES). MAY NEED TO RECONSIDER APPROACH
+		.state('library.artist', {
+			url: "/artist/:uri",
+			templateUrl: "app/browse/artist/template.html",
+			controller: 'PlaylistController'
+		})
+		*/
 		.state('library.albums', {
 			url: "/albums",
 			templateUrl: "app/library/albums.template.html",
@@ -149,6 +167,17 @@ angular.module('spotmop.library', [])
 					Spotify.refreshToken();
 			});
 		
+})
+
+/**
+ * Library playlist
+ **/
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	
+	// note: we use the existing playlist list to show playlists on this page	
+	$scope.createPlaylist = function(){
+        DialogService.create('createPlaylist', $scope);
+	}
 });
 
 

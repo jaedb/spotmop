@@ -17,6 +17,7 @@ angular.module('spotmop', [
 	'spotmop.common.contextmenu',
 	'spotmop.common.tracklist',
     
+	'spotmop.services.notify',
 	'spotmop.services.settings',
 	'spotmop.services.player',
 	'spotmop.services.spotify',
@@ -27,7 +28,6 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
-	'spotmop.playlists',
 	'spotmop.search',
 	'spotmop.settings',
 	
@@ -60,7 +60,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService ){		
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -130,8 +130,8 @@ angular.module('spotmop', [
 	SettingsService.getVersion()
 		.success( function(response){
 			if( !currentVersion || currentVersion != response.versionCode ){
-				SettingsService.setSetting('version',response.versionCode)
-				$scope.$broadcast('spotmop:notifyUser', {id: 'updated', message: 'Spotmop has been updated - please clear your browser cache', autoremove: 5000});
+				SettingsService.setSetting('version',response.versionCode);
+				NotifyService.notify( 'Spotmop has been updated - please clear your browser cache' );
 			}
 		});
 		
@@ -241,44 +241,6 @@ angular.module('spotmop', [
 		if( SettingsService.getSetting('echonestenabled',false) )
 			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
-	
-    
-    /** 
-     * User notifications
-     * Displays a user-friendly notification. Can be error, loader or tip
-     **/
-	$scope.$on('spotmop:notifyUser', function( event, data ){
-		
-		// handle undefined errors
-        if( typeof(data.type) === 'undefined' )
-            data.type = '';
-		
-		// if we're a keyboard shortcut notification, this requires icon injection
-		if( data.type == 'keyboard-shortcut' ){
-			data.message = '<i class="fa fa-'+data.icon+'"></i>';
-		}
-		
-		// default to autoremove
-        if( typeof(data.autoremove) === 'undefined' )
-            data.autoremove = true;
-		
-		// remove any existing notifications of this type (using notification id)
-		$(document).find('#notifications .notification-item[data-id="'+data.id+'"]').remove();;
-		
-		var container = $(document).find('#notifications');
-		var notification = '<div class="notification-item '+data.type+'" data-id="'+data.id+'">'+data.message+'</div>';
-		container.append( notification );
-		notification = $(document).find('#notifications .notification-item[data-id="'+data.id+'"]');
-		
-		if( data.autoremove ){
-			$timeout(
-				function(){
-					notification.fadeOut(200, function(){ notification.remove() } );
-				},
-				2500
-			);
-		}
-	});
     
     
 
@@ -318,7 +280,7 @@ angular.module('spotmop', [
 				$scope.spotifyUser = response;
 				
 				if( typeof(response.error) !== 'undefined' ){
-					$scope.$broadcast('spotmop:notifyUser', {type: 'error', message: response.error.message});
+					NotifyService.error( response.error.message );
 				}else{
 					$rootScope.spotifyOnline = true;
 				
@@ -408,12 +370,12 @@ angular.module('spotmop', [
 	 * When we click anywhere
 	 * This allows us to kill context menus, unselect tracks, etc
 	 **/
-	$(document).on('mouseup', 'body', function( evt ){
+	$(document).on('mouseup', 'body', function( event ){
 		
 		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
 		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(evt.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:hideContextMenu');
+		if( $(event.target).closest('.tracklist').length <= 0 ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
 		}
 	});
     
@@ -504,21 +466,16 @@ angular.module('spotmop', [
 				
 				// dropping on queue
 				if( isMenuItem && target.attr('data-type') === 'queue' ){
-				
-                    $rootScope.requestsLoading++;
 			
 					if( uris.length > 10 ){
-						$scope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: 'Adding '+uris.length+' track(s) to queue... this could take some time'});
+						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
 					}
                     
-					MopidyService.addToTrackList( uris ).then( function(response){
-                        $rootScope.requestsLoading--;
-                        $scope.$broadcast('spotmop:notifyUserRemoval', {id: 'adding-to-queue'});
-                    });
+					MopidyService.addToTrackList( uris );
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-				
+					
 					// convert all our URIs to IDs
 					var trackids = new Array();
 					$.each( uris, function(key,value){
@@ -547,6 +504,10 @@ angular.module('spotmop', [
                     
                     // sorting queue tracklist
                     if( track.closest('.tracklist').hasClass('queue-items') ){
+						
+						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
+						if( to_position >= end )
+							to_position = to_position - uris.length;
 						
 						// note: mopidy want's the first track AFTER our range, so we need to +1
                         MopidyService.moveTlTracks( start, end + 1, to_position );

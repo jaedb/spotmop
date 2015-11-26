@@ -1,17 +1,19 @@
 <div class="page my-playlists-page scrolling-panel">
 	<div class="inner">
+		
+		<h1>Playlists</h1>
 	
 		<div class="playlist-items square-panels">
 			
 			<div ng-if="myPlaylists.length">
-				<div class="item-container" ng-repeat="playlist in myPlaylists | filter: { owner: {id: spotifyUser.id } } track by $index">
-					<a ui-sref="playlists.myplaylist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
+				<div class="item-container" ng-repeat="playlist in myPlaylists track by $index">
+					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 						<div class="image-container">
 							<thumbnail images="playlist.images"></thumbnail>
 						</div>
 						<div class="info animate">
 							<div class="name" ng-bind="playlist.name"></div>
-							<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+							<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != spotifyUser.id">&nbsp;<i class="fa fa-lock"></i></span></div>
 						</div>
 					</a>
 				</div>
