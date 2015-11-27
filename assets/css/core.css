@@ -1116,10 +1116,8 @@ h1 .flag {
 .track .duration {			width: 5%; }
 .track .popularity {		width: 5%; }
 
-.track.no-album .title {			width: 45%; }
-.track.no-album .artist {			width: 45%; }
-.track.no-album .duration {			width: 5%; }
-.track.no-album .popularity {		width: 5%; }
+.tracklist.album-items .track .title {			width: 35%; }
+.tracklist.album-items .track .popularity {		display: none; }
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
