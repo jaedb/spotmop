@@ -24,6 +24,7 @@
 }
 
 @media( max-height: 300px ){
+	
 }
 
 
@@ -340,6 +341,10 @@
 		margin-left: -20px;
 		margin-top: 0;
 	}
+
+	.artist-intro {
+		height: 60vh;
+	}
 	
 	
 	/**
@@ -509,6 +514,25 @@
 	/**
 	 * Player
 	 **/
+	 
+	#body {
+		bottom: 50px;
+	}
+	
+	#player {
+		padding-top: 12px;
+		padding-bottom: 2px;
+		line-height: 1.2em;
+	}
+	
+	#player .playback {
+		top: 16px;
+	}
+	
+	#player  .track-info {
+		font-size: 13px;
+	}
+	
 	#full-player .artwork {
 		width: 100%;
 		padding-bottom: 100%;
@@ -521,6 +545,23 @@
 	#full-player .button {
 		padding: 3px 6px;
 	}
+	
+	/**
+	 * Tracklists
+	 **/
+	 
+	.tracklist .track .title,
+	.tracklist .track .artist {
+		width: 50%;
+	}
+	
+	.tracklist .track .album {
+		clear: left;
+		width: auto;
+		padding-right: 10px;
+		opacity: 0.5;
+	}
+		
 }
 
 

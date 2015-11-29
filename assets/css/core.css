@@ -1297,7 +1297,7 @@ body.dragging .tracklist .track.selected {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 40vh;
+	height: 50vh;
 }
 
 .artist-intro h1 {
