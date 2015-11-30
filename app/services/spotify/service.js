@@ -44,6 +44,21 @@ angular.module('spotmop.services.spotify', [])
 	// setup automatic refreshing (tokens last for 3600 seconds, so let's refresh every 3500 seconds)
 	$interval( getNewToken, 3500000 );
 	
+	// listen for incoming messages from the authorization iframe
+	window.addEventListener('message', function(event){
+		
+		// only allow incoming data from our authorized authenticator proxy
+		if( event.origin !== "http://jamesbarnsley.co.nz" )
+			return false;
+		
+		// convert to json
+		var data = JSON.parse(event.data);
+		
+		// take our returned data, and save it to our localStorage
+		$localStorage.spotify.AuthorizationCode = data.authorization_code;
+		$localStorage.spotify.AccessToken = data.access_token;
+		$localStorage.spotify.RefreshToken = data.refresh_token;
+	}, false);
 	
 	/**
 	 * Get a Spotify API authorisation code
@@ -59,12 +74,13 @@ angular.module('spotmop.services.spotify', [])
 	 **/
 	function getNewToken(){
 		return $.ajax({
-			url: '/spotify-authorization?refresh_token='+$localStorage.spotify.RefreshToken,
+			url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
 			type: "GET",
-			dataType: "json",
+			dataType: "jsonp",
 			async: false,
 			timeout: 5000,
 			success: function(response){
+				var responseJson = JSON.parse( response );
 				$localStorage.spotify.AccessToken = response.access_token;
 				$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
 				$rootScope.spotifyOnline = true;
