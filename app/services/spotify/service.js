@@ -58,6 +58,7 @@ angular.module('spotmop.services.spotify', [])
 		$localStorage.spotify.AuthorizationCode = data.authorization_code;
 		$localStorage.spotify.AccessToken = data.access_token;
 		$localStorage.spotify.RefreshToken = data.refresh_token;
+		$rootScope.spotifyOnline = true;
 	}, false);
 	
 	/**
