@@ -9,6 +9,10 @@
 angular.module('spotmop.services.spotify', [])
 
 .factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService ){
+	
+	// plug in our authentication iframe
+	var frame = $('<iframe id="authentication-frame" style="width: 1px; height: 1px;"></iframe>');
+	$(body).append(frame);
 
 	// set container for spotify storage
 	if( typeof($localStorage.spotify) === 'undefined' )
@@ -29,6 +33,7 @@ angular.module('spotmop.services.spotify', [])
 	if( typeof($localStorage.spotify.ClientID) === 'undefined' )
 		$localStorage.spotify.ClientID = 'a87fb4dbed30475b8cec38523dff53e2';
 	
+	// we haven't been authorized to a spotify account yet, so go authorize
 	if( !$localStorage.spotify.AuthorizationCode )
 		getAuthorizationCode();
 
@@ -39,37 +44,43 @@ angular.module('spotmop.services.spotify', [])
 	// setup automatic refreshing (tokens last for 3600 seconds, so let's refresh every 3500 seconds)
 	$interval( getNewToken, 3500000 );
 	
+	// listen for incoming messages from the authorization iframe
+	window.addEventListener('message', function(event){
+		
+		// only allow incoming data from our authorized authenticator proxy
+		if( event.origin !== "http://jamesbarnsley.co.nz" )
+			return false;
+		
+		// convert to json
+		var data = JSON.parse(event.data);
+		
+		// take our returned data, and save it to our localStorage
+		$localStorage.spotify.AuthorizationCode = data.authorization_code;
+		$localStorage.spotify.AccessToken = data.access_token;
+		$localStorage.spotify.RefreshToken = data.refresh_token;
+	}, false);
+	
 	/**
 	 * Get a Spotify API authorisation code
 	 * This is only needed once for this account on this device. It is used to acquire access tokens (which expire)
 	 **/
 	function getAuthorizationCode(){
-		
-		// save current URL, before we redirect
-		localStorage.returnURL = window.location.href;
-		
-		var newURL = '';
-		newURL += 'https://accounts.spotify.com/authorize?client_id='+$localStorage.spotify.ClientID;
-		newURL += '&redirect_uri='+window.location.protocol+'//'+window.location.host+'/spotify-authorization';
-		newURL += '&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-follow-read%20user-library-read%20user-library-modify%20user-follow-modify';
-		newURL += '&response_type=code&show_dialog=true';
-		
-		// open a new window to handle this authentication
-		window.open(newURL,'spotifyAPIrequest','height=550,width=400');
+		frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
 	}
 	
 	/**
 	 * Get a new access token
 	 * These expire, so require frequent refreshing
 	 **/
-	function getNewToken(){		
+	function getNewToken(){
 		return $.ajax({
-			url: '/spotify-authorization?refresh_token='+$localStorage.spotify.RefreshToken,
+			url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
 			type: "GET",
-			dataType: "json",
+			dataType: "jsonp",
 			async: false,
 			timeout: 5000,
 			success: function(response){
+				var responseJson = JSON.parse( response );
 				$localStorage.spotify.AccessToken = response.access_token;
 				$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
 				$rootScope.spotifyOnline = true;
