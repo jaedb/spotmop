@@ -43,9 +43,10 @@ angular.module('spotmop', [
 	'spotmop.browse.new'
 ])
 
-.config(function($stateProvider, $locationProvider, $urlRouterProvider){
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider){
 	$locationProvider.html5Mode(true);
 	$urlRouterProvider.otherwise("/queue");
+	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
 })
 
 
@@ -258,23 +259,11 @@ angular.module('spotmop', [
 		},0
 	);
     
-    
-	// watch for re-authorizations of spotify
-	$scope.$watch(
-		function(){
-			return $localStorage.spotify;
-		},
-		function(newVal,oldVal){
-			getSpotifyAccount();
-		}
-	);
-    
-    // figure out who we are on Spotify
-    // TODO: Hold back on this to make sure we're authorized
+	/**
+	 * Spotify account is authorized
+	 **/
+	$scope.$on('mopidy:state:online', function(){
 	
-	getSpotifyAccount();
-	
-	function getSpotifyAccount(){
 		SpotifyService.getMe()
 			.then( function(response){
 				$scope.spotifyUser = response;
@@ -291,7 +280,7 @@ angular.module('spotmop', [
 					$scope.updatePlaylists();
 				}
 			});
-	}
+	});
 	
 	
 	/**

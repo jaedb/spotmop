@@ -28,7 +28,7 @@ angular.module('spotmop.settings', [])
 	};
     $scope.refreshSpotifyToken = function(){
 		NotifyService.notify( 'Refreshing token' );
-        $.when(SpotifyService.getNewToken()).then( function(){});
+        SpotifyService.refreshToken().then( function(){});
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();

@@ -5,8 +5,8 @@
 	
 		<div class="playlist-items square-panels">
 			
-			<div ng-if="myPlaylists.length">
-				<div class="item-container" ng-repeat="playlist in myPlaylists track by $index">
+			<div ng-if="playlists.items.length">
+				<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
 					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 						<div class="image-container">
 							<thumbnail images="playlist.images"></thumbnail>
@@ -19,7 +19,7 @@
 				</div>
 			</div>
 		
-			<div ng-hide="myPlaylists.length" class="no-items">
+			<div ng-hide="playlists.items.length" class="no-items">
 				No items
 			</div>
 			
