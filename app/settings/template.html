@@ -78,13 +78,9 @@
 								<div class="image animate" style="background-image: url({{ image.url }});"></div>
 							</span>
 							<span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+							&nbsp;&nbsp;
+							<a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
 						</span>
-					</div>
-				</div>
-
-				<div class="field">
-					<div class="input">
-						<a class="button destructive" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
 					</div>
 				</div>
 

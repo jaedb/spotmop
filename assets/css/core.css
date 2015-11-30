@@ -922,7 +922,7 @@ h1 .flag {
 	position: absolute;
 	top: 0;
 	left: 0;
-	bottom: 0;
+	bottom: -0.5px;
 	right: 0;
 	text-align: center;
 	color: #FFFFFF;
@@ -1220,6 +1220,11 @@ body.dragging .tracklist .track.selected {
 	left: 0;
 	bottom: 0;
 	background: #EEEEEE;
+}
+
+.playlist-page .asset-sidebar .buttons,
+.album-page .asset-sidebar .buttons {
+	position: relative;
 }
 
 .playlist-page .content,
