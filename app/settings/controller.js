@@ -32,8 +32,6 @@ angular.module('spotmop.settings', [])
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
-		$scope.$parent.spotifyOnline = false;
-		NotifyService.notify( 'Logging you out' );
     };
 	$scope.toggleSetting = function( setting ){
     	if( SettingsService.getSetting(setting, false) ){
