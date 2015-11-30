@@ -9,7 +9,6 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	'ngTouch',
-	'ngAnimate',
 	'ui.router',
 	
 	'angular-loading-bar',

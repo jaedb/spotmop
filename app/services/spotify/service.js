@@ -1035,7 +1035,7 @@ angular.module('spotmop.services.spotify', [])
 	service.refreshToken();
 	
 	// setup automatic refreshing (tokens last for 3600 seconds = 1 hour, so let's refresh every 3500 seconds = 59 minutes)
-	$interval( service.refreshToken(), 3500000 );
+	$interval( service.refreshToken, 3500000 );
 	
 	// listen for incoming messages from the authorization iframe
 	window.addEventListener('message', function(event){
@@ -1083,7 +1083,7 @@ angular.module('spotmop.services.spotify', [])
 		
             if(response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0){
 				
-				console.log( 'unauthorized' );
+				console.log( 'Request rejected' );
 				
                 if(!retrystarted){
                     retrystarted = true;
