@@ -733,7 +733,7 @@ h1 .flag {
 .body .button {
     display: inline-block;
     padding: 12px 22px;
-	margin-right: -2px;
+	margin-right: -3px;
     border: 0;
     cursor: pointer;
     color: #FFFFFF;
@@ -897,7 +897,6 @@ h1 .flag {
 
 .artist-grid {
 	padding: 0;
-	margin-top: 1px;
 }
 
 .artist-grid .artist {
@@ -938,11 +937,6 @@ h1 .flag {
 .artist-grid .artist .name {
 	padding-top: 45%;
 	font-weight: bold;
-}
-
-.artist-grid .artist:nth-child(2n+2) .image{
-	margin-left: -1px;
-	border-left: 1px solid #F2F2F2;
 }
 
 
@@ -1226,11 +1220,6 @@ body.dragging .tracklist .track.selected {
 	left: 0;
 	bottom: 0;
 	background: #EEEEEE;
-}
-
-.playlist-page .asset-sidebar .buttons,
-.album-page .asset-sidebar .buttons {
-	margin-top: 1px;
 }
 
 .playlist-page .content,
