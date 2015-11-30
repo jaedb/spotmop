@@ -30,6 +30,10 @@ if( isset($_GET['code']) ){
 	$response = getToken( $_GET['code'], $url );	
 	$responseArray = json_decode( $response, true );
 	
+	// add our code to the array of credentials, etc
+	$responseArray['authorization_code'] = $_GET['code'];
+	$response = json_encode($responseArray);
+	
 	// make sure we have a successful response
 	if( !isset($responseArray['access_token']) ){
 		echo 'Error!';
@@ -39,29 +43,8 @@ if( isset($_GET['code']) ){
 	// send our data back to Spotmop
 	?>	
 		<script type="text/javascript">
-			console.log('sending data');
-			console.log (window.opener);
-			window.opener.postMessage( '<?php echo $response ?>', "*");		
-		</script>
-	<?php
-	
-// fresh authentication, so let's get one
-}else if( isset($_GET['test']) ){
-		
-	
-	// send our data back to Spotmop
-	?>	
-		<script type="text/javascript">
-		
-			setInterval(function(){		
-				var data = {
-					authorizationCode: "ddsasdfasdf",
-					accessToken: "ddsasdfasdf",
-					refreshToken: "ddsasdfasdf",
-				};
-				console.log('sending');
-				window.opener.postMessage(data,"*");	
-			},1000);	
+			window.opener.postMessage( '<?php echo $response ?>', "*");
+			window.close();
 		</script>
 	<?php
 		
@@ -92,17 +75,28 @@ function getAuthorizationCode( $url ){
 	
 	$popup = 'https://accounts.spotify.com/authorize?client_id=a87fb4dbed30475b8cec38523dff53e2&redirect_uri='.$url.'&scope=playlist-modify-private%20playlist-modify-public%20playlist-read-private%20playlist-modify-private%20user-library-read%20user-library-modify%20user-follow-modify&response_type=code&show_dialog=true';
 	
-	//$popup = 'http://music.james/authorize.php?test=1';
-	
 	?>
 		<script tye="text/javascript">
+		
+			// open an authentication request window (to spotify)
 			var spotmopWindow = window.open("<?php echo $popup ?>","spotmop","height=550,width=400");
+			
+			// listen for incoming messages from the popup
 			window.addEventListener('message', function(event){
+			
+				// only allow incoming data from our original request
 				if( event.origin !== "<?php echo $_COOKIE['spotmop_app'] ?>" )
 					return false;
-					
-				var data = event.data;
-				console.log(data);
+				
+				// convert to json
+				var data = JSON.parse(event.data);
+				
+				// take our returned data, and save it to our localStorage
+				var Spotify = JSON.parse( localStorage.getItem('ngStorage-spotify') );
+				Spotify.AuthorizationCode = data.authorization_code;
+				Spotify.AccessToken = data.access_token;
+				Spotify.RefreshToken = data.refresh_token;
+				localStorage.setItem('ngStorage-spotify', JSON.stringify( Spotify ));
 			}, false);
 		</script>
 	<?php

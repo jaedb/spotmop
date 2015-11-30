@@ -50,7 +50,7 @@ angular.module('spotmop.services.spotify', [])
 	 * This is only needed once for this account on this device. It is used to acquire access tokens (which expire)
 	 **/
 	function getAuthorizationCode(){
-		frame.attr('src', 'authorize.php?action=authorize&app='+location.protocol+'//'+window.location.host );
+		frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
 	}
 	
 	/**
