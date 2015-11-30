@@ -77,7 +77,7 @@ angular.module('spotmop.services.spotify', [])
 		return $.ajax({
 			url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
 			type: "GET",
-			dataType: "jsonp",
+			dataType: "json",
 			async: false,
 			timeout: 5000,
 			success: function(response){
