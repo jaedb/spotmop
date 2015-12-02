@@ -47,7 +47,7 @@
 	 * Menus
 	 **/
 	
-	.sub-page-navigation .menu-item.active {
+	.page:not(.search-page) .sub-page-navigation .menu-item.active {
 		border-color: #FFFFFF;
 	}
 	
