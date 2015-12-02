@@ -1186,6 +1186,11 @@ body.dragging .tracklist .track.selected {
 	padding-bottom: 20px;
 }
 
+.now-playing-page .page-header {
+	display: none;
+}
+
+
 
 /**
  * Album page
@@ -1756,6 +1761,10 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
+
+#full-player .volume {
+	display: none;
+}
  
 #full-player .track-info {
 	color: #000000;
@@ -1801,7 +1810,7 @@ body.dragging .tracklist .track.selected {
 	position: relative;
 }
 
-#full-player .progress.slider .track {
+#full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
 }
