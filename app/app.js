@@ -172,6 +172,11 @@ angular.module('spotmop', [
 		BackgroundCheck.refresh();
 	});
 	
+	$(document).on('click', '#body', function(event){
+		if( $(event.target).closest('.menu-reveal-trigger').length <= 0 )
+			$scope.hideMenu();
+	});
+	
 	// show menu (this is triggered by swipe event)
 	$scope.showMenu = function(){
 		$(document).find('body').addClass('menu-revealed');

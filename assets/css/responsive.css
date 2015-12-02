@@ -86,7 +86,7 @@
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
 	.page-header {
-		margin: -20px -20px 20px -20px;
+		margin: -40px -40px 20px -40px;
 		background: #333333;
 		color: #FFFFFF;
 		padding: 15px 20px;
@@ -318,6 +318,14 @@
 	
 	
 	/**
+	 * Page headings (that also foster the swipe trigger button)
+	 **/
+	.page-header {
+		margin: -20px -20px 20px -20px;
+	}
+	
+	
+	/**
 	 * Body layout
 	 **/
 	.page > .inner {
@@ -389,7 +397,7 @@
 	}
 	
 	.square-panels.smaller .square-panel {
-		width: 16%;
+		width: 21%;
 		margin: 0 2% 5%;
 	}
 	
