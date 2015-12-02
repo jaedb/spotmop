@@ -1,6 +1,11 @@
 <div class="page now-playing-page scrolling-panel">
 	<div class="inner">
-
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Now Playing</h1>
+		</div>
+		
 		<div id="full-player" class="player" ng-controller="PlayerController">
 
 			<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">

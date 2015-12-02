@@ -1,7 +1,10 @@
 <div class="page library-artists scrolling-panel">
 	<div class="inner">
 		
-		<h1>Artists</h1>
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Artists</h1>
+		</div>
 		
 		<div class="album-items square-panels">
 			<div class="item-container" ng-repeat="artist in artists.items track by $index">

@@ -239,6 +239,18 @@ body {
 .main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
 }
+	
+.menu-reveal-trigger {
+	position: absolute;
+	top: 1px;
+	left: 0;
+	display: none;
+	color: #FFFFFF;
+	font-size: 17px;
+	padding: 16px;
+	cursor: pointer;
+	z-index: 9;
+}
 
 
 
