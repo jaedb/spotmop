@@ -1,0 +1,27 @@
+<div class="page library-artists scrolling-panel">
+	<div class="inner">
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Artists</h1>
+		</div>
+		
+		<div class="album-items square-panels">
+			<div class="item-container" ng-repeat="artist in artists.items track by $index">
+				<a href="/browse/artist/{{ artist.uri }}" class="square-panel album">
+					<div class="image-container">
+						<thumbnail images="artist.images"></thumbnail>
+					</div>
+					<div class="info smaller animate">
+						<div class="name" ng-bind="artist.name"></div>
+					</div>
+				</a>
+			</div>
+		</div>
+		
+		<div ng-hide="artists.items.length" class="no-items">
+			No items
+		</div>	
+		
+	</div>
+</div>

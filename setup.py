@@ -27,7 +27,7 @@ setup(
     ],
     entry_points={
         'mopidy.ext': [
-            'mopify = mopidy_spotmop:MopifyExtension',
+            'spotmop = mopidy_spotmop:SpotmopExtension',
         ],
     },
     classifiers=[

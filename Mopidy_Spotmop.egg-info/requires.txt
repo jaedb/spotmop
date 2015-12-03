@@ -1,0 +1,3 @@
+setuptools
+Mopidy >= 0.19
+ConfigObj
