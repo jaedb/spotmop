@@ -1,0 +1,273 @@
+<div ng-controller="SettingsController" class="page settings-page scrolling-panel">
+	<div class="inner">
+			
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Settings</h1>
+		</div>
+		
+		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
+			<i class="fa fa-exclamation-triangle white-text"></i>
+			&nbsp;
+			<span ng-show="!mopidyOnline">Mopidy is currently offline - check your settings</span>
+			<span ng-show="!spotifyOnline">Spotify is currently offline - make sure your browser allows popups</span>
+		</div>
+		
+		<div class="settings">
+			
+			<div class="section mopidy">
+			
+				<h4 class="section-title underline">
+					Mopidy Server
+					<span class="state-label green-background white-text" ng-if="mopidyOnline">Connected</span>
+					<span class="state-label red-background white-text" ng-if="!mopidyOnline">Offline</span>
+				</h4>
+
+				<div class="field">
+					<div class="label">Hostname</div>
+					<div class="input">
+						<input type="text" name="mopidyhost" placeholder="localhost" class="autosave" ng-model="settings.mopidyhost" ng-blur="saveField( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Port</div>
+					<div class="input">
+						<input type="text" name="mopidyport" placeholder="6680" class="autosave" ng-model="settings.mopidyport" ng-blur="SaveFields( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Consume mode</div>
+					<div class="input">
+						<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleSetting('mopidyconsume')"><span class="switch animate"></span></span>
+					</div>
+				</div>
+
+				<div class="clear-both"></div>		
+			</div>
+			
+			<!-- SECTION -->
+			
+			<div class="section spotify">
+			
+				<h4 class="section-title underline">
+					Spotify
+					<span class="state-label green-background white-text" ng-if="spotifyOnline">Connected</span>
+					<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
+				</h4>
+
+				<div class="field">
+					<div class="label">Country code</div>
+					<div class="input">
+						<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Locale</div>
+					<div class="input">
+						<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field current-user">
+					<div class="label">Current user</div>
+					<div class="input">
+						<span class="my-profile">
+							<span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+								<div class="image animate" style="background-image: url({{ image.url }});"></div>
+							</span>
+							<span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+							&nbsp;&nbsp;
+							<a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+						</span>
+					</div>
+				</div>
+
+				<div class="clear-both"></div>
+			
+			</div>
+			
+			<!-- SECTION -->
+			
+			<div class="section echonest">
+			
+				<h4 class="section-title underline">
+					Echonest
+					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonestenabled">Connected</span>
+					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonestenabled">Offline</span>
+					<span class="state-label grey-background white-text" ng-if="!settings.echonestenabled">Disabled</span>
+				</h4>
+				
+				<div class="field">
+					<div class="label">Enabled</div>
+					<div class="input">
+						<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleSetting('echonestenabled')"><span class="switch animate"></span></span>
+					</div>
+				</div>
+
+				<div class="field" ng-show="echonestOnline">
+					<div class="label">Taste profile ID</div>
+					<div class="input">
+						<input type="text" name="echonesttasteprofileid" ng-model="settings.echonesttasteprofileid" />
+						<a class="view-my-profile" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonesttasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i></a>
+					</div>
+				</div>
+
+				<div class="clear-both"></div>
+			</div>
+			
+			<!-- SECTION -->
+			
+			<div class="section info">
+			
+				<h4 class="section-title underline">Spotmop</h4>
+				
+				<div class="field">
+					<div class="label">Author</div>
+					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
+					<div class="clear-both"></div>
+				</div>
+
+				<div class="field">
+					<div class="label">Current version</div>
+					<div class="input readonly">
+						<span class="spotmop-version" ng-bind="version.version"></span>
+						(<a class="spotmop-version" ng-bind="version.commit" target="_blank" href="https://github.com/jaedb/spotmop/commit/{{ version.commit }}"></a>)
+					</div>
+					<div class="clear-both"></div>
+				</div>
+
+				<div class="field shortcut-keys">
+					<div class="label">Keyboard shortcuts</div>
+					<div class="input">
+					
+						<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
+						
+						<div class="shortcuts" ng-show="settings.keyboardShortcutsEnabled">
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey"><i class="fa fa-minus"></i> Spacebar</span></div>
+								<div class="col w80">Play/pause</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey"><i class="fa fa-level-down fa-rotate-90"></i>&nbsp; Enter</span></div>
+								<div class="col w80">Play selected tracks</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey"><i class="fa fa-close"></i> Delete</span></div>
+								<div class="col w80">Delete selected tracks</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-up"></i> Up arrow</span></div>
+								<div class="col w80">Volume up by 10%</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-down"></i> Down arrow</span></div>
+								<div class="col w80">Volume down by 10%</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-left"></i> Left arrow</span></div>
+								<div class="col w80">Previous track</div>
+								<div class="clear-both"></div>
+							</div>
+							<div class="row collapse-for-mobile">
+								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-right"></i> Right arrow</span></div>
+								<div class="col w80">Next track</div>
+								<div class="clear-both"></div>
+							</div>
+						</div>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+			</div>
+			
+			<!-- SECTION -->
+			
+			<div class="section advanced">
+			
+				<h4 class="section-title underline">Advanced</h4>
+
+				<div class="field">
+					<div class="label">Enable advanced settings</div>
+					<div class="input">
+						<span class="switch-button" ng-class="{on: settings.advancedMode}" ng-click="toggleSetting('advancedMode')"><span class="switch animate"></span></span>
+					</div>
+				</div>
+				
+				<div ng-if="settings.advancedMode">
+				
+					<div class="field">
+						<div class="label">Emulate touch device</div>
+						<div class="input">		
+							<span class="switch-button" ng-class="{on: settings.emulateTouchDevice}" ng-click="toggleSetting('emulateTouchDevice')"><span class="switch animate"></span></span>
+						</div>
+					</div>
+
+					<div class="field mopidy-server">
+						<div class="label">Mopidy server</div>
+						<div class="input">
+							<a class="button primary" ng-click="startMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+								<i class="fa fa-check"></i>&nbsp; Start
+							</a>
+							<a class="button" ng-click="restartMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+								<i class="fa fa-refresh"></i>&nbsp; Restart
+							</a>
+							<a class="button" ng-click="stopMopidyServer()" ng-class="{ disabled: !isSameDomainAsMopidy() }">
+								<i class="fa fa-close"></i>&nbsp; Stop
+							</a>
+							<div ng-hide="isSameDomainAsMopidy()" class="red-text">
+								<br />
+								Cannot control Mopidy daemon unless Spotmop is running on the same machine as Mopidy
+							</div>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Spotify authentication</div>
+						<div class="input">
+							<a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+							<a class="button destructive" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Echonest taste profile</div>
+						<div class="input">
+							<confirmation-button
+								extra-classes="destructive"
+								default-text="Delete taste profile"
+								confirmation-text="Are you sure?"
+								on-confirmation="deleteEchonestTasteProfile()">
+							</confirmation-button>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">System reset</div>
+						<div class="input">
+						<confirmation-button
+							extra-classes="destructive"
+							default-text="Reset all settings"
+							confirmation-text="Are you sure?"
+							on-confirmation="resetSettings">
+						</confirmation-button>
+						</div>
+					</div>
+				
+				</div>
+			</div>
+			
+		</div>
+		
+	</div>
+</div>
