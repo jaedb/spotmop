@@ -239,6 +239,18 @@ body {
 .main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
 }
+	
+.menu-reveal-trigger {
+	position: absolute;
+	top: 1px;
+	left: 0;
+	display: none;
+	color: #FFFFFF;
+	font-size: 17px;
+	padding: 16px;
+	cursor: pointer;
+	z-index: 9;
+}
 
 
 
@@ -733,7 +745,7 @@ h1 .flag {
 .body .button {
     display: inline-block;
     padding: 12px 22px;
-	margin-right: -2px;
+	margin-right: -3px;
     border: 0;
     cursor: pointer;
     color: #FFFFFF;
@@ -897,7 +909,6 @@ h1 .flag {
 
 .artist-grid {
 	padding: 0;
-	margin-top: 1px;
 }
 
 .artist-grid .artist {
@@ -923,7 +934,7 @@ h1 .flag {
 	position: absolute;
 	top: 0;
 	left: 0;
-	bottom: 0;
+	bottom: -0.5px;
 	right: 0;
 	text-align: center;
 	color: #FFFFFF;
@@ -938,11 +949,6 @@ h1 .flag {
 .artist-grid .artist .name {
 	padding-top: 45%;
 	font-weight: bold;
-}
-
-.artist-grid .artist:nth-child(2n+2) .image{
-	margin-left: -1px;
-	border-left: 1px solid #F2F2F2;
 }
 
 
@@ -1116,10 +1122,8 @@ h1 .flag {
 .track .duration {			width: 5%; }
 .track .popularity {		width: 5%; }
 
-.track.no-album .title {			width: 45%; }
-.track.no-album .artist {			width: 45%; }
-.track.no-album .duration {			width: 5%; }
-.track.no-album .popularity {		width: 5%; }
+.tracklist.album-items .track .title {			width: 35%; }
+.tracklist.album-items .track .popularity {		display: none; }
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
@@ -1182,6 +1186,11 @@ body.dragging .tracklist .track.selected {
 	padding-bottom: 20px;
 }
 
+.now-playing-page .page-header {
+	display: none;
+}
+
+
 
 /**
  * Album page
@@ -1232,7 +1241,7 @@ body.dragging .tracklist .track.selected {
 
 .playlist-page .asset-sidebar .buttons,
 .album-page .asset-sidebar .buttons {
-	margin-top: 1px;
+	position: relative;
 }
 
 .playlist-page .content,
@@ -1299,7 +1308,7 @@ body.dragging .tracklist .track.selected {
 	position: relative;
 	margin: -40px -40px 30px;
 	padding: 0 20px;
-	height: 40vh;
+	height: 50vh;
 }
 
 .artist-intro h1 {
@@ -1752,6 +1761,10 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
+
+#full-player .volume {
+	display: none;
+}
  
 #full-player .track-info {
 	color: #000000;
@@ -1797,7 +1810,7 @@ body.dragging .tracklist .track.selected {
 	position: relative;
 }
 
-#full-player .progress.slider .track {
+#full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
 }

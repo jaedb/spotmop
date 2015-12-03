@@ -9,8 +9,11 @@
 
 		<div class="discover">
 			
-			<h1>Discover new music</h1>
-
+			<div class="page-header">
+				<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+				<h1>Discover</h1>
+			</div>
+			
 			<div class="discover-section current-artist" ng-if="recommendations.suggestions.length > 0">
 
 				<h4 class="section-title">Recommended for you</h4>

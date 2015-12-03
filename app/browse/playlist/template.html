@@ -1,5 +1,7 @@
 <div class="browse playlist-page">
 	
+	<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+	
 	<div class="asset-sidebar">
 	
 		<div class="thumbnail playlist" ng-if="playlist.images.length > 0" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>

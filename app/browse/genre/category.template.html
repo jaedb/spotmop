@@ -1,7 +1,10 @@
 <div class="page category-genre-page scrolling-panel">
 	<div class="inner">
-
-		<h1 ng-bind="category.name"></h1>
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1 ng-bind="category.name"></h1>
+		</div>
 		
 		<div class="playlist-items square-panels">
 			

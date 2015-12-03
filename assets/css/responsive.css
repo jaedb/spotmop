@@ -24,6 +24,7 @@
 }
 
 @media( max-height: 300px ){
+	
 }
 
 
@@ -37,16 +38,12 @@
 		display: none;
 	}
 	
-	#player .progress {
-		display: none;
-	}
-	
 	
 	/**
 	 * Menus
 	 **/
 	
-	.sub-page-navigation .menu-item.active {
+	.page:not(.search-page) .sub-page-navigation .menu-item.active {
 		border-color: #FFFFFF;
 	}
 	
@@ -69,6 +66,38 @@
 
 	.menu-revealed #sidebar {
 		left: 0%;
+	}
+	
+	.menu-reveal-trigger {
+		display: block;
+	}
+	
+	#loading-bar-spinner {
+		right: 10px !important;
+		left: auto !important;
+	}
+	
+	
+	/**
+	 * Page headings (that also foster the swipe trigger button)
+	 **/
+	.page-header {
+		display: block !important;
+		margin: -40px -40px 20px -40px;
+		background: #333333;
+		color: #FFFFFF;
+		padding: 15px 20px;
+	}
+	
+	.album-page .page-header, .playlist-page .page-header {
+		margin: 0;
+	}
+	
+	.page-header h1 {
+		padding: 0;
+		margin: 0;
+		font-size: 18px;
+		text-align: center;
 	}
 	
 	
@@ -132,7 +161,7 @@
 	 **/
 	 
 	.artist-page .artist-intro {
-		margin-bottom: 1px;
+		margin-bottom: 0;
 	}
 	 
 	.artist-page .info-panel .thumbnail {
@@ -209,10 +238,10 @@
 	
 	/**
 	 * Player
-	 **/
+	 **/	
 	 
 	#body {
-		bottom: 70px;
+		bottom: 50px;
 	}
 	
 	#player {
@@ -222,9 +251,14 @@
 		left: 0;
 		width: auto;
 		height: 40px;
-		padding: 15px 0 15px;
+		padding: 12px 0 2px;
 		background-color: #222222;
 		overflow: hidden;
+		line-height: 1.2em;
+	}
+	
+	.player .button {
+		margin: 0 3px;
 	}
 	
 	#player .button.previous,
@@ -236,12 +270,13 @@
 		float: right;
 		width: 80%;
 		padding: 0;
+		font-size: 13px;
 	}
 	
 	#player .playback {
 		position: absolute;
 		padding-left: 10px;
-		top: 24px;
+		top: 16px;
 	}
 	
 	#player > .background-image {
@@ -265,6 +300,45 @@
 		background-size: cover;
 	}
 	
+	#player .slider.progress {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: auto;
+		padding: 0;
+	}
+	
+	#player .slider.progress .track,
+	#player .slider.progress:hover .track {
+		height: 2px;
+	}
+	
+	
+	/** 
+	 * Full player (now playing)
+	 **/
+	
+	#full-player .controls {
+		padding-bottom: 15px;
+	}
+	
+	#full-player .track-timer,
+	#full-player .progress.slider {
+		display: none;
+	}
+	
+	#full-player .volume {
+		display: inline-block;
+	}
+	
+	#full-player .volume .slider {
+		width: 50px;
+		display: inline-block;
+		vertical-align: bottom;
+		margin-bottom: 10px;
+	}
+	
 }
 
 
@@ -282,6 +356,14 @@
 	#sidebar {
 		width: 50%;
 		left: -50%;
+	}
+	
+	
+	/**
+	 * Page headings (that also foster the swipe trigger button)
+	 **/
+	.page-header {
+		margin: -20px -20px 20px -20px;
 	}
 	
 	
@@ -340,6 +422,10 @@
 		margin-left: -20px;
 		margin-top: 0;
 	}
+
+	.artist-intro {
+		height: 60vh;
+	}
 	
 	
 	/**
@@ -353,7 +439,7 @@
 	}
 	
 	.square-panels.smaller .square-panel {
-		width: 16%;
+		width: 21%;
 		margin: 0 2% 5%;
 	}
 	
@@ -436,6 +522,24 @@
 	
 	
 	/**
+	 * Player
+	 **/	
+	
+	#full-player .artwork {
+		width: 100%;
+		padding-bottom: 100%;
+	}
+	
+	#full-player .controls {
+		width: 100%;
+	}
+	
+	#full-player .button {
+		padding: 3px 6px;
+	}
+	
+	
+	/**
 	 * Artwork panels
 	 **/
 	
@@ -507,20 +611,21 @@
 	
 	
 	/**
-	 * Player
+	 * Tracklists
 	 **/
-	#full-player .artwork {
-		width: 100%;
-		padding-bottom: 100%;
+	 
+	.tracklist .track .title,
+	.tracklist .track .artist {
+		width: 50%;
 	}
 	
-	#full-player .controls {
-		width: 100%;
+	.tracklist .track .album {
+		clear: left;
+		width: auto;
+		padding-right: 10px;
+		opacity: 0.5;
 	}
-	
-	#full-player .button {
-		padding: 3px 6px;
-	}
+		
 }
 
 

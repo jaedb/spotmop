@@ -1,5 +1,10 @@
 <div class="page user-page scrolling-panel">
 	<div class="inner">
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>User</h1>
+		</div>
 	
 		<div class="user-intro">
 			<div class="image-container" ng-repeat="image in user.images  | limitTo:1">

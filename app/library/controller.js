@@ -178,6 +178,59 @@ angular.module('spotmop.library', [])
 	$scope.createPlaylist = function(){
         DialogService.create('createPlaylist', $scope);
 	}
+	
+	$scope.playlists = [];
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getPlaylists( userid )
+		.then( function( response ){ // successful
+				$scope.playlists = response;
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+    
+	
+    /**
+     * Load more of the album's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMorePlaylists = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMorePlaylists( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMorePlaylists = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.playlists.items = $scope.playlists.items.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.playlists.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMorePlaylists = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMorePlaylists && typeof( $scope.playlists.next ) !== 'undefined' && $scope.playlists.next ){
+            loadMorePlaylists( $scope.playlists.next );
+        }
+	});
 });
 
 

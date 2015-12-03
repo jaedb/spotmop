@@ -28,12 +28,10 @@ angular.module('spotmop.settings', [])
 	};
     $scope.refreshSpotifyToken = function(){
 		NotifyService.notify( 'Refreshing token' );
-        $.when(SpotifyService.getNewToken()).then( function(){});
+        SpotifyService.refreshToken().then( function(){});
     };
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
-		$scope.$parent.spotifyOnline = false;
-		NotifyService.notify( 'Logging you out' );
     };
 	$scope.toggleSetting = function( setting ){
     	if( SettingsService.getSetting(setting, false) ){

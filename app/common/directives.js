@@ -327,12 +327,18 @@ angular.module('spotmop.directives', [])
 					context.canvas.height = canvasHeight;
 				}
 				
-				// zoom image to fill canvas
-				// TODO: test tall skinny images and different device sizes
-				if( image.width < canvasWidth ){
-					var upscale = canvasWidth / image.width;
-					image.width = image.width * upscale;
-					image.height = image.height * upscale;
+				// zoom image to fill canvas, widthwise
+				if( image.width < canvasWidth || image.width > canvasWidth ){
+					var scale = canvasWidth / image.width;
+					image.width = image.width * scale;
+					image.height = image.height * scale;
+				}
+				
+				// now check for fill heightwise, and zoom in if necessary
+				if( image.height < canvasHeight ){
+					var scale = canvasHeight / image.height;
+					image.width = image.width * scale;
+					image.height = image.height * scale;
 				}
 				
 				// figure out where we want the image to be, based on scroll position
