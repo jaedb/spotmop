@@ -1,0 +1,32 @@
+<div class="page category-genre-page scrolling-panel">
+	<div class="inner">
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1 ng-bind="category.name"></h1>
+		</div>
+		
+		<div class="playlist-items square-panels">
+			
+			<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
+				<a href="/browse/genre/{{ category.id }}/{{ playlist.uri }}" class="square-panel playlist">
+					<div class="image-container">
+						<thumbnail images="playlist.images"></thumbnail>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="playlist.name"></div>
+						<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+					</div>
+				</a>
+			</div>
+		
+			<div ng-hide="playlists.items.length" class="no-items">
+				No items
+			</div>
+			
+			<div class="clear-both"></div>
+		
+		</div>
+		
+	</div>
+</div>

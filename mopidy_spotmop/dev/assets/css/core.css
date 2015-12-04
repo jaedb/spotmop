@@ -1,0 +1,1821 @@
+/**
+ * Core styles
+ * 
+ * Spotmop
+ **/
+
+@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
+@import url(https://fonts.googleapis.com/css?family=Archivo+Narrow:400,400italic,700,700italic);
+
+body,
+html {
+	background: ##FFFFFF;
+	color: #000000;
+	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
+	font-size: 14px;
+}
+
+* {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+body.dragging *,
+.button,
+.menu-item {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+/**
+ * Hardware accelaration
+ **/
+
+#sidebar,
+#body {
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+	/* Other transform properties here */
+	-webkit-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	/* Other transform properties here */
+}
+ 
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+body {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+#app {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background: #303030;
+}
+
+#sidebar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 20%;
+	overflow: hidden;
+	background: #111111;
+}
+
+#sidebar > .background-image {
+	position: absolute;
+	top: -50px;
+	right: 0;
+	bottom: -50px;
+	left: -50px;
+	opacity: 0.3;
+	z-index: 1;
+}
+
+#sidebar > .background-image .image {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	opacity: 0;
+	background-position: 0 50%;
+	background-size: cover;
+}
+
+#sidebar > .inner {
+	z-index: 2;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	position: absolute;
+	overflow-y: auto;
+}
+
+#player {
+	position: absolute;
+	bottom: 20px;
+	left: 0;
+	width: 20%;
+	z-index: 3;
+}
+
+#body {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 80%;
+	bottom: 0;
+	background: #f5f5f5;
+}
+
+.page > .inner {
+	padding: 40px;
+}
+
+.scrolling-panel {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+
+/**
+ * Column layouts
+ * Provides percentage fluid faux tables
+ **/
+.col {
+	float: left;
+	min-height: 1px;
+}
+
+.col.w5{	width: 5%; }
+.col.w10{	width: 10%; }
+.col.w15{	width: 15%; }
+.col.w20{	width: 20%; }
+.col.w25{	width: 25%; }
+.col.w30{	width: 30%; }
+.col.w35{	width: 35%; }
+.col.w40{	width: 40%; }
+.col.w45{	width: 45%; }
+.col.w50{	width: 50%; }
+.col.w55{	width: 55%; }
+.col.w60{	width: 60%; }
+.col.w65{	width: 65%; }
+.col.w70{	width: 70%; }
+.col.w75{	width: 75%; }
+.col.w80{	width: 80%; }
+.col.w85{	width: 85%; }
+.col.w90{	width: 90%; }
+.col.w95{	width: 95%; }
+.col.w100{	width: 100%; }
+
+
+.pull-left {		float: left; }
+.pull-right {		float: right; }
+
+
+
+/* ================================================================================ SIDEBAR ======= */
+/* ================================================================================================ */
+
+.main-menu .divider {
+	padding: 25px 0 5px 10px;
+	font-size: 11px;
+	color: #FFFFFF;
+	opacity: 0.4;
+	text-transform: uppercase;
+}
+
+.main-menu .menu-item > a {
+	display: block;
+	padding: 8px 0 8px 10px;
+	color: #FFFFFF;
+	text-decoration: none;
+	font-size: 16px;
+	background-image: url('../svg/white-diamond.svg');
+	background-position: 110% 50%;
+	background-repeat: no-repeat;
+	border-left: 4px solid transparent;
+}
+
+.main-menu .menu-item > a.droppable.dropping,
+.main-menu .menu-item > a.droppable.dropping:hover {
+	background-color: #08d58f;
+}
+
+.main-menu .menu-item .info {
+	font-size: 12px;
+	opacity: 0.5;
+	padding: 2px 20px 0 0;
+	float: right;
+}
+
+.main-menu .menu-item > a > i {
+	width: 15px;
+	padding-right: 5px;
+	font-size: 12px;
+}
+
+.main-menu > .menu-item > a > i.services-alert {
+	float: right;
+	padding: 3px 12px 0 0;
+}
+
+.main-menu .menu-item.active > a {
+	background-color: rgba(0,0,0,0.15);
+	/*background-position: 100% 50%;*/
+	border-color: #08d58f;
+}
+
+.main-menu .menu-item:not(.active) > a:hover {
+	background-color: rgba(255,255,255,0.05);
+}
+	
+.menu-reveal-trigger {
+	position: absolute;
+	top: 1px;
+	left: 0;
+	display: none;
+	color: #FFFFFF;
+	font-size: 17px;
+	padding: 16px;
+	cursor: pointer;
+	z-index: 9;
+}
+
+
+
+/**
+ * Submenus
+ **/
+
+.main-menu .submenu {
+	display: none;
+}
+
+.main-menu .menu-item.section .submenu,
+.main-menu .menu-item.active .submenu {
+	display: block;
+}
+
+.main-menu .submenu > .menu-item {
+	list-style-type: none;
+}
+
+.main-menu .submenu > .menu-item a {
+	padding-left: 39px;
+}
+
+
+/**
+ * Playlist Submenu
+ **/
+
+.main-menu .submenu.playlists {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 100%;
+	overflow: hidden;
+	background: rgba(48,48,48,0.95);
+	padding: 20px 0;
+	z-index: 1;
+	display: block;
+}
+
+.main-menu .submenu.playlists .menu-item > a {
+	color: #FFFFFF;
+	font-size: 16px;
+	padding: 10px 0 10px 20px;
+}
+
+.dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
+	left: 20%;
+}
+
+
+
+/**
+ * Sub-page navigation
+ **/
+
+.sub-page-navigation {
+	margin-bottom: 35px;
+	margin-top: -15px;
+}
+
+.sub-page-navigation .menu-item {
+	padding: 12px 0;
+	margin-right: 25px;
+	border-bottom: 3px solid transparent;
+	display: inline-block;
+	font-size: 18px;
+	text-transform: capitalize;
+}
+
+.sub-page-navigation .menu-item > i {
+	font-size: 6px;
+	vertical-align: middle;
+	margin-top: -4px;
+	padding-right: 2px;
+}
+
+.sub-page-navigation .menu-item:hover {
+	border-color: rgba(255,255,255,0.5);
+	cursor: pointer;
+}
+
+.sub-page-navigation .menu-item.active {
+	border-color: #08d58f;
+}
+
+
+
+
+/**
+ * Critical services (Mopidy + Spotify)
+ * Alerts shown under services menu item if offline
+ **/
+
+.critical-services-status {
+	padding-left: 29px;
+	padding-top: 5px;
+}
+
+#utilities {
+	position: fixed;
+	top: 5px;
+	right: 22px;
+	z-index: 9;
+}
+
+#utilities .loader,
+#utilities .settings-menu-item {
+	width: 28px;
+	height: 28px;
+	padding: 2px;
+	display: inline-block;
+	vertical-align: bottom;
+}
+
+#utilities:not(.background--dark) .loader.white,
+#utilities.background--dark .loader.black {
+	display: none;
+}
+
+#utilities .loader {
+    -moz-animation: spin .5s infinite linear;
+    -webkit-animation: spin .5s infinite linear;
+}
+
+.settings-menu-item {
+	padding: 2px;
+	color: #000000;
+	opacity: 0.5;
+	font-size: 26px;
+	border: none !important;
+}
+
+.settings-menu-item.active {
+	color: #08d58f;
+	opacity: 1;
+}
+
+.settings-menu-item:hover {
+	opacity: 1;
+}
+
+
+
+/* ====================================================================== GLOBAL ELEMENTS ========= */
+/* ================================================================================================ */
+
+
+.clear-both {		clear: both; }
+.clear-left {		clear: left; }
+.clear-right {		clear: right; }
+.hide {				display: none !important; }
+.invisible {		visibility: hidden !important; }
+*:focus {		    outline: none; }
+
+
+/**
+ * Animations
+ * Add .animation to any element to animate :hover and :focus sudo-styles
+ **/
+ 
+.animate,
+.button,
+button,
+.main-menu a,
+input[type='submit'] {
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+/* prevent animations when page is loading */
+.loading .animate,
+.loading .button,
+.loading button,
+.loading .main-menu a,
+.loading input[type='submit'] {
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+/* spinning */
+@-moz-keyframes spin {
+    0% {
+        -moz-transform: rotate(0deg);
+    }
+    100% {
+        -moz-transform: rotate(360deg);
+    };
+}
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    };
+}
+
+
+
+/**
+ * Image effects
+ * Blurs, etc
+ **/
+
+.blur {
+	filter: url('../svg/blur.svg#blur');
+	-webkit-filter: blur(10px);
+	filter: blur(10px);
+}
+
+
+/**
+ * Drag tracer
+ * Follows the cursor during drag events
+ **/
+
+.drag-tracer {
+	position: fixed;
+	padding: 5px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+	background: rgba(100,100,100,0.6);
+	color: #FFFFFF;
+	z-index: 9;
+	display: none;
+}
+
+.drag-tracer.good {
+    background-color: rgba(53,204,53,1);
+}
+    
+
+
+/**
+ * Notifications
+ **/
+
+#notifications {
+    position: fixed;
+    z-index: 9;
+    top: 15px;
+    left: 20%;
+    right: 0;
+    text-align: center;
+}
+
+#notifications .notification {
+    color: #FFFFFF;
+    display: inline-block;
+    padding: 10px 18px;
+    background-color: rgba(0,0,0,0.6);
+	margin: 0px 1px;
+}
+
+#notifications .notification.keyboard-shortcut {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	margin: -150px 0 0 -150px;
+	text-align: center;
+	border-radius: 10px;
+}
+
+#notifications .notification.keyboard-shortcut i {
+	line-height: 300px;
+	font-size: 120px;
+}
+
+#notifications .notification:not(.keyboard-shortcut):first-child {
+	border-radius: 100px 0 0 100px;
+}
+
+#notifications .notification:not(.keyboard-shortcut):last-child {
+	border-radius: 0 100px 100px 0;
+}
+
+#notifications .notification:not(.keyboard-shortcut):only-child {
+	border-radius: 100px;
+}
+
+#notifications .notification.bad,
+#notifications .notification.error {
+    background-color: rgba(214,47,47,0.9);
+}
+
+#notifications .notification.good {
+    background-color: rgba(53,204,53,0.9);
+}
+
+
+/**
+ * Full-page notifications (ie just for a certain page)
+ **/
+.page-notification {
+	margin: -40px -40px 30px -40px;
+	padding: 20px 40px;
+	font-size: 16px;
+}
+
+
+/**
+ * Base-level typography
+ * Standardise the font styles
+ **/
+
+h1 {
+	font-size: 40px;
+	font-weight: 200;
+	padding-bottom: 35px;
+	margin-top: -10px;
+}
+
+.heading-wrapper > h1 {
+	display: inline-block;
+}
+
+h2 {
+	font-size: 20px;
+	font-weight: 300;
+}
+
+h3 {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+h4 {
+	font-size: 14px;
+	font-weight: 400;
+}
+
+h4.section-title {
+	text-transform: uppercase;
+	font-weight: 600;
+	padding-bottom: 5px;
+}
+
+.underline {
+	border-bottom: 1px solid #999999;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+
+.body a {
+	color: inherit;
+	text-decoration: none;
+	border-bottom: 1px dotted transparent;
+    cursor: pointer;
+}
+
+.body a:hover {
+	border-color: inherit;
+}
+
+.info-text {
+	color: #AAAAAA;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
+.capitalize {
+	text-transform: uppercase; 
+}
+
+.breadcrumbs {
+	margin-top: -20px;
+	color: #CCCCCC;
+	text-transform: uppercase;
+}
+
+.breadcrumbs .divider {
+	padding: 0 3px;
+}
+
+
+/**
+ * Text colour variations
+ **/
+
+.white-text {						color: #FFFFFF; }
+.black-text {						color: #000000; }
+.red-text {							color: rgb(214,47,47); }
+.green-text {						color: rgb(53,204,53); }
+.primary-colour-text {				color: #08d58f; }
+
+.white-background {					background-color: #FFFFFF; }
+.grey-background {					background-color: #DDDDDD; }
+.black-background {					background-color: #000000; }
+.red-background {					background-color: rgb(214,47,47); }
+.green-background {					background-color: rgb(53,204,53); }
+.primary-colour-background {		background-color: #08d58f; }
+
+
+/**
+ * Text style variatons
+ **/
+
+.bold-text {		font-weight: bold; }
+.italic-text {		font-style: italic; }
+
+
+
+/* ====================================================================== STANDARD ELEMENTS ======= */
+/* ================================================================================================ */
+
+
+.no-items {
+	text-align: center;
+	font-size: 16px;
+	color: #CCCCCC;
+	padding-top: 50px;
+	font-weight: bold;
+}
+
+/**
+ * Flags
+ **/
+
+.flag {
+	background: #EEEEEE;
+	display: inline-block;
+	border-radius: 3px;
+	padding: 3px 6px;
+	font-size: 11px;
+	font-weight: 400;
+	margin-left: 10px;
+	margin-right: -10px;
+}
+
+h1 .flag {
+    vertical-align: top;
+    margin-top: 13px;
+}
+
+.flag.blue{
+	background: #08d58f;
+	color: #FFFFFF;
+}
+
+.flag.clickable:hover{
+	background: rgba(0,0,0,0.65);
+	color: rgba(255,255,255,0.85);
+}
+
+.flag.dark {
+	background: rgba(0,0,0,0.4);
+	color: rgba(255,255,255,0.5);
+}
+
+.flag.black {
+	background: rgba(0,0,0,0.55);
+	color: rgba(255,255,255,0.8);
+}
+
+.flag.red {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+}
+
+.flag.green {
+    background: rgba(53,204,53,0.9);
+	color: #FFFFFF;
+}
+
+.flag.clickable {
+    cursor: pointer;
+}
+
+.flag.clickable.destructive:hover {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+
+
+
+
+/**
+ * Clickable buttons
+ * These are all within the .body element (ie the main app frame)
+ **/
+
+.body .button {
+    display: inline-block;
+    padding: 12px 22px;
+	margin-right: -3px;
+    border: 0;
+    cursor: pointer;
+    color: #FFFFFF;
+	border: 0;
+}
+
+.body .button { 						background: #9b9b9b; }
+.body .button:hover { 					background: #8B8B8B; }
+
+.body .button .fa {
+	margin-top: 2px;
+	margin-left: -2px;
+	vertical-align: top;
+}
+
+.body .heading-wrapper .button {
+	vertical-align: top;
+	margin-left: 10px;
+}
+
+
+/* variations */
+
+.body .button.primary {					background: #08d58f; }
+.body .button.primary:hover {			background: #03c784; }
+
+.body .button.destructive {				background: #cf2d2d; }
+.body .button.destructive:hover {		background: #bc1f1f; }
+
+
+.body .button.disabled,
+.body .button.disabled:hover {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+/* follow/unfollow */
+
+.body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */
+	min-width: 50px;
+	text-align: center;
+}
+
+.body .follow-unfollow:not(.following) > .unfollow,
+.body .follow-unfollow.following > .follow {
+	display: none;
+}
+
+
+/**
+ * Switch buttons
+ **/
+
+.switch-button {
+    margin-top: 6px;
+    width: 30px;
+    height: 14px;
+    background: rgba(0,0,0,0.3);
+    padding: 3px;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+}
+
+.switch-button > .switch {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #DDDDDD;
+    border-radius: 14px;
+}
+
+.switch-button.on {
+    background: rgba(0,0,0,0.8);
+    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
+}
+
+.switch-button.on > .switch {
+    left: auto;
+    right: 3px;
+    background: #08d58f;
+}
+
+
+
+/**
+ * Popularity bars
+ **/
+ 
+.bar-track {	
+	display: inline-block;
+	width: 40px;
+	position: relative;
+	height: 4px;
+	background: #DDDDDD;
+	margin-top: 5px;
+}
+
+.bar-track .bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #666666;
+}
+ 
+.info-text .bar-track {
+	vertical-align: top;
+	margin-top: 7px;
+}
+
+
+/**
+ * Artist lists (related artists, album artists, etc)
+ **/
+
+.artist-list .artist {
+	display: block;
+	clear: both;
+	padding: 10px 0;
+	margin-bottom: 5px;
+	border: 0 !important;
+}
+
+.artist-list .artist .thumbnail {
+	display: block;
+	width: 50px;
+	height: 50px;
+	border-radius: 100px;
+	float: left;
+	margin-right: 14px;
+	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+	border: 2px solid #f5f5f5;
+}
+
+.artist-list .artist:hover .thumbnail {
+	opacity: 0.75;
+	border-color: #08d58f;
+}
+
+.artist-list .artist .name {
+	padding-top: 15px;
+	padding-left: 65px;
+	font-weight: 300;
+	font-size: 15px;
+	display: block;
+}
+
+
+/**
+ * Artist grid (ie album page)
+ **/
+
+.artist-grid {
+	padding: 0;
+}
+
+.artist-grid .artist {
+	display: inline-block;
+	clear: both;
+	border: 0 !important;
+	width: 50%;
+	position: relative;
+}
+
+.artist-grid .artist .image {
+	display: inline-block;
+	width: 100%;
+	padding-bottom: 100%;
+	background-image: url('../svg/no-image.svg');
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+	background-color: #777777;
+}
+
+.artist-grid .artist .name-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: -0.5px;
+	right: 0;
+	text-align: center;
+	color: #FFFFFF;
+	opacity: 0;
+	background: rgba(0,0,0,0.8);
+}
+
+.artist-grid .artist:hover .name-wrapper {
+	opacity: 1;
+}
+
+.artist-grid .artist .name {
+	padding-top: 45%;
+	font-weight: bold;
+}
+
+
+/**
+ * Square panels
+ * The basis for all playlist, album and artist thumbnails
+ **/
+ 
+ .square-panels {
+	margin-left: -2%;
+	margin-right: -2%;
+}
+ 
+.square-panel {
+	width: 16%;
+	margin: 0 2% 3% 2%;
+	display: block;
+	float: left;
+	text-decoration: none;
+	color: inherit;
+	border: none !important;
+}
+
+.square-panel .image-container {
+	position: relative;
+	width: 100%;
+	padding-bottom: 100%;
+}
+
+.square-panel .image-container .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #E9E9E9;
+	background-image: url('../svg/no-image.svg');
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.square-panel .image-container .overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.image-container .image.placeholder,
+.thumbnail.placeholder {
+	background-color: #E9E9E9;
+	background-image: url('../svg/no-image.svg');
+	background-size: 80% 80%;
+	background-position: 50% 50%;
+}
+
+.square-panel:hover .image-container .image {
+	opacity: 0.75;
+}
+
+.square-panel .info {
+	padding-top: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	border-top: 3px solid transparent;
+	margin-top: -3px;
+	position: relative;
+	height: 50px;
+}
+
+.square-panel .info.smaller {
+	height: 30px;
+}
+
+.square-panel:hover .info {
+	border-color: #08d58f;
+}
+
+.square-panel .info .secondary {
+	padding-top: 2px;
+	color: #AAAAAA;
+}
+
+.square-panel .info .name,
+.square-panel .info .tracks {
+	overflow: hidden;
+	max-height: 2.6em;
+}
+
+
+/**
+ * Smaller version of square panels (ie 7-across)
+ **/
+ 
+.square-panels.smaller {
+	margin-left: -1%;
+	margin-right: -1%;
+}
+
+.square-panels.smaller .square-panel {
+	width: 12.28%;
+	margin: 0 1% 3%;
+}
+
+
+
+/**
+ * Unique instances of square panels
+ * ie. Category panels
+ **/
+ 
+.square-panel.category .name {
+	position: absolute;
+	padding-bottom: 20%;
+	border-bottom: 3px solid transparent;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	text-align: center;
+	color: #FFFFFF;
+	font-weight: bold;
+	font-size: 16px;
+}
+ 
+.square-panel.category:hover .name {
+	border-color: #08d58f;
+	padding-bottom: 21%;
+}
+
+
+/**
+ * Track rows
+ * At least 75% of the functionality lives here. At least.
+ **/
+
+.tracklist .track {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	cursor: pointer;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.track .title,
+.track .artist,
+.track .album,
+.track .duration,
+.track .popularity {
+	float: left;
+	min-height: 1px;
+}
+
+.track .title {				width: 30%; }
+.track .artist {			width: 30%; }
+.track .album {				width: 30%; }
+.track .duration {			width: 5%; }
+.track .popularity {		width: 5%; }
+
+.tracklist.album-items .track .title {			width: 35%; }
+.tracklist.album-items .track .popularity {		display: none; }
+
+body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
+	background: #F4F4F4;
+}
+
+body.dragging .tracklist .track.selected {
+	opacity: 0.5;
+}
+
+.tracklist .track.selected,
+.tracklist .track.selected:hover {
+	background: #FFF39C;
+}
+
+.tracklist .track.playing {
+	font-weight: bold;
+}
+
+.tracklist .track.drag-hovering {
+	border-top: 38px solid #DDDDDD;
+}
+
+.tracklist .track.drag-hovering:first-child {
+	margin-top: -1px;
+}
+ 
+ 
+/**
+ * Intro panels
+ * The key pages (Artist, Playlist, etc) have their own spin on this generic style
+ **/
+
+.intro preloadedimage {
+	position: absolute;
+	top: -30px;
+	right: -30px;
+	bottom: -30px;
+	left: -30px;
+	overflow: hidden;
+	opacity: 0;
+	background-position: 50% -100px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+ 
+ 
+ 
+ 
+
+
+/* ====================================================================== PAGE-SPECIFIC =========== */
+/* ================================================================================================ */
+
+
+/**
+ * Queue
+ **/
+ 
+.queue-intro {
+	padding-bottom: 20px;
+}
+
+.now-playing-page .page-header {
+	display: none;
+}
+
+
+
+/**
+ * Album page
+ **/
+
+.album-intro h1 {
+	padding: 20px 0 0 0;
+}
+
+.album-intro .square-panel {
+	margin: 0 30px 20px 0;
+	width: 250px;
+	height: 250px;
+}
+
+.album-intro .image {
+	background-color: #EEEEEE;
+	background-size: cover;
+	background-position: 50% 50%;
+	opacity: 1 !important;
+}
+
+.album-intro .info-text {
+	padding-top: 20px;
+}
+
+ 
+
+/**
+ * Playlist
+ **/
+
+.playlist-page .intro,
+.album-page .intro {
+	position: relative;
+	margin: 0 0 50px 0;
+}
+
+.playlist-page .asset-sidebar,
+.album-page .asset-sidebar {
+	width: 25%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #EEEEEE;
+}
+
+.playlist-page .asset-sidebar .buttons,
+.album-page .asset-sidebar .buttons {
+	position: relative;
+}
+
+.playlist-page .content,
+.album-page .content {
+	left: 25%;
+}
+
+.playlist-page .content > .inner,
+.album-page .content > .inner {
+	padding: 40px 20px 40px 20px;
+}	
+
+.playlist-page .playlist.thumbnail,
+.album-page .album.thumbnail {
+	width: 100%;
+	padding-bottom: 100%;
+	margin: 0;
+	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
+.playlist-page h1,
+.album-page h1 {
+	padding-bottom: 0;
+	padding-top: 15px;
+	margin: 0;
+}
+
+.playlist-page h2,
+.album-page h2 {
+	font-style: italic;
+	color: #888888;
+	font-weight: 100;
+	padding-top: 5px;
+}
+
+.playlist-page .info,
+.album-page .info {
+	padding: 14px 20px;
+	margin-top: 1px;
+}
+
+.playlist-page .info > .info-item,
+.album-page .info > .info-item {
+	padding: 2px 0;
+	color: #AAAAAA;
+}
+
+.playlist-page .info .bar-track,
+.album-page .info .bar-track {
+	vertical-align: top;
+	margin-top: 7px;
+	margin-left: 6px;
+}
+
+
+/**
+ * Artist
+ **/
+
+.artist-intro {
+	position: relative;
+	margin: -40px -40px 30px;
+	padding: 0 20px;
+	height: 50vh;
+}
+
+.artist-intro h1 {
+	padding-bottom: 10px;
+}
+
+/*
+.artist-intro.background--dark h1,
+.artist-intro.background--dark .menu-item {             color: #FFFFFF; }
+.artist-intro.background--light h1,
+.artist-intro.background--light .menu-item,
+.artist-intro.background--complex h1,
+.artist-intro.background--complex .menu-item {             color: #000000; }
+*/
+
+.artist-intro h1,
+.artist-intro .menu-item {             color: #FFFFFF; }
+
+.artist-intro .image-container {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 0px;
+	overflow: hidden;
+	z-index: -1;
+	background: #444444;
+}
+
+.artist-intro .image-container .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	opacity: 0;
+}
+
+.artist-page .title-panel {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	padding-left: 330px;
+}
+
+.artist-page .sub-page-navigation {
+	margin: 0;
+}
+
+.artist-page .info-panel {
+	padding-left: 290px;
+	margin-bottom: 50px;
+	position: relative;
+}
+
+.artist-page .info-panel .thumbnail {
+	width: 250px;
+	height: 250px;
+	background-image: url('../svg/no-image.svg');
+	background-color: #E9E9E9;
+	background-size: cover;
+	background-position: 50% 50%;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+.artist-page .info-panel .buttons {
+	padding-right: 20px;
+}
+
+.artist-page .info-panel .info-text {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.tracklist.top-track-items {
+	padding-bottom: 30px;
+}
+
+.gallery-item img {
+	max-width: 90%;
+}
+
+.biography .content {
+    font: inherit;
+    width: 100%;
+	font-size: 18px;
+	line-height: 1.4em;
+	white-space: pre-wrap;
+}
+
+.biography .details {
+    padding: 20px 0;
+	color: #666666;
+}
+
+
+/**
+ * Discover
+ **/
+
+.discover .discover-section {
+	clear: both;
+	padding-bottom: 20px;
+}
+
+.discover .discover-section .section-title {
+	padding-bottom: 20px;
+}
+
+
+
+/**
+ * Featured playlists
+ **/
+ 
+.featured-playlists-intro {
+	position: relative;
+	margin: -40px -40px 40px;
+	padding: 0 20px;
+	height: 30vh;
+	background: #303030;
+}
+
+.featured-playlists-intro > .inner {
+	z-index: 1;
+	position: relative;
+	color: #FFFFFF;
+	text-align: center;
+	padding-top: 13vh;
+}
+
+.featured-playlists-intro > .background-image {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	opacity: 0.6;
+	background-position: 50% 0;
+	background-size: cover;
+}
+ 
+    
+
+/**
+ * User page
+ **/
+
+.user-intro {
+    padding-bottom: 30px;
+}
+
+.user-intro .info {
+    padding-top: 30px;
+}
+
+.user-intro .info-text {
+    margin-top: -20px;
+}
+
+.user-intro .image-container .image {
+    width: 120px;
+    height: 120px;
+    border-radius: 120px;
+    float: left;
+    background-size: cover;
+    background-position: 50% 50%;
+    margin-right: 20px;
+}
+
+
+/**
+ * Search
+ **/
+
+.search .loading {
+	margin: 50px auto;
+	width: 70px;
+	height: 70px;
+}
+
+.search .loading img {
+	width: 100%;
+	height: 100%;
+}
+
+.search .sub-page-navigation {
+	margin: -10px 0 30px;
+}
+
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 32%;
+	float: left;
+}
+.search-results-section.artists,
+.search-results-section.albums {
+	padding-right: 2%;
+}
+
+.search-results-section .square-panel {
+	width: 46%;
+}
+
+.search-results-section.playlists .square-panel .info > .name {
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.search-results-section.tracks {
+	padding-top: 30px;
+}
+
+
+/**
+ * Settings
+ **/
+
+.settings > .section {
+	padding-bottom: 40px;
+}
+
+.settings .section-title .state-label {
+	display: inline-block;
+	padding: 1px 3px;
+	font-size: 11px;
+	margin-left: 5px;
+}
+ 
+.actions {
+    clear: both;
+    padding: 40px 0 0 15%;
+}
+
+.sub-page {
+	padding: 10px 0 20px;
+}
+
+.settings .field.current-user .input {
+    padding-top: 8px;
+}
+
+.settings .field.current-user .image-container > .image {
+    width: 36px;
+    height: 36px;
+    float: left;
+    border-radius: 36px;
+    margin-right: 10px;
+    margin-top: -10px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+	background-color: #CCCCCC;
+}
+
+.settings .field .view-my-profile {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	z-index: 1;
+	margin-top: 1px;
+	margin-left: -35px;
+	padding: 10px;
+	border: 0;
+}
+
+.settings .field.shortcut-keys .shortcuts {
+	padding-top: 15px;
+}
+
+.settings .field.shortcut-keys .row {
+	padding-bottom: 5px;
+}
+
+.settings .field.shortcut-keys .row .flag {
+	margin-left: 0;
+}
+
+
+
+/* ====================================================================== PLAYER ================== */
+/* ================================================================================================ */
+
+#player {
+	color: #FFFFFF;
+}
+
+#player > .background-image {
+	display: none;
+}
+
+.player .button {
+	padding: 5px;
+	margin: 0 5px;
+	font-size: 14px;
+	opacity: 0.75;
+	display: inline-block;
+	background: transparent;
+}
+
+.player .button.active,
+.player .button:hover {
+	opacity: 1;
+	cursor: pointer;
+}
+
+.player .button.active {
+    color: #08d58f;
+}
+
+.player .track-info {
+	text-align: center;
+	font-size: 16px;
+	text-transform: uppercase;
+	padding-bottom: 20px;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.player .track-info .track {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.player .track-info .artist {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0.5;
+}
+
+.player .track-info .artist a{
+	text-decoration: none;
+	color: #FFFFFF;
+	border-bottom: 1px dotted transparent;
+}
+
+.player .track-info .artist a:hover {
+	border-color: #FFFFFF;
+}
+
+/**
+ * Playback controls
+ **/
+ 
+#player .controls {
+}
+ 
+#player .playback {
+	float: left;
+	padding-left: 15px;
+}
+
+#player .volume {
+	float: right;
+	padding-right: 20px;
+}
+
+#player .volume .slider {
+	display: inline-block;
+	width: 40px;
+	vertical-align: middle;
+	padding: 8px 0;
+}
+
+.player .slider {
+	cursor: pointer;
+}
+
+
+/**
+ * Scrobbling
+ **/
+
+#player .slider.progress {
+	padding-top: 5px;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 8;
+}
+
+#player .slider.progress .track {
+	height: 4px;
+	background: none;
+}
+
+#player .slider.progress:hover .track {
+	height: 12px;
+	background: rgba(0,0,0,0.15);
+}
+
+.player .slider .track {
+	position: relative;
+	height: 2px;
+	background: rgba(255,255,255,0.3);
+}
+
+.player .slider .track .fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #08d58f;
+}
+
+.player .slider  .track .fill.animate {
+	-webkit-transition: all 1s;
+	-moz-transition: all 1s;
+	-o-transition: all 1s;
+	transition: all 1s;
+}
+
+
+/**
+ * Full player
+ **/
+ 
+#full-player {
+	text-align: center;
+}
+ 
+#full-player .artwork {
+	width: 400px;
+	padding-bottom: 400px;
+	margin: 0 auto 20px;
+	position: relative;
+	background: #EEEEEE;
+	display: block;
+	border: 0;
+}
+
+#full-player .controls {
+	width: 400px;
+	margin: 0 auto;
+}
+ 
+#full-player .artwork .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-image: url('../svg/no-image.svg');
+	background-size: cover;
+	background-position: 50% 50%;
+}
+
+#full-player .volume {
+	display: none;
+}
+ 
+#full-player .track-info {
+	color: #000000;
+	font-weight: 600;
+}
+
+#full-player .track-info .artist a {
+	color: #000000;
+	display: inline-block;
+}
+
+#full-player .track-info .artist a:hover {
+	border-color: #000000;
+}
+
+#full-player .button {
+	color: #000000;
+	font-size: 20px;
+}
+
+#full-player .button.active {
+	color: #08d58f;
+}
+
+#full-player .button:hover {
+	opacity: 1;
+	background: transparent;
+}
+
+#full-player .track-timer {
+	float: right;
+	margin-top: 12px;
+}
+
+#full-player .track-timer .current {
+	opacity: 0.5;
+	padding-right: 2px;
+	display: inline-block;
+}
+
+#full-player .progress.slider {
+	margin: 35px 0;
+	position: relative;
+}
+
+#full-player .slider .track {
+	background: #DDDDDD;
+	height: 4px;
+}
+
+
+
+
+

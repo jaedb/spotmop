@@ -46,12 +46,19 @@ class SpotmopExtension(ext.Extension):
         # Add web extension
         registry.add('http:app', {
             'name': self.ext_name,
-            'factory': [] #spotmop_client_factory
+            'factory': spotmop_client_factory
         })
 
         logger.info('Setup Spotmop')
 
 
 def spotmop_client_factory(config, core):
-    directory = 'debug' if config.get(__ext_name__)['debug'] is True else 'min'
-    spotmoppath = os.path.join(os.path.dirname(__file__), 'src', directory)
+    environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
+    spotmoppath = os.path.join( os.path.dirname(__file__), environment)
+	
+    return [
+        (r'/(.*)', tornado.web.StaticFileHandler, {
+            "path": spotmoppath,
+            "default_filename": "index.html"
+        })
+    ]

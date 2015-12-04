@@ -8,3 +8,4 @@ Mopidy_Spotmop.egg-info/not-zip-safe
 Mopidy_Spotmop.egg-info/requires.txt
 Mopidy_Spotmop.egg-info/top_level.txt
 mopidy_spotmop/__init__.py
+mopidy_spotmop/mem.py
