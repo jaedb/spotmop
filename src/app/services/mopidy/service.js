@@ -59,6 +59,8 @@ angular.module('spotmop.services.mopidy', [
      */
 	function executeFunctionByName(functionName, context, args){
 		
+		console.log( functionName );
+		
 		var namespaces = functionName.split(".");
 		var func = namespaces.pop();
         
@@ -227,8 +229,6 @@ angular.module('spotmop.services.mopidy', [
 				.then(function() {
 
 					// add the surrounding tracks (ie the whole tracklist in focus)
-					console.log( 'adding' );
-					console.log( { uris: newTracklistUris } );
 					return self.mopidy.tracklist.add({ uris: newTracklistUris });
 
 				}, consoleError)
@@ -254,8 +254,6 @@ angular.module('spotmop.services.mopidy', [
 		},
 		playStream: function( streamUri, expectedTrackCount ){
 			var self = this;
-			
-			$rootScope.requestsLoading++;
 			
 			// pre-fetch our playlist tracks
 			self.mopidy.library.lookup({ uri: streamUri })
@@ -286,7 +284,6 @@ angular.module('spotmop.services.mopidy', [
 					}, consoleError)
 					.then(function() {
 						self.mopidy.playback.play();
-						$rootScope.requestsLoading--;
 					}, consoleError);			
 			}
 		},

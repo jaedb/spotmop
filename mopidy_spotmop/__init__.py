@@ -62,3 +62,7 @@ def spotmop_client_factory(config, core):
             "default_filename": "index.html"
         })
     ]
+	
+	
+	
+	

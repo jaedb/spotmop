@@ -23,7 +23,6 @@ setup(
     install_requires=[
         'setuptools',
         'Mopidy >= 0.19',
-		'Spotify',
         'ConfigObj'
     ],
     entry_points={

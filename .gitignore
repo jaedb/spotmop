@@ -1,7 +1,6 @@
-config.js
 /Concepts/
-/temp
 *.orig
 @eaDir
 Thumbs.db
+*.egg-info
 
