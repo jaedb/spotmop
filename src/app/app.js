@@ -113,27 +113,6 @@ angular.module('spotmop', [
                 $scope.playlistsMenu = newPlaylistsMenu;
 			});
 	}
-	
-	// breadcrumbs
-	$scope.breadcrumbs = [
-		{
-			link: '/',
-			name: 'Home'
-		}
-	];
-	
-	
-	/**
-	 * Detect if we've just loaded a new version and prompt user to clear cache
-	 **/
-	var currentVersion = SettingsService.getSetting('version',null);	
-	SettingsService.getVersion()
-		.success( function(response){
-			if( !currentVersion || currentVersion != response.versionCode ){
-				SettingsService.setSetting('version',response.versionCode);
-				NotifyService.notify( 'Spotmop has been updated - please clear your browser cache' );
-			}
-		});
 		
     
 	/**

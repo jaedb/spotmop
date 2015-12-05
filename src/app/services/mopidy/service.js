@@ -59,8 +59,6 @@ angular.module('spotmop.services.mopidy', [
      */
 	function executeFunctionByName(functionName, context, args){
 		
-		console.log( functionName );
-		
 		var namespaces = functionName.split(".");
 		var func = namespaces.pop();
         
@@ -69,19 +67,6 @@ angular.module('spotmop.services.mopidy', [
 		}
 
 		return context[func].apply(context, args);
-	}
-	
-	/**
-	 * Fire events to the mopidy server
-	 * @param action = string
-	 **/
-	function instructMopidyServer( action ){
-		return $.ajax({
-			url: 'http://'+SettingsService.getSetting("mopidyhost", $location.host())+'/app/services/mopidy/upstart.php?action='+action,
-			type: "GET",
-			async: false,
-			timeout: 5000
-		});
 	}
 
 	return {
