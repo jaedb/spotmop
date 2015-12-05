@@ -10,7 +10,7 @@ angular.module('spotmop.browse.artist', [])
 	$stateProvider
 		.state('browse.artist', {
 			url: "/artist/:uri",
-            abstract: true,
+            //abstract: true,
 			templateUrl: "app/browse/artist/template.html",
             controller: ['$scope', '$state', 
                 function( $scope, $state) {

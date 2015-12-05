@@ -7,7 +7,7 @@ angular.module('spotmop.common.contextmenu', [
 .directive('contextmenu', function() {
 	return {
 		restrict: 'E',
-		templateUrl: '/app/common/contextmenu/template.html',
+		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $scope, $rootScope, $element ){
