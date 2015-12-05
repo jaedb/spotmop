@@ -54,7 +54,7 @@ class SpotmopExtension(ext.Extension):
 
 def spotmop_client_factory(config, core):
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
-    spotmoppath = os.path.join( os.path.dirname(__file__), environment)
+    spotmoppath = os.path.join( os.path.dirname(__file__), '../src')
 	
     return [
         (r'/(.*)', tornado.web.StaticFileHandler, {

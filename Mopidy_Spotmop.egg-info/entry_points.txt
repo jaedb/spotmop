@@ -1,3 +1,0 @@
-[mopidy.ext]
-spotmop = mopidy_spotmop:SpotmopExtension
-
