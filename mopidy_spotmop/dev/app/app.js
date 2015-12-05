@@ -44,7 +44,7 @@ angular.module('spotmop', [
 
 .config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider){
 	//$locationProvider.html5Mode(true);
-	//$urlRouterProvider.otherwise("/queue");
+	$urlRouterProvider.otherwise("/queue");
 	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
 })
 

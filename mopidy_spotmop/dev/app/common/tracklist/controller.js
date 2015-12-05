@@ -8,7 +8,7 @@ angular.module('spotmop.common.tracklist', [
 .directive('track', function() {
 	return {
 		restrict: 'E',
-		templateUrl: '/app/common/tracklist/track.template.html',
+		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService ){
 			
 			/**
@@ -75,7 +75,7 @@ angular.module('spotmop.common.tracklist', [
 .directive('tltrack', function() {
 	return {
 		restrict: 'E',
-		templateUrl: '/app/common/tracklist/tltrack.template.html',
+		templateUrl: 'app/common/tracklist/tltrack.template.html',
 		link: function( $scope, element, attrs ){			
 		},
 		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){

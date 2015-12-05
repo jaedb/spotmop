@@ -9,12 +9,12 @@
 
 	<div class="artist" ng-class="{ empty: track.artists.length < 1 }">
 		<span ng-repeat="artist in track.artists">
-			<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+			<a ui-sref="browse.artist({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 		</span>
 	</div>
 
 	<div class="album" ng-class="{ empty: !track.album.name }">
-		<a href="/browse/album/{{ track.album.uri }}" ng-bind="track.album.name"></a>
+		<a ui-sref="browse.album({ uri: track.album.uri })" ng-bind="track.album.name"></a>
 	</div>
 
 	<div class="duration">

@@ -9,11 +9,11 @@
 	
 	<div class="col w30 artist">
 		<span ng-repeat="artist in track.track.artists">
-			<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+			<a ui-sref="browse.artist({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 		</span>
 	</div>
 	
-	<div class="col w35 album"><a href="/browse/album/{{ track.track.album.uri }}" ng-bind="track.track.album.name"></a></div>
+	<div class="col w35 album"><a ui-sref="browse.album({ uri: track.track.album.uri })" ng-bind="track.track.album.name"></a></div>
 	
 	<div class="col w5 duration">	
 		<span ng-show="track.track.length">{{ track.track.length | formatMilliseconds }}</span>
