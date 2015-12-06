@@ -33,7 +33,7 @@ angular.module('spotmop', [
 	'spotmop.discover',
 	
 	'spotmop.browse',
-	'spotmop.browse.artist',
+	'spotmop.browse.artist.overview({',
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',

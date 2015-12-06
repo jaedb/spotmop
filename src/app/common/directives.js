@@ -295,9 +295,11 @@ angular.module('spotmop.directives', [])
 			// load our image data from the json string attribute
 			var image = $.parseJSON($scope.image);
 		
+			/*
+			REBUILD THIS TO USE TORNADO
 			if( $scope.useproxy )
 				image.url = '/vendor/resource-proxy.php?url='+image.url;
-			
+			*/
 			// create our new image object (to be plugged into canvas)
 			image.asObject = new Image();
 			image.asObject.src = image.url;

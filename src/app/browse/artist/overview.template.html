@@ -21,7 +21,7 @@
 		<a
 		   ng-repeat="artist in relatedArtists | limitTo:6 track by $index"
 		   class="artist"
-		   ui-sref="browse.artist({ uri: artist.uri })">
+		   ui-sref="browse.artist.overview({ uri: artist.uri })">
 			<span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});" ng-if="artist.images.length > 0"></span>
 			<span class="thumbnail animate" ng-if="artist.images.length <= 0"></span>
 			<span class="name" ng-bind="artist.name"></span>
