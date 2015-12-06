@@ -32,7 +32,7 @@ angular.module('spotmop.discover', [])
 	};
 	
 	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled','false') ){
+	if( SettingsService.getSetting('echonestenabled', false) ){
 		
 		
 		// ================= CATALOG RADIO ==== //

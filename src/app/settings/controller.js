@@ -17,7 +17,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', function SettingsController( $scope, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -33,6 +33,29 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
+	$scope.upgrade = function(){
+		NotifyService.notify( 'Upgrade started' );
+		
+		// build the endpoint string
+		var url = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+		url += ':'+ SettingsService.getSetting('mopidyport', '6680');
+		
+		// send off the request
+		$http({
+				method: 'POST',
+				url: url+'/spotmop/upgrade'
+			})
+			.success(function( response ){		
+			
+				if( response.status == 'error' )
+					NotifyService.error( response.message );
+				else
+					NotifyService.notify( response.message );
+			})
+			.error(function( response ){				
+				NotifyService.error( response.error.message );
+			});
+	}
 	$scope.toggleSetting = function( setting ){
     	if( SettingsService.getSetting(setting, false) ){
             SettingsService.setSetting(setting, false);
@@ -59,50 +82,6 @@ angular.module('spotmop.settings', [])
 					break;
 			}
         }
-	};
-	
-	// commands to parse to the mopidy server
-	$scope.startMopidyServer = function(){
-		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.error( 'Button disabled' );
-			return false;
-		}
-		
-		MopidyService.startServer()
-			.success( function(response){
-				NotifyService.notify( 'Attempting to start Mopidy server' );
-			})
-			.error( function(response){
-				NotifyService.error( response.responseText );
-			});
-	};
-	$scope.restartMopidyServer = function(){
-		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.error( 'Button disabled' );
-			return false;
-		}
-		
-		MopidyService.restartServer()
-			.success( function(response){
-				console.log( response );
-			})
-			.error( function(response){
-				NotifyService.error( response.responseText );
-			});
-	};
-	$scope.stopMopidyServer = function(){
-		if( !$scope.isSameDomainAsMopidy() ){
-			NotifyService.error( 'Button disabled' );
-			return false;
-		}
-		
-		MopidyService.stopServer()
-			.success( function(response){
-				console.log( response );
-			})
-			.error( function(response){
-				NotifyService.error( response.responseText );
-			});
 	};
 	
 	// listen for changes from other clients

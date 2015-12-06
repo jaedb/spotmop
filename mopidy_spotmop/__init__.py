@@ -6,7 +6,7 @@ import tornado.web
 #import mem
 
 #from services.sync import sync
-from services.autoupdate import update 
+from services.upgrade import upgrade 
 
 #from services.queuemanager import core as QueueManagerCore
 #from services.queuemanager import frontend
@@ -53,11 +53,13 @@ class SpotmopExtension(ext.Extension):
 
 
 def spotmop_client_factory(config, core):
+
+	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
     spotmoppath = os.path.join( os.path.dirname(__file__), '../src')
 	
     return [
-		('/update', update.UpdateRequestHandler, {'core': core, 'config': config}),
+		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config}),
         (r'/(.*)', tornado.web.StaticFileHandler, {
             "path": spotmoppath,
             "default_filename": "index.html"

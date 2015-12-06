@@ -8,14 +8,14 @@ Requirements
 
 * Mopidy
 * Mopidy-Spotify
+* Spotify Premium account
 
 Installation
 --------
 
-1. Get Mopidy server running with Mopidy-Spotify plugin
-2. Extract Spotmop to your http root folder (as specified in ~/.config/mopidy/mopidy.conf
-3. Navigate to your server address (typically http://localhost:6680/)
-4. Alternatively, extract Spotmop to any webserver and configure your Mopidy server address on the Settings tab
+1. `pip install Mopidy-Spotmop`
+2. Restart Mopidy server
+3. Navigate to Mopidy interface (ie http://localhost:6680/spotmop)
 
 Features
 --------
@@ -42,6 +42,9 @@ Screenshots
 
 Changelog
 --------
+
+*2.5*
+* Port to Mopidy extension
 
 *2.4*
 * Redesign of interface (vertical bars)
@@ -80,8 +83,8 @@ To-do
 -----
 
 * Speed improvements to adding tracks to the tracklist (possible Mopidy-Spotify limitation)
-* Further improve responsive layouts and touch interactions
-* Create second playlists area for 'Subscribed' playlists
+* Increase stability of Mopidy server (perhaps limitation of Rpi?)
+* Full integration as Mopidy extension with Tornado Websockets for client:client communication
 
 Credits
 -------

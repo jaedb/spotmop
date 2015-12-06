@@ -94,7 +94,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUrl', message: response.error.message});
+					NotifyService.error(response.error.message);
                     deferred.reject( response.error.message );
                 });
 				
@@ -122,7 +122,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMe', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -148,7 +148,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getUser', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -174,7 +174,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowing', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -205,7 +205,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTrack', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -235,7 +235,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyTracks', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -262,7 +262,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToLibrary', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -289,7 +289,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromLibrary', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -313,7 +313,7 @@ angular.module('spotmop.services.spotify', [])
                 })
                 .error(function( response ){
 					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getMyArtists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -338,7 +338,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingArtist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -363,7 +363,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followArtist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -388,7 +388,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowArtist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -420,7 +420,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -448,7 +448,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -475,7 +475,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'isFollowingPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -501,7 +501,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'followPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -527,7 +527,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'unfollowPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -557,7 +557,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'featuredPlaylists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -588,7 +588,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'addTracksToPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -624,7 +624,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'movePlaylistTracks', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -655,7 +655,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'deleteTracksFromPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -683,7 +683,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'createPlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -715,7 +715,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'updatePlaylist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -744,7 +744,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'newReleases', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -770,7 +770,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discoverCategories', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -793,7 +793,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategory', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -819,7 +819,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getCategoryPlaylists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -848,7 +848,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtist', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -877,7 +877,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -901,7 +901,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -924,7 +924,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getAlbum', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -948,7 +948,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTopTracks', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -972,7 +972,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getRelatedArtists', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				
@@ -1002,7 +1002,7 @@ angular.module('spotmop.services.spotify', [])
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getSearchResults', message: response.error.message});
+					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
 				

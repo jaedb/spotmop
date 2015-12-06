@@ -4,8 +4,7 @@ import tornado.web
 from tornado.escape import json_encode
 import subprocess
 
-
-class UpdateRequestHandler(tornado.web.RequestHandler):
+class UpgradeRequestHandler(tornado.web.RequestHandler):
     isroot = False
 
     def set_default_headers(self):
@@ -23,18 +22,21 @@ class UpdateRequestHandler(tornado.web.RequestHandler):
 
     def post(self):
         if not self.isroot:
-            resp = 'Mopidy needs to run as root user to perform an auto-update'
+			status = 'error'
+			message = 'Mopidy needs to run as root user to perform upgrades'
         else:
             try:
-                subprocess.check_call(["pip", "install", "--upgrade", "mopidy-spotmop"])
-                resp = 'Update succesful'
+				subprocess.check_call(["pip", "install", "--upgrade", "mopidy-spotmop"])
+				status = 'success'
+				message = 'Upgrade succesful'
             except subprocess.CalledProcessError:
-                resp = "The auto-update failed"
+				status = 'error'
+				message = "The upgrade failed"
 
-        self.write(json_encode({'response': resp}))
+        self.write(json_encode({'status': status, 'message': message}))
 
 
-def mopify_update_factory(config, core):
+def mopify_upgrade_factory(config, core):
     return [
-        ('/', UpdateRequestHandler, {'core': core, 'config': config})
+        ('/', UpgradeRequestHandler, {'core': core, 'config': config})
     ]
