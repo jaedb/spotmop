@@ -59,7 +59,7 @@ def spotmop_client_factory(config, core):
     spotmoppath = os.path.join( os.path.dirname(__file__), '../src')
 	
     return [
-		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config}),
+		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
             "path": spotmoppath,
             "default_filename": "index.html"

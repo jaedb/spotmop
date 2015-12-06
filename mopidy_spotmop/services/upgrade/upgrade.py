@@ -10,15 +10,17 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
-    def initialize(self, core, config):
-        self.core = core
+    def initialize(self, core, config, version):
+		self.core = core
+		self.version = version
 
         # Check if root user
-        if os.geteuid() == 0:
-            self.isroot = True
-
+		if os.geteuid() == 0:
+			self.isroot = True
+	
+	# check if we're able to upgrade, and what our current version is
     def get(self):
-        self.write(json_encode({'response': self.isroot}))
+		self.write(json_encode({'root': self.isroot, 'currentVersion': self.version}))
 
     def post(self):
         if not self.isroot:
@@ -33,10 +35,10 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
 				status = 'error'
 				message = "The upgrade failed"
 
-        self.write(json_encode({'status': status, 'message': message}))
+        self.write(json_encode({'message': message, 'status': status}))
 
 
-def mopify_upgrade_factory(config, core):
+def spotmop_upgrade_factory(config, core):
     return [
         ('/', UpgradeRequestHandler, {'core': core, 'config': config})
     ]

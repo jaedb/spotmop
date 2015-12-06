@@ -35,25 +35,12 @@ angular.module('spotmop.settings', [])
     };
 	$scope.upgrade = function(){
 		NotifyService.notify( 'Upgrade started' );
-		
-		// build the endpoint string
-		var url = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-		url += ':'+ SettingsService.getSetting('mopidyport', '6680');
-		
-		// send off the request
-		$http({
-				method: 'POST',
-				url: url+'/spotmop/upgrade'
-			})
-			.success(function( response ){		
-			
+		SettingsService.upgrade()
+			.then( function(response){				
 				if( response.status == 'error' )
 					NotifyService.error( response.message );
 				else
 					NotifyService.notify( response.message );
-			})
-			.error(function( response ){				
-				NotifyService.error( response.error.message );
 			});
 	}
 	$scope.toggleSetting = function( setting ){
@@ -105,7 +92,7 @@ angular.module('spotmop.settings', [])
 	};
 	
 	SettingsService.getVersion()
-		.success( function(response){
+		.then( function(response){
 			$scope.version = response;
 		});
 	
