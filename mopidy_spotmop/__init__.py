@@ -6,7 +6,7 @@ import tornado.web
 #import mem
 
 #from services.sync import sync
-#from services.autoupdate import update 
+from services.autoupdate import update 
 
 #from services.queuemanager import core as QueueManagerCore
 #from services.queuemanager import frontend
@@ -57,6 +57,7 @@ def spotmop_client_factory(config, core):
     spotmoppath = os.path.join( os.path.dirname(__file__), '../src')
 	
     return [
+		('/update', update.UpdateRequestHandler, {'core': core, 'config': config}),
         (r'/(.*)', tornado.web.StaticFileHandler, {
             "path": spotmoppath,
             "default_filename": "index.html"

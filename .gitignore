@@ -3,4 +3,4 @@
 @eaDir
 Thumbs.db
 *.egg-info
-
+*.pyc
