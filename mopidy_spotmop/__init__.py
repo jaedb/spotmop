@@ -14,7 +14,7 @@ from services.upgrade import upgrade
 
 from mopidy import config, ext
 
-__version__ = '2.4.4'
+__version__ = '2.4.5'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
