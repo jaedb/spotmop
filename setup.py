@@ -16,7 +16,6 @@ setup(
     author='James Barnsley',
     author_email='james@barnsley.nz',
     description='A Mopidy Web client that utilizes the Spotify and EchoNest frameworks',
-    long_description=open('README.md').read(),
     packages=find_packages(),
     zip_safe=False,
     include_package_data=True,

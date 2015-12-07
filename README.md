@@ -3,6 +3,9 @@ Spotmop
 
 Spotmop Mopidy HTTP interface
 
+![badge](https://img.shields.io/pypi/v/mopidy-spotmop.svg?style=flat)
+![badge](https://img.shields.io/pypi/dm/mopidy-spotmop.svg)
+
 Requirements
 --------
 
@@ -13,7 +16,7 @@ Requirements
 Installation
 --------
 
-1. `pip install Mopidy-Spotmop`
+1. Install using pip: `sudo pip install Mopidy-Spotmop`
 2. Restart Mopidy server
 3. Navigate to Mopidy interface (ie http://localhost:6680/spotmop)
 
