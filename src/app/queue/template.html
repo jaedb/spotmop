@@ -18,7 +18,7 @@
 					<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
 					<div class="artist">
 						<span ng-repeat="artist in state().currentTlTrack.track.artists">
-							<a href="/browse/artist/{{ artist.uri }}" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+							<a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
 						</span>
 					</div>
 				</div>
