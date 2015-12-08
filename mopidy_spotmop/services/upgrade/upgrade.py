@@ -20,7 +20,7 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
 	
 	# check if we're able to upgrade, and what our current version is
     def get(self):
-		self.write(json_encode({'root': self.isroot, 'currentVersion': self.version}))
+		self.write(json_encode({'root': self.isroot, 'currentVersion': self.version, 'latestVersion': '2.5.7'}))
 
     def post(self):
         if not self.isroot:
