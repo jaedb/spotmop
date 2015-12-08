@@ -32,15 +32,15 @@ Screenshots
 
 ![Overview](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/overview.jpg)
 
-![Browse](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-browse.jpg)
+![Play queue](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-queue.jpg)
+
+![Featured playlists](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-featured.jpg)
 
 ![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
 
 ![Single playlist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-playlist.jpg)
 
 ![Dragging tracks](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-dragging.jpg)
-
-![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
 
 
 Changelog
