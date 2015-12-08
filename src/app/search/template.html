@@ -1,0 +1,184 @@
+<div class="page search-page scrolling-panel">
+	<div class="inner">
+	
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Search Results</h1>
+		</div>
+
+		<div class="sub-page-navigation">
+			<a class="menu-item"
+				ng-repeat="typename in ['all','artist','album','playlist','track']"
+				ui-sref="search({ query: query, type: typename })"
+				ng-class="{active: type == typename}">
+					{{ typename }}<span ng-hide="typename == 'all'">s</span>
+			</a>
+			<div class="clear-both"></div>
+		</div>
+		
+		<div ng-if="query">
+			<div ng-if="type == 'artist'">
+			
+				<div ng-show="loading" class="loading">
+					<img src="assets/svg/spinner-black.svg" />
+				</div>
+				
+				<div class="artist-items square-panels">
+					<div class="item-container" ng-repeat="artist in artists.items track by $index">
+						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist">
+							<div class="image-container">
+								<thumbnail images="artist.images"></thumbnail>
+							</div>
+							<div class="info animate">
+								<div class="name" ng-bind="artist.name"></div>
+							</div>
+						</a>
+					</div>
+				</div>
+				<div ng-hide="artists.items.length || loading" class="no-items">
+					No items
+				</div>		
+				<div class="clear-both"></div>
+			</div>
+			
+			<div ng-if="type == 'album'">		
+			
+				<div ng-show="loading" class="loading">
+					<img src="assets/svg/spinner-black.svg" />
+				</div>
+				
+				<div class="album-items square-panels">
+					<div class="item-container" ng-repeat="album in albums.items track by $index">
+						<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+							<div class="image-container">
+								<thumbnail images="album.images"></thumbnail>
+							</div>
+							<div class="info animate">
+								<div class="name" ng-bind="album.name"></div>
+								<div class="secondary tracks"><span ng-bind="album.tracks.total"></span> tracks</div>
+							</div>
+						</a>
+					</div>
+				</div>		
+				<div ng-hide="albums.items.length || loading" class="no-items">
+					No items
+				</div>		
+				<div class="clear-both"></div>
+			</div>
+			
+			<div ng-if="type == 'playlist'">		
+			
+				<div ng-show="loading" class="loading">
+					<img src="assets/svg/spinner-black.svg" />
+				</div>
+				
+				<div class="playlist-items square-panels">
+					<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
+						<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist">
+							<div class="image-container">
+								<thumbnail images="playlist.images"></thumbnail>
+							</div>
+							<div class="info animate">
+								<div class="name" ng-bind="playlist.name"></div>
+								<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+							</div>
+						</a>
+					</div>
+				</div>		
+				<div ng-hide="playlists.items.length || loading" class="no-items">
+					No items
+				</div>		
+				<div class="clear-both"></div>
+			</div>
+			
+			<div ng-if="type == 'track'">
+			
+				<div ng-show="loading" class="loading">
+					<img src="assets/svg/spinner-black.svg" />
+				</div>
+				
+				<div class="search-items tracklist"  ng-controller="TracklistController">
+					<track ng-repeat="track in tracklist.tracks"></track>	
+				</div>
+				<div ng-hide="tracklist.tracks.length || loading" class="no-items">
+					No items
+				</div>	
+			</div>
+			
+			<div ng-if="type == 'all'">
+			
+				<div ng-show="loading" class="loading">
+					<img src="assets/svg/spinner-black.svg" />
+				</div>
+			
+				<div class="search-results-section artists" ng-hide="loading">
+					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
+					<div class="artist-items square-panels">
+						<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4 track by $index">
+							<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist">
+								<div class="image-container">
+									<thumbnail images="artist.images" size="small"></thumbnail>
+								</div>
+								<div class="info animate">
+									<div class="name" ng-bind="artist.name"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+				<div class="search-results-section albums" ng-hide="loading">
+					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
+					<div class="album-items square-panels">
+						<div class="item-container" ng-repeat="album in albums.items | limitTo: 4 track by $index">
+							<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+								<div class="image-container">
+									<thumbnail images="album.images" size="small"></thumbnail>
+								</div>
+								<div class="info animate">
+									<div class="name" ng-bind="album.name"></div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="clear-both"></div>
+				</div>	
+				
+				<div class="search-results-section playlists" ng-hide="loading">
+					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'playlist' })">Playlists</a></h4>		
+					<div class="playlist-items square-panels">
+						<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4 track by $index">
+							<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist">
+								<div class="image-container">
+									<thumbnail images="playlist.images" size="small"></thumbnail>
+								</div>
+								<div class="info animate">
+									<div class="name" ng-bind="playlist.name"></div>
+									<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+								</div>
+							</a>
+						</div>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+				<div class="clear-both"></div>
+				
+				<div class="search-results-section tracks" ng-hide="loading">
+					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>	
+					<div class="search-items tracklist"  ng-controller="TracklistController">			
+					
+						<track ng-repeat="track in tracklist.tracks track by $index"></track>
+
+						<div ng-hide="tracklist.tracks.length" class="no-items">
+							No items
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+		
+	</div>
+</div>

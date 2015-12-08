@@ -1,0 +1,31 @@
+<div class="page new-releases-page scrolling-panel">
+	<div class="inner">
+		
+		<div class="page-header">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>New releases</h1>
+		</div>
+	
+		<div class="album-items square-panels">
+			
+			<div class="item-container" ng-repeat="album in albums.items track by $index">
+				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+					<div class="image-container">
+						<thumbnail images="album.images"></thumbnail>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="album.name"></div>
+					</div>
+				</a>
+			</div>
+		
+			<div ng-hide="albums.items.length" class="no-items">
+				No items
+			</div>
+			
+			<div class="clear-both"></div>
+		
+		</div>
+		
+	</div>
+</div>

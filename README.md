@@ -3,19 +3,22 @@ Spotmop
 
 Spotmop Mopidy HTTP interface
 
+![badge](https://img.shields.io/pypi/v/mopidy-spotmop.svg?style=flat)
+![badge](https://img.shields.io/pypi/dm/mopidy-spotmop.svg)
+
 Requirements
 --------
 
 * Mopidy
 * Mopidy-Spotify
+* Spotify Premium account
 
 Installation
 --------
 
-1. Get Mopidy server running with Mopidy-Spotify plugin
-2. Extract Spotmop to your http root folder (as specified in ~/.config/mopidy/mopidy.conf
-3. Navigate to your server address (typically http://localhost:6680/)
-4. Alternatively, extract Spotmop to any webserver and configure your Mopidy server address on the Settings tab
+1. Install using pip: `sudo pip install Mopidy-Spotmop`
+2. Restart Mopidy server
+3. Navigate to Mopidy interface (ie http://localhost:6680/spotmop)
 
 Features
 --------
@@ -29,7 +32,9 @@ Screenshots
 
 ![Overview](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/overview.jpg)
 
-![Browse](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-browse.jpg)
+![Play queue](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-queue.jpg)
+
+![Featured playlists](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-featured.jpg)
 
 ![Artist](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-artist.jpg)
 
@@ -37,11 +42,12 @@ Screenshots
 
 ![Dragging tracks](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-dragging.jpg)
 
-![Settings](https://raw.githubusercontent.com/jaedb/spotmop/master/Screenshots/desktop-settings.jpg)
-
 
 Changelog
 --------
+
+*2.5*
+* Port to Mopidy extension
 
 *2.4*
 * Redesign of interface (vertical bars)
@@ -80,8 +86,8 @@ To-do
 -----
 
 * Speed improvements to adding tracks to the tracklist (possible Mopidy-Spotify limitation)
-* Further improve responsive layouts and touch interactions
-* Create second playlists area for 'Subscribed' playlists
+* Increase stability of Mopidy server (perhaps limitation of Rpi?)
+* Full integration as Mopidy extension with Tornado Websockets for client:client communication
 
 Credits
 -------
