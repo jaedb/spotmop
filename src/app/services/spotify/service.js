@@ -39,7 +39,7 @@ angular.module('spotmop.services.spotify', [])
 					url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
 					dataType: "json",
 					async: false,
-					timeout: 5000,
+					timeout: 10000
 				})
                 .success(function( response ){
 					$localStorage.spotify.AccessToken = response.access_token;
@@ -1076,17 +1076,15 @@ angular.module('spotmop.services.spotify', [])
 
     "use strict";
 	
-    var retrystarted = false;
+    var retryStarted = false;
 	
     var responseInterceptor = {
         responseError: function(response){
 		
             if(response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0){
 				
-				console.log( 'Request rejected' );
-				
-                if(!retrystarted){
-                    retrystarted = true;
+                if(!retryStarted){
+                    retryStarted = true;
 					
 					// if we're already authorized, we just need to force a token refresh
 					if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken  ){
@@ -1096,6 +1094,7 @@ angular.module('spotmop.services.spotify', [])
 					
 					// not yet authorized, so authorize!
 					}else{
+					
 						// remove our current authorization
 						$localStorage.spotify = {};
 						$rootScope.spotifyOnline = false;

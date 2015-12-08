@@ -138,7 +138,7 @@
 					<div class="label">Current version</div>
 					<div class="input readonly">
 						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
-						<span ng-show="version.currentVersion != version.nextVersion">
+						<span ng-show="version.currentVersion < version.nextVersion">
 							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
 							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
 						</span>

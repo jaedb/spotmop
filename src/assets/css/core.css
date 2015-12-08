@@ -110,7 +110,7 @@ body {
 	z-index: 2;
 	top: 0;
 	left: 0;
-	bottom: 0;
+	bottom: 120px;
 	right: 0;
 	position: absolute;
 	overflow-y: auto;
