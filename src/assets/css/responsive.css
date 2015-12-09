@@ -39,6 +39,10 @@
 }
 
 @media( max-width: 800px ){
+
+	.mobile-show {
+		display: block !important;
+	}
 	
 	.mobile-hide {
 		display: none !important;
