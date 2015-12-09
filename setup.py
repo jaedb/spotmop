@@ -24,11 +24,6 @@ setup(
         'Mopidy >= 0.19',
         'ConfigObj'
     ],
-    entry_points={
-        'mopidy.ext': [
-            'spotmop = mopidy_spotmop:SpotmopExtension',
-        ],
-    },
     classifiers=[
         'Environment :: No Input/Output (Daemon)',
         'Intended Audience :: End Users/Desktop',
@@ -37,4 +32,9 @@ setup(
         'Programming Language :: Python :: 2',
         'Topic :: Multimedia :: Sound/Audio :: Players',
     ],
+    entry_points={
+        'mopidy.ext': [
+            'spotmop = mopidy_spotmop:SpotmopExtension',
+        ],
+    },
 )
