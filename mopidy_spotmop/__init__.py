@@ -14,7 +14,7 @@ from services.upgrade import upgrade
 
 from mopidy import config, ext
 
-__version__ = '2.4.7'
+__version__ = '2.4.10'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -56,7 +56,7 @@ def spotmop_client_factory(config, core):
 
 	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
-    spotmoppath = os.path.join( os.path.dirname(__file__), '../src')
+    spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
 	
     return [
 		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
