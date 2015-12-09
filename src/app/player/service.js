@@ -152,7 +152,9 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 		
-		updatePlayPosition();		
+		// commented out due to strange behavior in Mopidy 1.1.1 where on pause, the play position was erratic
+		// so let's just rely on our latest play position as factual. When we resume it'll re-fetch anyway.
+		// updatePlayPosition();		
 	};
 	
 	

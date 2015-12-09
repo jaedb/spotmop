@@ -1,5 +1,10 @@
 <div ng-controller="SettingsController" class="page settings-page scrolling-panel">
 	<div class="inner">
+			
+		<div class="page-header mobile-show">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Settings</h1>
+		</div>
 		
 		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
 			<i class="fa fa-exclamation-triangle white-text"></i>
@@ -8,8 +13,7 @@
 			<span ng-show="!spotifyOnline">Spotify is currently offline - make sure your browser allows popups</span>
 		</div>
 			
-		<div class="page-header">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+		<div class="page-header mobile-hide">
 			<h1>Settings</h1>
 		</div>
 		
