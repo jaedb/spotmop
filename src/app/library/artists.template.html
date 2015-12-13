@@ -6,6 +6,8 @@
 			<h1>Artists</h1>
 		</div>
 		
+		<h1 class="mobile-hide">Artists</h1>
+		
 		<div class="album-items square-panels">
 			<div class="item-container" ng-repeat="artist in artists.items track by $index">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">

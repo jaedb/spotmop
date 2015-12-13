@@ -639,6 +639,7 @@
 	.tracklist .track .album {
 		clear: left;
 		width: auto;
+		padding-left: 50%;
 		padding-right: 10px;
 		opacity: 0.5;
 	}
