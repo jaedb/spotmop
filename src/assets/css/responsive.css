@@ -68,6 +68,10 @@
 		left: -30%;
 		z-index: 4;
 	}
+	 
+	#sidebar > .inner {
+		bottom: 0;
+	}
 	
 	#body {
 		width: 100%;
@@ -85,6 +89,14 @@
 	#loading-bar-spinner {
 		right: 10px !important;
 		left: auto !important;
+	}
+	
+	#sidebar .main-menu {
+		padding-top: 15px;
+	}
+	
+	#sidebar .main-menu .divider.spacer {
+		height: 0;
 	}
 	
 	
@@ -356,6 +368,11 @@
 		margin-bottom: 10px;
 	}
 	
+	
+	/**
+	 * Search
+	 **/
+	 
 }
 
 
@@ -491,6 +508,10 @@
 	
 	.sub-page-navigation .menu-item {
 		margin-right: 10px;
+	}
+	
+	.search-page .sub-page-navigation .menu-item {
+		padding: 5px 0;
 	}
 	
 	.touchDevice #utilities {

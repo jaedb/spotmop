@@ -41,7 +41,8 @@ angular.module('spotmop.search', [])
 	}
 	
 	// focus on our search field on load
-	$(document).find('.search-form input.query').focus();
+	if( !$scope.isTouchDevice() )
+		$(document).find('.search-form input.query').focus();
 	
 	// if we've just loaded this page, and we have params, let's perform a search
 	if( $scope.query )

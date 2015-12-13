@@ -5,6 +5,17 @@
 			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 			<h1>Search Results</h1>
 		</div>
+		
+		<h1 class="mobile-hide">Search results</h1>
+		
+		<div class="search-form mobile-show">
+			<form ng-submit="searchSubmit( query )">
+				<input type="text" name="query" placeholder="Search" class="query" ng-model="query" />
+				<button class="submit" type="submit">
+					<i class="fa fa-search"></i>
+				</button>
+			</form>
+		</div>
 
 		<div class="sub-page-navigation">
 			<a class="menu-item"
