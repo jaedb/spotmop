@@ -172,7 +172,7 @@ angular.module('spotmop.library', [])
 				
 				$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
 				$scope.folders = $filter('filter')(response, {type: 'directory'});					
-				$scope.folders.unshift({ name: 'Parent folder', uri: folder, type: 'directory' });
+				$scope.folders.unshift({ name: '..', uri: folder, type: 'directory', isParentFolder: true });
 				
 				$scope.parentFolder = folder;
 			});

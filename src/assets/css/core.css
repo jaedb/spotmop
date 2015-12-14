@@ -1156,9 +1156,13 @@ body.dragging .tracklist .track.selected {
  * Folders (based on tracks)
  **/
 
+.track.folder .icon {
+	width: 24px;
+	float: left;
+}
+
 .track.folder .title {
 	width: auto;
-	float: none;
 }
 
  

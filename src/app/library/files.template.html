@@ -9,8 +9,11 @@
 		<h1 class="mobile-hide">Files</h1>
 		
 		<div class="library-folders tracklist">
-			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.files({ folder: folder.uri })">				
+			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.files({ folder: folder.uri })">
+				<i class="fa fa-folder icon" ng-hide="folder.isParentFolder"></i>
+				<i class="fa fa-reply icon" ng-show="folder.isParentFolder"></i>
 				<div class="title" ng-bind="folder.name" ng-class="{ empty: !folder.name }"></div>
+				<div class="clear-both"></div>
 			</a>
 		</div>
 		
