@@ -163,19 +163,43 @@ angular.module('spotmop.library', [])
 	$scope.parentFolder = false;
 	
 	var folder = 'local:directory';
-	if( $stateParams.folder )
-		folder = $stateParams.folder
+	var parentFolder = 'local:directory';
 	
-	MopidyService.getLibraryItems( folder )
-		.then( function( response ){
-				console.log( response );
+	if( $stateParams.folder ){
+		folder = $stateParams.folder;
+		var parentFolders = folder.split('|');
+		parentFolder = '';
+		for( var i = 0; i < parentFolders.length-1; i++ ){
+			parentFolder += parentFolders[i];
+			if( i < parentFolders.length-2 )
+				parentFolder += '|';
+		}
+		
+		folder = folder.replace('|','/');
+	}
+	
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	
+	function getItems(){
+		MopidyService.getLibraryItems( folder )
+			.then( function( response ){
 				
-				$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
-				$scope.folders = $filter('filter')(response, {type: 'directory'});					
-				$scope.folders.unshift({ name: '..', uri: folder, type: 'directory', isParentFolder: true });
-				
-				$scope.parentFolder = folder;
-			});
+					$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
+					var folders = $filter('filter')(response, {type: 'directory'});					
+					folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
+					
+					for( var i = 0; i < folders.length; i++ ){
+						folders[i].uri = folders[i].uri.replace('%2F', '|');
+						folders[i].uri = folders[i].uri.replace('/', '|');
+						console.log( folders[i] );
+					}
+					$scope.folders = folders;
+				});
+	}
 		
 })
 	
