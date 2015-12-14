@@ -160,7 +160,8 @@ angular.module('spotmop.library', [])
 	
 	$scope.folders = [];
 	$scope.tracklist = {tracks: []};
-    
+	$scope.parentFolder = false;
+	
 	var folder = 'local:directory';
 	if( $stateParams.folder )
 		folder = $stateParams.folder
@@ -170,7 +171,10 @@ angular.module('spotmop.library', [])
 				console.log( response );
 				
 				$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
-				$scope.folders = $filter('filter')(response, {type: 'directory'});				
+				$scope.folders = $filter('filter')(response, {type: 'directory'});					
+				$scope.folders.unshift({ name: 'Parent folder', uri: folder, type: 'directory' });
+				
+				$scope.parentFolder = folder;
 			});
 		
 })
