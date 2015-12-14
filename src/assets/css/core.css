@@ -1127,6 +1127,7 @@ h1 .flag {
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
+	border-color: #EEEEEE;
 }
 
 body.dragging .tracklist .track.selected {
@@ -1149,6 +1150,17 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.drag-hovering:first-child {
 	margin-top: -1px;
 }
+
+
+/**
+ * Folders (based on tracks)
+ **/
+
+.track.folder .title {
+	width: auto;
+	float: none;
+}
+
  
  
 /**

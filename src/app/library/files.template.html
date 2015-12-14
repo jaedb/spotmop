@@ -8,15 +8,14 @@
 		
 		<h1 class="mobile-hide">Files</h1>
 		
-		<div class="library-folders">		
-			<a ng-repeat="folder in folders" ui-sref="library.files({ folder: folder.uri })" ng-bind="folder.name"></a><br />		
+		<div class="library-folders tracklist">
+			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.files({ folder: folder.uri })">				
+				<div class="title" ng-bind="folder.name" ng-class="{ empty: !folder.name }"></div>
+			</a>
 		</div>
 		
 		<div class="library-tracks tracklist droppable" ng-controller="TracklistController">
-			<track ng-repeat="track in tracklist.tracks track by $index"></track>
-			<div ng-hide="tracklist.tracks.length" class="no-items">
-				No items
-			</div>				
+			<track ng-repeat="track in tracklist.tracks track by $index">			
 		</div>
 		
 	</div>
