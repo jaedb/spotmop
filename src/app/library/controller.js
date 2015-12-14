@@ -41,6 +41,11 @@ angular.module('spotmop.library', [])
 			url: "/albums",
 			templateUrl: "app/library/albums.template.html",
 			controller: 'LibraryAlbumsController'
+		})
+		.state('library.files', {
+			url: "/files/:folder",
+			templateUrl: "app/library/files.template.html",
+			controller: 'LibraryFilesController'
 		});
 })
 	
@@ -146,6 +151,28 @@ angular.module('spotmop.library', [])
         }
 	});
 	
+})
+	
+/**
+ * Local files
+ **/
+.controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
+	
+	$scope.folders = [];
+	$scope.tracklist = {tracks: []};
+    
+	var folder = 'local:directory';
+	if( $stateParams.folder )
+		folder = $stateParams.folder
+	
+	MopidyService.getLibraryItems( folder )
+		.then( function( response ){
+				console.log( response );
+				
+				$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
+				$scope.folders = $filter('filter')(response, {type: 'directory'});				
+			});
+		
 })
 	
 /**

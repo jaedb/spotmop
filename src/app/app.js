@@ -206,7 +206,7 @@ angular.module('spotmop', [
      * Mopidy music player is open for business
      **/
 	$scope.$on('mopidy:state:online', function(){
-		$rootScope.mopidyOnline = true;		
+		$rootScope.mopidyOnline = true;
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
 		});
