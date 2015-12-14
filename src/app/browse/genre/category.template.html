@@ -6,6 +6,8 @@
 			<h1 ng-bind="category.name"></h1>
 		</div>
 		
+		<h1 class="mobile-hide" ng-bind="category.name"></h1>
+		
 		<div class="playlist-items square-panels">
 			
 			<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
