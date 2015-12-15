@@ -160,42 +160,51 @@ angular.module('spotmop.library', [])
 	
 	$scope.folders = [];
 	$scope.tracklist = {tracks: []};
-	$scope.parentFolder = false;
 	
-	var folder = 'local:directory';
-	var parentFolder = 'local:directory';
+	var folder, parentFolder;
 	
 	if( $stateParams.folder ){
+	
 		folder = $stateParams.folder;
 		var parentFolders = folder.split('|');
 		parentFolder = '';
 		for( var i = 0; i < parentFolders.length-1; i++ ){
+			showParentFolderLink = true;
 			parentFolder += parentFolders[i];
 			if( i < parentFolders.length-2 )
 				parentFolder += '|';
 		}
 		
+		if( parentFolder == '' )
+			parentFolder = 'local:directory';
+		
 		folder = folder.replace('|','/');
 	}
 	
+	console.log( 'folder: '+ folder);
+	console.log( 'parentFolder: '+ parentFolder);
+	
+	// on init, go get the items (or wait for mopidy to be online)
 	if( $scope.mopidyOnline )
 		getItems();
 	else
 		$scope.$on('mopidy:state:online', function(){ getItems() });
 	
 	
+	// go get em
 	function getItems(){
 		MopidyService.getLibraryItems( folder )
 			.then( function( response ){
 				
 					$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
-					var folders = $filter('filter')(response, {type: 'directory'});					
-					folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
+					var folders = $filter('filter')(response, {type: 'directory'});
+
+					if( $stateParams.folder != 'local:directory' )
+						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
 					
 					for( var i = 0; i < folders.length; i++ ){
 						folders[i].uri = folders[i].uri.replace('%2F', '|');
 						folders[i].uri = folders[i].uri.replace('/', '|');
-						console.log( folders[i] );
 					}
 					$scope.folders = folders;
 				});
