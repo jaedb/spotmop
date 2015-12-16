@@ -32,10 +32,20 @@
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
 /* ================================================================================================ */
 
+@media( min-width: 800px ){
+	.mobile-show {
+		display: none !important;
+	}
+}
+
 @media( max-width: 800px ){
+
+	.mobile-show {
+		display: block !important;
+	}
 	
 	.mobile-hide {
-		display: none;
+		display: none !important;
 	}
 	
 	
@@ -81,8 +91,9 @@
 	/**
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
+	 
 	.page-header {
-		display: block !important;
+		display: block;
 		margin: -40px -40px 20px -40px;
 		background: #333333;
 		color: #FFFFFF;
@@ -104,10 +115,16 @@
 	/**
 	 * Notifications
 	 **/
+	 
 	#notifications {
 		left: 0;
 	}
 	
+	.page-notification {
+		margin-top: -20px;
+		padding: 10px 20px;
+		text-align: center;
+	}
 	
 	
 	/**
