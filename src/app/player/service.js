@@ -41,6 +41,18 @@ angular.module('spotmop.services.player', [])
 			else
 				state.playing = false;
 		});
+			
+		// testing
+		MopidyService.getCurrentTlTrack()
+			.then( function( tlTrack ){
+				console.log( tlTrack );
+				/*
+				MopidyService.testMethod( [ tlTrack.track.uri ] )
+					.then( function(response){
+						console.log( response );
+					});
+				*/
+				});
 	});
 	
 	// listen for changes from other clients
@@ -174,7 +186,8 @@ angular.module('spotmop.services.player', [])
 			// now we have track info, let's get the spotify artwork	
 			SpotifyService.getTrack( tlTrack.track.uri )
 				.then(function( response ){
-					state.currentTlTrack.track.album.images = response.album.images;
+					if( typeof(response.album) !== 'undefined' )
+						state.currentTlTrack.track.album.images = response.album.images;
 				});
 			
 			// update ui

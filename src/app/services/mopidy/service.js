@@ -72,7 +72,11 @@ angular.module('spotmop.services.mopidy', [
 	return {
 		mopidy: {},
 		isConnected: false,
-
+		
+		testMethod: function( uri ){
+			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uri });
+		},
+		
 		/*
 		 * Method to start the Mopidy conneciton
 		 */
@@ -130,15 +134,6 @@ angular.module('spotmop.services.mopidy', [
 		restart: function() {
 			this.stop();
 			this.start();
-		},
-		startServer: function(){
-			return instructMopidyServer('start');
-		},
-		restartServer: function(){
-			return instructMopidyServer('restart');
-		},
-		stopServer: function(){
-			return instructMopidyServer('stop');
 		},
 		getPlaylists: function() {
 			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
