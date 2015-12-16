@@ -181,9 +181,6 @@ angular.module('spotmop.library', [])
 		folder = folder.replace('|','/');
 	}
 	
-	console.log( 'folder: '+ folder);
-	console.log( 'parentFolder: '+ parentFolder);
-	
 	// on init, go get the items (or wait for mopidy to be online)
 	if( $scope.mopidyOnline )
 		getItems();
@@ -195,19 +192,37 @@ angular.module('spotmop.library', [])
 	function getItems(){
 		MopidyService.getLibraryItems( folder )
 			.then( function( response ){
-				
+					
 					$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
-					var folders = $filter('filter')(response, {type: 'directory'});
+					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
 
 					if( $stateParams.folder != 'local:directory' )
 						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
 					
-					for( var i = 0; i < folders.length; i++ ){
-						folders[i].uri = folders[i].uri.replace('%2F', '|');
-						folders[i].uri = folders[i].uri.replace('/', '|');
-					}
 					$scope.folders = folders;
 				});
+	}
+	
+	
+	/**
+	 * Format our folders into the desired format
+	 * @param items = array
+	 * @return array
+	 **/
+	function formatFolders( items ){
+		
+		// sanitize uris
+		for( var i = 0; i < items.length; i++ ){
+			var item = items[i];
+			
+			// replace slashes (even urlencoded ones) to ":"
+			item.uri = item.uri.replace('%2F', '|');
+			item.uri = item.uri.replace('/', '|');
+			
+			items[i] = item;
+		}
+		
+		return items;
 	}
 		
 })
