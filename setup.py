@@ -12,7 +12,7 @@ setup(
     name='Mopidy-Spotmop',
     version=get_version('mopidy_spotmop/__init__.py'),
     url='https://github.com/jaedb/spotmop',
-    license='GNU General Public License v3 (GPLv3)',
+    license='Apache License, Version 2.0',
     author='James Barnsley',
     author_email='james@barnsley.nz',
     description='A Mopidy Web client that utilizes the Spotify and EchoNest frameworks',
