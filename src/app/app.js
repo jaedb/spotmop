@@ -22,6 +22,7 @@ angular.module('spotmop', [
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
 	'spotmop.services.echonest',
+	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	
 	'spotmop.player',

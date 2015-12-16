@@ -19,6 +19,7 @@
 	<script type="text/javascript" src="app/services/mopidy/service.js"></script>
 	<script type="text/javascript" src="app/services/spotify/service.js"></script>
 	<script type="text/javascript" src="app/services/echonest/service.js"></script>
+	<script type="text/javascript" src="app/services/lastfm/service.js"></script>
 	<script type="text/javascript" src="app/services/dialog/service.js"></script>
 	
 	<script type="text/javascript" src="app/common/directives.js"></script>
@@ -68,8 +69,8 @@
 		<div id="notifications"></div>
 		
 		<div id="sidebar" class="animate">
-			<div class="background-image" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
-				<preloadedimage class="image blur" url="{{ image.url }}"></preloadedimage>
+			<div class="background-image">
+				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.image }}"></preloadedimage>
 			</div>
 			<div class="inner">
 				<div class="search-form mobile-hide">
