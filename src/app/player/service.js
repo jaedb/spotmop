@@ -78,9 +78,13 @@ angular.module('spotmop.services.player', [])
 	// listen for current track changes
 	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		state.currentTlTrack = tlTrack.tl_track;		
-		updateCurrentTrack( tlTrack.tl_track );
-		updatePlayerState();
+		
+		// only if our new tlTrack differs from our current one
+		if( state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
+			state.currentTlTrack = tlTrack.tl_track;		
+			updateCurrentTrack( tlTrack.tl_track );
+			updatePlayerState();
+		}
 	});
 	
 	
@@ -165,8 +169,6 @@ angular.module('spotmop.services.player', [])
 	 **/
 	function updateCurrentTrack( tlTrack ){
 		
-		console.log('updateCurrentTrack');
-		
 		// update all ui uses of the track (window title, player bar, etc)
 		var setCurrentTrack = function( tlTrack ){
 		
@@ -192,9 +194,16 @@ angular.module('spotmop.services.player', [])
 				if( artist && album )
 					LastfmService.albumInfo( artist, album )
 						.then( function(response){
-								var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-								if( largest )
-									state.currentTlTrack.track.image = largest['#text'];
+							
+								// remove the existing image
+								state.currentTlTrack.track.image = false;
+								
+								// if we got an album match, plug in the 'extralarge' image to our state()
+								if( typeof(response.album) !== 'undefined' ){
+									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
+									if( largest )
+										state.currentTlTrack.track.image = largest['#text'];
+								}
 							});
 			}
 			

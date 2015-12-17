@@ -26,25 +26,17 @@ angular.module('spotmop.services.echonest', [])
             // if we don't have a taste profile, make one
             if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
                 this.createTasteProfile()
-                    .success( function(response){ 
+                    .then( function(response){ 
                         SettingsService.setSetting('echonesttasteprofileid', response.response.id);
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
                     });
             }else{
                 this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
-                    .success( function(response){
+                    .then( function(response){
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
                         $localStorage.echonesttasteprofile = response.response.catalog;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
                     });
             }
         },
@@ -58,28 +50,59 @@ angular.module('spotmop.services.echonest', [])
          * Taste Profile
          **/
 		createTasteProfile: function(){
-            return $.ajax({
-                url: baseURL+'catalog/create',
-                method: "POST",
-                data: {
-                        api_key: apiKey,
-                        format: 'json',
-                        type: 'general',
-                        name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
-                    }
-            });
+		
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'POST',
+					url: baseURL+'catalog/create',
+					data: {
+							api_key: apiKey,
+							format: 'json',
+							type: 'general',
+							name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
+						}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					this.isOnline = false;
+					$rootScope.echonestOnline = false;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'createTasteProfile', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
         
 		getTasteProfile: function(){
-            return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
-                method: "GET"
-            });
+		
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					this.isOnline = false;
+					$rootScope.echonestOnline = false;
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTasteProfile', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
         },
         
 		
 		/**
 		 * Add a number of trackids to the taste profile
+		 * NOTE: This hasn't been upgraded to return a deferred.promise because of CORS issue when using $http instead of $ajax ... need to investigate
 		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
 		 * @param trackid = string|array spotify uri
 		 * @param favorite = boolean (optional) add these track(s) as favorites

@@ -223,7 +223,6 @@ angular.module('spotmop.directives', [])
 			url: '@',
 			useproxy: '@',
 			detectbackground: '@',
-			watch: '@',
 			opacity: '@'
 		},
         link: function($scope, $element, $attrs){

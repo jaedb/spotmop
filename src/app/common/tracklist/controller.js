@@ -129,6 +129,63 @@ angular.module('spotmop.common.tracklist', [
 })
 
 
+.directive('localtrack', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/tracklist/localtrack.template.html',
+		link: function( $scope, element, attrs ){			
+		},
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
+			
+			$scope.state = PlayerService.state;
+			
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mouseup( function( event ){
+				
+				// left click
+				if( event.which === 1 ){
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+				}
+			});		
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+		
+				// get the queue's tracks
+				// we need to re-get the queue because at this point some tracks may not have tlids
+				// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
+				MopidyService.getCurrentTlTracks().then( function( tracklist ){
+					
+					// find our double-clicked track in the tracklist
+					$.each( tracklist, function(key, track){
+						if( track.tlid == $scope.track.tlid ){
+
+							// then play our track
+							return MopidyService.playTlTrack({ tl_track: track });
+						}	
+					});
+				});
+			});
+		}
+	}
+})
+
+
 /**
  * Tracklist controller
  * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
