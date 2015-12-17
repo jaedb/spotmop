@@ -190,10 +190,29 @@ angular.module('spotmop.library', [])
 	
 	// go get em
 	function getItems(){
+			
 		MopidyService.getLibraryItems( folder )
 			.then( function( response ){
 					
-					$scope.tracklist.tracks = $filter('filter')(response, {type: 'track'});
+					// load tracks
+					var tracks = $filter('filter')(response, {type: 'track'});	
+/*					
+					if( tracks.length > 0 ){
+						
+						for( var i = 0; i < tracks.length; i++ ){
+							MopidyService.getTrack( tracks[i].uri )
+								.then( function(response){
+									console.log( i );
+									tracks[i] = response;
+									console.log( response );
+								});
+						}
+						
+					}*/
+					
+					$scope.tracklist.tracks = tracks;
+					
+					// fetch the folders
 					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
 
 					if( $stateParams.folder != 'local:directory' )

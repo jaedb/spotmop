@@ -9,7 +9,7 @@ angular.module('spotmop.common.tracklist', [
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope, MopidyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
 			/**
 			 * Single click
@@ -50,8 +50,6 @@ angular.module('spotmop.common.tracklist', [
 						trackUrisToAdd.push( track.uri );
 				}
 				
-				$rootScope.requestsLoading++;
-				
 				// play me (the double-clicked track) immediately
 				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
 
@@ -59,12 +57,10 @@ angular.module('spotmop.common.tracklist', [
 					var message = 'Adding '+trackUrisToAdd.length+' tracks';
 					if( trackUrisToAdd.length > 10 )
 						message += '... this could take some time';
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message, autoremove: true});
+					NotifyService.notify( message );
 
 					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( trackUrisToAdd ).then( function(response){
-						$rootScope.requestsLoading--;
-					});
+					MopidyService.addToTrackList( trackUrisToAdd );
 				});
 			});
 		}
@@ -133,9 +129,9 @@ angular.module('spotmop.common.tracklist', [
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/localtrack.template.html',
-		link: function( $scope, element, attrs ){			
+		link: function( $scope, element, attrs ){		
 		},
-		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
 			
@@ -161,24 +157,35 @@ angular.module('spotmop.common.tracklist', [
 				}
 			});		
 			
+			
+			
 			/**
 			 * Double click
 			 **/
 			$element.dblclick( function( event ){
-		
-				// get the queue's tracks
-				// we need to re-get the queue because at this point some tracks may not have tlids
-				// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
-				MopidyService.getCurrentTlTracks().then( function( tracklist ){
-					
-					// find our double-clicked track in the tracklist
-					$.each( tracklist, function(key, track){
-						if( track.tlid == $scope.track.tlid ){
+				
+				// what position track am I in the tracklist
+				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
+				var trackUrisToAdd = [];
+				
+				// loop me, and all my following tracks, fetching their uris
+				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
+					var track = $scope.tracklist.tracks[i];					
+					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
+						trackUrisToAdd.push( track.uri );
+				}
+				
+				// play me (the double-clicked track) immediately
+				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
 
-							// then play our track
-							return MopidyService.playTlTrack({ tl_track: track });
-						}	
-					});
+					// notify user that this could take some time			
+					var message = 'Adding '+trackUrisToAdd.length+' tracks';
+					if( trackUrisToAdd.length > 10 )
+						message += '... this could take some time';
+					NotifyService.notify( message );
+
+					// add the following tracks to the tracklist
+					MopidyService.addToTrackList( trackUrisToAdd );
 				});
 			});
 		}

@@ -156,6 +156,9 @@ angular.module('spotmop.services.mopidy', [
 		getTrack: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
+		getTracks: function(uris) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uris: uris });
+		},
 		getAlbum: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},

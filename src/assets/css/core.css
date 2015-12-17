@@ -1116,6 +1116,12 @@ h1 .flag {
 	min-height: 1px;
 }
 
+.track .title .local-track {
+	opacity: 0.2;
+	font-size: 11px;
+	padding-left: 5px;
+}
+
 .track .title {				width: 30%; }
 .track .artist {			width: 30%; }
 .track .album {				width: 30%; }
