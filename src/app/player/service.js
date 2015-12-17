@@ -80,7 +80,7 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
 		
 		// only if our new tlTrack differs from our current one
-		if( state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
+		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
 			state.currentTlTrack = tlTrack.tl_track;		
 			updateCurrentTrack( tlTrack.tl_track );
 			updatePlayerState();
