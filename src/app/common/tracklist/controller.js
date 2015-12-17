@@ -153,7 +153,7 @@ angular.module('spotmop.common.tracklist', [
 					
 				// right click (only when selected)
 				}else if( $scope.track.selected && event.which === 3 ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
 			});		
 			
@@ -197,7 +197,7 @@ angular.module('spotmop.common.tracklist', [
  * Tracklist controller
  * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
  **/
-.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService ){
+.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
 
 	// prevent right-click menus
 	$(document).contextmenu( function(evt){
@@ -316,18 +316,14 @@ angular.module('spotmop.common.tracklist', [
 		angular.forEach( selectedTracks, function( track ){
 			selectedTracksUris.push( track.uri );
 		});
-		
-		$rootScope.requestsLoading++;
 			
 		var message = 'Adding '+selectedTracks.length+' tracks to queue';
 		if( selectedTracks.length > 10 )
 			message += '... this could take some time';
 			
-		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message, autoremove: true});
+		NotifyService.notify( message );
 				
-		MopidyService.addToTrackList( selectedTracksUris, atPosition ).then( function(response){
-			$rootScope.requestsLoading--;
-		});
+		MopidyService.addToTrackList( selectedTracksUris, atPosition );
 	});
 	
 	
@@ -348,7 +344,7 @@ angular.module('spotmop.common.tracklist', [
 		
 		// depending on context, make the selected track(s) play
 		// queue
-		if( $scope.tracklist.type == 'tltrack' ){
+		if( $scope.tracklist.type == 'tltrack'){
 			
 			// get the queue's tracks
 			// we need to re-get the queue because at this point some tracks may not have tlids
@@ -366,7 +362,7 @@ angular.module('spotmop.common.tracklist', [
 			});
 			
 		// generic tracklist (playlist, top-tracks, album, etc)
-		}else if( $scope.tracklist.type == 'track' ){
+		}else{
 		
 			// build an array of track uris (and subtract the first one, as we play him immediately)
 			var selectedTracksUris = [];
@@ -374,13 +370,11 @@ angular.module('spotmop.common.tracklist', [
 				selectedTracksUris.push( selectedTracks[i].uri );
 			};
 			
-			$rootScope.requestsLoading++;
-			
 			var message = 'Adding '+selectedTracks.length+' tracks to queue';
 			if( selectedTracks.length > 10 )
 				message += '... this could take some time';
 				
-			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message, autoremove: true });
+			NotifyService.notify( message );
 				
 			// play the first track immediately
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
@@ -388,11 +382,7 @@ angular.module('spotmop.common.tracklist', [
 				// more tracks to add
 				if( selectedTracksUris.length > 0 ){
 					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
-						$rootScope.requestsLoading--;
-					});
-				}else{
-					$rootScope.requestsLoading--;
+					MopidyService.addToTrackList( selectedTracksUris );
 				}
 			});
 		}
@@ -461,8 +451,6 @@ angular.module('spotmop.common.tracklist', [
 	 **/
 	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
 		
-        $rootScope.requestsLoading++;
-		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var selectedTracksUris = [];
 		
@@ -478,14 +466,7 @@ angular.module('spotmop.common.tracklist', [
 		});
 		
 		// tell spotify to go'on get
-		SpotifyService.addTracksToLibrary( selectedTracksUris )
-			.success( function(response){
-				$rootScope.requestsLoading--;
-			})
-			.error( function(response){
-				$rootScope.requestsLoading--;
-				$scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
-			});	
+		SpotifyService.addTracksToLibrary( selectedTracksUris );
 	});
 	
 	

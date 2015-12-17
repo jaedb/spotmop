@@ -159,7 +159,7 @@ angular.module('spotmop.library', [])
 .controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.folders = [];
-	$scope.tracklist = {tracks: []};
+	$scope.tracklist = {tracks: [], type: 'local'};
 	
 	var folder, parentFolder;
 	
