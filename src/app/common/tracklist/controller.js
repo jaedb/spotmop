@@ -52,15 +52,18 @@ angular.module('spotmop.common.tracklist', [
 				
 				// play me (the double-clicked track) immediately
 				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+					
+					if( trackUrisToAdd.length > 0 ){
+					
+						// notify user that this could take some time			
+						var message = 'Adding '+trackUrisToAdd.length+' tracks';
+						if( trackUrisToAdd.length > 10 )
+							message += '... this could take some time';
+						NotifyService.notify( message );
 
-					// notify user that this could take some time			
-					var message = 'Adding '+trackUrisToAdd.length+' tracks';
-					if( trackUrisToAdd.length > 10 )
-						message += '... this could take some time';
-					NotifyService.notify( message );
-
-					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( trackUrisToAdd );
+						// add the following tracks to the tracklist
+						MopidyService.addToTrackList( trackUrisToAdd );
+					}
 				});
 			});
 		}
@@ -375,7 +378,7 @@ angular.module('spotmop.common.tracklist', [
 				message += '... this could take some time';
 				
 			NotifyService.notify( message );
-				
+			
 			// play the first track immediately
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
 				
