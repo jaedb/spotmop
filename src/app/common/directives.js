@@ -223,13 +223,12 @@ angular.module('spotmop.directives', [])
 			url: '@',
 			useproxy: '@',
 			detectbackground: '@',
-			opacity: '@',
-			watch: '='
+			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
 			
 			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
-			if( $scope.watch ){
+			if( $element.attr('watch') ){
 				$scope.$watch('url', function(newValue, oldValue) {
 					if (newValue)
 						loadImage();

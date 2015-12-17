@@ -408,18 +408,40 @@ angular.module('spotmop.common.tracklist', [
 	
 	
 	/**
-	 * TODO: Selected Tracks >> Delete
+	 * Selected Tracks >> Delete
 	 **/
 	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
 		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksUris = [];
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var trackPositionsToDelete = [];
 		
-		angular.forEach( selectedTracks, function(track){
-			selectedTracksUris.push( track.track.uri );
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			selectedTrack.transitioning = true;
 		});
 		
-		// TODO: Implement mopidy for queue, and spotify for playlists that we own
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
+			.then( function(response){
+			
+					// rejected
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error( response.error.message );
+					
+						// un-transition and restore the tracks we couldn't delete
+						angular.forEach( selectedTracks, function( selectedTrack, index ){
+							selectedTrack.transitioning = false;
+						});
+					// successful
+					}else{
+						// remove tracks from DOM
+						$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
+						
+						// update our snapshot so Spotify knows which version of the playlist our positions refer to
+						$scope.playlist.snapshot_id = response.snapshot_id;
+					}
+				});
 	});
 	
 	

@@ -1145,6 +1145,11 @@ body.dragging .tracklist .track.selected {
 	background: #FFF39C;
 }
 
+.tracklist .track.transitioning,
+.tracklist .track.transitioning:hover {
+	opacity: 0.2;
+}
+
 .tracklist .track.playing {
 	font-weight: bold;
 }
