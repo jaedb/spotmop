@@ -20,7 +20,14 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 500px ){
+@media( max-height: 670px ){
+	.main-menu .menu-item > a {
+		padding-top: 7px;
+		padding-bottom: 7px;
+	}
+	.main-menu .divider {
+		padding-top: 10px;
+	}
 }
 
 @media( max-height: 300px ){
