@@ -26,17 +26,25 @@ angular.module('spotmop.services.echonest', [])
             // if we don't have a taste profile, make one
             if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
                 this.createTasteProfile()
-                    .then( function(response){ 
+                    .success( function(response){ 
                         SettingsService.setSetting('echonesttasteprofileid', response.response.id);
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
+                    })
+                    .error( function(error){
+                        this.isOnline = false;
+                        $rootScope.echonestOnline = false;
                     });
             }else{
                 this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
-                    .then( function(response){
+                    .success( function(response){
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
                         $localStorage.echonesttasteprofile = response.response.catalog;
+                    })
+                    .error( function(error){
+                        this.isOnline = false;
+                        $rootScope.echonestOnline = false;
                     });
             }
         },
@@ -45,58 +53,28 @@ angular.module('spotmop.services.echonest', [])
             SettingsService.setSetting('echonestenabled',false);            
             $rootScope.echonestOnline = false;
         },
-        
+		
         /**
          * Taste Profile
          **/
 		createTasteProfile: function(){
-		
-            var deferred = $q.defer();
-
-            $http({
-					cache: false,
-					method: 'POST',
-					url: baseURL+'catalog/create',
-					data: {
-							api_key: apiKey,
-							format: 'json',
-							type: 'general',
-							name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
-						}
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					this.isOnline = false;
-					$rootScope.echonestOnline = false;
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'createTasteProfile', message: response.error.message});
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
+            return $.ajax({
+                url: baseURL+'catalog/create',
+                method: "POST",
+                data: {
+                        api_key: apiKey,
+                        format: 'json',
+                        type: 'general',
+                        name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
+                    }
+            });
         },
         
 		getTasteProfile: function(){
-		
-            var deferred = $q.defer();
-
-            $http({
-					cache: false,
-					method: 'GET',
-					url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					this.isOnline = false;
-					$rootScope.echonestOnline = false;
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getTasteProfile', message: response.error.message});
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
+            return $.ajax({
+                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
+                method: "GET"
+            });
         },
         
 		
