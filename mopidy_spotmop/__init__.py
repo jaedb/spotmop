@@ -14,7 +14,11 @@ from services.upgrade import upgrade
 
 from mopidy import config, ext
 
+<<<<<<< Updated upstream
 __version__ = '2.4.10'
+=======
+__version__ = '2.4.12'
+>>>>>>> Stashed changes
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 

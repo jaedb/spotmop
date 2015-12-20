@@ -235,34 +235,23 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	$timeout(
-		function(){
-			MopidyService.start();
-			if(SettingsService.getSetting('echonestenabled',false))
-                EchonestService.start();
-		},0
-	);
+	MopidyService.start();
+	if(SettingsService.getSetting('echonestenabled',false))
+		EchonestService.start();
+		
     
 	/**
 	 * Spotify account is authorized
 	 **/
-	$scope.$on('mopidy:state:online', function(){
-	
+	$scope.$on('mopidy:spotify:online', function(){	
+		
 		SpotifyService.getMe()
 			.then( function(response){
 				$scope.spotifyUser = response;
+				SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
 				
-				if( typeof(response.error) !== 'undefined' ){
-					NotifyService.error( response.error.message );
-				}else{
-					$rootScope.spotifyOnline = true;
-				
-					// save user to settings
-					SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-					
-					// update my playlists
-					$scope.updatePlaylists();
-				}
+				// update my playlists
+				$scope.updatePlaylists();
 			});
 	});
 	

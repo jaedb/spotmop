@@ -1076,7 +1076,7 @@ angular.module('spotmop.services.spotify', [])
     var retryStarted = false;
 	
     var responseInterceptor = {
-        responseError: function(response){
+        responseError: function( response ){
 		
             if(response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0){
 				
@@ -1087,7 +1087,12 @@ angular.module('spotmop.services.spotify', [])
 					if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken  ){
 						
 						// and re-authorize
-						$injector.get('SpotifyService').refreshToken();
+						$injector.get('SpotifyService').refreshToken()
+							.then( function(refreshResponse){								
+								$rootScope.$broadcast("spotmop:spotify:online");
+								$rootScope.spotifyOnline = true;
+								return response;
+							});
 					
 					// not yet authorized, so authorize!
 					}else{
