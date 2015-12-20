@@ -46,7 +46,7 @@ angular.module('spotmop.services.dialog', [])
 		scope: {
 			type: '@'
 		},
-		templateUrl: '/app/services/dialog/template.html',
+		templateUrl: 'app/services/dialog/template.html',
 		link: function( $scope, $element ){
 			$element.find('.content').html( $compile('<'+$scope.type+'dialog />')( $scope ) );
 		},
@@ -78,7 +78,7 @@ angular.module('spotmop.services.dialog', [])
 		restrict: 'E',
 		replace: true,
 		transclude: true,
-		templateUrl: '/app/services/dialog/createplaylist.template.html',
+		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
             $scope.saving = false;
 			$scope.togglePublic = function(){
@@ -126,7 +126,7 @@ angular.module('spotmop.services.dialog', [])
 		restrict: 'E',
 		replace: true,
 		transclude: true,
-		templateUrl: '/app/services/dialog/editplaylist.template.html',
+		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public;
@@ -174,7 +174,7 @@ angular.module('spotmop.services.dialog', [])
 		restrict: 'E',
 		replace: true,
 		transclude: true,
-		templateUrl: '/app/services/dialog/addtoplaylist.template.html',
+		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
             
 			$scope.playlists = [];

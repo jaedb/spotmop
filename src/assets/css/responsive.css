@@ -20,7 +20,14 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 500px ){
+@media( max-height: 670px ){
+	.main-menu .menu-item > a {
+		padding-top: 7px;
+		padding-bottom: 7px;
+	}
+	.main-menu .divider {
+		padding-top: 10px;
+	}
 }
 
 @media( max-height: 300px ){
@@ -68,6 +75,10 @@
 		left: -30%;
 		z-index: 4;
 	}
+	 
+	#sidebar > .inner {
+		bottom: 0;
+	}
 	
 	#body {
 		width: 100%;
@@ -85,6 +96,14 @@
 	#loading-bar-spinner {
 		right: 10px !important;
 		left: auto !important;
+	}
+	
+	#sidebar .main-menu {
+		padding-top: 15px;
+	}
+	
+	#sidebar .main-menu .divider.spacer {
+		height: 0;
 	}
 	
 	
@@ -356,6 +375,11 @@
 		margin-bottom: 10px;
 	}
 	
+	
+	/**
+	 * Search
+	 **/
+	 
 }
 
 
@@ -491,6 +515,10 @@
 	
 	.sub-page-navigation .menu-item {
 		margin-right: 10px;
+	}
+	
+	.search-page .sub-page-navigation .menu-item {
+		padding: 5px 0;
 	}
 	
 	.touchDevice #utilities {
@@ -639,6 +667,7 @@
 	.tracklist .track .album {
 		clear: left;
 		width: auto;
+		padding-left: 50%;
 		padding-right: 10px;
 		opacity: 0.5;
 	}

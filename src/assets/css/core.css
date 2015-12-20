@@ -1116,6 +1116,12 @@ h1 .flag {
 	min-height: 1px;
 }
 
+.track .title .local-track {
+	opacity: 0.2;
+	font-size: 11px;
+	padding-left: 5px;
+}
+
 .track .title {				width: 30%; }
 .track .artist {			width: 30%; }
 .track .album {				width: 30%; }
@@ -1127,6 +1133,7 @@ h1 .flag {
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
+	border-color: #EEEEEE;
 }
 
 body.dragging .tracklist .track.selected {
@@ -1136,6 +1143,11 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.selected,
 .tracklist .track.selected:hover {
 	background: #FFF39C;
+}
+
+.tracklist .track.transitioning,
+.tracklist .track.transitioning:hover {
+	opacity: 0.2;
 }
 
 .tracklist .track.playing {
@@ -1149,6 +1161,21 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.drag-hovering:first-child {
 	margin-top: -1px;
 }
+
+
+/**
+ * Folders (based on tracks)
+ **/
+
+.track.folder .icon {
+	width: 24px;
+	float: left;
+}
+
+.track.folder .title {
+	width: auto;
+}
+
  
  
 /**

@@ -631,21 +631,18 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		deleteTracksFromPlaylist: function( playlisturi, tracks ){
+		deleteTracksFromPlaylist: function( playlisturi, snapshotid, positions ){
 			
 			// get the user and playlist ids from the uri
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
             var deferred = $q.defer();
-
+			
             $http({
 					method: 'DELETE',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
 					dataType: "json",
-					data: JSON.stringify( { tracks: tracks } ),
+					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
@@ -654,7 +651,7 @@ angular.module('spotmop.services.spotify', [])
                 .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){					
+                .error(function( response ){
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });

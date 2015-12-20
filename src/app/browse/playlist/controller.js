@@ -162,26 +162,7 @@ angular.module('spotmop.browse.playlist', [])
 			
 		// we own it, proceed sir
 		}else{
-			
-			var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-			var tracksToDelete = [];
-			
-			// construct each track into a json object to delete
-			angular.forEach( selectedTracks, function( selectedTrack, index ){
-				tracksToDelete.push( {uri: selectedTrack.uri, positions: [$scope.tracklist.tracks.indexOf( selectedTrack )]} );
-			});
-			
-			// remove tracks from DOM immediately (for snappier UX)
-			// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
-			$scope.$apply( function(){
-				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-			});
-			
-			// parse these uris to spotify and delete these tracks
-			SpotifyService.deleteTracksFromPlaylist( $state.params.uri, tracksToDelete )
-				.error(function( error ){
-					console.log( error );
-				});
+			$scope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
 		}
 	});
 		

@@ -8,9 +8,9 @@
 		
 		<div id="full-player" class="player" ng-controller="PlayerController">
 
-			<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
-				<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1" ng-if="state().currentTlTrack.track"></div>
-				<div class="image placeholder" ng-if="!state().currentTlTrack.track"></div>
+			<a class="artwork image-container" ui-sref="browse.album({ uri: state().currentTlTrack.track.album.uri })">
+				<div class="image" style="background-image: url({{ state().currentTlTrack.track.image }})" ng-if="state().currentTlTrack.track"></div>
+				<div class="image placeholder" ng-if="!state().currentTlTrack.track || !state().currentTlTrack.track.image"></div>
 			</a>
 				
 			<div class="track-info">
