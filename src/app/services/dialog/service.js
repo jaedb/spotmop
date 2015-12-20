@@ -53,14 +53,12 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, DialogService ){
 			
             $scope.closeDialog = function(){
-                DialogService.remove();   
+                DialogService.remove();
             }
             
 			// listen for <esc> keypress
-			$(document).on('keyup', function(evt){
-				if( evt.keyCode == 27 ){
-					DialogService.remove();
-				}
+			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
+				DialogService.remove();
 			});
 		}
 	};

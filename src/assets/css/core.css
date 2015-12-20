@@ -782,6 +782,9 @@ h1 .flag {
 	opacity: 0.5;
 }
 
+.body .button.float-right {				float: right; }
+
+
 /* follow/unfollow */
 
 .body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */

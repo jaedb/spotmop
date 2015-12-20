@@ -219,6 +219,22 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
+		
+    
+	/**
+	 * Spotify is online and authorized
+	 **/
+	$scope.$on('spotmop:spotify:online', function(){
+		SpotifyService.getMe()
+			.then( function(response){
+				$scope.spotifyUser = response;
+				SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
+				
+				// update my playlists
+				$scope.updatePlaylists();
+			});
+	});
+	
 	
 	// when playback finishes, log this to EchoNest (if enabled)
 	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
@@ -236,24 +252,9 @@ angular.module('spotmop', [
      * We use $timeout to delay start until $digest is completed
      **/
 	MopidyService.start();
+	SpotifyService.start();
 	if(SettingsService.getSetting('echonestenabled',false))
 		EchonestService.start();
-		
-    
-	/**
-	 * Spotify account is authorized
-	 **/
-	$scope.$on('mopidy:spotify:online', function(){	
-		
-		SpotifyService.getMe()
-			.then( function(response){
-				$scope.spotifyUser = response;
-				SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-				
-				// update my playlists
-				$scope.updatePlaylists();
-			});
-	});
 	
 	
 	/**
