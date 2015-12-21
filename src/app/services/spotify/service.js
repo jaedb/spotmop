@@ -1104,18 +1104,41 @@ angular.module('spotmop.services.spotify', [])
 					// if we're already authorized, we just need to force a token refresh
 					if( $injector.get('SpotifyService').isAuthorized() ){
 						
+						console.log( 'refreshing...' );
+						console.log( response );
+						
 						// and re-authorize
 						$injector.get('SpotifyService').refreshToken()
-							.then( function(refreshResponse){								
-								$rootScope.$broadcast("spotmop:spotify:online");
-								$rootScope.spotifyOnline = true;
-								return response;
+							.then( function(refreshResponse){
+								
+								console.log('refreshed. Now sending original request');
+								
+								// construct a new, replacement request	
+								var deferred = $q.defer();
+								
+								$http({
+										method: request.config.method,
+										url: request.config.url,
+										headers: request.config.headers
+									})
+									.success(function( response ){
+										deferred.resolve( response );
+										$rootScope.$broadcast("spotmop:spotify:online");
+										$rootScope.spotifyOnline = true;
+									})
+									.error(function( response ){
+										deferred.reject( response.error.message );								
+										$rootScope.$broadcast("spotmop:spotify:offline");
+										$rootScope.spotifyOnline = false;
+									});
+									
+								return deferred.promise;
 							});
 					
 					// not yet authorized, so authorize!
 					}else{
-					
-						// remove our current authorization
+						
+						// remove our current authorization, just to clear the decks
 						$localStorage.spotify = {};
 						$rootScope.spotifyOnline = false;
 						
