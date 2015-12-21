@@ -83,9 +83,55 @@ angular.module('spotmop.services.player', [])
 		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
 			state.currentTlTrack = tlTrack.tl_track;		
 			updateCurrentTrack( tlTrack.tl_track );
-			updatePlayerState();
+			updatePlayerState();		
 		}
 	});
+	
+	
+	// Determine the correct object to use
+	var notification = window.Notification || window.mozNotification || window.webkitNotification;
+
+	// The user needs to allow this
+	if ('undefined' !== typeof notification)
+		notification.requestPermission(function(permission){});
+
+	/**
+	 * Notify the user using HTML5 notifications
+	 * Can be disabled from the settings page
+	 **/
+	function notifyCurrentTrack(){
+		
+		// not supported
+		if ('undefined' === typeof notification)
+			return false;
+			
+		// disabled by user
+		if( SettingsService.getSetting('notificationsDisabled', false) )
+			return false;
+			
+		var body = '';
+		for( var i = 0; i < state.currentTlTrack.track.artists.length; i++ ){
+			if( i > 0 )
+				body += ', ';
+			body += state.currentTlTrack.track.artists[i].name;
+		}
+		body += '\n'+state.currentTlTrack.track.album.name;
+		
+		var title = state.currentTlTrack.track.name;
+		var icon = state.currentTlTrack.track.image;	
+			
+		var trackNotification = new notification(
+			title,
+			{
+				body: body,
+				dir: 'auto', // or ltr, rtl
+				lang: 'EN', //lang used within the notification.
+				tag: 'spotmopNotification', //An element ID to get/set the content
+				icon: icon
+			}
+		);
+		return true;
+	}
 	
 	
 	/**
@@ -180,9 +226,10 @@ angular.module('spotmop.services.player', [])
 				// now we have track info, let's get the spotify artwork	
 				SpotifyService.getTrack( tlTrack.track.uri )
 					.then(function( response ){
-						if( typeof(response.album) !== 'undefined' )
-							//state.currentTlTrack.track.album.images = response.album.images;
+						if( typeof(response.album) !== 'undefined' ){
 							state.currentTlTrack.track.image = response.album.images[0].url;
+						}
+						notifyCurrentTrack();
 					});
 			
 			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
@@ -204,6 +251,8 @@ angular.module('spotmop.services.player', [])
 									if( largest )
 										state.currentTlTrack.track.image = largest['#text'];
 								}
+								
+								notifyCurrentTrack();
 							});
 			}
 			
