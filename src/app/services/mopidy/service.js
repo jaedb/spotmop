@@ -284,8 +284,7 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			var client = SettingsService.getClient();	
-			console.log(client);
+			var client = SettingsService.getClient();
 			PusherService.send({
 				title: 'Track skipped',
 				body: client.name +' vetoed this track!',
