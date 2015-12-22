@@ -37,6 +37,7 @@ class SpotmopExtension(ext.Extension):
         schema = super(SpotmopExtension, self).get_config_schema()
         schema['debug'] = config.Boolean()
         schema['pusherport'] = config.String()
+        schema['pusherclientmap'] = config.String()
         return schema
 
     def setup(self, registry):

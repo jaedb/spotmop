@@ -207,7 +207,6 @@ angular.module('spotmop', [
 	/**
 	 * Pusher integration
 	 **/
-	PusherService.start();    
 	$rootScope.$on('spotmop:pusher:received', function(event, data){
 		
 		var icon = '';
@@ -217,7 +216,7 @@ angular.module('spotmop', [
 		
 		NotifyService.browserNotify( data.title, data.body, icon );
 	});
-
+PusherService.start();
     
     /**
      * Mopidy music player is open for business
@@ -232,8 +231,20 @@ angular.module('spotmop', [
 		});
 		SettingsService.identifyClient().then( function( client ){
 			SettingsService.setSetting('client', client);
-			if( SettingsService.getSetting('username', false) )
-				SettingsService.setSetting('username', client.ip);
+			
+			// map our ip addresses to names
+			if( !SettingsService.getSetting('username', false) ){
+				var name = client.ip;
+				switch( client.ip ){
+					case '192.168.0.152':
+						name = 'James';
+						break;
+					case '192.168.0.118':
+						name = 'Jeremy';
+						break;
+				}
+				SettingsService.setSetting('username', name);
+			}
 		});
 	});
 	
