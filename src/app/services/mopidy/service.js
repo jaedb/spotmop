@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService /*, Settings, notifier */){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -309,7 +309,12 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		addToTrackList: function( uris, atPosition ){			
+		addToTrackList: function( uris, atPosition ){
+			PusherService.send({
+				title: 'New tracks added',
+				body: SettingsService.getSetting('username',null) +' added '+uris.length+' tracks to the queue',
+				user: SettingsService.getSetting('username','')
+			});
 			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
 			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
 		},

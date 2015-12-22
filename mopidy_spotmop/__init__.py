@@ -59,6 +59,7 @@ def spotmop_client_factory(config, core):
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
 
+    # PUSHER: need to fire this up from within the PusherHandler class... somehow
     application = tornado.web.Application([
         ('/pusher', pusher.PusherHandler),
     ])

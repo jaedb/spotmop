@@ -15,12 +15,12 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
   
   def open(self):
     self.connections.add(self)
-    logger.info( 'New Spotmop Pusher connection' )
+    logger.debug( 'New Spotmop Pusher connection' )
 
   def on_message(self, message):
     [connection.write_message(message) for connection in self.connections]
-    logger.info( 'Spotmop Pusher message received' )
+    logger.debug( 'Spotmop Pusher message received' )
 
   def on_close(self):
     self.connections.remove(self)
-    logger.info( 'Spotmop Pusher connection closed' )
+    logger.debug( 'Spotmop Pusher connection closed' )

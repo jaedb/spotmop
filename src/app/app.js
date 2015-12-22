@@ -24,6 +24,7 @@ angular.module('spotmop', [
 	'spotmop.services.echonest',
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
+	'spotmop.services.pusher',
 	
 	'spotmop.player',
 	'spotmop.queue',
@@ -61,7 +62,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService ){		
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -201,6 +202,15 @@ angular.module('spotmop', [
 		
 		return mode;
 	};
+	
+	
+	/**
+	 * Pusher integration
+	 **/
+	PusherService.start();    
+	$rootScope.$on('spotmop:pusher:received', function(event, data){
+		NotifyService.browserNotify( data.title, data.body, '' );
+	});
 
     
     /**
@@ -219,8 +229,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
-		
-    
+	
 	/**
 	 * Spotify is online and authorized
 	 **/
