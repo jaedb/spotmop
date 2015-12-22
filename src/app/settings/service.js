@@ -36,6 +36,23 @@ angular.module('spotmop.services.settings', [])
 		
 		
 		/**
+		 * Client identification details
+		 **/		
+		getClient: function(){
+			return this.getSetting('client', { ip: null, name: 'User', clientmap: [] });
+		},		
+		setClient: function( client ){			
+			var name = 'User';
+			for( var i = 0; i < client.clientmap.length; i++ ){
+				if( client.clientmap[i].ip == client.ip )
+					name = client.clientmap[i].name;
+			}
+			client.name = name;
+			service.setSetting('client', client);
+		},
+		
+		
+		/**
 		 * Identify the client, by IP address
 		 **/
 		identifyClient: function(){			

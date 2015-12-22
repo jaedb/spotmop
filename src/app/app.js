@@ -230,21 +230,7 @@ PusherService.start();
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
 		SettingsService.identifyClient().then( function( client ){
-			SettingsService.setSetting('client', client);
-			
-			// map our ip addresses to names
-			if( !SettingsService.getSetting('username', false) ){
-				var name = client.ip;
-				switch( client.ip ){
-					case '192.168.0.152':
-						name = 'James';
-						break;
-					case '192.168.0.118':
-						name = 'Jeremy';
-						break;
-				}
-				SettingsService.setSetting('username', name);
-			}
+			SettingsService.setClient(client);
 		});
 	});
 	
