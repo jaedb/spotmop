@@ -14,11 +14,11 @@ angular.module('spotmop.services.pusher', [
             var self = this;
 
             // Get mopidy ip and port from settigns
-            var pusherhost = window.location.hostname;
-            var pusherport = 6681;
+            var pusherhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
+            var pusherport = SettingsService.getSetting("pusherport", "6681");
 			
             try{
-				var host = "ws://music.james:6681/pusher";
+				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
 				var pusher = new WebSocket(host);
 			
 				console.info('Pusher connected');

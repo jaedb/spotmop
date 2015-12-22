@@ -87,27 +87,6 @@ angular.module('spotmop.services.player', [])
 		}
 	});
 	
-
-	/**
-	 * Notify the user using HTML5 notifications
-	 * Can be disabled from the settings page
-	 **/
-	function notifyCurrentTrack(){
-			
-		var body = '';
-		for( var i = 0; i < state.currentTlTrack.track.artists.length; i++ ){
-			if( i > 0 )
-				body += ', ';
-			body += state.currentTlTrack.track.artists[i].name;
-		}
-		body += '\n'+state.currentTlTrack.track.album.name;
-		
-		var title = state.currentTlTrack.track.name;
-		var icon = state.currentTlTrack.track.image;
-		
-		NotifyService.browserNotify( title, body, icon );
-	}
-	
 	
 	/**
 	 * Set the new play position and, if required, figure it out first
@@ -204,7 +183,6 @@ angular.module('spotmop.services.player', [])
 						if( typeof(response.album) !== 'undefined' ){
 							state.currentTlTrack.track.image = response.album.images[0].url;
 						}
-						notifyCurrentTrack();
 					});
 			
 			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
@@ -226,8 +204,6 @@ angular.module('spotmop.services.player', [])
 									if( largest )
 										state.currentTlTrack.track.image = largest['#text'];
 								}
-								
-								notifyCurrentTrack();
 							});
 			}
 			

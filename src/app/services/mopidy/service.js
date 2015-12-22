@@ -236,6 +236,7 @@ angular.module('spotmop.services.mopidy', [
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){
+			
 			var self = this;
 			
 			// pre-fetch our playlist tracks
@@ -282,7 +283,13 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function() {			
+		next: function() {	
+			PusherService.send({
+				title: 'Track skipped',
+				body: SettingsService.getSetting('username',null) +' vetoed this track!',
+				user: SettingsService.getSetting('username',''),
+				spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+			});		
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
 		getRepeat: function () {
@@ -310,11 +317,6 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
 		addToTrackList: function( uris, atPosition ){
-			PusherService.send({
-				title: 'New tracks added',
-				body: SettingsService.getSetting('username',null) +' added '+uris.length+' tracks to the queue',
-				user: SettingsService.getSetting('username','')
-			});
 			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
 			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
 		},

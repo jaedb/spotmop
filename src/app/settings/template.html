@@ -32,6 +32,14 @@
 				</div>
 
 				<div class="field">
+					<div class="label">Notifications port</div>
+					<div class="input">
+						<input type="text" name="pusherport" placeholder="6681" class="autosave" ng-model="settings.pusherport" ng-blur="saveField( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
 					<div class="label">Disable browser notifications</div>
 					<div class="input">
 						<span class="switch-button" ng-class="{on: settings.notificationsDisabled}" ng-click="toggleSetting('notificationsDisabled')"><span class="switch animate"></span></span>

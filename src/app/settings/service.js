@@ -15,12 +15,10 @@ angular.module('spotmop.services.settings', [])
 	// setup response object
 	service = {
 		
-		setSetting: function( $setting, $value ){
-			
+		setSetting: function( $setting, $value ){			
 			// unsetting?
 			if( ( typeof($value) === 'string' && $value == '' ) || typeof($value) === 'undefined' )
-				delete $localStorage.settings[$setting];
-			
+				delete $localStorage.settings[$setting];			
 			// setting
 			else
 				$localStorage.settings[$setting] = $value;
@@ -36,47 +34,63 @@ angular.module('spotmop.services.settings', [])
 			return $localStorage.settings;
 		},
 		
-		// run an upgrade
-		upgrade: function(){
-			
+		
+		/**
+		 * Identify the client, by IP address
+		 **/
+		identifyClient: function(){			
             var deferred = $q.defer();
-
+            $http({
+					method: 'GET',
+					url: urlBase+'identify'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
+		
+		/**
+		 * Perform a Spotmop upgrade
+		 **/
+		upgrade: function(){			
+            var deferred = $q.defer();
             $http({
 					method: 'POST',
 					url: urlBase+'upgrade'
 				})
-                .success(function( response ){
-					
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
-                });
-				
+                });				
             return deferred.promise;
 		},
 		
-		// get our current system specs
+		
+		/**
+		 * Identify our current Spotmop version
+		 **/
 		getVersion: function(){
-			
             var deferred = $q.defer();
-
             $http({
 					method: 'GET',
 					url: urlBase+'upgrade'
 				})
-                .success(function( response ){
-					
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
-                });
-				
+                });				
             return deferred.promise;
 		}
 	};

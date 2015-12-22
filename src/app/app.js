@@ -209,7 +209,13 @@ angular.module('spotmop', [
 	 **/
 	PusherService.start();    
 	$rootScope.$on('spotmop:pusher:received', function(event, data){
-		NotifyService.browserNotify( data.title, data.body, '' );
+		
+		var icon = '';
+		data.spotifyuser = JSON.parse(data.spotifyuser);
+		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
+			icon = data.spotifyuser.images[0].url;
+		
+		NotifyService.browserNotify( data.title, data.body, icon );
 	});
 
     
@@ -224,6 +230,11 @@ angular.module('spotmop', [
 		MopidyService.getConsume().then( function( isConsume ){			
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
+		SettingsService.identifyClient().then( function( client ){
+			SettingsService.setSetting('client', client);
+			if( SettingsService.getSetting('username', false) )
+				SettingsService.setSetting('username', client.ip);
+		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -237,7 +248,7 @@ angular.module('spotmop', [
 		SpotifyService.getMe()
 			.then( function(response){
 				$scope.spotifyUser = response;
-				SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
+				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
 				
 				// update my playlists
 				$scope.updatePlaylists();

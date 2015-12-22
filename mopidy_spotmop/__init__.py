@@ -4,11 +4,13 @@ import logging
 import os
 import tornado.web
 import tornado.websocket
+import json
 #import mem
 
 #from services.sync import sync
 from services.upgrade import upgrade
 from services.pusher import pusher
+from services.pusher import identify
 
 #from services.queuemanager import core as QueueManagerCore
 #from services.queuemanager import frontend
@@ -16,7 +18,7 @@ from services.pusher import pusher
 
 from mopidy import config, ext
 
-__version__ = '2.4.12'
+__version__ = '2.5.0'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -34,6 +36,7 @@ class SpotmopExtension(ext.Extension):
     def get_config_schema(self):
         schema = super(SpotmopExtension, self).get_config_schema()
         schema['debug'] = config.Boolean()
+        schema['pusherport'] = config.String()
         return schema
 
     def setup(self, registry):
@@ -59,15 +62,17 @@ def spotmop_client_factory(config, core):
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
 
-    # PUSHER: need to fire this up from within the PusherHandler class... somehow
+    # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
+    pusherport = str(config['spotmop']['pusherport'])
     application = tornado.web.Application([
         ('/pusher', pusher.PusherHandler),
     ])
-    application.listen(6681)
-    logger.info( 'Pusher server running on []:6681' )
+    application.listen(pusherport)
+    logger.info( 'Pusher server running on []:'+ str(pusherport) )
 	
     return [
 		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
+		('/identify', identify.IdentifyRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
             "path": spotmoppath,
             "default_filename": "index.html"
