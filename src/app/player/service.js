@@ -87,27 +87,12 @@ angular.module('spotmop.services.player', [])
 		}
 	});
 	
-	
-	// Determine the correct object to use
-	var notification = window.Notification || window.mozNotification || window.webkitNotification;
-
-	// The user needs to allow this
-	if ('undefined' !== typeof notification)
-		notification.requestPermission(function(permission){});
 
 	/**
 	 * Notify the user using HTML5 notifications
 	 * Can be disabled from the settings page
 	 **/
 	function notifyCurrentTrack(){
-		
-		// not supported
-		if ('undefined' === typeof notification)
-			return false;
-			
-		// disabled by user
-		if( SettingsService.getSetting('notificationsDisabled', false) )
-			return false;
 			
 		var body = '';
 		for( var i = 0; i < state.currentTlTrack.track.artists.length; i++ ){
@@ -118,19 +103,9 @@ angular.module('spotmop.services.player', [])
 		body += '\n'+state.currentTlTrack.track.album.name;
 		
 		var title = state.currentTlTrack.track.name;
-		var icon = state.currentTlTrack.track.image;	
-			
-		var trackNotification = new notification(
-			title,
-			{
-				body: body,
-				dir: 'auto', // or ltr, rtl
-				lang: 'EN', //lang used within the notification.
-				tag: 'spotmopNotification', //An element ID to get/set the content
-				icon: icon
-			}
-		);
-		return true;
+		var icon = state.currentTlTrack.track.image;
+		
+		NotifyService.browserNotify( title, body, icon );
 	}
 	
 	
