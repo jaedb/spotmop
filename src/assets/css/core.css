@@ -1791,10 +1791,6 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
-
-#full-player .volume {
-	display: none;
-}
  
 #full-player .track-info {
 	color: #000000;

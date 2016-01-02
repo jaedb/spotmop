@@ -215,6 +215,42 @@ angular.module('spotmop.services.dialog', [])
 			};
 		}
 	};
+})
+
+
+/**
+ * Dialog: Control volume of Mopidy
+ * Facilitates more fiddly controls, useful for touch devices
+ **/
+
+.directive('volumecontrolsdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/volumecontrols.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
+			$scope.state = function(){
+				return PlayerService.state();
+			}
+			$scope.setVolume = function( event ){
+				var slider, offset, position, percent;
+				if( $(event.target).hasClass('slider') )
+					slider = $(event.target);
+				else
+					slider = $(event.target).closest('.slider');
+				
+				// calculate the actual destination seek time
+				offset = slider.offset();
+				position = event.pageX - offset.left;
+				percent = position / slider.innerWidth() * 100;
+				percent = parseInt(percent);
+				
+				PlayerService.setVolume( percent );
+			};
+		}
+	};
 });
 
 

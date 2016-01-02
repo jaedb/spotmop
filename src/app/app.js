@@ -62,7 +62,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService ){		
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -89,6 +89,9 @@ angular.module('spotmop', [
 	}
     $scope.playlistsMenu = [];
     $scope.myPlaylists = {};
+	$scope.popupVolumeControls = function(){
+        DialogService.create('volumeControls', $scope);
+	}
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
@@ -216,7 +219,8 @@ angular.module('spotmop', [
 		
 		NotifyService.browserNotify( data.title, data.body, icon );
 	});
-PusherService.start();
+	
+	PusherService.start();
     
     /**
      * Mopidy music player is open for business
