@@ -298,8 +298,8 @@
 	}
 	
 	#player .button.previous,
-	#player .volume {
-		display: none;
+	#player .volume{
+		display: none !important;
 	}
 	
 	#player .track-info {
@@ -362,6 +362,10 @@
 	#full-player .track-timer,
 	#full-player .progress.slider {
 		display: none;
+	}
+	
+	#full-player .volume {
+		display: inline-block;
 	}
 	
 	

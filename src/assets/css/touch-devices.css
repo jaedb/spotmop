@@ -11,12 +11,13 @@
  * Player
  **/
 
-
-.app:not(.touchDevice) .player .volume.touch-friendly {
-	display: none;
+.touchDevice #full-player .volume,
+.touchDevice #player .volume.touch-friendly {
+	display: inline-block;
 }
 
-.touchDevice .player .volume:not(.touch-friendly) {
+#app:not(.touchDevice) #player .volume.touch-friendly,
+.touchDevice #player .volume:not(.touch-friendly) {
 	display: none;
 }
 

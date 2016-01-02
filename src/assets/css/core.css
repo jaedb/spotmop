@@ -1701,6 +1701,10 @@ body.dragging .tracklist .track.selected {
 	padding-right: 20px;
 }
 
+#player .volume.touch-friendly {
+	display: none;
+}
+
 #player .volume .slider {
 	display: inline-block;
 	width: 40px;
@@ -1839,6 +1843,10 @@ body.dragging .tracklist .track.selected {
 #full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
+}
+	
+#full-player .volume {
+	display: none;
 }
 
 
