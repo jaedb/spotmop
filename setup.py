@@ -22,7 +22,8 @@ setup(
     install_requires=[
         'setuptools',
         'Mopidy >= 0.19',
-        'ConfigObj'
+        'ConfigObj',
+		'tinydb'
     ],
     classifiers=[
         'Environment :: No Input/Output (Daemon)',

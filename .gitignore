@@ -1,5 +1,6 @@
 /Concepts/
 /dist/
+/mopidy_spotmop/services/users/users/json
 *.orig
 @eaDir
 Thumbs.db
