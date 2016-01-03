@@ -49,6 +49,7 @@ angular.module('spotmop.services.settings', [])
 			}
 			client.name = name;
 			service.setSetting('client', client);
+			return client;
 		},
 		
 		

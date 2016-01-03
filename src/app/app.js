@@ -234,7 +234,7 @@ angular.module('spotmop', [
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
 		SettingsService.identifyClient().then( function( client ){
-			SettingsService.setClient(client);
+			$scope.client = SettingsService.setClient(client);
 		});
 	});
 	

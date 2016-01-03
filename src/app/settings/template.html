@@ -235,6 +235,15 @@
 						</confirmation-button>
 						</div>
 					</div>
+
+					<div class="field">
+						<div class="label">Client ip map</div>
+						<div class="input">
+							<div ng-repeat="client in client.clientmap">
+								<span ng-bind="client.ip"></span>: <span ng-bind="client.name"></span>
+							</div>
+						</div>
+					</div>
 				
 				</div>
 			</div>
