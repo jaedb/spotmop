@@ -233,8 +233,15 @@ angular.module('spotmop', [
 		MopidyService.getConsume().then( function( isConsume ){			
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
-		SettingsService.identifyClient().then( function( client ){
-			$scope.client = SettingsService.setClient(client);
+		SettingsService.getUser().then( function( client ){
+            // if we have no record for this IP address, start initial setup
+            if( typeof(client.ip) === 'undefined' )
+                DialogService.create('initialsetup', $scope);
+            
+            // we do have a record, but it doesn't match our localStorage, then update our LocalStorage
+            else              
+                SettingsService.setSetting('client', client);
+                
 		});
 	});
 	

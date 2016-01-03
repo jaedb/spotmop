@@ -251,6 +251,37 @@ angular.module('spotmop.services.dialog', [])
 			};
 		}
 	};
+})
+
+
+/**
+ * Dialog: Setup new user
+ * Initial setup
+ **/
+
+.directive('initialsetupdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/initialsetup.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
+            $scope.saving = false;
+            $scope.save = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+                
+                // perform the creation
+                SettingsService.setUser( $scope.username )
+                    .then( function(response){
+                        SettingsService.setSetting('client', client);
+                        DialogService.remove();
+                    });
+            }
+		}
+	};
 });
 
 

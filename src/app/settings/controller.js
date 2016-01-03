@@ -102,4 +102,9 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
+	// save client name field
+	$scope.saveClientName = function( name ){
+		SettingsService.setUser( name );
+	};
+	
 });

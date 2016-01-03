@@ -10,7 +10,8 @@ class UsersRequestHandler(tornado.web.RequestHandler):
 
   def set_default_headers(self):
     self.set_header("Access-Control-Allow-Origin", "*")
-    self.set_header("Content-Type", "text/json")
+    self.set_header("Access-Control-Allow-Headers", "X-Requested-With")
+    self.set_header("Content-Type", "application/json")
 
   def initialize(self, core, config, version):
     self.core = core
@@ -52,9 +53,8 @@ class UsersRequestHandler(tornado.web.RequestHandler):
     self.db.insert( data )
     
     # respond
-    #newRecord = self.db.search( query.ip == clientip )[0]
-    #output = '{"status":"success", "record": '+ str(newRecord) +'}'
-    output = '{"status":"success"}'
+    record = self.db.search( query.ip == data['ip'] )[0]
+    output = '{"status":"success", "record": {"ip":"'+ record['ip'] +'","name":"'+ record['name'] +'"}}'
     self.write( output )
 
 def spotmop_users_factory(config, core):

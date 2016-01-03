@@ -37,26 +37,37 @@ angular.module('spotmop.services.settings', [])
 		
 		/**
 		 * Client identification details
-		 **/		
-		getClient: function(){
-			return this.getSetting('client', { ip: null, name: 'User', clientmap: [] });
-		},		
-		setClient: function( client ){			
-			var name = 'User';
-			for( var i = 0; i < client.clientmap.length; i++ ){
-				if( client.clientmap[i].ip == client.ip )
-					name = client.clientmap[i].name;
-			}
-			client.name = name;
-			service.setSetting('client', client);
-			return client;
+         * TODO: CORS issue, so have to use $.ajax
+		 **/	
+		getUser: function( username ){            
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: urlBase+'users'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+            return deferred.promise;
+		},
+        
+		setUser: function( username ){		
+            return $.ajax({
+                url: urlBase+'users',
+                method: "POST",
+                data: '{"name":"'+ username +'"}'
+            });
 		},
 		
 		
 		/**
 		 * Identify the client, by IP address
 		 **/
-		identifyClient: function(){			
+		identifyClient: function(){
             var deferred = $q.defer();
             $http({
 					method: 'GET',

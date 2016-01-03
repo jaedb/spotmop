@@ -33,7 +33,7 @@ angular.module('spotmop.services.pusher', [
 					
 					// if this is a pusher message, and it didn't originate from me
 					if( data.pusher ){
-						if( data.clientip != SettingsService.getClient().ip ){
+						if( data.clientip != SettingsService.getSetting('client', {ip:null,name:null}).ip ){
 							$rootScope.$broadcast('spotmop:pusher:received', data);
 						}
 					}
@@ -58,8 +58,9 @@ angular.module('spotmop.services.pusher', [
 		
 		send: function( data ){
 			data.pusher = true;
-			data.clientip = SettingsService.getClient().ip;
+			data.clientip = SettingsService.getSetting('client',{ip:null,name:null}).ip;
 			this.pusher.send( JSON.stringify(data) );
+            console.log( data );
 		}
 	};
 });
