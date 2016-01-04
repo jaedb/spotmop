@@ -88,7 +88,7 @@ angular.module('spotmop.settings', [])
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
 		localStorage.clear();		
-		window.location = window.location;
+		location.reload();
 	};
 	
 	SettingsService.getVersion()

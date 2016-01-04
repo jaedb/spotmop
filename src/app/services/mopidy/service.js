@@ -284,15 +284,13 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			SettingsService.getUser()
-                .then( function(client){;
-                    PusherService.send({
-                        title: 'Track skipped',
-                        body: client.name +' vetoed this track!',
-                        clientip: client.ip,
-                        spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
-                    });
-                });
+			var client = SettingsService.getClient();            
+            PusherService.send({
+                title: 'Track skipped',
+                body: client.name +' vetoed this track!',
+                clientip: client.ip,
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+            });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
 		getRepeat: function () {

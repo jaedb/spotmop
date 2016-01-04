@@ -11,23 +11,23 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
-	
+    
 	// setup response object
 	service = {
 		
-		setSetting: function( $setting, $value ){			
+		setSetting: function( setting, value ){
 			// unsetting?
-			if( ( typeof($value) === 'string' && $value == '' ) || typeof($value) === 'undefined' )
-				delete $localStorage.settings[$setting];			
+			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
+				delete $localStorage.settings[setting];			
 			// setting
-			else
-				$localStorage.settings[$setting] = $value;
+            else
+				$localStorage.settings[setting] = value;
 		},
 		
-		getSetting: function( $setting, $default ){	
-			if( typeof($localStorage.settings[$setting]) !== 'undefined' )
-				return $localStorage.settings[$setting];
-			return $default;
+		getSetting: function( setting, defaultValue ){
+			if( typeof($localStorage.settings[setting]) !== 'undefined' )
+				return $localStorage.settings[setting];
+			return defaultValue;
 		},
 		
 		getSettings: function(){
@@ -40,7 +40,13 @@ angular.module('spotmop.services.settings', [])
          * TODO: CORS issue, so have to use $.ajax
 		 **/	
 		getClient: function(){
-            return service.getSetting('client', {ip: null, name: null});
+            return service.getSetting('client', {ip: null, name: 'User'});
+		},
+		setClient: function( parameter, value ){
+            // make sure we have a settings container
+            if( typeof( $localStorage.settings.client ) === 'undefined' )
+                $localStorage.settings.client = {};
+            $localStorage.settings.client[parameter] = value;
 		},
         
 		getUser: function( username ){            
@@ -75,7 +81,7 @@ angular.module('spotmop.services.settings', [])
             var deferred = $q.defer();
             $http({
 					method: 'GET',
-					url: urlBase+'identify'
+					url: urlBase+'pusher/me'
 				})
                 .success(function( response ){					
                     deferred.resolve( response );

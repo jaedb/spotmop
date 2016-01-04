@@ -230,8 +230,12 @@ angular.module('spotmop', [
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
 		});
-		MopidyService.getConsume().then( function( isConsume ){			
+		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
+		});
+        
+		SettingsService.identifyClient().then( function( client ){			
+			SettingsService.setClient('ip',client.ip);
 		});
         
         // if we have no client name, then initiate initial setup
