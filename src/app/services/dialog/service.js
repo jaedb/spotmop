@@ -274,11 +274,8 @@ angular.module('spotmop.services.dialog', [])
                 $scope.saving = true;
                 
                 // perform the creation
-                SettingsService.setUser( $scope.username )
-                    .then( function(response){
-                        SettingsService.setSetting('client', client);
-                        DialogService.remove();
-                    });
+                SettingsService.setSetting('client', {ip: null, name: $scope.name});
+                DialogService.remove();
             }
 		}
 	};

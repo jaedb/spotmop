@@ -233,16 +233,11 @@ angular.module('spotmop', [
 		MopidyService.getConsume().then( function( isConsume ){			
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
-		SettingsService.getUser().then( function( client ){
-            // if we have no record for this IP address, start initial setup
-            if( typeof(client.ip) === 'undefined' )
-                DialogService.create('initialsetup', $scope);
-            
-            // we do have a record, but it doesn't match our localStorage, then update our LocalStorage
-            else              
-                SettingsService.setSetting('client', client);
-                
-		});
+        
+        // if we have no client name, then initiate initial setup
+		var client = SettingsService.getClient();
+        if( typeof(client.name) === 'undefined' || !client.name || client.name == '' )
+            DialogService.create('initialsetup', $scope);
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
