@@ -52,7 +52,7 @@ angular.module('spotmop.services.pusher', [
                             // notify server of our actual username
                             var name = SettingsService.getSetting('pushername', null)
                             if( name )
-                                service.setMe( data.details.id, name );
+                                service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
