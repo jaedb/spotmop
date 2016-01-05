@@ -10,7 +10,6 @@ import json
 #from services.sync import sync
 from services.upgrade import upgrade
 from services.pusher import pusher
-from services.users import users
 
 #from services.queuemanager import core as QueueManagerCore
 #from services.queuemanager import frontend
@@ -73,7 +72,6 @@ def spotmop_client_factory(config, core):
 	
     return [
 		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
-		('/users', users.UsersRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
 		('/pusher/([^/]+)', pusher.PusherRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
             "path": spotmoppath,
