@@ -238,8 +238,20 @@
 
 					<div class="field">
 						<div class="label">Connection status</div>
-						<div class="input">
-							<span ng-bind="settings.pusherip"></span>: <span ng-bind="settings.pusherid"></span>
+						<div class="input readonly">
+							IP: <span ng-bind="settings.pusherip"></span><br />
+                            ID: <span ng-bind="settings.pusherid"></span>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Current connections</div>
+						<div class="input readonly">
+                            <div ng-repeat="client in clientConnections">
+                                <span class="id" ng-bind="client.id"></span>
+                                <span class="ip" ng-bind="client.ip"></span>
+                                <span class="name" ng-bind="client.name"></span>
+                            </div>
 						</div>
 					</div>
 				

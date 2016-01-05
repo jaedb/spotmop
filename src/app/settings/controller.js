@@ -105,4 +105,9 @@ angular.module('spotmop.settings', [])
 		PusherService.setMe( name );
 		SettingsService.setSetting( 'pushername', name );
 	};	
+    
+    PusherService.getConnections()
+        .then( function(connections){
+            $scope.clientConnections = connections;
+        });
 });

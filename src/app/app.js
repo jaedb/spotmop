@@ -249,8 +249,8 @@ angular.module('spotmop', [
     $rootScope.$on('spotmop:pusher:online', function(event, data){
         
         // if we have no client name, then initiate initial setup
-		var client = SettingsService.getClient();
-        if( typeof(client.name) === 'undefined' || !client.name || client.name == '' )
+		var client = SettingsService.getSetting('pushername', null);
+        if( typeof(client) === 'undefined' || !client || client == '' )
             DialogService.create('initialsetup', $scope);
     });
     

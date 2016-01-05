@@ -29,8 +29,6 @@ angular.module('spotmop.services.pusher', [
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
 				var pusher = new WebSocket(host);
-			
-				console.info('Pusher connected');
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
@@ -43,9 +41,10 @@ angular.module('spotmop.services.pusher', [
 					
 					// if this is a pusher message (because Mopidy uses websockets too!)
 					if( data.pusher ){
-                        
+                        console.log( data );
                         // if it's an initial connection status message, just parse it through quietly
                         if( data.startup ){
+                            console.info('Pusher connected as '+data.details.id);
                             SettingsService.setSetting('pusherid', data.details.id);
                             SettingsService.setSetting('pusherip', data.details.ip);
                             
@@ -56,7 +55,9 @@ angular.module('spotmop.services.pusher', [
                         
                         // standard notification, fire it out!
                         }else{
-							$rootScope.$broadcast('spotmop:pusher:received', data);
+                            // make sure we're not notifying ourselves
+                            if( data.id != SettingsService.getSetting('pusherid', null) )
+                                $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
 				}
@@ -64,6 +65,7 @@ angular.module('spotmop.services.pusher', [
 				pusher.onclose = function(){
 					$rootScope.$broadcast('spotmop:pusher:offline');
 					service.isConnected = false;
+                    setTimeout(function(){ service.start() }, 5000);
 				}
 				
 				service.pusher = pusher;
@@ -82,7 +84,6 @@ angular.module('spotmop.services.pusher', [
 			data.pusher = true;
 			data.id = SettingsService.getSetting('pusherid',null);
 			service.pusher.send( JSON.stringify(data) );
-            console.log( data );
 		},
         
         /**
@@ -97,6 +98,26 @@ angular.module('spotmop.services.pusher', [
                 cache: false,
                 url: urlBase+'pusher/me?id='+id+'&name='+name
             });
+        },
+        
+        /**
+         * Get a list of all active connections
+         **/
+        getConnections: function(){
+            var deferred = $q.defer();
+            $http({
+                    method: 'GET',
+                    cache: false,
+                    url: urlBase+'pusher/connections'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
         }
 	};
     
