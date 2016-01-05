@@ -17,7 +17,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -100,11 +100,9 @@ angular.module('spotmop.settings', [])
 	// this is fired when an input field is blurred
 	$scope.saveField = function( event ){
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
-	};
-	
-	// save client name field
-	$scope.saveClientName = function( name ){
-		SettingsService.setUser( name );
-	};
-	
+	};	
+	$scope.savePusherName = function( name ){
+		PusherService.setMe( name );
+		SettingsService.setSetting( 'pushername', name );
+	};	
 });

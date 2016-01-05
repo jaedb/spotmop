@@ -284,11 +284,12 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			var client = SettingsService.getClient();            
+			var name = SettingsService.getSetting('pushername', 'User');      
+			var ip = SettingsService.getSetting('pusherip', null);      
             PusherService.send({
                 title: 'Track skipped',
-                body: client.name +' vetoed this track!',
-                clientip: client.ip,
+                body: name +' vetoed this track!',
+                clientip: ip,
                 spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();

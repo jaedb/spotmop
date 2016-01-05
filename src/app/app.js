@@ -205,22 +205,7 @@ angular.module('spotmop', [
 		
 		return mode;
 	};
-	
-	
-	/**
-	 * Pusher integration
-	 **/
-	$rootScope.$on('spotmop:pusher:received', function(event, data){
-		
-		var icon = '';
-		data.spotifyuser = JSON.parse(data.spotifyuser);
-		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
-			icon = data.spotifyuser.images[0].url;
-		
-		NotifyService.browserNotify( data.title, data.body, icon );
-	});
-	
-	PusherService.start();
+    
     
     /**
      * Mopidy music player is open for business
@@ -233,20 +218,12 @@ angular.module('spotmop', [
 		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
-        
-		SettingsService.identifyClient().then( function( client ){			
-			SettingsService.setClient('ip',client.ip);
-		});
-        
-        // if we have no client name, then initiate initial setup
-		var client = SettingsService.getClient();
-        if( typeof(client.name) === 'undefined' || !client.name || client.name == '' )
-            DialogService.create('initialsetup', $scope);
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
+    
 	
 	/**
 	 * Spotify is online and authorized
@@ -260,6 +237,31 @@ angular.module('spotmop', [
 				// update my playlists
 				$scope.updatePlaylists();
 			});
+	});
+	
+	
+	/**
+	 * Pusher integration
+	 **/
+     
+	PusherService.start();
+	
+    $rootScope.$on('spotmop:pusher:online', function(event, data){
+        
+        // if we have no client name, then initiate initial setup
+		var client = SettingsService.getClient();
+        if( typeof(client.name) === 'undefined' || !client.name || client.name == '' )
+            DialogService.create('initialsetup', $scope);
+    });
+    
+	$rootScope.$on('spotmop:pusher:received', function(event, data){
+		
+		var icon = '';
+		data.spotifyuser = JSON.parse(data.spotifyuser);
+		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
+			icon = data.spotifyuser.images[0].url;
+		
+		NotifyService.browserNotify( data.title, data.body, icon );
 	});
 	
 	

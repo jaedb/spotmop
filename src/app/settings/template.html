@@ -26,7 +26,7 @@
 				<div class="field">
 					<div class="label">Username</div>
 					<div class="input">
-						<input type="text" name="username" placeholder="New user" class="autosave" ng-model="settings.client.name" ng-blur="saveClientName( settings.client.name )" />
+						<input type="text" name="pushername" placeholder="New user" class="autosave" ng-model="settings.pushername" ng-blur="savePusherName( settings.pushername )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -42,7 +42,7 @@
 				<div class="field">
 					<div class="label">Disable browser notifications</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.notificationsDisabled}" ng-click="toggleSetting('notificationsDisabled')"><span class="switch animate"></span></span>
+						<span class="switch-button" ng-class="{on: settings.pusherdisabled}" ng-click="toggleSetting('pusherdisabled')"><span class="switch animate"></span></span>
 					</div>
 				</div>
 
@@ -237,11 +237,9 @@
 					</div>
 
 					<div class="field">
-						<div class="label">Client ip map</div>
+						<div class="label">Connection status</div>
 						<div class="input">
-							<div ng-repeat="client in client.clientmap">
-								<span ng-bind="client.ip"></span>: <span ng-bind="client.name"></span>
-							</div>
+							<span ng-bind="settings.pusherip"></span>: <span ng-bind="settings.pusherid"></span>
 						</div>
 					</div>
 				
