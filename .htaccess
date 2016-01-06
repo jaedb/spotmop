@@ -1,1 +1,5 @@
-Redirect 301 /index.html /src/index.html
+# If you've pulled Spotmop via GitHub, you can run this using any webserver
+# by navigating to localhost/src. Otherwise we'll redirect it to the Mopidy instance as per below
+RewriteEngine On
+RewriteCond %{SERVER_PORT} !^6680$ 
+RewriteRule (.*) http://%{HTTP_HOST}:6680/spotmop/ [R=301,L]
