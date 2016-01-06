@@ -17,7 +17,7 @@ from services.pusher import pusher
 
 from mopidy import config, ext
 
-__version__ = '2.5.0'
+__version__ = '2.5.1'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -77,9 +77,4 @@ def spotmop_client_factory(config, core):
             "path": spotmoppath,
             "default_filename": "index.html"
         }),
-    ]	
-
-
-	
-	
-	
+    ]
