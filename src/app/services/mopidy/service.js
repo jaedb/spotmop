@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService /*, Settings, notifier */){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -236,6 +236,7 @@ angular.module('spotmop.services.mopidy', [
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){
+			
 			var self = this;
 			
 			// pre-fetch our playlist tracks
@@ -282,7 +283,15 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function() {			
+		next: function() {		
+			var name = SettingsService.getSetting('pushername', 'User');      
+			var ip = SettingsService.getSetting('pusherip', null);      
+            PusherService.send({
+                title: 'Track skipped',
+                body: name +' vetoed this track!',
+                clientip: ip,
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+            });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
 		getRepeat: function () {
@@ -309,7 +318,7 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		addToTrackList: function( uris, atPosition ){			
+		addToTrackList: function( uris, atPosition ){
 			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
 			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
 		},

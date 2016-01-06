@@ -1,0 +1,21 @@
+<div class="set-username-dialog">
+	
+	<h4 class="section-title dialog-title">Initial Setup</h4>
+
+	<form>
+
+		<input class="large" name="username" placeholder="Your name" ng-model="name" />
+
+		<span class="actions">
+
+			<span class="button save productive" ng-click="save()" ng-hide="saving">
+				<i class="fa fa-check"></i>
+			</span>
+			
+			<span ng-show="saving" class="saving">
+				<img src="assets/svg/spinner.svg" class="working" />
+			</span>
+		
+	</form>
+	
+</div>

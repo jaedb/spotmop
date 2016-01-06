@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', function( $rootScope, $interval, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
 	
 	// setup initial states
 	var state = {
@@ -78,9 +78,13 @@ angular.module('spotmop.services.player', [])
 	// listen for current track changes
 	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		state.currentTlTrack = tlTrack.tl_track;		
-		updateCurrentTrack( tlTrack.tl_track );
-		updatePlayerState();
+		
+		// only if our new tlTrack differs from our current one
+		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
+			state.currentTlTrack = tlTrack.tl_track;		
+			updateCurrentTrack( tlTrack.tl_track );
+			updatePlayerState();		
+		}
 	});
 	
 	
@@ -171,11 +175,37 @@ angular.module('spotmop.services.player', [])
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
 			
-			// now we have track info, let's get the spotify artwork	
-			SpotifyService.getTrack( tlTrack.track.uri )
-				.then(function( response ){
-					state.currentTlTrack.track.album.images = response.album.images;
-				});
+			// if this is a Spotify track, get the track image from Spotify
+			if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
+				// now we have track info, let's get the spotify artwork	
+				SpotifyService.getTrack( tlTrack.track.uri )
+					.then(function( response ){
+						if( typeof(response.album) !== 'undefined' ){
+							state.currentTlTrack.track.image = response.album.images[0].url;
+						}
+					});
+			
+			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+			}else{
+				
+				var artist = encodeURIComponent( tlTrack.track.artists[0].name );
+				var album = encodeURIComponent( tlTrack.track.album.name );
+				
+				if( artist && album )
+					LastfmService.albumInfo( artist, album )
+						.then( function(response){
+							
+								// remove the existing image
+								state.currentTlTrack.track.image = false;
+								
+								// if we got an album match, plug in the 'extralarge' image to our state()
+								if( typeof(response.album) !== 'undefined' ){
+									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
+									if( largest )
+										state.currentTlTrack.track.image = largest['#text'];
+								}
+							});
+			}
 			
 			// update ui
 			updatePlayPosition();

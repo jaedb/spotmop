@@ -782,6 +782,9 @@ h1 .flag {
 	opacity: 0.5;
 }
 
+.body .button.float-right {				float: right; }
+
+
 /* follow/unfollow */
 
 .body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */
@@ -1116,6 +1119,12 @@ h1 .flag {
 	min-height: 1px;
 }
 
+.track .title .local-track {
+	opacity: 0.2;
+	font-size: 11px;
+	padding-left: 5px;
+}
+
 .track .title {				width: 30%; }
 .track .artist {			width: 30%; }
 .track .album {				width: 30%; }
@@ -1127,6 +1136,7 @@ h1 .flag {
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
+	border-color: #EEEEEE;
 }
 
 body.dragging .tracklist .track.selected {
@@ -1136,6 +1146,11 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.selected,
 .tracklist .track.selected:hover {
 	background: #FFF39C;
+}
+
+.tracklist .track.transitioning,
+.tracklist .track.transitioning:hover {
+	opacity: 0.2;
 }
 
 .tracklist .track.playing {
@@ -1149,6 +1164,21 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.drag-hovering:first-child {
 	margin-top: -1px;
 }
+
+
+/**
+ * Folders (based on tracks)
+ **/
+
+.track.folder .icon {
+	width: 24px;
+	float: left;
+}
+
+.track.folder .title {
+	width: auto;
+}
+
  
  
 /**
@@ -1671,6 +1701,10 @@ body.dragging .tracklist .track.selected {
 	padding-right: 20px;
 }
 
+#player .volume.touch-friendly {
+	display: none;
+}
+
 #player .volume .slider {
 	display: inline-block;
 	width: 40px;
@@ -1761,10 +1795,6 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
-
-#full-player .volume {
-	display: none;
-}
  
 #full-player .track-info {
 	color: #000000;
@@ -1813,6 +1843,10 @@ body.dragging .tracklist .track.selected {
 #full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
+}
+	
+#full-player .volume {
+	display: none;
 }
 
 

@@ -32,15 +32,7 @@ angular.module('spotmop.search', [])
 	$scope.loading = false;
 	var searchDelayer;
 	
-	$scope.dropdownActive = false;
-	$scope.toggleDropdown = function(){
-		if( $scope.dropdownActive )
-			$scope.dropdownActive = false;
-		else
-			$scope.dropdownActive = true;
-	}
-	
-	// focus on our search field on load
+	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchDevice() )
 		$(document).find('.search-form input.query').focus();
 	
@@ -51,7 +43,6 @@ angular.module('spotmop.search', [])
 	/**
 	 * Watch our query string for changes
 	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
-	 **/
     var tempQuery = '', queryTimeout;
     $scope.$watch('query', function(newValue, oldValue){
 		
@@ -72,6 +63,7 @@ angular.module('spotmop.search', [])
 			}, 1000);
 		}
     })
+	 **/
 	
 	
 	/**

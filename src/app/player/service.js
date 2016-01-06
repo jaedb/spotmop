@@ -83,7 +83,7 @@ angular.module('spotmop.services.player', [])
 		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
 			state.currentTlTrack = tlTrack.tl_track;		
 			updateCurrentTrack( tlTrack.tl_track );
-			updatePlayerState();
+			updatePlayerState();		
 		}
 	});
 	
@@ -180,9 +180,9 @@ angular.module('spotmop.services.player', [])
 				// now we have track info, let's get the spotify artwork	
 				SpotifyService.getTrack( tlTrack.track.uri )
 					.then(function( response ){
-						if( typeof(response.album) !== 'undefined' )
-							//state.currentTlTrack.track.album.images = response.album.images;
+						if( typeof(response.album) !== 'undefined' ){
 							state.currentTlTrack.track.image = response.album.images[0].url;
+						}
 					});
 			
 			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork

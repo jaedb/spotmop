@@ -782,6 +782,9 @@ h1 .flag {
 	opacity: 0.5;
 }
 
+.body .button.float-right {				float: right; }
+
+
 /* follow/unfollow */
 
 .body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */
@@ -1698,6 +1701,10 @@ body.dragging .tracklist .track.selected {
 	padding-right: 20px;
 }
 
+#player .volume.touch-friendly {
+	display: none;
+}
+
 #player .volume .slider {
 	display: inline-block;
 	width: 40px;
@@ -1788,10 +1795,6 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
-
-#full-player .volume {
-	display: none;
-}
  
 #full-player .track-info {
 	color: #000000;
@@ -1840,6 +1843,10 @@ body.dragging .tracklist .track.selected {
 #full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
+}
+	
+#full-player .volume {
+	display: none;
 }
 
 

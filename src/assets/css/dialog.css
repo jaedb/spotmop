@@ -150,4 +150,20 @@
 }
 
 
+/**
+ * Volume controls
+ **/
+
+.volume-controls-dialog .volume {
+	padding-top: 50px;
+}
+
+.volume-controls-dialog .slider .track {
+	height: 30px;
+}
+
+
+
+
+
 

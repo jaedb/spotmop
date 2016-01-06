@@ -19,6 +19,62 @@
 		
 		<div class="settings">
 			
+			<div class="section info">
+			
+				<h4 class="section-title underline">Spotmop</h4>
+
+				<div class="field">
+					<div class="label">Username</div>
+					<div class="input">
+						<input type="text" name="pushername" placeholder="New user" class="autosave" ng-model="settings.pushername" ng-blur="savePusherName( settings.pushername )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Notifications port</div>
+					<div class="input">
+						<input type="text" name="pusherport" placeholder="6681" class="autosave" ng-model="settings.pusherport" ng-blur="saveField( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Disable browser notifications</div>
+					<div class="input">
+						<span class="switch-button" ng-class="{on: settings.pusherdisabled}" ng-click="toggleSetting('pusherdisabled')"><span class="switch animate"></span></span>
+					</div>
+				</div>
+
+				<div class="field shortcut-keys">
+					<div class="label">Keyboard shortcuts</div>
+					<div class="input">					
+						<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+
+				<div class="field">
+					<div class="label">Current version</div>
+					<div class="input readonly">
+						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
+						<span ng-show="version.currentVersion < version.latestVersion">
+							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
+							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
+						</span>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Author</div>
+					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
+					<div class="clear-both"></div>
+				</div>
+			</div>
+			
+			<!-- SECTION -->
+			
 			<div class="section mopidy">
 			
 				<h4 class="section-title underline">
@@ -128,78 +184,6 @@
 			
 			<!-- SECTION -->
 			
-			<div class="section info">
-			
-				<h4 class="section-title underline">Spotmop</h4>
-				
-				<div class="field">
-					<div class="label">Author</div>
-					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
-					<div class="clear-both"></div>
-				</div>
-
-				<div class="field">
-					<div class="label">Current version</div>
-					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
-						<span ng-show="version.currentVersion < version.latestVersion">
-							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
-							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
-						</span>
-					</div>
-					<div class="clear-both"></div>
-				</div>
-
-				<div class="field shortcut-keys">
-					<div class="label">Keyboard shortcuts</div>
-					<div class="input">
-					
-						<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
-						
-						<div class="shortcuts" ng-show="settings.keyboardShortcutsEnabled">
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-minus"></i> Spacebar</span></div>
-								<div class="col w80">Play/pause</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-level-down fa-rotate-90"></i>&nbsp; Enter</span></div>
-								<div class="col w80">Play selected tracks</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-close"></i> Delete</span></div>
-								<div class="col w80">Delete selected tracks</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-up"></i> Up arrow</span></div>
-								<div class="col w80">Volume up by 10%</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-down"></i> Down arrow</span></div>
-								<div class="col w80">Volume down by 10%</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-left"></i> Left arrow</span></div>
-								<div class="col w80">Previous track</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-right"></i> Right arrow</span></div>
-								<div class="col w80">Next track</div>
-								<div class="clear-both"></div>
-							</div>
-						</div>
-					</div>
-					<div class="clear-both"></div>
-				</div>
-			</div>
-			
-			<!-- SECTION -->
-			
 			<div class="section advanced">
 			
 				<h4 class="section-title underline">Advanced</h4>
@@ -249,6 +233,25 @@
 							confirmation-text="Are you sure?"
 							on-confirmation="resetSettings">
 						</confirmation-button>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Connection status</div>
+						<div class="input readonly">
+							IP: <span ng-bind="settings.pusherip"></span><br />
+                            ID: <span ng-bind="settings.pusherid"></span>
+						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Current connections</div>
+						<div class="input readonly">
+                            <div ng-repeat="client in clientConnections">
+                                <span class="id" ng-bind="client.id"></span>
+                                <span class="ip" ng-bind="client.ip"></span>
+                                <span class="name" ng-bind="client.name"></span>
+                            </div>
 						</div>
 					</div>
 				

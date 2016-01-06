@@ -53,7 +53,7 @@ angular.module('spotmop.services.echonest', [])
             SettingsService.setSetting('echonestenabled',false);            
             $rootScope.echonestOnline = false;
         },
-        
+		
         /**
          * Taste Profile
          **/
@@ -80,6 +80,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		/**
 		 * Add a number of trackids to the taste profile
+		 * NOTE: This hasn't been upgraded to return a deferred.promise because of CORS issue when using $http instead of $ajax ... need to investigate
 		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
 		 * @param trackid = string|array spotify uri
 		 * @param favorite = boolean (optional) add these track(s) as favorites

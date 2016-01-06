@@ -53,14 +53,12 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, DialogService ){
 			
             $scope.closeDialog = function(){
-                DialogService.remove();   
+                DialogService.remove();
             }
             
 			// listen for <esc> keypress
-			$(document).on('keyup', function(evt){
-				if( evt.keyCode == 27 ){
-					DialogService.remove();
-				}
+			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
+				DialogService.remove();
 			});
 		}
 	};
@@ -215,6 +213,70 @@ angular.module('spotmop.services.dialog', [])
 						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
 					});
 			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Control volume of Mopidy
+ * Facilitates more fiddly controls, useful for touch devices
+ **/
+
+.directive('volumecontrolsdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/volumecontrols.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
+			$scope.state = function(){
+				return PlayerService.state();
+			}
+			$scope.setVolume = function( event ){
+				var slider, offset, position, percent;
+				if( $(event.target).hasClass('slider') )
+					slider = $(event.target);
+				else
+					slider = $(event.target).closest('.slider');
+				
+				// calculate the actual destination seek time
+				offset = slider.offset();
+				position = event.pageX - offset.left;
+				percent = position / slider.innerWidth() * 100;
+				percent = parseInt(percent);
+				
+				PlayerService.setVolume( percent );
+			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Setup new user
+ * Initial setup
+ **/
+
+.directive('initialsetupdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/initialsetup.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
+            $scope.saving = false;
+            $scope.save = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+                
+                // perform the creation
+                SettingsService.setSetting('pushername', $scope.name);
+                DialogService.remove();
+            }
 		}
 	};
 });

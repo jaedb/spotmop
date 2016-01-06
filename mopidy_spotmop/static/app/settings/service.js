@@ -11,72 +11,125 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
-	
+    
 	// setup response object
 	service = {
 		
-		setSetting: function( $setting, $value ){
-			
+		setSetting: function( setting, value ){
 			// unsetting?
-			if( ( typeof($value) === 'string' && $value == '' ) || typeof($value) === 'undefined' )
-				delete $localStorage.settings[$setting];
-			
+			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
+				delete $localStorage.settings[setting];			
 			// setting
-			else
-				$localStorage.settings[$setting] = $value;
+            else
+				$localStorage.settings[setting] = value;
 		},
 		
-		getSetting: function( $setting, $default ){	
-			if( typeof($localStorage.settings[$setting]) !== 'undefined' )
-				return $localStorage.settings[$setting];
-			return $default;
+		getSetting: function( setting, defaultValue ){
+			if( typeof($localStorage.settings[setting]) !== 'undefined' )
+				return $localStorage.settings[setting];
+			return defaultValue;
 		},
 		
 		getSettings: function(){
 			return $localStorage.settings;
 		},
 		
-		// run an upgrade
-		upgrade: function(){
-			
+		
+		/**
+		 * Client identification details
+         * TODO: CORS issue, so have to use $.ajax
+		 **/	
+		getClient: function(){
+            return service.getSetting('client', {ip: null, name: 'User'});
+		},
+		setClient: function( parameter, value ){
+            // make sure we have a settings container
+            if( typeof( $localStorage.settings.client ) === 'undefined' )
+                $localStorage.settings.client = {};
+            $localStorage.settings.client[parameter] = value;
+		},
+        
+		getUser: function( username ){            
             var deferred = $q.defer();
-
+            $http({
+					method: 'GET',
+					url: urlBase+'users'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+            return deferred.promise;
+		},
+        
+		setUser: function( username ){		
+            return $.ajax({
+                url: urlBase+'users',
+                method: "POST",
+                data: '{"name":"'+ username +'"}'
+            });
+		},
+		
+		
+		/**
+		 * Identify the client, by IP address
+		 **/
+		identifyClient: function(){
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: urlBase+'pusher/me'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
+		
+		/**
+		 * Perform a Spotmop upgrade
+		 **/
+		upgrade: function(){			
+            var deferred = $q.defer();
             $http({
 					method: 'POST',
 					url: urlBase+'upgrade'
 				})
-                .success(function( response ){
-					
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
-                });
-				
+                });				
             return deferred.promise;
 		},
 		
-		// get our current system specs
+		
+		/**
+		 * Identify our current Spotmop version
+		 **/
 		getVersion: function(){
-			
             var deferred = $q.defer();
-
             $http({
 					method: 'GET',
 					url: urlBase+'upgrade'
 				})
-                .success(function( response ){
-					
+                .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
-                });
-				
+                });				
             return deferred.promise;
 		}
 	};

@@ -121,7 +121,10 @@ angular.module('spotmop.discover', [])
 			.then(function( response ){
 			
 				// convert our echonest list into an array to get from spotify
-				var echonestArtists = response.response.artists;
+				var echonestArtists = [];
+				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
+					response.response.artists;
+					
 				var artisturis = [];
 				
 				// make sure we got some artists
