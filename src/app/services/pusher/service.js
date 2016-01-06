@@ -41,7 +41,7 @@ angular.module('spotmop.services.pusher', [
 					
 					// if this is a pusher message (because Mopidy uses websockets too!)
 					if( data.pusher ){
-                        console.log( data );
+					
                         // if it's an initial connection status message, just parse it through quietly
                         if( data.startup ){
                             console.info('Pusher connected as '+data.details.id);
