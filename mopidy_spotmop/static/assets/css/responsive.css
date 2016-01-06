@@ -20,7 +20,14 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 500px ){
+@media( max-height: 670px ){
+	.main-menu .menu-item > a {
+		padding-top: 7px;
+		padding-bottom: 7px;
+	}
+	.main-menu .divider {
+		padding-top: 10px;
+	}
 }
 
 @media( max-height: 300px ){
@@ -32,10 +39,20 @@
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
 /* ================================================================================================ */
 
+@media( min-width: 800px ){
+	.mobile-show {
+		display: none !important;
+	}
+}
+
 @media( max-width: 800px ){
+
+	.mobile-show {
+		display: block !important;
+	}
 	
 	.mobile-hide {
-		display: none;
+		display: none !important;
 	}
 	
 	
@@ -58,6 +75,10 @@
 		left: -30%;
 		z-index: 4;
 	}
+	 
+	#sidebar > .inner {
+		bottom: 0;
+	}
 	
 	#body {
 		width: 100%;
@@ -77,12 +98,21 @@
 		left: auto !important;
 	}
 	
+	#sidebar .main-menu {
+		padding-top: 15px;
+	}
+	
+	#sidebar .main-menu .divider.spacer {
+		height: 0;
+	}
+	
 	
 	/**
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
+	 
 	.page-header {
-		display: block !important;
+		display: block;
 		margin: -40px -40px 20px -40px;
 		background: #333333;
 		color: #FFFFFF;
@@ -104,10 +134,16 @@
 	/**
 	 * Notifications
 	 **/
+	 
 	#notifications {
 		left: 0;
 	}
 	
+	.page-notification {
+		margin-top: -20px;
+		padding: 10px 20px;
+		text-align: center;
+	}
 	
 	
 	/**
@@ -262,8 +298,8 @@
 	}
 	
 	#player .button.previous,
-	#player .volume {
-		display: none;
+	#player .volume{
+		display: none !important;
 	}
 	
 	#player .track-info {
@@ -332,13 +368,11 @@
 		display: inline-block;
 	}
 	
-	#full-player .volume .slider {
-		width: 50px;
-		display: inline-block;
-		vertical-align: bottom;
-		margin-bottom: 10px;
-	}
 	
+	/**
+	 * Search
+	 **/
+	 
 }
 
 
@@ -474,6 +508,10 @@
 	
 	.sub-page-navigation .menu-item {
 		margin-right: 10px;
+	}
+	
+	.search-page .sub-page-navigation .menu-item {
+		padding: 5px 0;
 	}
 	
 	.touchDevice #utilities {
@@ -622,6 +660,7 @@
 	.tracklist .track .album {
 		clear: left;
 		width: auto;
+		padding-left: 50%;
 		padding-right: 10px;
 		opacity: 0.5;
 	}

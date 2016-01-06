@@ -1,10 +1,12 @@
 <div class="page library-tracks-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header">
+		<div class="page-header mobile-show">
 			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 			<h1>Tracks</h1>
 		</div>
+		
+		<h1 class="mobile-hide">Tracks</h1>
 		
 		<div class="library-tracks tracklist droppable"  ng-controller="TracklistController">
 			<track ng-repeat="track in tracklist.tracks track by $index"></track>

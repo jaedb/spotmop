@@ -9,7 +9,7 @@ angular.module('spotmop.common.tracklist', [
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope, MopidyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
 			/**
 			 * Single click
@@ -50,21 +50,20 @@ angular.module('spotmop.common.tracklist', [
 						trackUrisToAdd.push( track.uri );
 				}
 				
-				$rootScope.requestsLoading++;
-				
 				// play me (the double-clicked track) immediately
 				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+					
+					if( trackUrisToAdd.length > 0 ){
+					
+						// notify user that this could take some time			
+						var message = 'Adding '+trackUrisToAdd.length+' tracks';
+						if( trackUrisToAdd.length > 10 )
+							message += '... this could take some time';
+						NotifyService.notify( message );
 
-					// notify user that this could take some time			
-					var message = 'Adding '+trackUrisToAdd.length+' tracks';
-					if( trackUrisToAdd.length > 10 )
-						message += '... this could take some time';
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message, autoremove: true});
-
-					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( trackUrisToAdd ).then( function(response){
-						$rootScope.requestsLoading--;
-					});
+						// add the following tracks to the tracklist
+						MopidyService.addToTrackList( trackUrisToAdd );
+					}
 				});
 			});
 		}
@@ -129,11 +128,82 @@ angular.module('spotmop.common.tracklist', [
 })
 
 
+.directive('localtrack', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/tracklist/localtrack.template.html',
+		link: function( $scope, element, attrs ){		
+		},
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
+			
+			$scope.state = PlayerService.state;
+			
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mouseup( function( event ){
+				
+				// left click
+				if( event.which === 1 ){
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
+				}
+			});		
+			
+			
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+				
+				// what position track am I in the tracklist
+				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
+				var trackUrisToAdd = [];
+				
+				// loop me, and all my following tracks, fetching their uris
+				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
+					var track = $scope.tracklist.tracks[i];					
+					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
+						trackUrisToAdd.push( track.uri );
+				}
+				
+				// play me (the double-clicked track) immediately
+				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+					
+					if( trackUrisToAdd.length > 0 ){
+					
+						// notify user that this could take some time			
+						var message = 'Adding '+trackUrisToAdd.length+' tracks';
+						if( trackUrisToAdd.length > 10 )
+							message += '... this could take some time';
+						NotifyService.notify( message );
+
+						// add the following tracks to the tracklist
+						MopidyService.addToTrackList( trackUrisToAdd );
+					}
+				});
+			});
+		}
+	}
+})
+
+
 /**
  * Tracklist controller
  * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
  **/
-.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService ){
+.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
 
 	// prevent right-click menus
 	$(document).contextmenu( function(evt){
@@ -252,18 +322,14 @@ angular.module('spotmop.common.tracklist', [
 		angular.forEach( selectedTracks, function( track ){
 			selectedTracksUris.push( track.uri );
 		});
-		
-		$rootScope.requestsLoading++;
 			
 		var message = 'Adding '+selectedTracks.length+' tracks to queue';
 		if( selectedTracks.length > 10 )
 			message += '... this could take some time';
 			
-		$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'adding-to-queue', message: message, autoremove: true});
+		NotifyService.notify( message );
 				
-		MopidyService.addToTrackList( selectedTracksUris, atPosition ).then( function(response){
-			$rootScope.requestsLoading--;
-		});
+		MopidyService.addToTrackList( selectedTracksUris, atPosition );
 	});
 	
 	
@@ -284,7 +350,7 @@ angular.module('spotmop.common.tracklist', [
 		
 		// depending on context, make the selected track(s) play
 		// queue
-		if( $scope.tracklist.type == 'tltrack' ){
+		if( $scope.tracklist.type == 'tltrack'){
 			
 			// get the queue's tracks
 			// we need to re-get the queue because at this point some tracks may not have tlids
@@ -302,7 +368,7 @@ angular.module('spotmop.common.tracklist', [
 			});
 			
 		// generic tracklist (playlist, top-tracks, album, etc)
-		}else if( $scope.tracklist.type == 'track' ){
+		}else{
 		
 			// build an array of track uris (and subtract the first one, as we play him immediately)
 			var selectedTracksUris = [];
@@ -310,25 +376,19 @@ angular.module('spotmop.common.tracklist', [
 				selectedTracksUris.push( selectedTracks[i].uri );
 			};
 			
-			$rootScope.requestsLoading++;
-			
 			var message = 'Adding '+selectedTracks.length+' tracks to queue';
 			if( selectedTracks.length > 10 )
 				message += '... this could take some time';
 				
-			$rootScope.$broadcast('spotmop:notifyUser', {type: 'loading', id: 'playing-from-tracklist', message: message, autoremove: true });
-				
+			NotifyService.notify( message );
+			
 			// play the first track immediately
 			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
 				
 				// more tracks to add
 				if( selectedTracksUris.length > 0 ){
 					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( selectedTracksUris ).then( function(response){
-						$rootScope.requestsLoading--;
-					});
-				}else{
-					$rootScope.requestsLoading--;
+					MopidyService.addToTrackList( selectedTracksUris );
 				}
 			});
 		}
@@ -354,18 +414,40 @@ angular.module('spotmop.common.tracklist', [
 	
 	
 	/**
-	 * TODO: Selected Tracks >> Delete
+	 * Selected Tracks >> Delete
 	 **/
 	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
 		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksUris = [];
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var trackPositionsToDelete = [];
 		
-		angular.forEach( selectedTracks, function(track){
-			selectedTracksUris.push( track.track.uri );
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			selectedTrack.transitioning = true;
 		});
 		
-		// TODO: Implement mopidy for queue, and spotify for playlists that we own
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
+			.then( function(response){
+			
+					// rejected
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error( response.error.message );
+					
+						// un-transition and restore the tracks we couldn't delete
+						angular.forEach( selectedTracks, function( selectedTrack, index ){
+							selectedTrack.transitioning = false;
+						});
+					// successful
+					}else{
+						// remove tracks from DOM
+						$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
+						
+						// update our snapshot so Spotify knows which version of the playlist our positions refer to
+						$scope.playlist.snapshot_id = response.snapshot_id;
+					}
+				});
 	});
 	
 	
@@ -397,8 +479,6 @@ angular.module('spotmop.common.tracklist', [
 	 **/
 	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
 		
-        $rootScope.requestsLoading++;
-		
 		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
 		var selectedTracksUris = [];
 		
@@ -414,14 +494,7 @@ angular.module('spotmop.common.tracklist', [
 		});
 		
 		// tell spotify to go'on get
-		SpotifyService.addTracksToLibrary( selectedTracksUris )
-			.success( function(response){
-				$rootScope.requestsLoading--;
-			})
-			.error( function(response){
-				$rootScope.requestsLoading--;
-				$scope.$broadcast('spotmop:notifyUser', {type: 'error', id: 'adding-to-library-error', message: response.error.message, autoremove: true});
-			});	
+		SpotifyService.addTracksToLibrary( selectedTracksUris );
 	});
 	
 	

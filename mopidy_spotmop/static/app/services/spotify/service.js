@@ -13,6 +13,65 @@ angular.module('spotmop.services.spotify', [])
 	// setup response object
     var service = {
 		
+		start: function(){
+	
+			// inject our authorization frame, on the placeholder action
+			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
+			$(body).append(frame);
+			
+			// set container for spotify storage
+			if( typeof($localStorage.spotify) === 'undefined' )
+				$localStorage.spotify = {};
+				
+			if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
+				$localStorage.spotify.AccessToken = null;
+				
+			if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
+				$localStorage.spotify.RefreshToken = null;
+				
+			if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
+				$localStorage.spotify.AuthorizationCode = null;
+				
+			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
+				$localStorage.spotify.AccessTokenExpiry = null;
+			
+			// setup automatic refreshing (tokens last for 3600 seconds = 1 hour, so let's refresh every 3500 seconds = 59 minutes)
+			$interval( service.refreshToken, 3500000 );
+			
+			// listen for incoming messages from the authorization iframe
+			window.addEventListener('message', function(event){
+				
+				// only allow incoming data from our authorized authenticator proxy
+				if( event.origin !== "http://jamesbarnsley.co.nz" )
+					return false;
+				
+				// convert to json
+				var data = JSON.parse(event.data);
+				
+				console.info('Spotify authorization successful');
+				
+				// take our returned data, and save it to our localStorage
+				$localStorage.spotify.AuthorizationCode = data.authorization_code;
+				$localStorage.spotify.AccessToken = data.access_token;
+				$localStorage.spotify.RefreshToken = data.refresh_token;
+				$rootScope.spotifyOnline = true;
+				$rootScope.$broadcast('spotmop:spotify:online');
+			}, false);
+			
+			
+			/**
+			 * The real starter
+			 **/
+			if( this.isAuthorized() ){
+				// on start, get a new token
+				// this means we [easily] know how long it's been since last refreshed
+				this.refreshToken();
+				$rootScope.$broadcast('spotmop:spotify:online');
+			}else{
+				this.authorize();
+			}
+		},
+		
 		logout: function(){
 			$localStorage.spotify = {};
 			$rootScope.spotifyOnline = false;
@@ -25,6 +84,12 @@ angular.module('spotmop.services.spotify', [])
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
 			frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
+		},
+		
+		isAuthorized: function(){
+			if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken )
+				return true;
+			return false;
 		},
 		
 		/**
@@ -631,21 +696,18 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		deleteTracksFromPlaylist: function( playlisturi, tracks ){
+		deleteTracksFromPlaylist: function( playlisturi, snapshotid, positions ){
 			
 			// get the user and playlist ids from the uri
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
             var deferred = $q.defer();
-
+			
             $http({
 					method: 'DELETE',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
 					dataType: "json",
-					data: JSON.stringify( { tracks: tracks } ),
+					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
@@ -654,7 +716,7 @@ angular.module('spotmop.services.spotify', [])
                 .success(function( response ){					
                     deferred.resolve( response );
                 })
-                .error(function( response ){					
+                .error(function( response ){
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
@@ -1010,53 +1072,6 @@ angular.module('spotmop.services.spotify', [])
 		}
 	};
 	
-	// inject our authorization frame, on the placeholder action
-	var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
-	$(body).append(frame);
-	
-	// set container for spotify storage
-	if( typeof($localStorage.spotify) === 'undefined' )
-		$localStorage.spotify = {};
-		
-	if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
-		$localStorage.spotify.AccessToken = null;
-		
-	if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
-		$localStorage.spotify.RefreshToken = null;
-		
-	if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
-		$localStorage.spotify.AuthorizationCode = null;
-		
-	if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
-		$localStorage.spotify.AccessTokenExpiry = null;
-
-	// on load, get a new token
-	// this means we [easily] know how long it's been since last refreshed
-	service.refreshToken();
-	
-	// setup automatic refreshing (tokens last for 3600 seconds = 1 hour, so let's refresh every 3500 seconds = 59 minutes)
-	$interval( service.refreshToken, 3500000 );
-	
-	// listen for incoming messages from the authorization iframe
-	window.addEventListener('message', function(event){
-		
-		// only allow incoming data from our authorized authenticator proxy
-		if( event.origin !== "http://jamesbarnsley.co.nz" )
-			return false;
-		
-		// convert to json
-		var data = JSON.parse(event.data);
-		
-		console.info('Spotify authorization successful');
-		
-		// take our returned data, and save it to our localStorage
-		$localStorage.spotify.AuthorizationCode = data.authorization_code;
-		$localStorage.spotify.AccessToken = data.access_token;
-		$localStorage.spotify.RefreshToken = data.refresh_token;
-		$rootScope.spotifyOnline = true;
-		$rootScope.$broadcast('spotmop:spotify:online');
-	}, false);
-	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
 	var country = SettingsService.getSetting("spotifycountry", 'NZ');
@@ -1079,7 +1094,7 @@ angular.module('spotmop.services.spotify', [])
     var retryStarted = false;
 	
     var responseInterceptor = {
-        responseError: function(response){
+        responseError: function( response ){
 		
             if(response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0){
 				
@@ -1087,15 +1102,43 @@ angular.module('spotmop.services.spotify', [])
                     retryStarted = true;
 					
 					// if we're already authorized, we just need to force a token refresh
-					if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken  ){
+					if( $injector.get('SpotifyService').isAuthorized() ){
+						
+						console.log( 'refreshing...' );
+						console.log( response );
 						
 						// and re-authorize
-						$injector.get('SpotifyService').refreshToken();
+						$injector.get('SpotifyService').refreshToken()
+							.then( function(refreshResponse){
+								
+								console.log('refreshed. Now sending original request');
+								
+								// construct a new, replacement request	
+								var deferred = $q.defer();
+								
+								$http({
+										method: request.config.method,
+										url: request.config.url,
+										headers: request.config.headers
+									})
+									.success(function( response ){
+										deferred.resolve( response );
+										$rootScope.$broadcast("spotmop:spotify:online");
+										$rootScope.spotifyOnline = true;
+									})
+									.error(function( response ){
+										deferred.reject( response.error.message );								
+										$rootScope.$broadcast("spotmop:spotify:offline");
+										$rootScope.spotifyOnline = false;
+									});
+									
+								return deferred.promise;
+							});
 					
 					// not yet authorized, so authorize!
 					}else{
-					
-						// remove our current authorization
+						
+						// remove our current authorization, just to clear the decks
 						$localStorage.spotify = {};
 						$rootScope.spotifyOnline = false;
 						

@@ -22,7 +22,9 @@ angular.module('spotmop', [
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
 	'spotmop.services.echonest',
+	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
+	'spotmop.services.pusher',
 	
 	'spotmop.player',
 	'spotmop.queue',
@@ -60,7 +62,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService ){		
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -87,6 +89,9 @@ angular.module('spotmop', [
 	}
     $scope.playlistsMenu = [];
     $scope.myPlaylists = {};
+	$scope.popupVolumeControls = function(){
+        DialogService.create('volumeControls', $scope);
+	}
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
@@ -200,17 +205,17 @@ angular.module('spotmop', [
 		
 		return mode;
 	};
-
+    
     
     /**
      * Mopidy music player is open for business
      **/
 	$scope.$on('mopidy:state:online', function(){
-		$rootScope.mopidyOnline = true;		
+		$rootScope.mopidyOnline = true;
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
 		});
-		MopidyService.getConsume().then( function( isConsume ){			
+		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
 	});
@@ -218,6 +223,47 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
+    
+	
+	/**
+	 * Spotify is online and authorized
+	 **/
+	$scope.$on('spotmop:spotify:online', function(){
+		SpotifyService.getMe()
+			.then( function(response){
+				$scope.spotifyUser = response;
+				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
+				
+				// update my playlists
+				$scope.updatePlaylists();
+			});
+	});
+	
+	
+	/**
+	 * Pusher integration
+	 **/
+     
+	PusherService.start();
+	
+    $rootScope.$on('spotmop:pusher:online', function(event, data){
+        
+        // if we have no client name, then initiate initial setup
+		var client = SettingsService.getSetting('pushername', null);
+        if( typeof(client) === 'undefined' || !client || client == '' )
+            DialogService.create('initialsetup', $scope);
+    });
+    
+	$rootScope.$on('spotmop:pusher:received', function(event, data){
+		
+		var icon = '';
+		data.spotifyuser = JSON.parse(data.spotifyuser);
+		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
+			icon = data.spotifyuser.images[0].url;
+		
+		NotifyService.browserNotify( data.title, data.body, icon );
+	});
+	
 	
 	// when playback finishes, log this to EchoNest (if enabled)
 	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
@@ -234,36 +280,10 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	$timeout(
-		function(){
-			MopidyService.start();
-			if(SettingsService.getSetting('echonestenabled',false))
-                EchonestService.start();
-		},0
-	);
-    
-	/**
-	 * Spotify account is authorized
-	 **/
-	$scope.$on('mopidy:state:online', function(){
-	
-		SpotifyService.getMe()
-			.then( function(response){
-				$scope.spotifyUser = response;
-				
-				if( typeof(response.error) !== 'undefined' ){
-					NotifyService.error( response.error.message );
-				}else{
-					$rootScope.spotifyOnline = true;
-				
-					// save user to settings
-					SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-					
-					// update my playlists
-					$scope.updatePlaylists();
-				}
-			});
-	});
+	MopidyService.start();
+	SpotifyService.start();
+	if(SettingsService.getSetting('echonestenabled',false))
+		EchonestService.start();
 	
 	
 	/**

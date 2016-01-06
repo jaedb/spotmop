@@ -226,38 +226,46 @@ angular.module('spotmop.directives', [])
 			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
-			var fullUrl = '';
-			/*
-			RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
-			if( $scope.useproxy )
-				fullUrl += '/vendor/resource-proxy.php?url=';
-			*/
-			fullUrl += $scope.url;
 			
-			var image = $('<img src="'+fullUrl+'" />');		
-			image.load(function(){
+			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
+			if( $element.attr('watch') ){
+				$scope.$watch('url', function(newValue, oldValue) {
+					if (newValue)
+						loadImage();
+				}, true);
+			}
 			
-				$element.attr('style', 'background-image: url("'+fullUrl+'");');
-				var destinationOpacity = 1;
+			// load image on init
+			loadImage();
+			
+			// run the preloader
+			function loadImage(){
 				
-				if( typeof($scope.opacity) !== 'undefined' )
-					destinationOpacity = $scope.opacity;
+				var fullUrl = '';
+				/*
+				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
+				if( $scope.useproxy )
+					fullUrl += '/vendor/resource-proxy.php?url=';
+				*/
+				fullUrl += $scope.url;
+			
+				var image = $('<img src="'+fullUrl+'" />');		
+				image.load(function(){
+				
+					$element.attr('style', 'background-image: url("'+fullUrl+'");');
+					var destinationOpacity = 1;
 					
-				$element.animate(
-					{
-						opacity: destinationOpacity
-					},
-					200
-				);
-				
-				// only broadcast to detect background if required (otherwise "href not defined" error)
-				if( $scope.detectbackground ){
-					// wait for 100ms (ie image half loaded), then check colours
-					$timeout( function(){
-						$rootScope.$broadcast('spotmop:detectBackgroundColor');
-					}, 100);
-				}
-			});
+					if( typeof($scope.opacity) !== 'undefined' )
+						destinationOpacity = $scope.opacity;
+						
+					$element.animate(
+						{
+							opacity: destinationOpacity
+						},
+						200
+					);
+				});
+			}
         },
 		template: ''
     };

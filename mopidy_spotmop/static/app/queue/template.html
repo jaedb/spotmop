@@ -1,16 +1,16 @@
 <div class="page now-playing-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header">
+		<div class="page-header mobile-show">
 			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 			<h1>Now Playing</h1>
 		</div>
 		
 		<div id="full-player" class="player" ng-controller="PlayerController">
 
-			<a class="artwork image-container" href="/browse/album/{{ state().currentTlTrack.track.album.uri }}">
-				<div class="image" style="background-image: url({{ image.url }})" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1" ng-if="state().currentTlTrack.track"></div>
-				<div class="image placeholder" ng-if="!state().currentTlTrack.track"></div>
+			<a class="artwork image-container" ui-sref="browse.album({ uri: state().currentTlTrack.track.album.uri })">
+				<div class="image" style="background-image: url({{ state().currentTlTrack.track.image }})" ng-if="state().currentTlTrack.track"></div>
+				<div class="image placeholder" ng-if="!state().currentTlTrack.track || !state().currentTlTrack.track.image"></div>
 			</a>
 				
 			<div class="track-info">
@@ -45,17 +45,11 @@
 					<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
 						<i class="fa fa-repeat"></i>
 					</span>
-				
+	
 					<span class="volume">
-						<span class="button mute" ng-click="toggleMute()" ng-class="{active: state().isMute}">
-							<i class="fa fa-volume-off fa-fw" ng-show="state().isMute"></i>
-							<i class="fa fa-volume-down fa-fw" ng-show="!state().isMute"></i>
+						<span class="button" ng-click="popupVolumeControls()">
+							<i class="fa fa-volume-down fa-fw"></i>
 						</span>
-						<div class="slider" ng-click="setVolume($event)">
-							<div class="track">
-								<div class="fill" style="width: {{ state().volume }}%"></div>
-							</div>
-						</div>
 					</span>
 				</div>
 				

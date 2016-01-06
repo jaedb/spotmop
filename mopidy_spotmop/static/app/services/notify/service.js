@@ -1,7 +1,8 @@
 /**
  * Notifications service
  *
- * Provides framework of simple user-oriented notification messages
+ * Provides framework of simple user-oriented notification messages.
+ * Also includes HTML5 browser notifications.
  **/
  
 angular.module('spotmop.services.notify', [])
@@ -10,7 +11,7 @@ angular.module('spotmop.services.notify', [])
 /**
  * Service to facilitate the creation and management of dialogs globally
  **/
-.factory("NotifyService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
+.factory("NotifyService", ['$rootScope', '$compile', '$interval', '$timeout', 'SettingsService', function( $rootScope, $compile, $interval, $timeout, SettingsService ){
     
 	// setup response object
     return {
@@ -80,6 +81,46 @@ angular.module('spotmop.services.notify', [])
 				},
 				1500
 			);
+		},
+		
+		/**
+		 * HTML5 browser notifications
+		 * @param title = string
+		 * @param body = string
+		 * @param icon = string (optional)
+		 **/
+		browserNotify: function( title, body, icon ){
+				
+			// disabled by user
+			if( SettingsService.getSetting('notificationsDisabled', false) )
+				return false;
+	
+			// Determine the correct object to use
+			var notification = window.Notification || window.mozNotification || window.webkitNotification;
+		
+			// not supported
+			if ('undefined' === typeof notification)
+				return false;
+
+			// The user needs to allow this
+			if ('undefined' !== typeof notification)
+				notification.requestPermission(function(permission){});
+				
+			if( typeof(icon) === 'undefined' )
+				var icon = '';
+			
+			var trackNotification = new notification(
+				title,
+				{
+					body: body,
+					dir: 'auto',
+					lang: 'EN',
+					tag: 'spotmopNotification', 
+					icon: icon
+				}
+			);
+			
+			return true;
 		}
 	};
 }])
