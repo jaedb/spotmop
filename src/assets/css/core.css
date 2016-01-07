@@ -253,6 +253,19 @@ body {
 }
 
 
+.main-menu .dragging-note {
+	display: none;
+	float: right;
+	color: #333333;
+	font-size: 12px;
+	padding-right: 7px;
+	padding-top: 2px;
+}
+
+.dragging .main-menu *:hover > .dragging-note {
+	display: block;
+}
+
 
 /**
  * Submenus
@@ -476,17 +489,14 @@ input[type='submit'] {
 
 .drag-tracer {
 	position: fixed;
-	padding: 5px 10px;
+    padding: 10px 18px;
     border-radius: 100px;
-    font-size: 11px;
-	background: rgba(100,100,100,0.6);
+    background: rgba(0,0,0,0.9);
 	color: #FFFFFF;
 	z-index: 9;
 	display: none;
-}
-
-.drag-tracer.good {
-    background-color: rgba(53,204,53,1);
+	bottom: 10px;
+	right: 15px;
 }
     
 

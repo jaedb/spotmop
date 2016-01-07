@@ -3,6 +3,7 @@
 		<a ui-sref="queue" class="droppable" data-type="queue">
 			<i class="fa fa-play"></i>
 			Now playing
+			<span class="dragging-note">Add to queue</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('search') }} mobile-show">
@@ -45,12 +46,14 @@
 		<a ui-sref="library.tracks" class="droppable" data-type="library">
 			<i class="fa fa-music"></i>
 			Tracks
+			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
 		<a ui-sref="library.artists" class="droppable" data-type="library">
 			<i class="fa fa-user"></i>
 			Artists
+			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level playlists {{ linkingMode(['library.playlists', 'library.playlist']) }}">
@@ -60,7 +63,10 @@
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
-				<a href="{{ playlist.link }}" ng-bind="playlist.name" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable"></a>
+				<a href="{{ playlist.link }}" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
+					<span ng-bind="playlist.name"></span>
+					<span class="dragging-note">Add to playlist</span>
+				</a>
 			</li>
 		</ul>
 	</li>
