@@ -32,7 +32,15 @@ body.dragging *,
     user-select: none;
 }
 
+body.dragging,
+body.dragging *:hover,
+body.dragging .button:hover,
+body.dragging .track:hover {
+	cursor: -webkit-grabbing !important;
+	cursor: -moz-grabbing !important;
+}
 
+	
 /**
  * Hardware accelaration
  **/
