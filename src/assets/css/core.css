@@ -33,9 +33,9 @@ body.dragging *,
 }
 
 body.dragging,
-body.dragging *:hover,
-body.dragging .button:hover,
-body.dragging .track:hover {
+body.dragging *,
+body.dragging .body,
+body.dragging .body * {
 	cursor: -webkit-grabbing !important;
 	cursor: -moz-grabbing !important;
 }
@@ -270,6 +270,7 @@ body {
 	padding-top: 2px;
 }
 
+.dragging .main-menu *.dropping > .dragging-note,
 .dragging .main-menu *:hover > .dragging-note {
 	display: block;
 }
