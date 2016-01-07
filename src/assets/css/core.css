@@ -1158,11 +1158,8 @@ body.dragging .tracklist .track.selected {
 }
 
 .tracklist .track.drag-hovering {
-	border-top: 38px solid #DDDDDD;
-}
-
-.tracklist .track.drag-hovering:first-child {
-	margin-top: -1px;
+	border-top: 3px solid #08d58f;
+	margin-top: -3px;
 }
 
 
