@@ -176,7 +176,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
             
 			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuserid');
+			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
 			
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
 				.then(function( response ) {
