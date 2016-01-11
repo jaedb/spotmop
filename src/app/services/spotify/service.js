@@ -107,13 +107,18 @@ angular.module('spotmop.services.spotify', [])
 					timeout: 10000
 				})
                 .success(function( response ){
-					$localStorage.spotify.AccessToken = response.access_token;
-					$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
-					$rootScope.spotifyOnline = true;
-                })
-                .error(function( response ){
-					NotifyService.error('There was a problem connecting to Spotify: '+response.error.message);
-					$rootScope.spotifyOnline = false;
+					
+					// check for error response
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error('Spotify authorization error: '+response.error_description);
+						$rootScope.spotifyOnline = false;
+						deferred.reject( response.error.message );
+					}else{
+						$localStorage.spotify.AccessToken = response.access_token;
+						$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
+						$rootScope.spotifyOnline = true;					
+						deferred.resolve( response );
+					}
                 });
 				
             return deferred.promise;
@@ -1091,70 +1096,72 @@ angular.module('spotmop.services.spotify', [])
 
     "use strict";
 	
-    var retryStarted = false;
 	
-    var responseInterceptor = {
-        responseError: function( response ){
+	/**
+	 * Retry an originating request
+	 * Used when re-authentication has occured, and we're ready to try with new details
+	 **/
+	function retryHttpRequest(config, deferred){
+		function successCallback(response){
+			deferred.resolve(response);
+		}
+		function errorCallback(response){
+			deferred.reject(response);
+		}
+		var $http = $injector.get('$http');
+		$http(config).then(successCallback, errorCallback);
+	}
+	
+	
+	/**
+	 * Response interceptor object
+	 **/
+    var interceptor = {	
+		responseError: function( response ){
+			
+			// check that it is a spotify request, and not a failed token request
+			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 ){
 		
-            if(response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0){
+				var deferred = $q.defer();				
 				
-                if(!retryStarted){
-                    retryStarted = true;
+				// if we're already authorized, we just need to force a token refresh
+				if( $injector.get('SpotifyService').isAuthorized() ){
+				
+					// refresh the token
+					$injector.get('SpotifyService').refreshToken()
+						.then( function(refreshResponse){
+							
+							// make sure our refresh request didn't error, otherwise we'll create an infinite loop
+							if( typeof(refreshResponse.error) !== 'undefined' )
+								return response;
+								
+							console.log('Successfully refreshed token. Now sending original request');		
+							
+							// now retry the original request
+							retryHttpRequest( response.config, deferred );
+						});
+				
+					return deferred.promise;
+		
+				// not yet authorized, so authorize!
+				// this requires user interaction, so let's just allow the original request to fail
+				}else{
 					
-					// if we're already authorized, we just need to force a token refresh
-					if( $injector.get('SpotifyService').isAuthorized() ){
-						
-						console.log( 'refreshing...' );
-						console.log( response );
-						
-						// and re-authorize
-						$injector.get('SpotifyService').refreshToken()
-							.then( function(refreshResponse){
-								
-								console.log('refreshed. Now sending original request');
-								
-								// construct a new, replacement request	
-								var deferred = $q.defer();
-								
-								$http({
-										method: request.config.method,
-										url: request.config.url,
-										headers: request.config.headers
-									})
-									.success(function( response ){
-										deferred.resolve( response );
-										$rootScope.$broadcast("spotmop:spotify:online");
-										$rootScope.spotifyOnline = true;
-									})
-									.error(function( response ){
-										deferred.reject( response.error.message );								
-										$rootScope.$broadcast("spotmop:spotify:offline");
-										$rootScope.spotifyOnline = false;
-									});
-									
-								return deferred.promise;
-							});
+					// remove our current authorization, just to clear the decks
+					$localStorage.spotify = {};
+					$rootScope.spotifyOnline = false;
 					
-					// not yet authorized, so authorize!
-					}else{
-						
-						// remove our current authorization, just to clear the decks
-						$localStorage.spotify = {};
-						$rootScope.spotifyOnline = false;
-						
-						// and re-authorize
-						$injector.get('SpotifyService').authorize();
-					}
-                }
-
-                return $q.reject(response);
-            }
-
-            return response;
-        }
+					// and re-authorize
+					$injector.get('SpotifyService').authorize();
+					return response;
+				}
+			}
+			
+			return response;
+		}
     };
 
-    return responseInterceptor;
+    return interceptor;
 });
 
 
