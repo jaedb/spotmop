@@ -92,9 +92,6 @@ angular.module('spotmop', [
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
-	$scope.setting = function( setting ){
-		return SettingsService.getSetting( setting, null );
-	}
     
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
