@@ -1101,7 +1101,7 @@ angular.module('spotmop.services.spotify', [])
 	 * Retry an originating request
 	 * Used when re-authentication has occured, and we're ready to try with new details
 	 **/
-	function retryHttpRequest(config, deferred){
+	function retryHttpRequest(config, deferred, newAccessToken){
 		function successCallback(response){
 			deferred.resolve(response);
 		}
@@ -1109,6 +1109,11 @@ angular.module('spotmop.services.spotify', [])
 			deferred.reject(response);
 		}
 		var $http = $injector.get('$http');
+		
+		// replace the access token with our new one
+		config.headers = { Authorization: 'Bearer '+ newAccessToken };
+		
+		// run the original request, which will then return the original callbacks
 		$http(config).then(successCallback, errorCallback);
 	}
 	
@@ -1120,6 +1125,7 @@ angular.module('spotmop.services.spotify', [])
 		responseError: function( response ){
 			
 			// check that it is a spotify request, and not a failed token request
+			// also limit to 3 retries
 			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
 					
 				retryCount++;
@@ -1136,11 +1142,10 @@ angular.module('spotmop.services.spotify', [])
 							if( typeof(refreshResponse.error) !== 'undefined' )
 								return response;
 								
-							console.log('Successfully refreshed token. Now sending original request');		
 							retryCount--;
 							
 							// now retry the original request
-							retryHttpRequest( response.config, deferred );
+							retryHttpRequest( response.config, deferred, refreshResponse.access_token );
 						});
 					
 					return deferred.promise;

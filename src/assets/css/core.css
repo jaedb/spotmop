@@ -440,7 +440,8 @@ body {
 .button,
 button,
 .main-menu a,
-input[type='submit'] {
+input[type='submit'],
+.opacity-hover {
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
 	-o-transition: all 0.2s ease-in-out;
@@ -452,7 +453,8 @@ input[type='submit'] {
 .loading .button,
 .loading button,
 .loading .main-menu a,
-.loading input[type='submit'] {
+.loading input[type='submit'],
+.loading .opacity-hover {
 	-webkit-transition: none !important;
 	-moz-transition: none !important;
 	-o-transition: none !important;
@@ -475,6 +477,20 @@ input[type='submit'] {
     100% {
         -webkit-transform: rotate(360deg);
     };
+}
+
+
+/**
+ * Hover opacity elements
+ * Fade in on hover
+ **/
+ 
+.opacity-hover {
+	opacity: 0.5;
+}
+
+.opacity-hover:hover {
+	opacity: 1;
 }
 
 

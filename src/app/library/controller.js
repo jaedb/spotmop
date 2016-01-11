@@ -280,7 +280,7 @@ angular.module('spotmop.library', [])
 	$scope.playlists = [];
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
     
 	SpotifyService.getPlaylists( userid )
 		.then( function( response ){ // successful
