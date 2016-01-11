@@ -1095,7 +1095,7 @@ angular.module('spotmop.services.spotify', [])
 .factory('SpotifyServiceIntercepter', function SpotifyServiceIntercepter($q, $rootScope, $injector, $localStorage){ 
 
     "use strict";
-	
+	var retryCount = 0;
 	
 	/**
 	 * Retry an originating request
@@ -1120,8 +1120,9 @@ angular.module('spotmop.services.spotify', [])
 		responseError: function( response ){
 			
 			// check that it is a spotify request, and not a failed token request
-			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 ){
-		
+			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
+					
+				retryCount++;
 				var deferred = $q.defer();				
 				
 				// if we're already authorized, we just need to force a token refresh
@@ -1136,11 +1137,12 @@ angular.module('spotmop.services.spotify', [])
 								return response;
 								
 							console.log('Successfully refreshed token. Now sending original request');		
+							retryCount--;
 							
 							// now retry the original request
 							retryHttpRequest( response.config, deferred );
 						});
-				
+					
 					return deferred.promise;
 		
 				// not yet authorized, so authorize!
@@ -1152,7 +1154,8 @@ angular.module('spotmop.services.spotify', [])
 					$rootScope.spotifyOnline = false;
 					
 					// and re-authorize
-					$injector.get('SpotifyService').authorize();
+					$injector.get('SpotifyService').authorize();	
+					retryCount--;
 					return response;
 				}
 			}

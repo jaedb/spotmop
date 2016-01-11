@@ -144,7 +144,7 @@ angular.module('spotmop.browse.playlist', [])
 			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
         
             // figure out if we're following this playlist
-            SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+            SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
                 .then( function( isFollowing ){
                     $scope.following = $.parseJSON(isFollowing);
                 });

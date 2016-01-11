@@ -130,6 +130,13 @@
 		text-align: center;
 	}
 	
+	.page-header .button,
+	.page-header .button:hover {
+		margin: -5px -10px 0 0;
+		padding: 8px;
+		background: transparent;
+	}
+	
 	
 	/**
 	 * Notifications
