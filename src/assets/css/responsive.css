@@ -493,7 +493,6 @@
 	}
 	
 	.edit-playlist-dialog .actions {
-		display: block;
 		padding-left: 0;
 	}
 	
@@ -506,6 +505,7 @@
 	 * Buttons and interactive panels
 	 **/
 	.actions {
+		display: block;
 		padding-left: 0;
 	}
 	
