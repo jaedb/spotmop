@@ -277,7 +277,7 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
-	$scope.playlists = [];
+	$scope.playlists = { items: [] };
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;

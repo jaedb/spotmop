@@ -777,7 +777,8 @@ h1 .flag {
  * These are all within the .body element (ie the main app frame)
  **/
 
-.body .button {
+.body .button,
+.dialog .button.primary {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -804,8 +805,10 @@ h1 .flag {
 
 /* variations */
 
-.body .button.primary {					background: #08d58f; }
-.body .button.primary:hover {			background: #03c784; }
+.body .button.primary,
+.dialog .button.primary {				background: #08d58f; }
+.body .button.primary:hover,
+.dialog .button.primary:hover {			background: #03c784; }
 
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }

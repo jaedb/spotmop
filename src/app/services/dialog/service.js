@@ -79,16 +79,17 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
             $scope.saving = false;
-			$scope.togglePublic = function(){
-				if( $scope.playlistPublic )
-					$scope.playlistPublic = false;
-				else
-					$scope.playlistPublic = true;
-			}
+			$scope.playlistPublic = true;
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
                 $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistPublic == 'true' )
+					$scope.playlistPublic = true;
+				else
+					$scope.playlistPublic = false;
                 
                 // perform the creation
                 SpotifyService.createPlaylist(
@@ -98,8 +99,8 @@ angular.module('spotmop.services.dialog', [])
                     .then( function(response){
                     
                         // save new playlist to our playlist array
-                        $scope.$parent.playlists.unshift( response );
-                    
+                        $scope.$parent.playlists.items.push( response );
+						
                         // fetch the new playlists (for sidebar)
                         $scope.$parent.updatePlaylists();
                     
@@ -127,18 +128,18 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
             $scope.playlistNewName = $scope.$parent.playlist.name;
-            $scope.playlistNewPublic = $scope.$parent.playlist.public;
+            $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
             $scope.saving = false;
-			$scope.togglePublic = function(){
-				if( $scope.playlistNewPublic )
-					$scope.playlistNewPublic = false;
-				else
-					$scope.playlistNewPublic = true;
-			}
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
                 $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistNewPublic == 'true' )
+					$scope.playlistNewPublic = true;
+				else
+					$scope.playlistNewPublic = false;
                 
                 // actually perform the rename
                 SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
