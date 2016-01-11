@@ -552,15 +552,10 @@ angular.module('spotmop', [
 			
 				// turn the trigger safety of
 				dragging.safetyOff = true;
-
-                // setup the tracer, and make him sticky
-                dragTracer
-                    .show()
-                    .css({
-                        top: event.clientY-10,
-                        left: event.clientX+10
-                    });
-                
+				
+                // setup the tracer
+                dragTracer.show();
+					
                 $(document).find('.droppable').removeClass('dropping');
                 $(document).find('.dropping-within').removeClass('dropping-within');
 			
@@ -569,21 +564,17 @@ angular.module('spotmop', [
 					isMenuItem = true;
 				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    dragTracer.addClass('good').html('Add to queue');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    dragTracer.addClass('good').html('Add to library');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
-                    dragTracer.addClass('good').html('Add to playlist');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
-                    dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                 }else{
-                    dragTracer.removeClass('good').html('Dragging '+dragging.tracks.length+' track(s)');
+                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
                 }
 			}
 		}

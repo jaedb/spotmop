@@ -56,7 +56,7 @@ angular.module('spotmop.services.pusher', [
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', null) )
+                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
