@@ -12,7 +12,6 @@ angular.module('spotmop.services.echonest', [])
     
     var baseURL = 'http://developer.echonest.com/api/v4/';
     var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
-    var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
 	
 	// setup response object
     return {
@@ -71,6 +70,7 @@ angular.module('spotmop.services.echonest', [])
         },
         
 		getTasteProfile: function(){
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
             return $.ajax({
                 url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
                 method: "GET"
@@ -88,6 +88,7 @@ angular.module('spotmop.services.echonest', [])
 		 **/
 		addToTasteProfile: function( action, trackid ){
 			
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
 			var requestData = [];
 			var trackids = [];
 			
@@ -159,6 +160,8 @@ angular.module('spotmop.services.echonest', [])
 		 * @return promise
 		 **/
 		recommendedArtists: function( artists ){
+		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
 			
 			// no artist provided, so seed based on our taste profile
 			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
@@ -188,6 +191,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		favoriteArtists: function(){		
 		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
@@ -204,6 +208,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		catalogRadio: function(){		
 		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')

@@ -41,7 +41,7 @@ angular.module('spotmop.browse.artist.overview({', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -69,10 +69,19 @@ angular.module('spotmop.browse.artist.overview({', [])
 			*/
 	}
     
-	// get the artist
+	// get the artist from Spotify
 	SpotifyService.getArtist( $stateParams.uri )
 		.then( function( response ){
 			$scope.artist = response;
+    
+			/*
+			// get the artist from LastFM
+			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
+			LastfmService.artistInfo( response.name )
+				.then( function( response ){
+					console.log( response );
+				});
+			*/
 		});
 
 	// figure out if we're following this playlist

@@ -11,7 +11,7 @@
 		
 			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
 			
-			<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id" ng-class="{ 'following': following }">
+			<span class="follow-unfollow" ng-show="playlist.owner.id != spotifyUser.id" ng-class="{ 'following': following }">
 				<a class="button unfollow"
 					  ng-class="{destructive: hovering}"
 					  ng-click="unfollowPlaylist()"
@@ -26,7 +26,7 @@
 				</a>
 			</span>
 			
-			<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
+			<span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
 				<span ng-show="following">
 					<a class="button"
 						  ng-click="editPlaylist( $scope )">

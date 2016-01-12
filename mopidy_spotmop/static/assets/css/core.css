@@ -32,7 +32,15 @@ body.dragging *,
     user-select: none;
 }
 
+body.dragging,
+body.dragging *,
+body.dragging .body,
+body.dragging .body * {
+	cursor: -webkit-grabbing !important;
+	cursor: -moz-grabbing !important;
+}
 
+	
 /**
  * Hardware accelaration
  **/
@@ -253,6 +261,20 @@ body {
 }
 
 
+.main-menu .dragging-note {
+	display: none;
+	float: right;
+	color: #333333;
+	font-size: 12px;
+	padding-right: 7px;
+	padding-top: 2px;
+}
+
+.dragging .main-menu *.dropping > .dragging-note,
+.dragging .main-menu *:hover > .dragging-note {
+	display: block;
+}
+
 
 /**
  * Submenus
@@ -418,7 +440,8 @@ body {
 .button,
 button,
 .main-menu a,
-input[type='submit'] {
+input[type='submit'],
+.opacity-hover {
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
 	-o-transition: all 0.2s ease-in-out;
@@ -430,7 +453,8 @@ input[type='submit'] {
 .loading .button,
 .loading button,
 .loading .main-menu a,
-.loading input[type='submit'] {
+.loading input[type='submit'],
+.loading .opacity-hover {
 	-webkit-transition: none !important;
 	-moz-transition: none !important;
 	-o-transition: none !important;
@@ -456,6 +480,20 @@ input[type='submit'] {
 }
 
 
+/**
+ * Hover opacity elements
+ * Fade in on hover
+ **/
+ 
+.opacity-hover {
+	opacity: 0.5;
+}
+
+.opacity-hover:hover {
+	opacity: 1;
+}
+
+
 
 /**
  * Image effects
@@ -476,17 +514,14 @@ input[type='submit'] {
 
 .drag-tracer {
 	position: fixed;
-	padding: 5px 10px;
+    padding: 10px 18px;
     border-radius: 100px;
-    font-size: 11px;
-	background: rgba(100,100,100,0.6);
+    background: rgba(0,0,0,0.9);
 	color: #FFFFFF;
 	z-index: 9;
 	display: none;
-}
-
-.drag-tracer.good {
-    background-color: rgba(53,204,53,1);
+	bottom: 10px;
+	right: 15px;
 }
     
 
@@ -742,7 +777,8 @@ h1 .flag {
  * These are all within the .body element (ie the main app frame)
  **/
 
-.body .button {
+.body .button,
+.dialog .button.primary {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -769,8 +805,10 @@ h1 .flag {
 
 /* variations */
 
-.body .button.primary {					background: #08d58f; }
-.body .button.primary:hover {			background: #03c784; }
+.body .button.primary,
+.dialog .button.primary {				background: #08d58f; }
+.body .button.primary:hover,
+.dialog .button.primary:hover {			background: #03c784; }
 
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
@@ -1158,11 +1196,8 @@ body.dragging .tracklist .track.selected {
 }
 
 .tracklist .track.drag-hovering {
-	border-top: 38px solid #DDDDDD;
-}
-
-.tracklist .track.drag-hovering:first-child {
-	margin-top: -1px;
+	border-top: 3px solid #08d58f;
+	margin-top: -3px;
 }
 
 

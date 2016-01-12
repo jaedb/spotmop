@@ -130,6 +130,13 @@
 		text-align: center;
 	}
 	
+	.page-header .button,
+	.page-header .button:hover {
+		margin: -5px -10px 0 0;
+		padding: 8px;
+		background: transparent;
+	}
+	
 	
 	/**
 	 * Notifications
@@ -486,7 +493,6 @@
 	}
 	
 	.edit-playlist-dialog .actions {
-		display: block;
 		padding-left: 0;
 	}
 	
@@ -499,6 +505,7 @@
 	 * Buttons and interactive panels
 	 **/
 	.actions {
+		display: block;
 		padding-left: 0;
 	}
 	
