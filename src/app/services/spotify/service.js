@@ -35,9 +35,6 @@ angular.module('spotmop.services.spotify', [])
 			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
 				$localStorage.spotify.AccessTokenExpiry = null;
 			
-			// setup automatic refreshing (tokens last for 3600 seconds = 1 hour, so let's refresh every 3500 seconds = 59 minutes)
-			$interval( service.refreshToken, 3500000 );
-			
 			// listen for incoming messages from the authorization iframe
 			window.addEventListener('message', function(event){
 				
@@ -63,9 +60,6 @@ angular.module('spotmop.services.spotify', [])
 			 * The real starter
 			 **/
 			if( this.isAuthorized() ){
-				// on start, get a new token
-				// this means we [easily] know how long it's been since last refreshed
-				this.refreshToken();
 				$rootScope.$broadcast('spotmop:spotify:online');
 			}else{
 				this.authorize();

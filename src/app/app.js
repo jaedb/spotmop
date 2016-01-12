@@ -229,6 +229,7 @@ angular.module('spotmop', [
 	 * Spotify is online and authorized
 	 **/
 	$scope.$on('spotmop:spotify:online', function(){
+		$rootScope.spotifyOnline = true;
 		SpotifyService.getMe()
 			.then( function(response){
 				$scope.spotifyUser = response;
