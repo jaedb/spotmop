@@ -79,7 +79,7 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
             $scope.saving = false;
-			$scope.playlistPublic = true;
+			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
