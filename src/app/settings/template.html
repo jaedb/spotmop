@@ -57,11 +57,9 @@
 				<div class="field">
 					<div class="label">Current version</div>
 					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
-						<span ng-show="version.currentVersion < version.latestVersion">
-							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
-							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
-						</span>
+						<span class="spotmop-version" ng-bind="version.currentVersion"></span>						
+						&nbsp;<a ng-click="upgrade()" ng-show="version.root">Check for upgrade</a>
+						<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
 					</div>
 					<div class="clear-both"></div>
 				</div>
