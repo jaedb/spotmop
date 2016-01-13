@@ -57,11 +57,9 @@
 				<div class="field">
 					<div class="label">Current version</div>
 					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
-						<span ng-show="version.currentVersion < version.latestVersion">
-							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
-							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
-						</span>
+						<span class="spotmop-version" ng-bind="version.currentVersion"></span>						
+						&nbsp;<a ng-click="upgrade()" ng-show="version.root">Check for upgrade</a>
+						<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -122,7 +120,7 @@
 				<div class="field">
 					<div class="label">Country code</div>
 					<div class="input">
-						<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
+						<input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -244,15 +242,16 @@
 						</div>
 					</div>
 
-					<div class="field">
+					<div class="field current-connections">
 						<div class="label">Current connections</div>
 						<div class="input readonly">
                             <div ng-repeat="client in clientConnections">
-                                <span class="ip" ng-bind="client.ip"></span>
-                                <span class="name" ng-bind="client.name"></span>
+                                <span class="min-width w100 ip" ng-bind="client.ip"></span>
+                                <span class="min-width w100 name" ng-bind="client.name"></span>
                                 <span class="id grey-text" ng-bind="client.id"></span>
                             </div>
 						</div>
+						<div class="clear-both"></div>
 					</div>
 				
 				</div>

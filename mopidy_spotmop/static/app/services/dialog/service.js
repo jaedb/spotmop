@@ -52,6 +52,10 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: function( $scope, $element, DialogService ){
 			
+			$scope.closeDisabled = false;
+			if( $scope.type == 'initialsetup' )
+				$scope.closeDisabled = true;
+			
             $scope.closeDialog = function(){
                 DialogService.remove();
             }

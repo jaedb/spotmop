@@ -70,10 +70,10 @@
 	border-color: #1cf4c4;
 }
 
-.dialog .field.text.large input {
+.dialog .field.large input {
 	padding: 10px 0;
 	font-size: 30px;
-	width: 50%;
+	width: 70%;
 }
 
 .dialog .field.radio input {
