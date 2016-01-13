@@ -265,7 +265,7 @@
 	 * Dialogs and popups
 	 **/
 	
-	.dialog input.large {
+	.dialog .field.large input {
 		width: 89%;
 	}
 	 
