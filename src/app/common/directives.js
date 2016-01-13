@@ -18,6 +18,21 @@ angular.module('spotmop.directives', [])
 /* ======================================================================== DIRECTIVES ======== */
 /* ============================================================================================ */
 
+/**
+ * Smarter click
+ * Fixes issue with ngClick where on touch devices events were triggered twice
+ * Use exactly the same as ngClick but attribute is "singleclick" instead
+ **/
+.directive('singleclick', function() {
+    return function(scope, element, attrs) {
+        element.bind('touchstart click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            scope.$apply(attrs['singleclick']);
+        });
+    };
+})
+
 
 /** 
  * Scrollable panels
@@ -397,6 +412,20 @@ angular.module('spotmop.directives', [])
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
 
+
+// facilitates a filter for null/undefined/false values
+.filter('nullOrUndefined', [function () {
+    return function( items, property ){
+        var arrayToReturn = [];
+        for (var i = 0; i < items.length; i++){			
+			if( typeof(items[i][property]) === 'undefined' || items[i][property] == false )
+				arrayToReturn.push(items[i]);
+        }
+        return arrayToReturn;
+    };
+}])
+
+
 // setup a filter to convert MS to MM:SS
 .filter('formatMilliseconds', function() {
 	return function(ms) {
@@ -407,6 +436,7 @@ angular.module('spotmop.directives', [])
 		return minutes + ":" + seconds;
 	}
 })
+
 
 // get the appropriate sized image
 .filter('thumbnailImage', function(){
