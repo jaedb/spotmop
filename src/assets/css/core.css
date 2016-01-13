@@ -186,6 +186,11 @@ body {
 .col.w95{	width: 95%; }
 .col.w100{	width: 100%; }
 
+.min-width {			display: inline-block; }
+.min-width.w50 {		min-width: 50px; }
+.min-width.w100 {		min-width: 100px; }
+.min-width.w150 {		min-width: 150px; }
+.min-width.w200 {		min-width: 200px; }
 
 .pull-left {		float: left; }
 .pull-right {		float: right; }
