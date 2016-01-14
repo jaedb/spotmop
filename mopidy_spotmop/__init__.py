@@ -5,19 +5,12 @@ import os
 import tornado.web
 import tornado.websocket
 import json
-#import mem
 
-#from services.sync import sync
 from services.upgrade import upgrade
 from services.pusher import pusher
-
-#from services.queuemanager import core as QueueManagerCore
-#from services.queuemanager import frontend
-#from services.queuemanager import requesthandler as QueueManagerRequestHandler
-
 from mopidy import config, ext
 
-__version__ = '2.5.4'
+__version__ = '2.5.5'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -40,13 +33,6 @@ class SpotmopExtension(ext.Extension):
         return schema
 
     def setup(self, registry):
-        #sync.Sync();
-        
-        # Create instances
-        #mem.queuemanager = QueueManagerCore.QueueManager()
-
-        # Add Queuemanager Frontend class
-        #registry.add('frontend', frontend.QueueManagerFrontend)
 
         # Add web extension
         registry.add('http:app', {
