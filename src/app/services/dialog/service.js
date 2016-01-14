@@ -62,7 +62,8 @@ angular.module('spotmop.services.dialog', [])
             
 			// listen for <esc> keypress
 			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
-				DialogService.remove();
+				if( !$service.closeDisabled )
+					DialogService.remove();
 			});
 		}
 	};

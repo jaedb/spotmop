@@ -44,6 +44,11 @@
     cursor: pointer;
     z-index: 13;
     color: #FFFFFF;
+	width: 30px;
+}
+
+.dialog .button.close-dialog img {
+	max-width: 100%;
 }
 
 .dialog .button.destructive:hover {		color: rgb(214,47,47); }
