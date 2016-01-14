@@ -60,6 +60,10 @@
 /* ================================================================================================= */
 
 
+.dialog .field .label {	
+	font-size: 16px;
+}
+
 .dialog .field.text input {
 	padding: 5px 0;
 	background: transparent;
@@ -81,6 +85,10 @@
 	width: 70%;
 }
 
+.dialog .field.switch .label {
+	padding-top: 6px;
+}
+
 .dialog .field.radio input {
 	display: none;
 }
@@ -91,7 +99,6 @@
 	width: auto;
 	padding: 5px 30px 5px 30px;
 	position: relative;
-	font-size: 16px;
 	cursor: pointer;
 }
 

@@ -24,13 +24,40 @@ angular.module('spotmop.directives', [])
  * Use exactly the same as ngClick but attribute is "singleclick" instead
  **/
 .directive('singleclick', function() {
-    return function(scope, element, attrs) {
-        element.bind('touchstart click', function(event) {
+    return function($scope, $element, $attrs) {
+       $element.bind('touchstart click', function(event) {
             event.preventDefault();
             event.stopPropagation();
-            scope.$apply(attrs['singleclick']);
+            $scope.$apply($attrs['singleclick']);
         });
     };
+})
+
+
+/** 
+ * Switch input field
+ * Provides toggles for values
+ **/
+.directive('switch', function() {
+	return {
+		restrict: 'E',
+		scope: {
+			name: '@',
+			action: '@'
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+			
+			// listen for click events
+			$element.bind('touchstart click', function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$scope.$apply( $scope.action );
+			});
+		},
+		template: '<span class="switch-button"><span class="switch animate"></span></span>'
+	}
 })
 
 
