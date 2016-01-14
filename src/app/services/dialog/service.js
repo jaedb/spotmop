@@ -274,14 +274,18 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
             $scope.saving = false;
-            $scope.save = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
-                
-                // perform the creation
-                SettingsService.setSetting('pushername', $scope.name);
-                DialogService.remove();
+            $scope.save = function(){                
+				if( $scope.name && $scope.name != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// perform the creation
+					SettingsService.setSetting('pushername', $scope.name);
+					DialogService.remove();
+				}else{
+					$scope.error = true;
+				}
             }
 		}
 	};

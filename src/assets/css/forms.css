@@ -19,12 +19,12 @@
 }
 
 .field .note {
-	opacity: 0.35;
 	display: block;
 	padding: 4px 0 5px 0;
 	font-family: "Roboto";
 	font-size: 12px;
 	font-weight: 300;
+	color: #777777;
 }
 	
 .field .input {

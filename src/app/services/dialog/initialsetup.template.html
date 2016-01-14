@@ -6,7 +6,7 @@
 		
 		<div class="field text large">
 			<input name="username" placeholder="Your name" ng-model="name" />
-			<span class="note">This can be changed later in Settings</span>
+			<span class="note"><span class="red-text" ng-if="error">Please enter your name &nbsp;</span>This can be changed later in Settings</span>
 		</div>
 
 		<div class="field switch">
