@@ -43,33 +43,21 @@ angular.module('spotmop.settings', [])
 					NotifyService.notify( response.message );
 			});
 	}
-	$scope.toggleSetting = function( setting ){
-    	if( SettingsService.getSetting(setting, false) ){
-            SettingsService.setSetting(setting, false);
-			
-			// handle server switches
-			switch( setting ){
-				case 'mopidyconsume':
-					MopidyService.setConsume( false );
-					break;
-				case 'echonestenabled':
-					EchonestService.stop();
-					break;
-			}
-        }else{
-            SettingsService.setSetting(setting, true);
-			
-			// handle server switches
-			switch( setting ){
-				case 'mopidyconsume':
-					MopidyService.setConsume( true );
-					break;
-				case 'echonestenabled':
+	
+	// some settings need extra behavior attached when changed
+	$rootScope.$on('spotmop:settings:changed', function( event, data ){
+		switch( data.name ){
+			case 'mopidyconsume':
+				MopidyService.setConsume( data.value );
+				break;
+			case 'echonestenabled':
+				if( data.value )
 					EchonestService.start();
-					break;
-			}
-        }
-	};
+				else
+					EchonestService.stop();
+				break;
+		}				
+	});
 	
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){

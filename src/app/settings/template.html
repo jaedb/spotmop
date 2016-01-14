@@ -42,14 +42,14 @@
 				<div class="field">
 					<div class="label">Disable browser notifications</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.pusherdisabled}" ng-click="toggleSetting('pusherdisabled')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="pusherdisabled"></switch>
 					</div>
 				</div>
 
 				<div class="field shortcut-keys">
 					<div class="label">Keyboard shortcuts</div>
-					<div class="input">					
-						<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
+					<div class="input">
+						<switch class="switch-button" name="keyboardShortcutsEnabled"></switch>
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -100,7 +100,7 @@
 				<div class="field">
 					<div class="label">Consume mode</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleSetting('mopidyconsume')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="mopidyconsume"></switch>
 					</div>
 				</div>
 
@@ -165,7 +165,7 @@
 				<div class="field">
 					<div class="label">Enabled</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleSetting('echonestenabled')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="echonestenabled"></switch>
 					</div>
 				</div>
 
@@ -189,7 +189,7 @@
 				<div class="field">
 					<div class="label">Enable advanced settings</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.advancedMode}" ng-click="toggleSetting('advancedMode')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="advancedMode"></switch>
 					</div>
 				</div>
 				
@@ -198,7 +198,7 @@
 					<div class="field">
 						<div class="label">Emulate touch device</div>
 						<div class="input">		
-							<span class="switch-button" ng-class="{on: settings.emulateTouchDevice}" ng-click="toggleSetting('emulateTouchDevice')"><span class="switch animate"></span></span>
+							<switch class="switch-button" name="emulateTouchDevice"></switch>
 						</div>
 					</div>
 
