@@ -34,6 +34,11 @@ angular.module('spotmop.browse.artist.overview({', [])
 			url: "/biography",
 			templateUrl: "app/browse/artist/biography.template.html",
 			controller: 'ArtistBiographyController'
+		})
+		.state('browse.artistalbum', {
+			url: "/artist/:artisturi/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
 		});
 })
 

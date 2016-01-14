@@ -69,7 +69,6 @@ angular.module('spotmop.browse.playlist', [])
         return Math.round(totalTime / 100000);   
     }
     
-    
 	
 	/**
 	 * Lazy loading
@@ -148,6 +147,14 @@ angular.module('spotmop.browse.playlist', [])
                 .then( function( isFollowing ){
                     $scope.following = $.parseJSON(isFollowing);
                 });
+    
+			// if we're viewing from within a genre category, get the category
+			if( typeof($stateParams.categoryid) !== 'undefined' ){				
+				SpotifyService.getCategory( $stateParams.categoryid )
+					.then(function( response ) {
+						$scope.category = response;
+					});
+			}
 		});
 		
 	

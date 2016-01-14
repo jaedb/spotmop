@@ -49,8 +49,12 @@
 		
 			<div class="intro">
 				<div class="breadcrumbs">
-					<span ng-repeat="breadcrumb in breadcrumbs">
-						<a class="item" href="{{ breadcrumb.link }}" ng-bind="breadcrumb.name"></a>
+					<span ng-if="linkingMode('browse.newalbum')">
+						<a class="item" ui-sref="browse.new">New releases</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span ng-if="linkingMode('browse.artistalbum')">
+						<a class="item" ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
 					<span class="item">Album</span>

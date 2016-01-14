@@ -105,6 +105,15 @@ angular.module('spotmop.browse.album', [])
 				.then( function( response ){
 					$scope.album.artists = response.artists;
 				});
+				
+			// if we're viewing from within an individual artist, get 'em
+			if( typeof($stateParams.artisturi) !== 'undefined' ){		
+				// get the artist from Spotify
+				SpotifyService.getArtist( $stateParams.artisturi )
+					.then( function( response ){
+						$scope.artist = response;
+					});
+			}
 			
 		});
     
