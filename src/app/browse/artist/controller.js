@@ -173,12 +173,28 @@ angular.module('spotmop.browse.artist.overview({', [])
 /**
  * Biography controller
  **/
-.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, EchonestService ){
+.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
 	
-	// get the biography
-	EchonestService.getArtistBiography( $stateParams.uri )
-		.then( function( response ){
-			$scope.artist.biography = response.response.biographies[0];
-		});
+	// check if we know the artist name yet. If not, go find the artist on Spotify first
+	if( typeof($scope.artist.name) === 'undefined' ){
+		
+		// get the artist from Spotify
+		SpotifyService.getArtist( $stateParams.uri )
+			.then( function( response ){
+				getBio( response.name );
+			});
+	}else{
+		getBio( $scope.artist.name );
+	}
 	
+	// go get the biography
+	function getBio( name ){
+		LastfmService.artistInfo( name )
+			.then( function( response ){
+				$scope.artist.biography = response.artist.bio;
+			});
+	}
 });
+
+
+
