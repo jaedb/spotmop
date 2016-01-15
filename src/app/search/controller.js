@@ -76,7 +76,7 @@ angular.module('spotmop.search', [])
 	
 		if( typeof(type) === 'undefined' )
 			var type = $scope.type;
-	
+		
 		switch( type ){
 			
 			case 'track' :

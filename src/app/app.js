@@ -176,7 +176,32 @@ angular.module('spotmop', [
 	 * Search
 	 **/
 	$scope.searchSubmit = function( query ){
-		$state.go( 'search', { query: query } );
+		
+		// see if spotify recognises this query as a spotify uri
+		var uriType = SpotifyService.uriType( query );
+		
+		// no? just do a normal search
+		if( !uriType ){
+			$state.go( 'search', { query: query } );
+		
+		// yes? right. Let's send you straight to the asset, depending on it's type
+		}else{
+		
+			NotifyService.notify('You\'ve been redirected because that looked like a Spotify URI');
+		
+			if( uriType == 'artist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.artist.overview', {uri: query } );
+				
+			}else if( uriType == 'album' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.album', {uri: query } );
+				
+			}else if( uriType == 'playlist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.playlist', {uri: query } );
+			}
+		}
 	};
     
     

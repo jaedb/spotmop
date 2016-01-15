@@ -128,13 +128,29 @@ angular.module('spotmop.services.spotify', [])
 			if( element == 'userid' && exploded[1] == 'user' )
 				return exploded[2];				
 			if( element == 'playlistid' && exploded[3] == 'playlist' )
-				return exploded[4];				
+				return exploded[4];
 			if( element == 'artistid' && exploded[1] == 'artist' )
 				return exploded[2];				
 			if( element == 'albumid' && exploded[1] == 'album' )
 				return exploded[2];				
 			if( element == 'trackid' && exploded[1] == 'track' )
 				return exploded[2];				
+			return null;
+		},
+        
+		/**
+		 * Identify what kind of asset a URI is (playlist, album, etc)
+		 * @param uri = string
+		 * @return string
+		 **/
+		uriType: function( uri ){
+			var exploded = uri.split(':');
+			if( exploded[0] == 'spotify' && exploded[1] == 'artist' )
+				return 'artist';		
+			if( exploded[0] == 'spotify' && exploded[1] == 'album' )
+				return 'album';		
+			if( exploded[0] == 'spotify' && exploded[1] == 'user' && exploded[3] == 'playlist' )
+				return 'playlist';		
 			return null;
 		},
         
