@@ -51,15 +51,7 @@ angular.module('spotmop', [
 	
 	// initiate analytics
 	AnalyticsProvider.useAnalytics(true);
-	AnalyticsProvider.setAccount({
-		tracker: "UA-64701652-3",
-		name: "primary",
-		fields: {
-			cookieDomain: 'none',
-			cookieName: 'local',
-			cookieExpires: 20000
-		},
-	});
+	AnalyticsProvider.setAccount("UA-64701652-3");
 })
 
 
@@ -74,7 +66,10 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){		
+
+	// track this navigation event
+	Analytics.trackEvent('Core', 'Spotmop', 'Started');
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -188,6 +183,9 @@ angular.module('spotmop', [
 	 * Search
 	 **/
 	$scope.searchSubmit = function( query ){
+
+		// track this navigation event
+		Analytics.trackEvent('Search', 'Search performed', query);
 		
 		// see if spotify recognises this query as a spotify uri
 		var uriType = SpotifyService.uriType( query );
