@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spotmop.browse.artist.overview({', [])
+angular.module('spotmop.browse.artist', [])
 
 /**
  * Routing 

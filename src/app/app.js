@@ -9,9 +9,10 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	'ngTouch',
-	'ui.router',
-	
+	'ui.router',	
 	'angular-loading-bar',
+	'angular-google-analytics',
+	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',
 	'spotmop.common.tracklist',
@@ -30,12 +31,11 @@ angular.module('spotmop', [
 	'spotmop.queue',
 	'spotmop.library',
 	'spotmop.search',
-	'spotmop.settings',
-	
+	'spotmop.settings',	
 	'spotmop.discover',
 	
 	'spotmop.browse',
-	'spotmop.browse.artist.overview({',
+	'spotmop.browse.artist',
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',
@@ -44,14 +44,26 @@ angular.module('spotmop', [
 	'spotmop.browse.new'
 ])
 
-.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider){
-	//$locationProvider.html5Mode(true);
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider){
+
 	$urlRouterProvider.otherwise("queue");
 	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
+	
+	// initiate analytics
+	AnalyticsProvider.useAnalytics(true);
+	AnalyticsProvider.setAccount({
+		tracker: "UA-64701652-3",
+		name: "primary",
+		fields: {
+			cookieDomain: 'none',
+			cookieName: 'local',
+			cookieExpires: 20000
+		},
+	});
 })
 
 
-.run( function($rootScope, SettingsService){
+.run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })
 
