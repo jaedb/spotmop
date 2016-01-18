@@ -66,10 +66,10 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
 
-	// track this navigation event
-	Analytics.trackEvent('Core', 'Spotmop', 'Started');
+	// track core started
+	Analytics.trackEvent('Spotmop', 'Started');
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -158,9 +158,10 @@ angular.module('spotmop', [
 		}
     });
 	
-	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
+	// when we navigate to a new state
+	$rootScope.$on('$stateChangeStart', function(event){ 
 		$scope.hideMenu();
-		BackgroundCheck.refresh();
+		Analytics.trackPage( $location.path() );
 	});
 	
 	$(document).on('click', '#body', function(event){
@@ -185,7 +186,7 @@ angular.module('spotmop', [
 	$scope.searchSubmit = function( query ){
 
 		// track this navigation event
-		Analytics.trackEvent('Search', 'Search performed', query);
+		Analytics.trackEvent('Search', 'Performed search', query);
 		
 		// see if spotify recognises this query as a spotify uri
 		var uriType = SpotifyService.uriType( query );
@@ -246,6 +247,7 @@ angular.module('spotmop', [
      * Mopidy music player is open for business
      **/
 	$scope.$on('mopidy:state:online', function(){
+		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
@@ -269,6 +271,7 @@ angular.module('spotmop', [
 			.then( function(response){
 				$scope.spotifyUser = response;
 				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
+				Analytics.trackEvent('Spotify', 'Online', response.id +'('+ response.display_name +')');
 				
 				// update my playlists
 				$scope.updatePlaylists();
@@ -286,8 +289,10 @@ angular.module('spotmop', [
         
         // if we have no client name, then initiate initial setup
 		var client = SettingsService.getSetting('pushername', null);
-        if( typeof(client) === 'undefined' || !client || client == '' )
+        if( typeof(client) === 'undefined' || !client || client == '' ){
             DialogService.create('initialsetup', $scope);
+			Analytics.trackEvent('Core', 'Initial setup');
+		}
     });
     
 	$rootScope.$on('spotmop:pusher:received', function(event, data){
@@ -298,6 +303,8 @@ angular.module('spotmop', [
 			icon = data.spotifyuser.images[0].url;
 		
 		NotifyService.browserNotify( data.title, data.body, icon );
+		
+		Analytics.trackEvent('Pusher', 'Notification received', data.body);
 	});
 	
 	
