@@ -20,7 +20,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     install_requires=[
-        'setuptools >= 18.7.1',
+        'setuptools >= 3.3',
         'Mopidy >= 0.19',
         'ConfigObj'
     ],

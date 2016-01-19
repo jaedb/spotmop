@@ -235,20 +235,18 @@
 					</div>
 
 					<div class="field">
-						<div class="label">Connection status</div>
+						<div class="label">Current connection</div>
 						<div class="input readonly">
-							IP: <span ng-bind="settings.pusherip"></span><br />
-                            ID: <span ng-bind="settings.pusherid"></span>
+							<span ng-bind="::settings.pusherip"></span> <span class="grey-text">(<span ng-bind="::settings.pusherid"></span>)</span>
 						</div>
 					</div>
 
 					<div class="field current-connections">
-						<div class="label">Current connections</div>
+						<div class="label">Users connected</div>
 						<div class="input readonly">
                             <div ng-repeat="client in clientConnections">
                                 <span class="min-width w100 ip" ng-bind="client.ip"></span>
                                 <span class="min-width w100 name" ng-bind="client.name"></span>
-                                <span class="id grey-text" ng-bind="client.id"></span>
                             </div>
 						</div>
 						<div class="clear-both"></div>

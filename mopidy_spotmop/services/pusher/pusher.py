@@ -1,14 +1,8 @@
-import tornado.ioloop
-import tornado.web
-import tornado.websocket
-import tornado.template
-import logging
-import uuid
-import os
-import cgi
-from tornado.escape import json_encode,json_decode
+import tornado.ioloop, tornado.web, tornado.websocket, tornado.template
+import logging, uuid, os, subprocess
+from datetime import datetime
+from tornado.escape import json_encode, json_decode
 from mopidy import config, ext
-import subprocess
 
 logger = logging.getLogger(__name__)
 clients = {}
@@ -20,8 +14,9 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
     return True
   
   def open(self):
+    created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
     self.id = str(uuid.uuid4())
-    self.details = {"id": self.id, "ip": self.request.remote_ip, "name": "User"}
+    self.details = {"id": self.id, "ip": self.request.remote_ip, "name": "User", "created": created}
     clients[self.id] = { 'details': self.details, 'connection': self}
     
     # send a message to the client with it's assigned details
@@ -58,8 +53,8 @@ class PusherRequestHandler(tornado.web.RequestHandler):
     def get(self, action):
     
         if action == 'me':
-            id = self.get_query_argument('id')
-            name = self.get_query_argument('name')
+            id = self.get_argument('id','')
+            name = self.get_argument('name','')
             
             # save the payload name to the client list
             clients[id]['details']['name'] = name

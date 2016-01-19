@@ -40,7 +40,7 @@ class SpotmopExtension(ext.Extension):
             'factory': spotmop_client_factory
         })
 
-        logger.info('Starting Spotmop web client')
+        logger.info('Starting Spotmop web client '+ self.version)
 
 def spotmop_client_factory(config, core):
 
