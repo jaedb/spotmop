@@ -3,7 +3,7 @@
 angular.module('spotmop.services.pusher', [
 ])
 
-.factory("PusherService", function($rootScope, $http, $q, $localStorage, SettingsService){
+.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, SettingsService, NotifyService){
 
 	// make sure we have a local storage container
 	if( typeof( $localStorage.pusher ) === 'undefined' )
@@ -48,6 +48,13 @@ angular.module('spotmop.services.pusher', [
                             SettingsService.setSetting('pusherid', data.details.id);
                             SettingsService.setSetting('pusherip', data.details.ip);
                             
+                            // detect if the core has been updated
+                            if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
+                                NotifyService.notify('New version detected, clearing caches...');      
+                                $cacheFactory.get('$http').removeAll();                        
+                                SettingsService.setSetting('spotmopversion', data.version);
+                            }
+							
                             // notify server of our actual username
                             var name = SettingsService.getSetting('pushername', null)
                             if( name )

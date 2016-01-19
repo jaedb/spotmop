@@ -12,16 +12,19 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
 
   def check_origin(self, origin):
     return True
+
+  def initialize(self, version):
+    self.version = version
   
   def open(self):
-    created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
-    self.id = str(uuid.uuid4())
+    created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')    
+    self.id = str(uuid.uuid4().hex)
     self.details = {"id": self.id, "ip": self.request.remote_ip, "name": "User", "created": created}
     clients[self.id] = { 'details': self.details, 'connection': self}
     
     # send a message to the client with it's assigned details
-    connectedMessage = '{"pusher": "true", "startup": "true", "details": '+ json_encode(self.details) +'}'
-    self.write_message( connectedMessage )
+    connectedMessage = '{"pusher": "true", "startup": "true", "details": '+ json_encode(self.details) +', "version": "'+self.version+'"}'
+    logger.info( connectedMessage )
     logger.debug( 'New Spotmop Pusher connection: '+ self.id )
 
   def on_message(self, message):
@@ -53,14 +56,15 @@ class PusherRequestHandler(tornado.web.RequestHandler):
     def get(self, action):
     
         if action == 'me':
-            id = self.get_argument('id','')
-            name = self.get_argument('name','')
+            id = self.get_argument('id','id')
+            name = self.get_argument('name','name')
             
             # save the payload name to the client list
-            clients[id]['details']['name'] = name
-            
-            # return the updated client details
-            self.write( '{"status":"ok"}' )
+            if id in clients:
+                clients[id]['details']['name'] = name
+                self.write( '{"status":"ok"}' )
+            else:
+                self.write( '{"status":"error","message":"Client does not exist"}' )
             
         elif action == 'connections':
             clientDetailsList = []
@@ -68,9 +72,13 @@ class PusherRequestHandler(tornado.web.RequestHandler):
                 clientDetailsList.append(client['details'])
             self.write(json_encode(clientDetailsList))
 
-def spotmop_pusher_factory(config, core):
+def spotmop_pusher_factory(config, core, version):
     return [
-        ('/', PusherRequestHandler, {'core': core, 'config': config})
+        ('/', PusherRequestHandler, {
+                'core': core,
+                'config': config,
+                'version': version
+            })
     ]
     
   

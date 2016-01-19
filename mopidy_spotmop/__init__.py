@@ -10,7 +10,7 @@ from services.upgrade import upgrade
 from services.pusher import pusher
 from mopidy import config, ext
 
-__version__ = '2.5.6'
+__version__ = '2.5.7'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -51,16 +51,26 @@ def spotmop_client_factory(config, core):
     # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
     pusherport = str(config['spotmop']['pusherport'])
     application = tornado.web.Application([
-        ('/pusher', pusher.PusherHandler),
+        ('/pusher', pusher.PusherHandler, {
+                'version': __version__
+            }),
     ])
     application.listen(pusherport)
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
 	
     return [
-		('/upgrade', upgrade.UpgradeRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
-		('/pusher/([^/]+)', pusher.PusherRequestHandler, {'core': core, 'config': config, 'version': __version__ }),
+		('/upgrade', upgrade.UpgradeRequestHandler, {
+				'core': core,
+				'config': config,
+				'version': __version__ 
+			}),
+		('/pusher/([^/]+)', pusher.PusherRequestHandler, {
+				'core': core,
+				'config': config,
+				'version': __version__
+			}),
         (r'/(.*)', tornado.web.StaticFileHandler, {
-            "path": spotmoppath,
-            "default_filename": "index.html"
-        }),
+				"path": spotmoppath,
+				"default_filename": "index.html"
+			}),
     ]
