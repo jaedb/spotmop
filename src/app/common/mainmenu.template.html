@@ -60,10 +60,11 @@
 		<a ui-sref="library.playlists" class="droppable" data-type="playlists">
 			<i class="fa fa-tags"></i>
 			Playlists
+            <span class="playlists-submenu-trigger white-text" ng-click="showPlaylistsSubmenu( $event )"><i class="fa fa-caret-right"></i></span>
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
-				<a href="{{ playlist.link }}" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
+				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
 					<span ng-bind="playlist.name"></span>
 					<span class="dragging-note">Add to playlist</span>
 				</a>

@@ -245,12 +245,23 @@ body {
 
 .main-menu .menu-item.active > a {
 	background-color: rgba(0,0,0,0.15);
-	/*background-position: 100% 50%;*/
 	border-color: #08d58f;
 }
 
 .main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
+}
+
+.main-menu .playlists-submenu-trigger {
+    float: right;
+    display: block;
+    opacity: 0.5;
+    margin-top: -7px;
+    padding: 10px 15px;
+}
+
+.main-menu .playlists-submenu-trigger i {
+    font-size: 12px;
 }
 	
 .menu-reveal-trigger {
@@ -326,6 +337,7 @@ body {
 	padding: 10px 0 10px 20px;
 }
 
+.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
 .dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
 }

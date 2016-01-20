@@ -100,6 +100,21 @@ angular.module('spotmop', [
         DialogService.create('volumeControls', $scope);
 	}
     
+    /**
+     * Playlists submenu
+     **/
+     
+    // handle manual show
+    $scope.showPlaylistsSubmenu = function( event ){
+        event.preventDefault();
+        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
+    }
+    
+    $(document).on('click', function( event ){
+        if( $(event.target).closest('.playlists-submenu-trigger').length <= 0  )
+            $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
+    });
+    
 	// update the playlists menu
 	$scope.updatePlaylists = function(){
 		
@@ -125,6 +140,7 @@ angular.module('spotmop', [
                 $scope.playlistsMenu = newPlaylistsMenu;
 			});
 	}
+    
 		
     
 	/**
