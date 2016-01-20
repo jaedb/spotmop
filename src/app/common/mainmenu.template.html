@@ -60,7 +60,7 @@
 		<a ui-sref="library.playlists" class="droppable" data-type="playlists">
 			<i class="fa fa-tags"></i>
 			Playlists
-            <span class="playlists-submenu-trigger white-text" ng-click="showPlaylistsSubmenu( $event )"><i class="fa fa-caret-right"></i></span>
+            <span class="playlists-submenu-trigger white-text" ng-if="!isTouchDevice()"><i class="fa fa-caret-right"></i></span>
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
@@ -78,7 +78,7 @@
 		</a>
 	</li>
 	<li class="divider spacer"></li>
-	<li class="menu-item top-level {{ linkingMode('settings') }}"">
+	<li class="menu-item top-level {{ linkingMode('settings') }}">
 		<a ui-sref="settings">
 			<i class="fa fa-cog"></i>
 			Settings

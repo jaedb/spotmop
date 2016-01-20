@@ -118,7 +118,7 @@ body {
 	z-index: 2;
 	top: 0;
 	left: 0;
-	bottom: 120px;
+	bottom: 0;
 	right: 0;
 	position: absolute;
 	overflow-y: auto;
@@ -206,6 +206,14 @@ body {
 	color: #FFFFFF;
 	opacity: 0.4;
 	text-transform: uppercase;
+}
+
+.main-menu .divider.spacer {
+    padding-top: 10px;
+}
+
+.main-menu .menu-item:last-child {
+    padding-bottom: 20px;
 }
 
 .main-menu .menu-item > a {
