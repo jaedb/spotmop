@@ -3,7 +3,7 @@
 angular.module('spotmop.services.pusher', [
 ])
 
-.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, SettingsService, NotifyService){
+.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, $templateCache, SettingsService, NotifyService){
 
 	// make sure we have a local storage container
 	if( typeof( $localStorage.pusher ) === 'undefined' )
@@ -51,7 +51,8 @@ angular.module('spotmop.services.pusher', [
                             // detect if the core has been updated
                             if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
                                 NotifyService.notify('New version detected, clearing caches...');      
-                                $cacheFactory.get('$http').removeAll();                        
+                                $cacheFactory.get('$http').removeAll();
+                                $templateCache.removeAll();
                                 SettingsService.setSetting('spotmopversion', data.version);
                             }
 							
