@@ -1,6753 +1,3 @@
-
-
-/* =========================================================================== INIT =========== */
-/* ============================================================================================ */
-
-// create our application
-angular.module('spotmop', [
-	
-	'ngResource',
-	'ngStorage',
-	'ngTouch',
-	'ui.router',	
-	'angular-loading-bar',
-	'angular-google-analytics',
-	
-	'spotmop.directives',
-	'spotmop.common.contextmenu',
-	'spotmop.common.tracklist',
-    
-	'spotmop.services.notify',
-	'spotmop.services.settings',
-	'spotmop.services.player',
-	'spotmop.services.spotify',
-	'spotmop.services.mopidy',
-	'spotmop.services.echonest',
-	'spotmop.services.lastfm',
-	'spotmop.services.dialog',
-	'spotmop.services.pusher',
-	
-	'spotmop.player',
-	'spotmop.queue',
-	'spotmop.library',
-	'spotmop.search',
-	'spotmop.settings',	
-	'spotmop.discover',
-	
-	'spotmop.browse',
-	'spotmop.browse.artist',
-	'spotmop.browse.album',
-	'spotmop.browse.playlist',
-    'spotmop.browse.user',
-    'spotmop.browse.genre',
-	'spotmop.browse.featured',
-	'spotmop.browse.new'
-])
-
-.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider){
-
-	$urlRouterProvider.otherwise("queue");
-	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
-	
-	// initiate analytics
-	AnalyticsProvider.useAnalytics(true);
-	AnalyticsProvider.setAccount("UA-64701652-3");
-})
-
-
-.run( function($rootScope, SettingsService, Analytics){
-	// this code is run before any controllers
-})
-
-
-/* ==================================================================== APP CONTROLLER ======== */
-/* ============================================================================================ */
-
-/**
- * Global controller
- **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
-
-	// track core started
-	Analytics.trackEvent('Spotmop', 'Started');
-		
-    $scope.isTouchDevice = function(){
-		if( SettingsService.getSetting('emulateTouchDevice',false) )
-			return true;
-		return !!('ontouchstart' in window);
-	}
-    $scope.isSameDomainAsMopidy = function(){
-		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
-		
-		// if set to localhost or not set at all (then using default of localhost)
-		if( !mopidyhost || mopidyhost == 'localhost' )
-			return true;
-		
-		// custom setting, and if it matches the domain spotmop is using, then we're in business
-		if( $location.host() == mopidyhost )
-			return true;
-		}
-	$scope.state = PlayerService.state;
-	$scope.currentTracklist = [];
-	$scope.spotifyUser = {};
-	$scope.menuCollapsable = false;
-	$scope.reloadApp = function(){
-		window.location.reload();
-	}
-    $scope.playlistsMenu = [];
-    $scope.myPlaylists = {};
-	$scope.popupVolumeControls = function(){
-        DialogService.create('volumeControls', $scope);
-	}
-    
-	// update the playlists menu
-	$scope.updatePlaylists = function(){
-		
-		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
-			.then(function( response ) {
-				
-				$scope.myPlaylists = response.items;				
-                var newPlaylistsMenu = [];
-            
-				// loop all of our playlists, and set up a menu item for each
-				$.each( response.items, function( key, playlist ){
-
-					// we only want to add playlists that this user owns
-					if( playlist.owner.id == $scope.spotifyUser.id ){
-                        var playlistObject = playlist;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-						newPlaylistsMenu.push(playlistObject);
-					}
-				});
-                
-                // now reset our current list with this new list
-                $scope.playlistsMenu = newPlaylistsMenu;
-			});
-	}
-		
-    
-	/**
-	 * Responsive
-	 **/
-	
-	$scope.windowWidth = $(document).width();
-	$scope.windowHeight = $(document).height();
-	$scope.mediumScreen = function(){
-		if( $scope.windowWidth <= 800 )
-			return true;
-		return false;
-	}
-	$scope.smallScreen = function(){
-		if( $scope.windowWidth <= 450 )
-			return true;
-		return false;
-	}
-	
-    angular.element(window).resize(function(){
-		
-		// detect if the width has changed 
-		// we only check width because soft keyboard reveal shouldn't hide/show the menu (ie search form)
-		if( $(document).width() != $scope.windowWidth ){
-			
-			// update stored value
-			$scope.windowWidth = $(document).width();
-			
-			// re-hide the sidebar and reset the body sliding
-			$(document).find('body').removeClass('menu-revealed');
-		}
-    });
-	
-	// when we navigate to a new state
-	$rootScope.$on('$stateChangeStart', function(event){ 
-		$scope.hideMenu();
-		Analytics.trackPage( $location.path() );
-	});
-	
-	$(document).on('click', '#body', function(event){
-		if( $(event.target).closest('.menu-reveal-trigger').length <= 0 )
-			$scope.hideMenu();
-	});
-	
-	// show menu (this is triggered by swipe event)
-	$scope.showMenu = function(){
-		$(document).find('body').addClass('menu-revealed');
-	}
-	
-	// hide menu (typically triggered by swipe event)
-	$scope.hideMenu = function(){
-		$(document).find('body').removeClass('menu-revealed');
-	}
-	
-	
-	/**
-	 * Search
-	 **/
-	$scope.searchSubmit = function( query ){
-
-		// track this navigation event
-		Analytics.trackEvent('Search', 'Performed search', query);
-		
-		// see if spotify recognises this query as a spotify uri
-		var uriType = SpotifyService.uriType( query );
-		
-		// no? just do a normal search
-		if( !uriType ){
-			$state.go( 'search', { query: query } );
-		
-		// yes? right. Let's send you straight to the asset, depending on it's type
-		}else{
-		
-			NotifyService.notify('You\'ve been redirected because that looked like a Spotify URI');
-		
-			if( uriType == 'artist' ){
-				$(document).find('.search-form input').val('');
-				$state.go( 'browse.artist.overview', {uri: query } );
-				
-			}else if( uriType == 'album' ){
-				$(document).find('.search-form input').val('');
-				$state.go( 'browse.album', {uri: query } );
-				
-			}else if( uriType == 'playlist' ){
-				$(document).find('.search-form input').val('');
-				$state.go( 'browse.playlist', {uri: query } );
-			}
-		}
-	};
-    
-    
-	/**
-	 * Generate a template-friendly representation of whether this state is active or parent of active
-	 * @param states = array of strings
-	 * @return string
-	 **/
-	$scope.linkingMode = function( states ){
-		
-		var mode = '';
-		
-		// if we're not an array, make it an array (of one)
-		if( !$.isArray(states) )
-			states = [states];
-		
-		// loop our array
-		angular.forEach( states, function(state){
-			if( mode == '' ){
-				if( $state.is( state ) )
-					mode = 'active';
-				else if( $state.includes( state ) )
-					mode = 'section';
-			};
-		});
-		
-		return mode;
-	};
-    
-    
-    /**
-     * Mopidy music player is open for business
-     **/
-	$scope.$on('mopidy:state:online', function(){
-		Analytics.trackEvent('Mopidy', 'Online');
-		$rootScope.mopidyOnline = true;
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$scope.currentTracklist = tlTracks;
-		});
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
-		});
-	});
-	
-	$scope.$on('mopidy:state:offline', function(){
-		$rootScope.mopidyOnline = false;
-	});
-    
-	
-	/**
-	 * Spotify is online and authorized
-	 **/
-	$scope.$on('spotmop:spotify:online', function(){
-		$rootScope.spotifyOnline = true;
-		SpotifyService.getMe()
-			.then( function(response){
-				$scope.spotifyUser = response;
-				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
-				Analytics.trackEvent('Spotify', 'Online', response.id +'('+ response.display_name +')');
-				
-				// update my playlists
-				$scope.updatePlaylists();
-			});
-	});
-	
-	
-	/**
-	 * Pusher integration
-	 **/
-     
-	PusherService.start();
-	
-    $rootScope.$on('spotmop:pusher:online', function(event, data){
-        
-        // if we have no client name, then initiate initial setup
-		var client = SettingsService.getSetting('pushername', null);
-        if( typeof(client) === 'undefined' || !client || client == '' ){
-            DialogService.create('initialsetup', $scope);
-			Analytics.trackEvent('Core', 'Initial setup');
-		}
-    });
-    
-	$rootScope.$on('spotmop:pusher:received', function(event, data){
-		
-		var icon = '';
-		data.spotifyuser = JSON.parse(data.spotifyuser);
-		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
-			icon = data.spotifyuser.images[0].url;
-		
-		NotifyService.browserNotify( data.title, data.body, icon );
-		
-		Analytics.trackEvent('Pusher', 'Notification received', data.body);
-	});
-	
-	
-	// when playback finishes, log this to EchoNest (if enabled)
-	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
-	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonestenabled',false) )
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-	});
-    
-    
-
-    /**
-     * All systems go!
-     *
-     * Without this sucker, we have no operational services. This is the ignition sequence.
-     * We use $timeout to delay start until $digest is completed
-     **/
-	MopidyService.start();
-	SpotifyService.start();
-	if(SettingsService.getSetting('echonestenabled',false))
-		EchonestService.start();
-	
-	
-	/**
-	 * Keyboard shortcuts
-	 * We bind these to the app-level so they can be used in all directives and controllers
-	 **/
-
-	$rootScope.shiftKeyHeld = false;
-	$rootScope.ctrlKeyHeld = false;
-        
-    // key press start
-	$('body').bind('keydown',function( event ){
-            if( event.which === 16 ){
-                $rootScope.shiftKeyHeld = true;
-            }else if( event.which === 17 ){
-                $rootScope.ctrlKeyHeld = true;
-            }
-
-			// if we're about to fire a keyboard shortcut event, let's prevent default
-			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
-				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
-				if($.inArray(event.which, shortcutKeyCodes) > -1)
-					event.preventDefault();			
-			}
-        })
-    
-        // when we release the key press
-        .bind('keyup',function( event ){
-
-			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
-				
-				// delete key
-				if( event.which === 46 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:delete');
-					
-				// spacebar
-				if( event.which === 32 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:space');
-					
-				// enter
-				if( event.which === 13 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:enter');
-
-				// navigation arrows
-				if( event.which === 37 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:left');
-				if( event.which === 38 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:up');
-				if( event.which === 39 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:right');
-				if( event.which === 40 )
-					$rootScope.$broadcast('spotmop:keyboardShortcut:down');
-
-				// esc key
-				if( event.which === 27 ){
-					$rootScope.$broadcast('spotmop:keyboardShortcut:esc');
-					if( dragging ){
-						dragging = false;
-						$(document).find('.drag-tracer').hide();
-					}
-				}
-            }
-			
-			// we'll also release the modifier key switches
-            if( event.which === 16 )
-                $rootScope.shiftKeyHeld = false;
-			if( event.which === 17 )
-                $rootScope.ctrlKeyHeld = false;
-        }
-    );
-	
-	
-	/**
-	 * When we click anywhere
-	 * This allows us to kill context menus, unselect tracks, etc
-	 **/
-	$(document).on('mouseup', 'body', function( event ){
-		
-		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
-		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:contextMenu:hide');
-		}
-	});
-    
-    /**
-     * Detect if we have a droppable target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getDroppableTarget( target ){
-        
-        var droppableTarget = null;
-        
-        if( $(target).hasClass('droppable') )
-            droppableTarget = $(target);
-        else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable');   
-        
-        return droppableTarget;
-    }
-    
-    /**
-     * Detect if we have a track drop target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getTrackTarget( target ){
-        
-        var trackTarget = null;
-        
-		if( $(target).hasClass('track') )
-			trackTarget = $(target);				
-		else if( $(target).closest('.track').length > 0 )
-			trackTarget = $(target).closest('.track');
-        
-        return trackTarget;
-    }
-	
-	
-    /**
-     * Dragging of tracks
-     **/
-    var tracksBeingDragged = [];
-    var dragging = false;
-	var dragThreshold = 30;
-	
-	// when the mouse is pressed down on a track
-	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
-					
-		// get us our list of selected tracks
-		var tracklist = $(event.currentTarget).closest('.tracklist');
-		var tracks = tracklist.find('.track.selected');
-		
-		// create an object that gives us all the info we need
-		dragging = {
-					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
-					clientX: event.clientX,
-					clientY: event.clientY,
-					tracks: tracks
-				}
-	});
-	
-	// when we release the mouse, release dragging container
-	$(document).on('mouseup', function(event){
-		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
-			
-            $('body').removeClass('dragging');
-            $(document).find('.droppable').removeClass('dropping');
-            $(document).find('.drag-hovering').removeClass('drag-hovering');
-            
-			// identify the droppable target that we've released on (if it exists)
-			var target = getDroppableTarget( event.target );
-			var track = getTrackTarget( event.target );
-			
-			var isMenuItem = false;
-			if( target && target.closest('.main-menu').length > 0 )
-				isMenuItem = true;
-			
-			// if we have a target
-			if( target ){
-				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-				
-				// get the uris
-				var uris = [];
-				$.each( dragging.tracks, function(key, value){
-					uris.push( $(value).attr('data-uri') );
-				});
-				
-				// dropping on queue
-				if( isMenuItem && target.attr('data-type') === 'queue' ){
-			
-					if( uris.length > 10 ){
-						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
-					}
-                    
-					MopidyService.addToTrackList( uris );
-					
-				// dropping on library
-				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-					
-					// convert all our URIs to IDs
-					var trackids = new Array();
-					$.each( uris, function(key,value){
-						trackids.push( SpotifyService.getFromUri('trackid', value) );
-					});
-					
-					SpotifyService.addTracksToLibrary( trackids );
-					
-				// dropping on playlist
-				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
-					
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );	
-					
-				// dropping within tracklist
-				}else if( track ){
-                    
-                    var start = 1000;
-                    var end = 0;
-                    var to_position = $(track).parent().index();
-                    $.each(dragging.tracks, function(key, track){
-                        if( $(track).parent().index() < start )  
-                            start = $(track).parent().index();
-                        if( $(track).parent().index() > end )  
-                            end = $(track).parent().index();
-                    });
-                    
-                    // sorting queue tracklist
-                    if( track.closest('.tracklist').hasClass('queue-items') ){
-						
-						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
-						if( to_position >= end )
-							to_position = to_position - uris.length;
-						
-						// note: mopidy want's the first track AFTER our range, so we need to +1
-                        MopidyService.moveTlTracks( start, end + 1, to_position );
-                        
-                    // sorting playlist tracklist
-                    }else if( track.closest('.tracklist').hasClass('playlist-items') ){
-					
-                        var range_length = 1;
-                        if( end > start ){
-							range_length = end - start;
-							range_length++;
-						};
-						
-						// tell our playlist controller to update it's track order, and pass it on to Spotify too
-						$scope.$broadcast('spotmop:playlist:reorder', start, range_length, to_position);
-                    }
-				}
-				
-			// no target, no drop action required
-			}else{
-				$(document).find('.drag-tracer').fadeOut('medium');
-			}
-		}
-			
-		// unset dragging
-		dragging = false;
-	});
-	
-	// when we move the mouse, check if we're dragging
-	$(document).on('mousemove', function(event){
-		if( dragging ){
-			
-			var left = dragging.clientX - dragThreshold;
-			var right = dragging.clientX + dragThreshold;
-			var top = dragging.clientY - dragThreshold;
-			var bottom = dragging.clientY + dragThreshold;
-			
-			// check the threshold distance from mousedown and now
-			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
-				
-                $('body').addClass('dragging');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-                var target = getDroppableTarget( event.target );
-				var track = getTrackTarget( event.target );
-                var dragTracer = $(document).find('.drag-tracer');
-				
-				if( track ){
-					track.addClass('drag-hovering');
-				}
-			
-				// turn the trigger safety of
-				dragging.safetyOff = true;
-				
-                // setup the tracer
-                dragTracer.show();
-					
-                $(document).find('.droppable').removeClass('dropping');
-                $(document).find('.dropping-within').removeClass('dropping-within');
-			
-				var isMenuItem = false;
-				if( target && target.closest('.main-menu').length > 0 )
-					isMenuItem = true;
-				
-                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
-                    target.addClass('dropping');
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                }else{
-                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
-                }
-			}
-		}
-	});
-	
-});
-
-
-
-
-
-
-'use strict';
-
-angular.module('spotmop.browse.album', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse.album', {
-			url: "/album/:uri",
-			templateUrl: "app/browse/album/template.html",
-			controller: 'AlbumController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
-	
-	$scope.album = {};
-	$scope.tracklist = {type: 'track'};
-    $scope.convertedDate = function(){
-		if( $scope.mediumScreen() ){
-			return $filter('date')($scope.album.release_date, "yyyy");
-		}else{
-			if( $scope.album.release_date_precision == 'day' )
-				return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
-			if( $scope.album.release_date_precision == 'month' )
-				return $filter('date')($scope.album.release_date, "MMMM yyyy");
-			if( $scope.album.release_date_precision == 'year' )
-				return $scope.album.release_date;
-		}
-        return null;
-    }
-	
-    // figure out the total time for all tracks
-    $scope.totalTime = function(){
-        var totalTime = 0;
-        if( typeof($scope.tracklist.tracks) !== 'undefined' ){
-            angular.forEach( $scope.tracklist.tracks, function( track ){
-                totalTime += track.duration_ms;
-            });
-        }
-        return Math.round(totalTime / 100000);   
-    }
-    
-	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
-	 **/
-    $(document).find('.browse > .content').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
-	
-	
-	// play the whole album
-	$scope.playAlbum = function(){
-		MopidyService.playStream( $scope.album.uri );
-	}
-	
-	// add album to library
-	$scope.addToLibrary = function(){
-		
-		var trackids = [];
-		angular.forEach( $scope.tracklist.tracks, function( track ){
-			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
-		});
-		
-		SpotifyService.addTracksToLibrary( trackids );
-	}
-	
-	// get the album
-	SpotifyService.getAlbum( $stateParams.uri )
-		.then(function( response ) {
-		
-			$scope.album = response;
-			$scope.tracklist = response.tracks;
-			$scope.tracklist.type = 'track';
-			$scope.tracklist.tracks = response.tracks.items;
-			
-			angular.forEach( $scope.tracklist.tracks, function(track){
-				track.album = $scope.album;
-			});
-			
-			var artisturis = [];
-			angular.forEach( response.artists, function( artist ){
-				artisturis.push( artist.uri );
-			});
-			
-			// now get the artist objects
-			SpotifyService.getArtists( artisturis )
-				.then( function( response ){
-					$scope.album.artists = response.artists;
-				});
-				
-			// if we're viewing from within an individual artist, get 'em
-			if( typeof($stateParams.artisturi) !== 'undefined' ){		
-				// get the artist from Spotify
-				SpotifyService.getArtist( $stateParams.artisturi )
-					.then( function( response ){
-						$scope.artist = response;
-					});
-			}
-			
-		});
-    
-	
-    /**
-     * Load more of the album's tracks
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreTracks = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreTracks( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreTracks = true;   
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist
-                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
-                
-                // save the next set's url (if it exists)
-                $scope.tracklist.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreTracks = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
-            loadMoreTracks( $scope.tracklist.next );
-        }
-	});
-});
-'use strict';
-
-angular.module('spotmop.browse.artist', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-    
-	$stateProvider
-		.state('browse.artist', {
-			url: "/artist/:uri",
-            abstract: true,
-			templateUrl: "app/browse/artist/template.html",
-            controller: ['$scope', '$state', 
-                function( $scope, $state) {
-					// if we're at the index level, go to the overview sub-state by default
-					// this prevents re-routing on refresh even if the URL is a valid sub-state
-					if( $state.current.name === 'browse.artist' )
-                    	$state.go('browse.artist.overview');
-                }]
-		})
-		.state('browse.artist.overview', {
-			url: "",
-			templateUrl: "app/browse/artist/overview.template.html",
-			controller: 'ArtistOverviewController'
-		})
-		.state('browse.artist.related', {
-			url: "/related",
-			templateUrl: "app/browse/artist/related.template.html",
-			controller: 'RelatedArtistsController'
-		})
-		.state('browse.artist.biography', {
-			url: "/biography",
-			templateUrl: "app/browse/artist/biography.template.html",
-			controller: 'ArtistBiographyController'
-		})
-		.state('browse.artistalbum', {
-			url: "/artist/:artisturi/:uri",
-			templateUrl: "app/browse/album/template.html",
-			controller: 'AlbumController'
-		});
-})
-
-
-/**
- * Main controller
- **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
-	
-	$scope.artist = {};
-	$scope.tracklist = {type: 'track'};
-	$scope.albums = {};
-	$scope.relatedArtists = {};
-    $scope.followArtist = function(){
-        SpotifyService.followArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = true;
-            });
-    }
-    $scope.unfollowArtist = function(){
-        SpotifyService.unfollowArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = false;
-            });
-    }
-	$scope.playArtistRadio = function(){
-		NotifyService.error( 'This functionality has not yet been implemented' );
-		/*
-		EchonestService.startArtistRadio( $scope.artist.name )
-			.then( function( response ){
-				console.log( response.response );
-			});
-			*/
-	}
-    
-	// get the artist from Spotify
-	SpotifyService.getArtist( $stateParams.uri )
-		.then( function( response ){
-			$scope.artist = response;
-    
-			/*
-			// get the artist from LastFM
-			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
-			LastfmService.artistInfo( response.name )
-				.then( function( response ){
-					console.log( response );
-				});
-			*/
-		});
-
-	// figure out if we're following this playlist
-	SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-		.then( function( isFollowing ){
-			$scope.following = $.parseJSON(isFollowing);
-		});
-		
-	// get the artist's related artists
-	SpotifyService.getRelatedArtists( $stateParams.uri )
-		.then( function( response ){
-			$scope.relatedArtists = response.artists;
-		});
-})
-
-
-/**
- * Artist overview controller
- **/
-.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
-	
-	// get the artist's albums
-	SpotifyService.getAlbums( $stateParams.uri )
-		.then( function( response ){
-			$scope.$parent.albums = response;
-			
-			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
-				.then( function( response ){
-					$scope.tracklist.tracks = response.tracks;
-				});
-		});	
-	
-	
-	
-	
-    /**
-     * Load more of the playlist's tracks
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreAlbums = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreAlbums( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreAlbums = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist (using our unified format of course)
-                $scope.albums.items = $scope.albums.items.concat( response.items );
-                
-                // save the next set's url (if it exists)
-                $scope.albums.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreAlbums = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
-            loadMoreAlbums( $scope.albums.next );
-        }
-	});
-})
-
-
-/**
- * Related artists controller
- **/
-.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){	
-})
-
-
-/**
- * Biography controller
- **/
-.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
-	
-	// check if we know the artist name yet. If not, go find the artist on Spotify first
-	if( typeof($scope.artist.name) === 'undefined' ){
-		
-		// get the artist from Spotify
-		SpotifyService.getArtist( $stateParams.uri )
-			.then( function( response ){
-				getBio( response.name );
-			});
-	}else{
-		getBio( $scope.artist.name );
-	}
-	
-	// go get the biography
-	function getBio( name ){
-		LastfmService.artistInfo( name )
-			.then( function( response ){
-				$scope.artist.biography = response.artist.bio;
-			});
-	}
-});
-
-
-
-
-'use strict';
-
-angular.module('spotmop.browse', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse', {
-			url: "/browse",
-			templateUrl: "app/browse/template.html"
-		});
-});
-angular.module('spotmop.browse.featured', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse.featured', {
-			url: "/featured",
-			templateUrl: "app/browse/featured/template.html",
-			controller: 'FeaturedController'
-		})
-		.state('browse.featuredplaylist', {
-			url: "/featured/:uri",
-			templateUrl: "app/browse/playlist/template.html",
-			controller: 'PlaylistController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('FeaturedController', function FeaturedController( $scope, $rootScope, $filter, SpotifyService ){	
-	
-	// set the default items
-	$scope.playlists = [];
-	$scope.featured = function(){
-		return $scope.playlists[0];
-	}
-	
-	// figure out the most appropriate background image to show (based on current local time)
-	$scope.partofday = function(){
-	
-		// convert to decimal (remembering that minutes are base-6)
-		var hour = parseFloat($filter('date')(new Date(),'H.m'));
-		
-		if( hour >= 4 && hour < 9.3 )
-			return 'commute';
-		else if( hour >= 9.3 && hour < 11 )
-			return 'morning';
-		else if( hour >= 11 && hour < 13.5 )
-			return 'midday';
-		else if( hour >= 13.5 && hour < 17 )
-			return 'afternoon';
-		else if( hour >= 17 && hour < 19 )
-			return 'evening';
-		else if( hour >= 19 && hour < 21 )
-			return 'dinner';
-		else if( hour >= 21 && hour < 23 || hour >= 0 && hour < 4  )
-			return 'late';
-	};
-	
-	SpotifyService.featuredPlaylists()
-		.then(function( response ) {
-			$scope.message = response.message;
-			$scope.playlists = response.playlists.items;
-		});
-});
-'use strict';
-
-angular.module('spotmop.browse.genre', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider){
-	
-	$stateProvider
-		.state('browse.genre', {
-			url: "/genre",
-			templateUrl: "app/browse/genre/template.html",
-			controller: 'GenreController'
-		})
-		.state('browse.genrecategory', {
-			url: "/genre/:categoryid",
-			templateUrl: "app/browse/genre/category.template.html",
-			controller: 'GenreCategoryController'
-		})
-		.state('browse.categoryplaylist', {
-			url: "/genre/:categoryid/:uri",
-			templateUrl: "app/browse/playlist/template.html",
-			controller: 'PlaylistController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService ){
-	
-	$scope.categories = [];    
-	
-	SpotifyService.discoverCategories()
-		.then(function( response ) {
-			$scope.categories = response.categories;
-		});
-    
-    
-    /**
-     * Load more of the category's playlists
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreCategories = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreCategories( $nextUrl ){
-		
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreCategories = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new categories to the main scope
-                $scope.categories.items = $scope.categories.items.concat( response.categories.items );
-                
-                // save the next set's url (if it exists)
-                $scope.categories.next = response.categories.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreCategories = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreCategories && typeof( $scope.categories.next ) !== 'undefined' && $scope.categories.next ){
-            loadMoreCategories( $scope.categories.next );
-        }
-	});
-	
-})
-	
-/**
- * Category controller
- **/
-.controller('GenreCategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $stateParams ){
-
-	$scope.category = {};
-	$scope.playlists = [];
-	
-	SpotifyService.getCategory( $stateParams.categoryid )
-		.then(function( response ) {
-			$scope.category = response;
-	
-            SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
-                .then(function( response ) {
-                    $scope.playlists = response.playlists;
-                });
-		});
-    
-    
-    /**
-     * Load more of the category's playlists
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMorePlaylists = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMorePlaylists( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMorePlaylists = true;   
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist
-                $scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
-                
-                // save the next set's url (if it exists)
-                $scope.playlists.next = response.playlists.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMorePlaylists = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMorePlaylists && typeof( $scope.playlists.next ) !== 'undefined' && $scope.playlists.next ){
-            loadMorePlaylists( $scope.playlists.next );
-        }
-	});
-	
-});
-angular.module('spotmop.browse.new', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse.new', {
-			url: "/new",
-			templateUrl: "app/browse/new/template.html",
-			controller: 'NewController'
-		})
-		.state('browse.newalbum', {
-			url: "/new/:uri",
-			templateUrl: "app/browse/album/template.html",
-			controller: 'AlbumController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService ){
-	
-	// set the default items
-	$scope.albums = [];
-	
-	SpotifyService.newReleases()
-		.then(function( response ) {
-			$scope.albums = response.albums;
-		});
-	
-	
-    /**
-     * Load more of the category's playlists
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreNewReleases = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreNewReleases( $nextUrl ){
-		
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreNewReleases = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist
-                $scope.albums.items = $scope.albums.items.concat( response.albums.items );
-                
-                // save the next set's url (if it exists)
-                $scope.albums.next = response.albums.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreNewReleases = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreNewReleases && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
-            loadMoreNewReleases( $scope.albums.next );
-        }
-	});
-	
-});
-'use strict';
-
-angular.module('spotmop.browse.playlist', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse.playlist', {
-			url: "/playlist/:uri",
-			templateUrl: "app/browse/playlist/template.html",
-			controller: 'PlaylistController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
-	
-	// setup base variables
-	$scope.playlist = {images: []};
-	$scope.tracklist = { tracks: [], type: 'track' };
-	$scope.totalTime = 0;
-    $scope.following = false;
-    $scope.followPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = true;
-				NotifyService.notify( 'Following playlist' );
-				$scope.updatePlaylists();
-            });
-    }
-    $scope.unfollowPlaylist = function(){
-        SpotifyService.unfollowPlaylist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = false;
-				NotifyService.notify( 'Playlist removed' );
-				$scope.updatePlaylists();
-            });
-    }
-    $scope.recoverPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = true;
-				NotifyService.notify( 'Playlist recovered' );
-				$scope.updatePlaylists();
-            });
-    }
-    $scope.editPlaylist = function(){
-        DialogService.create('editPlaylist', $scope);
-    }
-	
-	// play the whole playlist
-	$scope.playPlaylist = function(){
-		MopidyService.playStream( $scope.playlist.uri, $scope.tracklist.tracks.length );
-	}
-	
-    // figure out the total time for all tracks
-    $scope.totalTime = function(){
-        var totalTime = 0;
-        if( $scope.tracklist.tracks.length > 0 ){
-            angular.forEach( $scope.tracklist.tracks, function( track ){
-				if( typeof( track ) !== 'undefined' )
-					totalTime += track.duration_ms;
-            });
-        }
-        return Math.round(totalTime / 100000);   
-    }
-    
-	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
-	 **/
-    $(document).find('.browse > .content').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
-	
-	
-	/**
-	 * When the user changes the order of a playlist tracklist
-	 * @param start = int
-	 * @param range_length = int
-	 * @param to_position = int
-	 **/
-	$scope.$on('spotmop:playlist:reorder', function( event, start, range_length, to_position ){
-	
-		var playlisturi = $state.params.uri;		
-        
-		// get spotify to start moving
-		SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
-		
-		var tracksToMove = [];
-		
-		// build an array of the tracks we need to move
-		for( var i = 0; i < range_length; i++ )
-			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
-		
-		// if we're dragging items down the line further, account for the tracks that we've just removed
-		if( start < to_position )
-			to_position = to_position - range_length;
-		
-		// reverse the order of our tracks to move (unexplained as to why we need this...)
-		tracksToMove.reverse();
-		
-		// we need to apply this straight to the template, so we wrap in $apply
-		$scope.$apply( function(){
-		
-			// remove our tracks to move (remembering to adjust Spotify's range_length value)
-			$scope.tracklist.tracks.splice( start, range_length );
-			
-			// and now we add our moved tracks, to their new position
-			angular.forEach( tracksToMove, function(trackToMove){
-				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
-			});
-		});
-	});
-
-	// on load, fetch the playlist
-	SpotifyService.getPlaylist( $stateParams.uri )
-		.then(function( response ) {
-		
-			$scope.playlist = response;			
-			$scope.tracklist.next = response.tracks.next;
-			$scope.tracklist.previous = response.tracks.previous;
-			$scope.tracklist.offset = response.tracks.offset;
-			$scope.tracklist.total = response.tracks.total;
-			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
-		
-			// parse description string and make into real html (people often have links here)
-			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-        
-            // figure out if we're following this playlist
-            SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-                .then( function( isFollowing ){
-                    $scope.following = $.parseJSON(isFollowing);
-                });
-    
-			// if we're viewing from within a genre category, get the category
-			if( typeof($stateParams.categoryid) !== 'undefined' ){				
-				SpotifyService.getCategory( $stateParams.categoryid )
-					.then(function( response ) {
-						$scope.category = response;
-					});
-			}
-		});
-		
-	
-	/**
-	 * When the delete key is broadcast, delete the selected tracks
-	 **/
-	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
-		
-		// make sure the current spotify user owns this playlist
-		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
-			NotifyService.error( 'Cannot delete from a playlist you don\'t own' );
-			
-		// we own it, proceed sir
-		}else{
-			$scope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
-		}
-	});
-		
-	/**
-	 * Reformat the track structure to the unified tracklist.track
-	 * Need to strip wrapping track object
-	 **/
-	function reformatTracks( tracks ){
-		
-		var reformattedTracks = [];
-		
-		// loop all the tracks to add
-		angular.forEach( tracks, function( track ){
-			var newTrack = track.track;
-			newTrack.added_at = track.added_at;
-			newTrack.added_by = track.added_by;
-			newTrack.is_local = track.is_local;
-			reformattedTracks.push( newTrack );
-		});
-		
-		return reformattedTracks;
-	}
-    
-    /**
-     * Load more of the playlist's tracks
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreTracks = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreTracks( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreTracks = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist (using our unified format of course)
-                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
-                
-                // save the next set's url (if it exists)
-                $scope.tracklist.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreTracks = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
-            loadMoreTracks( $scope.tracklist.next );
-        }
-	});
-});
-'use strict';
-
-angular.module('spotmop.browse.user', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('browse.user', {
-			url: "/user/:uri",
-			templateUrl: "app/browse/user/template.html",
-			controller: 'UserController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $stateParams ){
-	
-	$scope.user = {};
-	$scope.playlists = [];
-	
-	// get the user
-	SpotifyService.getUser( $stateParams.uri )
-		.then(function( response ) {
-			$scope.user = response;
-        
-            // get their playlists
-            SpotifyService.getPlaylists( response.id )
-                .then(function( response ) {
-                    $scope.playlists = response.items;
-                    $scope.next = response.next;
-                    $scope.totalPlaylists = response.total;
-                });
-		});
-    
-    /**
-     * Load more of the user's playlists
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMorePlaylists = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMorePlaylists( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMorePlaylists = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new playlists to our existing array
-                $scope.playlists = $scope.playlists.concat( response.items );
-                
-                // save the next set's url (if it exists)
-                $scope.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMorePlaylists = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMorePlaylists && typeof( $scope.next ) !== 'undefined' && $scope.next ){
-            loadMorePlaylists( $scope.next );
-        }
-	});
-});
-'use strict';
-
-angular.module('spotmop.common.contextmenu', [
-])
-
-
-.directive('contextmenu', function() {
-	return {
-		restrict: 'E',
-		templateUrl: 'app/common/contextmenu/template.html',
-		link: function( $scope, element, attrs ){
-		},
-		controller: function( $scope, $rootScope, $element ){
-			
-			/**
-			 * Menu item functionality
-			 **/
-			$scope.play = function(){
-				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
-				$element.fadeOut('fast');
-				
-				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
-					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-			}
-			
-			$scope.enqueue = function(){
-				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
-				$element.fadeOut('fast');
-				
-				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
-					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-			}
-			
-			$scope.unqueue = function(){
-				$rootScope.$broadcast('spotmop:tracklist:unqueueSelectedTracks');
-				$element.fadeOut('fast');
-				
-				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
-					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-			}
-			
-			$scope.playNext = function(){
-				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks', true);
-				$element.fadeOut('fast');
-				
-				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
-					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-			}
-			
-			$scope.addToPlaylist = function(){
-				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylist');
-				$element.fadeOut('fast');
-			}
-			
-			$scope.removeFromPlaylist = function(){
-				$rootScope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
-				$element.fadeOut('fast');
-			}
-			
-			$scope.addToLibrary = function(){
-				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToLibrary');
-				$element.fadeOut('fast');
-			}
-			
-			$scope.selectAll = function(){
-				$rootScope.$broadcast('spotmop:tracklist:selectAll');
-			}
-			
-			$scope.unselectAll = function(){
-				$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-				$element.fadeOut('fast');
-			}
-			
-			/**
-			 * Show the standard context menu
-			 * This is typically triggered by a right-click on a track
-			 *
-			 * @param context = string (track|tltrack)
-			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
-			 **/
-			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context, reverse){
-				
-				var positionY = originalEvent.pageY - $(window).scrollTop();
-				var positionX = originalEvent.pageX - window.pageYOffset;
-				
-				if( typeof( reverse ) !== 'undefined' && reverse )
-					positionX -= $element.outerWidth();
-				
-				// position and reveal our element
-				$element
-					.css({
-						top: positionY,
-						left: positionX + 5
-					})
-					.show();
-				
-				// use the clicked element to define what kind of context menu to show
-				$scope.$apply( function(){
-					$scope.context = context;
-				});
-			});
-			
-			/**
-			 * Show the touch-device specific context menu
-			 * This is triggered when our tracklist has selected tracks
-			 *
-			 * @param context = string (track|tltrack)
-			 **/
-			$scope.$on('spotmop:touchContextMenu:show', function(event, context){
-				
-				// position and reveal our element
-				$element.show();
-				
-				// use the clicked element to define what kind of context menu to show
-				$scope.$apply( function(){
-					$scope.context = context;
-				});
-			});
-			
-			
-			/**
-			 * Hide the context menu
-			 **/
-			$scope.$on('spotmop:contextMenu:hide', function(event){
-				$element.fadeOut('fast');
-			});
-		}
-	}
-});
-
-
-// create our application
-angular.module('spotmop.directives', [])
-
-
-/* ============================================================ CONFIG FOR 3rd PARTIES ======== */
-/* ============================================================================================ */
-
-.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider){
-
-	// wait 250ms before showing loader
-	cfpLoadingBarProvider.latencyThreshold = 250;
-}])
-  
-  
-
-
-/* ======================================================================== DIRECTIVES ======== */
-/* ============================================================================================ */
-
-/**
- * Smarter click
- * Fixes issue with ngClick where on touch devices events were triggered twice
- * Use exactly the same as ngClick but attribute is "singleclick" instead
- **/
-.directive('singleclick', function() {
-    return function($scope, $element, $attrs) {
-       $element.bind('touchstart click', function(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            $scope.$apply($attrs['singleclick']);
-        });
-    };
-})
-
-
-/** 
- * Switch input field
- * Provides toggles for values
- **/
-.directive('switch', function( $rootScope, SettingsService ){
-	return {
-		restrict: 'E',
-		scope: {
-			name: '@'
-		},
-		replace: true, // Replace with the template below
-		transclude: true, // we want to insert custom content inside the directive
-		link: function($scope, $element, $attrs){
-				
-			$scope.on = SettingsService.getSetting( $scope.name, false );
-			
-			// listen for click events
-			$element.bind('touchstart click', function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-				$scope.$apply( function(){
-					$scope.on = !$scope.on;
-					SettingsService.setSetting( $scope.name, $scope.on );
-					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
-				});
-			});
-		},
-		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
-	}
-})
-
-
-/** 
- * Scrollable panels
- * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
- **/
-.directive('scrollingPanel', function() {
-	return {
-		restrict: 'C',
-		link: function($scope, $element, $attrs){
-		
-			$element.on('scroll', function( event ){
-				
-				// get our ducks in a row - these are all the numbers we need
-				var scrollPosition = $(this).scrollTop();
-				var frameHeight = $(this).outerHeight();
-				var contentHeight = $(this).children('.inner').outerHeight();
-				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-				
-				if( distanceFromBottom <= 100 )
-					$scope.$broadcast('spotmop:loadMore');
-			});
-		}
-	}
-})
-		
-		
-		
-/** 
- * Thumbnail image
- * Figure out the best image to use for this set of image sizes
- * @return image obj
- **/
-.directive('thumbnail', function( $timeout, $http ){
-	return {
-		restrict: 'E',
-		scope: {
-			images: '=',
-			size: '='
-		},
-		replace: true, // Replace with the template below
-		transclude: true, // we want to insert custom content inside the directive
-		link: function($scope, $element, $attrs){
-			
-			// fetch this instance's best thumbnail
-			$scope.image = getThumbnailImage( $scope.images );
-			
-			// now actually go get the image
-			if( $scope.image ){
-				$http({
-					method: 'GET',
-					url: $scope.image.url,
-					cache: true
-					}).success( function(){
-					
-						// inject to DOM once loaded
-						$element.css('background-image', 'url('+$scope.image.url+')' );
-					});
-			}
-			
-			/**
-			 * Get the most appropriate thumbnail image
-			 * @param images = array of image urls
-			 * @return string (image url)
-			 **/
-			function getThumbnailImage( images ){
-				
-				// what if there are no images? then nada
-				if( images.length <= 0 )
-					return false;
-
-				// loop all the images
-				for( var i = 0; i < images.length; i++){
-					var image = images[i];
-					
-					// small thumbnails (ie search results)
-					if( $scope.size == 'small' ){
-						
-						// this is our preferred size
-						if( image.height >= 100 && image.height <= 200 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 200 && image.height <= 300 ){
-							return image;
-
-						// nope? let's take it the next notch up
-						}else if( image.height > 300 && image.height < 400 ){
-							return image;
-						}
-					
-					// standard thumbnails (ie playlists, full related artists, etc)
-					}else{
-						
-						// this is our preferred size
-						if( image.height >= 200 && image.height <= 300 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 300 && image.height <= 500 ){
-							return image;
-
-						// nope? let's take it a notch down then
-						}else if( image.height >= 150 && image.height < 200 ){
-							return image;
-						}						
-					}
-				};
-
-				// no thumbnail that suits? just get the first (and highest res) one then        
-				return images[0];
-			}
-			
-		},
-		template: '<div class="image animate"></div>'
-	};
-})
-
-
-/**
- * Confirmation button
- * Allows buttons to require double-click, with a "Are you sure?" prompt
- **/
-.directive('confirmationButton', function() {
-	return {
-		restrict: 'E',
-		controller: function($scope, $element){	
-			
-			$scope.text = 'Button text';
-			$scope.confirming = false;
-			$scope.text = $scope.defaultText;
-			
-			// bind to document-wide click events
-			$(document).on('click', function(event){
-				
-				// if we've left-clicked on THIS confirmation button
-				if( event.target == $element[0] && event.which == 1 ){
-					if( $scope.confirming ){
-					
-						// if the function exists, perform the on-confirmation function from the directive's template
-						if( typeof( $scope.$parent[ $scope.onConfirmation ]() ) === 'function' )
-							$scope.$parent[ $scope.onConfirmation ]();
-						
-					}else{
-						$scope.confirming = true;
-						$scope.text = $scope.confirmationText;
-						$scope.$apply();
-					}
-					
-				// clicked on some other element on the page
-				}else{
-					
-					// let's un-confirm the button
-					$scope.confirming = false;
-					$scope.text = $scope.defaultText;
-					$scope.$apply();
-				}
-			});
-		},
-		scope: {
-			text: '@',
-			extraClasses: '@',
-			confirmationText: '@',
-			defaultText: '@',
-			onConfirmation: '@'
-		},
-		replace: true, 		// Replace with the template below
-		transclude: true, 	// we want to insert custom content inside the directive
-		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
-	};
-})
-
-
-
-/**
- * This let's us detect whether we need light text or dark text
- * Enhances readability when placed on dynamic background images
- * Requires spotmop:detectBackgroundColour broadcast to initiate check
- **/
-.directive('textOverImage', function(){
-    return {
-        restrict: 'A',
-        link: function($scope, $element){
-            $scope.$on('spotmop:detectBackgroundColor', function(event){
-                BackgroundCheck.init({
-                    targets: $.merge( $($element).parent(), $(document).find('#utilities') ),
-                    images: $element.closest('.intro').find('.image')
-                });
-				BackgroundCheck.refresh();
-            });
-        }
-    };
-})
-
-
-/**
- * This let's us detect whether we need light text or dark text
- * Enhances readability when placed on dynamic background images
- **/
-.directive('preloadedimage', function( $rootScope, $timeout ){
-    return {
-		restrict: 'E',
-		scope: {
-			url: '@',
-			useproxy: '@',
-			detectbackground: '@',
-			opacity: '@'
-		},
-        link: function($scope, $element, $attrs){
-			
-			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
-			if( $element.attr('watch') ){
-				$scope.$watch('url', function(newValue, oldValue) {
-					if (newValue)
-						loadImage();
-				}, true);
-			}
-			
-			// load image on init
-			loadImage();
-			
-			// run the preloader
-			function loadImage(){
-				
-				var fullUrl = '';
-				/*
-				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
-				if( $scope.useproxy )
-					fullUrl += '/vendor/resource-proxy.php?url=';
-				*/
-				fullUrl += $scope.url;
-			
-				var image = $('<img src="'+fullUrl+'" />');		
-				image.load(function(){
-				
-					$element.attr('style', 'background-image: url("'+fullUrl+'");');
-					var destinationOpacity = 1;
-					
-					if( typeof($scope.opacity) !== 'undefined' )
-						destinationOpacity = $scope.opacity;
-						
-					$element.animate(
-						{
-							opacity: destinationOpacity
-						},
-						200
-					);
-				});
-			}
-        },
-		template: ''
-    };
-})
-
-
-/**
- **/
-.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http ){
-    return {
-		restrict: 'E',
-        terminal: true,
-		scope: {
-			image: '@',				// object
-			useproxy: '@',
-			detectbackground: '@',
-			opacity: '@'
-		},
-        link: function($scope, $element, $attrs){
-			
-			// when we're destroyed, make sure we drop our animation interval
-			// otherwise we get huge memory leaks for old instances of this directive
-			$scope.$on(
-				"$destroy",
-				function handleDestroyEvent() {
-					$interval.cancel(animateInterval);
-				}
-			);
-				
-			// setup initial variables
-			var	scrollTop = 0;
-			var canvasDOM = document.getElementById('backgroundparallax');
-			var context = canvasDOM.getContext('2d');
-			
-			// load our image data from the json string attribute
-			var image = $.parseJSON($scope.image);
-		
-			/*
-			REBUILD THIS TO USE TORNADO
-			if( $scope.useproxy )
-				image.url = '/vendor/resource-proxy.php?url='+image.url;
-			*/
-			// create our new image object (to be plugged into canvas)
-			image.asObject = new Image();
-			image.asObject.src = image.url;
-			image.asObject.onload = function(){
-				
-				// load destination opacity from attribute (if specified)
-				var destinationOpacity = 1;				
-				if( typeof($scope.opacity) !== 'undefined' )
-					destinationOpacity = $scope.opacity;
-				
-				// plug our image into the canvas
-				positionArtistBackground( image );
-				
-				// fade the whole directive in, now that we're positioned and loaded
-				$element.animate({ opacity: destinationOpacity }, 500 );
-			}
-			
-			/**
-			 * Process the image object, and plug it in to our canvas, in the appropriate place
-			 * Also resizes the canvas to fill the parent element
-			 * @param image = custom image object
-			 **/
-			function positionArtistBackground( image ){
-				
-				// set our canvas dimensions (if necessary)
-				var canvasWidth = $element.outerWidth();
-				var canvasHeight = $element.outerHeight();
-				if( context.canvas.width != canvasWidth || context.canvas.height != canvasHeight ){
-					context.canvas.width = canvasWidth;
-					context.canvas.height = canvasHeight;
-				}
-				
-				// zoom image to fill canvas, widthwise
-				if( image.width < canvasWidth || image.width > canvasWidth ){
-					var scale = canvasWidth / image.width;
-					image.width = image.width * scale;
-					image.height = image.height * scale;
-				}
-				
-				// now check for fill heightwise, and zoom in if necessary
-				if( image.height < canvasHeight ){
-					var scale = canvasHeight / image.height;
-					image.width = image.width * scale;
-					image.height = image.height * scale;
-				}
-				
-				// figure out where we want the image to be, based on scroll position
-				var percent = Math.round( scrollTop / canvasHeight * 100 );
-				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
-				
-				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
-				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
-				
-				// actually draw the image on the canvas
-				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
-			}
-			
-			// poll for scroll changes
-			var animateInterval = $interval(
-				function(){	
-					window.requestAnimationFrame(function( event ){
-					
-						// if we've scrolled
-						if( scrollTop != $('.scrolling-panel').scrollTop() ){
-							scrollTop = $('.scrolling-panel').scrollTop();
-							
-							var bannerHeight = $(document).find('.artist-intro').outerHeight();
-
-							// and if we're within the bounds of our document
-							// this helps prevent us animating when the objects in question are off-screen
-							if( scrollTop < bannerHeight ){								
-								positionArtistBackground( image );
-							}
-						}
-					});
-				},
-				10
-			);
-			
-        },
-		template: '<canvas id="backgroundparallax"></canvas>'
-    };
-})
-
-
-
-/* ======================================================================== FILTERS =========== */
-/* ============================================================================================ */
-
-
-// facilitates a filter for null/undefined/false values
-.filter('nullOrUndefined', [function () {
-    return function( items, property ){
-        var arrayToReturn = [];
-        for (var i = 0; i < items.length; i++){			
-			if( typeof(items[i][property]) === 'undefined' || items[i][property] == false )
-				arrayToReturn.push(items[i]);
-        }
-        return arrayToReturn;
-    };
-}])
-
-
-// setup a filter to convert MS to MM:SS
-.filter('formatMilliseconds', function() {
-	return function(ms) {
-		var seconds = Math.floor((ms / 1000) % 60);
-		if( seconds <= 9 )
-			seconds = '0'+seconds;
-		var minutes = Math.floor((ms / (60 * 1000)) % 60);
-		return minutes + ":" + seconds;
-	}
-})
-
-
-// get the appropriate sized image
-.filter('thumbnailImage', function(){
-	return function( images ){
-        
-        // what if there are no images? then nada
-        if( images.length <= 0 )
-            return false;
-        
-        // loop all the images
-        for( var i = 0; i < images.length; i++){
-            var image = images[i];
-            
-            // this is our preferred size
-            if( image.height >= 200 && image.height <= 300 ){
-                return image.url;
-            
-            // let's take it a notch up then
-            }else if( image.height > 300 && image.height <= 500 ){
-                return image.url;
-            
-            // nope? let's take it a notch down then
-            }else if( image.height >= 150 && image.height < 200 ){
-                return image.url;
-            }
-        };
-        
-        // no thumbnail that suits? just get the first (and highest res) one then        
-		return images[0].url;
-	}
-});
-
-
-
-
-
-
-
-
-
-
-
-'use strict';
-
-angular.module('spotmop.common.tracklist', [
-	'spotmop.services.mopidy'
-])
-
-
-.directive('track', function() {
-	return {
-		restrict: 'E',
-		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
-			
-			/**
-			 * Single click
-			 * Click of any mouse button. Figure out which button, and behave accordingly
-			 **/
-			$element.mouseup( function( event ){
-				
-				// left click
-				if( event.which === 1 ){
-				
-					if( !$scope.isTouchDevice() )
-						$scope.$emit('spotmop:contextMenu:hide');
-					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
-					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'track');
-				}
-			});
-			
-			
-			/**
-			 * Double click
-			 **/
-			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
-					var track = $scope.tracklist.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
-			});
-		}
-	}
-})
-
-
-.directive('tltrack', function() {
-	return {
-		restrict: 'E',
-		templateUrl: 'app/common/tracklist/tltrack.template.html',
-		link: function( $scope, element, attrs ){			
-		},
-		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
-			
-			$scope.state = PlayerService.state;
-			
-			/**
-			 * Single click
-			 * Click of any mouse button. Figure out which button, and behave accordingly
-			 **/
-			$element.mouseup( function( event ){
-				
-				// left click
-				if( event.which === 1 ){
-				
-					if( !$scope.isTouchDevice() )
-						$scope.$emit('spotmop:contextMenu:hide');
-					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
-					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
-				}
-			});		
-			
-			/**
-			 * Double click
-			 **/
-			$element.dblclick( function( event ){
-		
-				// get the queue's tracks
-				// we need to re-get the queue because at this point some tracks may not have tlids
-				// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
-				MopidyService.getCurrentTlTracks().then( function( tracklist ){
-					
-					// find our double-clicked track in the tracklist
-					$.each( tracklist, function(key, track){
-						if( track.tlid == $scope.track.tlid ){
-
-							// then play our track
-							return MopidyService.playTlTrack({ tl_track: track });
-						}	
-					});
-				});
-			});
-		}
-	}
-})
-
-
-.directive('localtrack', function() {
-	return {
-		restrict: 'E',
-		templateUrl: 'app/common/tracklist/localtrack.template.html',
-		link: function( $scope, element, attrs ){		
-		},
-		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
-			
-			$scope.state = PlayerService.state;
-			
-			/**
-			 * Single click
-			 * Click of any mouse button. Figure out which button, and behave accordingly
-			 **/
-			$element.mouseup( function( event ){
-				
-				// left click
-				if( event.which === 1 ){
-				
-					if( !$scope.isTouchDevice() )
-						$scope.$emit('spotmop:contextMenu:hide');
-					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
-					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
-					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
-				}
-			});		
-			
-			
-			
-			/**
-			 * Double click
-			 **/
-			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
-					var track = $scope.tracklist.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
-			});
-		}
-	}
-})
-
-
-/**
- * Tracklist controller
- * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
- **/
-.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
-
-	// prevent right-click menus
-	$(document).contextmenu( function(evt){
-		
-		// only if clicking in a tracklist
-		if( $(evt.target).closest('.tracklist').length > 0 )
-			return false;
-	});
-
-	
-	
-	/**
-	 * Dragging a track
-	 * This event is detected and $emitted from the track/tltrack directive
-	 **/
-	$scope.$on('spotmop:track:dragging', function( event ){
-		
-	});
-	
-	
-	/**
-	 * Click on a single track
-	 * This event is detected and $emitted from the track/tltrack directive
-	 **/
-	$scope.$on('spotmop:track:clicked', function( event, $track ){
-		
-		// if ctrl key held down
-		if( $rootScope.ctrlKeyHeld || $scope.isTouchDevice() ){
-			
-			// toggle selection for this track
-			if( $track.track.selected ){
-				$track.$apply( function(){ $track.track.selected = false; });
-			}else{
-				$track.$apply( function(){ $track.track.selected = true; });
-			}
-			
-		// if ctrl key not held down
-		}else if( !$rootScope.ctrlKeyHeld ){
-			
-			// unselect all tracks
-			angular.forEach( $scope.tracklist.tracks, function(track){
-				track.selected = false;
-			});
-			
-			// and select only me
-			$track.$apply( function(){ $track.track.selected = true; });
-		}
-		
-		// if shift key held down, select all tracks between this track, and the last clicked one
-		if( $rootScope.shiftKeyHeld ){
-			
-			// figure out the limits of our selection (use the array's index)
-			// assume last track clicked is the lower index value, to start with
-			var firstTrackIndex = ( typeof($scope.lastSelectedTrack) !== 'undefined' ) ? $scope.lastSelectedTrack.$index : 0;
-			var lastTrackIndex = $track.$index;
-			
-			// if we've selected a lower-indexed track, let's swap our limits accordingly
-			if( $track.$index < firstTrackIndex ){
-				firstTrackIndex = $track.$index;
-				lastTrackIndex = $scope.lastSelectedTrack.$index;
-			}
-			
-			// now loop through our subset limits, and make them all selected!
-			for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
-				$scope.tracklist.tracks[i].selected = true;
-			};
-			
-			// tell our templates to re-read the arrays
-			$scope.$apply();
-		}
-		
-		// save this item to our last-clicked (used for shift-click)
-		$scope.lastSelectedTrack = $track;
-		
-		/**
-		 * Hide/show mobile version of the context menu
-		 **/
-		if( $scope.isTouchDevice() ){
-			if( $filter('filter')($scope.tracklist.tracks, {selected: true}).length > 0 )
-				$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.tracklist.type );
-			else
-				$rootScope.$broadcast('spotmop:contextMenu:hide' );
-		}
-	});
-	
-	
-	
-	/**
-	 * Selected Tracks >> Add to queue
-	 **/
-	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event, playNext){
-		
-		var atPosition = null;
-			
-		// if we're adding these tracks to play next
-		if( typeof( playNext ) !== 'undefined' && playNext == true ){
-		
-			atPosition = 0;
-			
-			// fetch the currently playing track
-			var currentTrack = $scope.state().currentTlTrack;
-			
-			// make sure we have a current track
-			if( currentTrack ){
-				var currentTrackObject = $filter('filter')($scope.currentTracklist, {tlid: currentTrack.tlid});
-			
-				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
-				if( currentTrackObject.length > 0 )				
-					atPosition = $scope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
-			}
-		}
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksUris = [];
-		
-		angular.forEach( selectedTracks, function( track ){
-			selectedTracksUris.push( track.uri );
-		});
-			
-		var message = 'Adding '+selectedTracks.length+' tracks to queue';
-		if( selectedTracks.length > 10 )
-			message += '... this could take some time';
-			
-		NotifyService.notify( message );
-				
-		MopidyService.addToTrackList( selectedTracksUris, atPosition );
-	});
-	
-	
-	
-	/**
-	 * Selected Tracks >> Play
-	 **/
-	 
-	// listeners
-	$scope.$on('spotmop:tracklist:playSelectedTracks', function(){ playSelectedTracks() });
-	$scope.$on('spotmop:keyboardShortcut:enter', function(){ playSelectedTracks() });
-	
-	// the actual behavior
-	function playSelectedTracks(){
-	
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var firstSelectedTrack = selectedTracks[0];
-		
-		// depending on context, make the selected track(s) play
-		// queue
-		if( $scope.tracklist.type == 'tltrack'){
-			
-			// get the queue's tracks
-			// we need to re-get the queue because at this point some tracks may not have tlids
-			// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligible
-			MopidyService.getCurrentTlTracks().then( function( tracklist ){
-				
-				// find our double-clicked track in the tracklist
-				$.each( tracklist, function(key, track){
-					if( track.tlid == firstSelectedTrack.tlid ){
-
-						// then play our track
-						return MopidyService.playTlTrack({ tl_track: track });
-					}	
-				});
-			});
-			
-		// generic tracklist (playlist, top-tracks, album, etc)
-		}else{
-		
-			// build an array of track uris (and subtract the first one, as we play him immediately)
-			var selectedTracksUris = [];
-			for( var i = 1; i < selectedTracks.length; i++ ){
-				selectedTracksUris.push( selectedTracks[i].uri );
-			};
-			
-			var message = 'Adding '+selectedTracks.length+' tracks to queue';
-			if( selectedTracks.length > 10 )
-				message += '... this could take some time';
-				
-			NotifyService.notify( message );
-			
-			// play the first track immediately
-			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
-				
-				// more tracks to add
-				if( selectedTracksUris.length > 0 ){
-					// add the following tracks to the tracklist
-					MopidyService.addToTrackList( selectedTracksUris );
-				}
-			});
-		}
-	}
-	
-	
-	
-	/**
-	 * Selected Tracks >> Delete from queue (aka unqueue)
-	 **/
-	$scope.$on('spotmop:tracklist:unqueueSelectedTracks', function(event){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksTlids = [];
-		
-		angular.forEach( selectedTracks, function( track ){
-			selectedTracksTlids.push( track.tlid );
-		});
-		
-		MopidyService.removeFromTrackList( selectedTracksTlids );
-	});
-	
-	
-	
-	/**
-	 * Selected Tracks >> Delete
-	 **/
-	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var trackPositionsToDelete = [];
-		
-		// construct each track into a json object to delete
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
-			selectedTrack.transitioning = true;
-		});
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
-			.then( function(response){
-			
-					// rejected
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error( response.error.message );
-					
-						// un-transition and restore the tracks we couldn't delete
-						angular.forEach( selectedTracks, function( selectedTrack, index ){
-							selectedTrack.transitioning = false;
-						});
-					// successful
-					}else{						
-						// remove tracks from DOM
-						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
-						
-						// update our snapshot so Spotify knows which version of the playlist our positions refer to
-						$scope.playlist.snapshot_id = response.snapshot_id;
-					}
-				});
-	});
-	
-	
-	/**
-	 * Selected Tracks >> Add to playlist
-	 **/
-	$scope.$on('spotmop:tracklist:addSelectedTracksToPlaylist', function(event){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksUris = [];
-		
-		angular.forEach( selectedTracks, function(track){
-			
-			// if we have a nested track object (ie TlTrack objects)
-			if( typeof(track.track) !== 'undefined' )
-				selectedTracksUris.push( track.track.uri );
-			
-			// nope, so let's use a non-nested version
-			else
-				selectedTracksUris.push( track.uri );
-		});
-		
-        DialogService.create('addToPlaylist', $scope);
-	});
-	
-	
-	/**
-	 * Selected Tracks >> Add to library
-	 **/
-	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
-		var selectedTracksUris = [];
-		
-		angular.forEach( selectedTracks, function(track){
-			
-			// if we have a nested track object (ie TlTrack objects)
-			if( typeof(track.track) !== 'undefined' )
-				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.track.uri) );
-			
-			// nope, so let's use a non-nested version
-			else
-				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.uri) );
-		});
-		
-		// tell spotify to go'on get
-		SpotifyService.addTracksToLibrary( selectedTracksUris );
-	});
-	
-	
-	/**
-	 * Manipulate selected tracks
-	 **/
-	$scope.$on('spotmop:tracklist:selectAll', function(event){
-		angular.forEach( $scope.tracklist.tracks, function( track ){
-			track.selected = true;
-		});
-	});
-	$scope.$on('spotmop:tracklist:unselectAll', function(event){
-		angular.forEach( $scope.tracklist.tracks, function( track ){
-			track.selected = false;
-		});
-	});
-	
-});
-
-
-
-
-'use strict';
-
-angular.module('spotmop.common.tracklist.service', [])
-
-.factory("TracklistService", function( $rootScope ){
-	
-	return {
-		getSelectedTracks: function(){
-			console.log('triggered getSelectedTracks');
-		}
-	}	
-});
-
-
-
-
-'use strict';
-
-angular.module('spotmop.discover', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider){
-	
-	$stateProvider
-		.state('discover', {
-			url: "/discover",
-			templateUrl: "app/discover/template.html",
-			controller: 'DiscoverController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
-	
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.albums = [];
-	$scope.recommendations = {
-		currentArtist: {
-			artists: [],
-			recommendations: []
-		},
-		suggestions: []
-	};
-	
-	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled', false) ){
-		
-		
-		// ================= CATALOG RADIO ==== //
-		
-		/*
-		EchonestService.favoriteArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestSongs = response.response.songs;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestSongs.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
-					
-				}else{
-				
-					$rootScope.requestsLoading++;
-					
-					angular.forEach( echonestSongs, function( echonestSong ){
-						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
-						});
-				}
-			});
-			*/
-			
-		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
-		
-		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
-			var artists = [];
-			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
-				artists.push(
-					{
-						'name': artist.name,
-						'name_encoded': encodeURIComponent(artist.name),
-						'uri': artist.uri
-					}
-				);
-			});
-			$scope.recommendations.currentArtist.artists = artists;
-		
-			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
-				.then(function( response ){
-				
-					// convert our echonest list into an array to get from spotify
-					var echonestArtists = response.response.artists;
-					var artisturis = [];
-					
-					// make sure we got some artists
-					if( echonestArtists.length <= 0 ){
-					
-						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-						
-					}else{
-						
-						angular.forEach( echonestArtists, function( echonestArtist ){
-							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-						});
-						
-						SpotifyService.getArtists( artisturis )
-							.then( function( response ){
-								$scope.recommendations.currentArtist.recommendations = response.artists;
-							});
-					}
-				});
-		}
-			
-			
-			
-		// ================= GENERAL RECOMMENDED ARTISTS ==== //
-		
-		EchonestService.recommendedArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = [];
-				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
-					response.response.artists;
-					
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestArtists.length <= 0 ){
-				
-					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-					
-				}else{
-					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( response ){
-							$scope.recommendations.suggestions = response.artists;
-						});
-				}
-			});
-	}
-	
-});
-
-
-
-
-
-angular.module('spotmop.library', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('library', {
-			url: "/library",
-			templateUrl: "app/library/template.html"
-		})
-		.state('library.playlists', {
-			url: "/playlists",
-			templateUrl: "app/library/playlists.template.html",
-			controller: 'LibraryPlaylistsController'
-		})
-		.state('library.playlist', {
-			url: "/playlist/:uri",
-			templateUrl: "app/browse/playlist/template.html",
-			controller: 'PlaylistController'
-		})
-		.state('library.tracks', {
-			url: "/tracks",
-			templateUrl: "app/library/tracks.template.html",
-			controller: 'LibraryTracksController'
-		})
-		.state('library.artists', {
-			url: "/artists",
-			templateUrl: "app/library/artists.template.html",
-			controller: 'LibraryArtistsController'
-		})
-		/*
-		 MORE COMPLEX THAN THE ALIAS TO PLAYLISTS (NESTED STATES). MAY NEED TO RECONSIDER APPROACH
-		.state('library.artist', {
-			url: "/artist/:uri",
-			templateUrl: "app/browse/artist/template.html",
-			controller: 'PlaylistController'
-		})
-		*/
-		.state('library.albums', {
-			url: "/albums",
-			templateUrl: "app/library/albums.template.html",
-			controller: 'LibraryAlbumsController'
-		})
-		.state('library.files', {
-			url: "/files/:folder",
-			templateUrl: "app/library/files.template.html",
-			controller: 'LibraryFilesController'
-		});
-})
-	
-/**
- * Library tracks
- **/
-.controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
-	  
-	$scope.tracklist = {tracks: []};
-	
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-    
-	SpotifyService.getMyTracks( userid )
-		.then( function( response ){ // successful
-				$scope.tracklist = response;
-				$scope.tracklist.tracks = reformatTracks( response.items );
-				
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
-			});
-		
-		
-	/**
-	 * When the delete key is broadcast, delete the selected tracks
-	 **/
-	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var tracksToDelete = [];
-		
-		// construct each track into a json object to delete
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			tracksToDelete.push( SpotifyService.getFromUri( 'trackid', selectedTrack.uri ) );
-		});
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
-			.then(function( response ){
-				
-				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
-				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
-				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
-			});
-	});
-	
-		
-	/**
-	 * Reformat the track structure to the unified tracklist.track
-	 * Need to strip wrapping track object
-	 **/
-	function reformatTracks( tracks ){
-		
-		var reformattedTracks = [];
-		
-		// loop all the tracks to add
-		angular.forEach( tracks, function( track ){
-			var newTrack = track.track;
-			newTrack.added_at = track.added_at;
-			reformattedTracks.push( newTrack );
-		});
-		
-		return reformattedTracks;
-	}
-    
-	
-    /**
-     * Load more of the album's tracks
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreTracks = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMoreTracks( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreTracks = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist
-                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
-                
-                // save the next set's url (if it exists)
-                $scope.tracklist.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreTracks = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
-            loadMoreTracks( $scope.tracklist.next );
-        }
-	});
-	
-})
-	
-/**
- * Local files
- **/
-.controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
-	
-	$scope.folders = [];
-	$scope.tracklist = {tracks: [], type: 'local'};
-	
-	var folder, parentFolder;
-	
-	if( $stateParams.folder ){
-	
-		folder = $stateParams.folder;
-		var parentFolders = folder.split('|');
-		parentFolder = '';
-		for( var i = 0; i < parentFolders.length-1; i++ ){
-			showParentFolderLink = true;
-			parentFolder += parentFolders[i];
-			if( i < parentFolders.length-2 )
-				parentFolder += '|';
-		}
-		
-		if( parentFolder == '' )
-			parentFolder = 'local:directory';
-		
-		folder = folder.replace('|','/');
-	}
-	
-	// on init, go get the items (or wait for mopidy to be online)
-	if( $scope.mopidyOnline )
-		getItems();
-	else
-		$scope.$on('mopidy:state:online', function(){ getItems() });
-	
-	
-	// go get em
-	function getItems(){
-			
-		MopidyService.getLibraryItems( folder )
-			.then( function( response ){
-					
-					// load tracks
-					var tracks = $filter('filter')(response, {type: 'track'});	
-/*					
-					if( tracks.length > 0 ){
-						
-						for( var i = 0; i < tracks.length; i++ ){
-							MopidyService.getTrack( tracks[i].uri )
-								.then( function(response){
-									console.log( i );
-									tracks[i] = response;
-									console.log( response );
-								});
-						}
-						
-					}*/
-					
-					$scope.tracklist.tracks = tracks;
-					
-					// fetch the folders
-					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
-
-					if( $stateParams.folder != 'local:directory' )
-						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
-					
-					$scope.folders = folders;
-				});
-	}
-	
-	
-	/**
-	 * Format our folders into the desired format
-	 * @param items = array
-	 * @return array
-	 **/
-	function formatFolders( items ){
-		
-		// sanitize uris
-		for( var i = 0; i < items.length; i++ ){
-			var item = items[i];
-			
-			// replace slashes (even urlencoded ones) to ":"
-			item.uri = item.uri.replace('%2F', '|');
-			item.uri = item.uri.replace('/', '|');
-			
-			items[i] = item;
-		}
-		
-		return items;
-	}
-		
-})
-	
-/**
- * Library artists
- **/
-.controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
-	
-	$scope.artists = [];
-	
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
-    
-	SpotifyService.getMyArtists( userid )
-		.then( function( response ){ // successful
-				$scope.artists = response.artists;
-				
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
-			});
-		
-})
-
-/**
- * Library playlist
- **/
-.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
-	
-	// note: we use the existing playlist list to show playlists on this page	
-	$scope.createPlaylist = function(){
-        DialogService.create('createPlaylist', $scope);
-	}
-	
-	$scope.playlists = { items: [] };
-	
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
-    
-	SpotifyService.getPlaylists( userid )
-		.then( function( response ){ // successful
-				$scope.playlists = response;
-				
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
-			});
-    
-	
-    /**
-     * Load more of the album's tracks
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMorePlaylists = false;
-    
-    // go off and get more of this playlist's tracks
-    function loadMorePlaylists( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMorePlaylists = true;
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new tracks to the main tracklist
-                $scope.playlists.items = $scope.playlists.items.concat( response.items );
-                
-                // save the next set's url (if it exists)
-                $scope.playlists.next = response.next;
-                
-                // update loader and re-open for further pagination objects
-                loadingMorePlaylists = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMorePlaylists && typeof( $scope.playlists.next ) !== 'undefined' && $scope.playlists.next ){
-            loadMorePlaylists( $scope.playlists.next );
-        }
-	});
-});
-
-
-
-
-'use strict';
-
-angular.module('spotmop.player', [
-	'spotmop.services.player',
-	'spotmop.services.spotify',
-	'spotmop.services.mopidy'
-])
-
-.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, EchonestService, SettingsService ){
-	
-	$scope.state = PlayerService.state;
-	    
-	
-	/**
-	 * Core player controls
-	 **/
-	
-	$scope.playPause = function(){
-		PlayerService.playPause();
-	}
-    $scope.stop = function(){
-		PlayerService.stop();
-    },
-	$scope.next = function(){
-		PlayerService.next();
-	}
-	$scope.previous = function(){
-		PlayerService.previous();
-	}
-	$scope.seek = function( event ){
-		var slider, offset, position, percent, time;
-		if( $(event.target).hasClass('slider') )
-			slider = $(event.target);
-		else
-			slider = $(event.target).closest('.slider');
-		
-		// calculate the actual destination seek time
-		offset = slider.offset();
-		position = event.pageX - offset.left;
-		percent = position / slider.innerWidth();
-		time = Math.round(percent * $scope.state().currentTlTrack.track.length);
-		
-		PlayerService.seek( time );
-	}	
-	$scope.setVolume = function( event ){
-		var slider, offset, position, percent;
-		if( $(event.target).hasClass('slider') )
-			slider = $(event.target);
-		else
-			slider = $(event.target).closest('.slider');
-		
-		// calculate the actual destination seek time
-		offset = slider.offset();
-		position = event.pageX - offset.left;
-		percent = position / slider.innerWidth() * 100;
-		percent = parseInt(percent);
-		
-		PlayerService.setVolume( percent );
-	};
-	
-	
-	/**
-	 * Play order toggle switches
-	 **/
-	
-    $scope.toggleRepeat = function(){
-		PlayerService.toggleRepeat();
-    };
-    $scope.toggleRandom = function(){
-		PlayerService.toggleRandom();
-    };
-    $scope.toggleMute = function(){
-		PlayerService.toggleMute();
-    };
-	
-    
-	/**
-	 * Shortcut keys
-	 **/
-	
-	$scope.$on('mopidy:event:tracklistChanged', function( event ){
-		MopidyService.getCurrentTlTracks().then( function(tlTracks){
-			$scope.$parent.currentTracklist = tlTracks;
-		});
-	});
-	
-	/*
-	
-	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
-	// TODO: Move this into the MopidyService for sanity
-	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
-		MopidyService.getCurrentTrackListTracks()
-			.then(
-				function( tracklist ){
-					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
-				}
-			);
-	});
-	*/
-	
-});
-/**
- * Create a Player service
- *
- * This holds all of the calls for the player interface and data
- **/
- 
-angular.module('spotmop.services.player', [])
-
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
-	
-	// setup initial states
-	var state = {
-		playing: false,
-		isRepeat: false,
-		isRandom: false,
-		isMute: false,
-		volume: 100,
-		playPosition: 0,
-		currentTlTrack: false,
-		playPositionPercent: function(){
-			if( state.currentTlTrack ){
-				return ( state.playPosition / state.currentTlTrack.track.length * 100 ).toFixed(2);
-			}else{
-				return 0;
-			}
-		}
-	}
-	
-	// when mopidy connection detected, fetch real states
-	$rootScope.$on('mopidy:state:online', function(){
-		updateToggles();
-		
-		updateCurrentTrack();
-		updatePlayerState();
-		updateVolume();
-		
-		// figure out if we're playing already
-		MopidyService.getState().then( function( newState ){
-			if( newState == 'playing' )
-				state.playing = true;
-			else
-				state.playing = false;
-		});
-	});
-	
-	// listen for changes from other clients
-	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
-		updateToggles();
-	});
-	
-	$rootScope.$on('mopidy:event:playbackStateChanged', function( event, state ){
-		updatePlayerState( state.new_state );
-	});
-	
-	$rootScope.$on('mopidy:event:seeked', function( event, position ){
-		updatePlayPosition( position.time_position );
-	});
-	
-	$rootScope.$on('mopidy:event:volumeChanged', function( event, volume ){
-		if( volume.volume != state.volume )
-			updateVolume( volume.volume );
-	});
-	
-	
-	// update our toggle states from the mopidy server
-	function updateToggles(){	
-        MopidyService.getRepeat().then( function(isRepeat){
-            state.isRepeat = isRepeat;
-        });
-        MopidyService.getRandom().then( function(isRandom){
-            state.isRandom = isRandom;
-        });
-        MopidyService.getMute().then( function(isMute){
-            state.isMute = isMute;
-        });
-	}
-	
-	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
-	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
-		
-		// only if our new tlTrack differs from our current one
-		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
-			state.currentTlTrack = tlTrack.tl_track;		
-			updateCurrentTrack( tlTrack.tl_track );
-			updatePlayerState();		
-		}
-	});
-	
-	
-	/**
-	 * Set the new play position and, if required, figure it out first
-	 * @param newPosition = integer (optional)
-	 **/
-	function updatePlayPosition( newPosition ){
-	
-		// if we haven't been provided with a specific new position
-		if( typeof( newPosition ) === 'undefined' ){
-		
-			// go get the time position
-			MopidyService.getTimePosition().then( function(position){
-				state.playPosition = position;
-			});
-		
-		// we've been parsed the time position, so just use that
-		}else{
-			state.playPosition = newPosition;
-		}
-	}
-	
-	
-	/**
-	 * Update volume
-	 * Fetches (if required) the volume from mopidy and sets to state
-	 * @param volume = int (optional)
-	 **/
-	function updateVolume( newVolume ){
-	
-		// if we've been told what the new volume is, let's just use that
-		if( typeof( newVolume ) !== 'undefined' ){
-			state.volume = newVolume;
-			
-		// not told what new vol is, so let's fetch and set
-		}else{
-			MopidyService.getVolume().then(function( volume ){
-				state.volume = volume;
-			});
-		}
-	}
-	
-	
-	/**
-	 * Update the state of the player
-	 * @param newState = string (optional)
-	 **/
-	function updatePlayerState( newState ){
-		
-		// if we've been told what the new state is, let's just use that
-		if( typeof( newState ) !== 'undefined' ){
-			if( newState == 'playing' )
-				state.playing = true;
-			else
-				state.playing = false;
-			
-			updateWindowTitle();
-				
-		// not sure of new state, so let's find out first
-		}else{
-			MopidyService.getState().then( function( newState ){
-				if( newState == 'playing' )
-					state.playing = true;
-				else
-					state.playing = false;
-				
-				updateWindowTitle();
-			});
-		}
-		
-		// commented out due to strange behavior in Mopidy 1.1.1 where on pause, the play position was erratic
-		// so let's just rely on our latest play position as factual. When we resume it'll re-fetch anyway.
-		// updatePlayPosition();		
-	};
-	
-	
-	/**
-	 * Update the current track
-	 * This updates all instances of the track with new artwork, seek bar, window title, etc.
-	 * @param tlTrack = the new track object (optional)
-	 **/
-	function updateCurrentTrack( tlTrack ){
-		
-		// update all ui uses of the track (window title, player bar, etc)
-		var setCurrentTrack = function( tlTrack ){
-		
-			// save the current tltrack for global usage
-			state.currentTlTrack = tlTrack;
-			
-			// if this is a Spotify track, get the track image from Spotify
-			if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
-				// now we have track info, let's get the spotify artwork	
-				SpotifyService.getTrack( tlTrack.track.uri )
-					.then(function( response ){
-						if( typeof(response.album) !== 'undefined' ){
-							state.currentTlTrack.track.image = response.album.images[0].url;
-						}
-					});
-			
-			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
-			}else{
-				
-				var artist = encodeURIComponent( tlTrack.track.artists[0].name );
-				var album = encodeURIComponent( tlTrack.track.album.name );
-				
-				if( artist && album )
-					LastfmService.albumInfo( artist, album )
-						.then( function(response){
-							
-								// remove the existing image
-								state.currentTlTrack.track.image = false;
-								
-								// if we got an album match, plug in the 'extralarge' image to our state()
-								if( typeof(response.album) !== 'undefined' ){
-									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-									if( largest )
-										state.currentTlTrack.track.image = largest['#text'];
-								}
-							});
-			}
-			
-			// update ui
-			updatePlayPosition();
-			updateWindowTitle();
-		}
-		
-		// track provided, update pronto garcong!
-		if( typeof( tlTrack ) !== 'undefined' ){
-			setCurrentTrack( tlTrack );
-			
-		// no track provided, so go fetch it first, then proceed
-		}else{
-			
-			MopidyService.getCurrentTlTrack().then( function( tlTrack ){
-				if(tlTrack !== null && tlTrack !== undefined){
-					if(tlTrack.track.name.indexOf("[loading]") > -1){
-						MopidyService.lookup(tlTrack.track.uri).then(function(result){
-							setCurrentTrack(result[0]);
-						});
-					}else{
-						setCurrentTrack(tlTrack);
-					}
-				}
-			});
-		}
-	};	
-		
-
-	/**
-	 * Update browser title
-	 **/
-	function updateWindowTitle(){
-	
-		var track = state.currentTlTrack.track;
-        var newTitle = 'No track playing';
-		
-        if( track ){
-            var documentIcon = '\u25A0 ';
-            var artistString = '';
-            
-            $.each(track.artists, function(key,value){
-                if( artistString != '' )
-                    artistString += ', ';
-                artistString += value.name;
-            });
-
-            if( state.playing )
-                documentIcon = '\u25B6 ';
-
-            newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
-        };
-        
-		document.title = newTitle;
-	}
-	
-	
-	
-	/**
-	 * Update play progress position slider
-	 **/
-	$interval( 
-		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
-				state.playPosition += 1000;
-			}
-		},
-		1000
-	);
-	
-    
-	/**
-	 * Shortcut keys
-	 **/
-	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
-		if( state.playing ) var icon = 'pause'; else var icon = 'play';
-		service.playPause();
-		NotifyService.shortcut( icon );
-    });
-	$rootScope.$on('spotmop:keyboardShortcut:right', function( event ){		
-		if( $rootScope.ctrlKeyHeld ){
-			service.next();
-			NotifyService.shortcut( 'forward' );
-		}
-    });
-	$rootScope.$on('spotmop:keyboardShortcut:left', function( event ){    
-		if( $rootScope.ctrlKeyHeld ){
-			service.previous();
-			NotifyService.shortcut( 'backward' );
-		}
-    });
-	$rootScope.$on('spotmop:keyboardShortcut:up', function( event ){
-		if( $rootScope.ctrlKeyHeld ){
-			state.volume += 10;
-			
-			// don't let the volume exceed maximum possible, 100%
-			if( state.volume >= 100 )
-				state.volume = 100;
-			service.setVolume( state.volume );
-			NotifyService.shortcut( 'volume-up' );
-		}
-    });
-	$rootScope.$on('spotmop:keyboardShortcut:down', function( event ){
-		if( $rootScope.ctrlKeyHeld ){
-			state.volume -= 10;
-			
-			// don't let the volume below minimum possible, 0%
-			if( state.volume < 0 )
-				state.volume = 0;
-			service.setVolume( state.volume );
-			NotifyService.shortcut( 'volume-down' );
-		}
-    });	
-	
-	
-	/**
-	 * Setup response object
-	 * This is the object that is available to all controllers
-	 **/
-	var service = {
-		
-		state: function(){
-			return state;
-		},
-		
-		playPause: function(){
-			if( state.playing ){
-				MopidyService.pause();
-				state.playing = false;
-			}else{
-				MopidyService.play();
-				state.playing = true;
-			}
-		},
-		
-		stop: function(){
-			MopidyService.stopPlayback();
-			state.playing = false;
-		},
-		
-		next: function(){
-		
-			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonestenabled',false) )
-				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
-		
-			MopidyService.play();
-			MopidyService.next();
-		},
-		
-		previous: function(){
-			MopidyService.previous();
-		},
-		
-		seek: function( time ){
-			state.playPosition = time;
-			MopidyService.seek( time );
-		},
-		
-		setVolume: function( percent ){
-			state.volume = percent;
-			MopidyService.setVolume( percent );
-		},
-		
-		/**
-		 * Playback behavior toggles
-		 **/		
-		toggleRepeat: function(){
-			if( state.isRepeat )
-				MopidyService.setRepeat( false ).then( function(response){ state.isRepeat = false; } );
-			else
-				MopidyService.setRepeat( true ).then( function(response){ state.isRepeat = true; } );
-			console.log( state );
-		},		
-		toggleRandom: function(){
-			if( state.isRandom )
-				MopidyService.setRandom( false ).then( function(response){ state.isRandom = false; } );
-			else
-				MopidyService.setRandom( true ).then( function(response){ state.isRandom = true; } );
-		},		
-		toggleMute: function(){
-			if( state.isMute )
-				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
-			else
-				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
-		}
-		
-	};
-	 
-	return service;
-	
-}]);
-
-
-
-
-
-
-angular.module('spotmop.queue', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('queue', {
-			url: "/queue",
-			templateUrl: "app/queue/template.html",
-			controller: 'QueueController'
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
-	
-	$scope.totalTime = 0;
-	$scope.tracklist = { type: 'tltrack', tracks: $scope.$parent.currentTracklist };
-
-    /**
-     * Watch the current tracklist
-     * And update our totalTime when the tracklist changes
-     **/
-    $scope.$watch(
-        function( $scope ){
-            return $scope.$parent.currentTracklist;
-        },
-        function(newTracklist, oldTracklist){
-			$scope.tracklist.tracks = newTracklist;
-			calculateTotalTime( newTracklist );
-        }
-    );
-	
-    
-	/**
-	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
-	 **/
-	function calculateTotalTime( tracklist ){
-		
-		// figure out the total time for all tracks
-		var totalTime = 0;
-		$.each( tracklist, function( key, track ){
-			totalTime += track.track.length;
-		});	
-		$scope.totalTime = Math.round(totalTime / 100000);
-	};
-	
-	
-	/**
-	 * When the delete key is broadcast, delete the selected tracks
-	 **/
-	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var tracksToDelete = [];
-		
-		// build an array of tlids to remove
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			tracksToDelete.push( selectedTrack.tlid );
-		});
-		
-		// remove tracks from DOM (for snappier UX)
-		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
-		$scope.$apply( function(){
-			$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
-		});
-		
-		MopidyService.removeFromTrackList( tracksToDelete );
-	});
-	
-});
-angular.module('spotmop.search', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-	$stateProvider
-		.state('search', {
-			url: "/search/:query/:type",
-			templateUrl: "app/search/template.html",
-			controller: 'SearchController',
-			
-			// this specifies default values if there are none defined in the URL
-			params: {
-				type: { squash: true, value: 'all' },
-				query: { squash: true, value: null }
-			}
-		});
-})
-	
-/**
- * Main controller
- **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, SpotifyService ){
-	
-	$scope.tracklist = {tracks: [], type: 'track'};
-	$scope.albums = [];
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.type = $stateParams.type;
-	$scope.query = $stateParams.query;
-	$scope.loading = false;
-	var searchDelayer;
-	
-	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
-	if( !$scope.isTouchDevice() )
-		$(document).find('.search-form input.query').focus();
-	
-	// if we've just loaded this page, and we have params, let's perform a search
-	if( $scope.query )
-		performSearch( $scope.type, $scope.query );
-	
-	/**
-	 * Watch our query string for changes
-	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
-    var tempQuery = '', queryTimeout;
-    $scope.$watch('query', function(newValue, oldValue){
-		
-		if( newValue != oldValue && newValue && newValue != '' ){
-			$scope.loading = true;
-			$scope.tracklist = {tracks: [], type: 'track'};
-			$scope.albums = [];
-			$scope.artists = [];
-			$scope.playlists = [];
-			
-			if (queryTimeout)
-				$timeout.cancel(queryTimeout);
-
-			tempQuery = newValue;
-			queryTimeout = $timeout(function() {
-				$scope.query = tempQuery;
-				performSearch( $scope.type, $scope.query );	
-			}, 1000);
-		}
-    })
-	 **/
-	
-	
-	/**
-	 * Fetch the search results
-	 * This defines the type of search requests we'll perform, and thus the page layout
-	 * @param type = string (type of search results, all/artist/playlist/album/etc)
-	 * @param query = string
-	 **/
-	function performSearch( type, query ){
-	
-		if( typeof(type) === 'undefined' )
-			var type = $scope.type;
-		
-		switch( type ){
-			
-			case 'track' :
-				SpotifyService.getSearchResults( 'track', query, 50 )
-					.then( function(response){
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.tracks = response.tracks.items;
-						$scope.tracklist.type = 'track';
-						$scope.next = response.tracks.next;
-					});
-				break;
-			
-			case 'album' :
-				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
-						$scope.albums = response.albums;
-						$scope.next = response.albums.next;
-					});
-				break;
-					
-			case 'artist' :
-				SpotifyService.getSearchResults( 'artist', query, 50 )
-					.then( function(response){		
-						$scope.artists = response.artists;
-						$scope.next = response.artists.next;
-					});
-				break;
-					
-			case 'playlist' :
-				SpotifyService.getSearchResults( 'playlist', query, 50 )
-					.then( function(response){		
-						$scope.playlists = response.playlists;
-						$scope.next = response.playlists.next;
-					});
-				break;
-			
-			default :
-				SpotifyService.getSearchResults( 'track', query, 50 )
-					.then( function(response){
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.type = 'track';
-						$scope.tracklist.tracks = response.tracks.items;
-					});	
-					
-				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
-						$scope.albums = response.albums;
-					});
-					
-				SpotifyService.getSearchResults( 'artist', query, 50 )
-					.then( function(response){		
-						$scope.artists = response.artists;
-					});
-					
-				SpotifyService.getSearchResults( 'playlist', query, 50 )
-					.then( function(response){		
-						$scope.playlists = response.playlists;
-							
-					});
-				break;
-		}
-	}
-	
-	
-    /**
-     * Load more results
-     * Triggered by scrolling to the bottom
-     **/
-    
-    var loadingMoreResults = false;
-	
-    function loadMoreResults( $nextUrl ){
-        
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
-        
-        // update our switch to prevent spamming for every scroll event
-        loadingMoreResults = true; 
-
-        // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
-            .then(function( response ){
-            
-                // append these new playlists to our existing array
-				switch( $scope.type ){
-					case 'artist':
-						$scope.artists.items = $scope.artists.items.concat( response.artists.items );
-						$scope.next = response.artists.next;
-						break;
-					case 'album':
-						$scope.albums.items = $scope.albums.items.concat( response.albums.items );
-						$scope.next = response.albums.next;
-						break;
-					case 'track':
-						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
-						$scope.next = response.tracks.next;
-						break;
-					case 'playlist':
-						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
-						$scope.next = response.playlists.next;
-						break;
-				}
-                
-                // update loader and re-open for further pagination objects
-                loadingMoreResults = false;
-            });
-    }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreResults && typeof( $scope.next ) !== 'undefined' && $scope.next ){
-            loadMoreResults( $scope.next );
-        }
-	});
-});
-/**
- * Create a Dialog service 
- *
- * This provides the framework for fullscreen popup dialogs. We have a pre-set selection
- * of the key types of dialog.
- **/
- 
-angular.module('spotmop.services.dialog', [])
-
-
-/**
- * Service to facilitate the creation and management of dialogs globally
- **/
-.factory("DialogService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
-    
-	// setup response object
-    return {
-		create: function( dialogType, parentScope ){
-			
-			// prevent undefined errors
-			if( typeof(parentScope) === 'undefined' )
-				parentScope = false;
-			
-			if( $('body').children('.dialog').length > 0 ){
-				console.log('A dialog already exists...');
-				// TODO: handle what to do in this case
-			}
-			$('body').append($compile('<dialog type="'+dialogType+'" />')( parentScope ));
-		},
-		remove: function(){
-			$('body').children('.dialog').fadeOut( 200, function(){ $(this).remove() } );
-		}
-	};
-}])
-
-
-/**
- * Directive to handle wrapping functionality
- **/
-.directive('dialog', function( $compile ){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		scope: {
-			type: '@'
-		},
-		templateUrl: 'app/services/dialog/template.html',
-		link: function( $scope, $element ){
-			$element.find('.content').html( $compile('<'+$scope.type+'dialog />')( $scope ) );
-		},
-		controller: function( $scope, $element, DialogService ){
-			
-			$scope.closeDisabled = false;
-			if( $scope.type == 'initialsetup' )
-				$scope.closeDisabled = true;
-			
-            $scope.closeDialog = function(){
-                DialogService.remove();
-            }
-            
-			// listen for <esc> keypress
-			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
-				if( !$scope.closeDisabled )
-					DialogService.remove();
-			});
-		}
-	};
-})
-
-
-/**
- * Dialog: Create playlist
- * Allows user to create a playlist
- **/
-
-.directive('createplaylistdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
-            $scope.saving = false;
-			$scope.playlistPublic = 'true';
-            $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
-				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistPublic == 'true' )
-					$scope.playlistPublic = true;
-				else
-					$scope.playlistPublic = false;
-                
-                // perform the creation
-                SpotifyService.createPlaylist(
-						$scope.$parent.spotifyUser.id,
-						{ name: $scope.playlistName, public: $scope.playlistPublic } 
-					)
-                    .then( function(response){
-                    
-                        // save new playlist to our playlist array
-                        $scope.$parent.playlists.items.push( response );
-						
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
-            }
-		}
-	};
-})
-
-
-/**
- * Dialog: Edit playlist
- * Allows user to rename and change public state for a playlist
- **/
-
-.directive('editplaylistdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/editplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
-            $scope.playlistNewName = $scope.$parent.playlist.name;
-            $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
-            $scope.saving = false;
-            $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
-				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistNewPublic == 'true' )
-					$scope.playlistNewPublic = true;
-				else
-					$scope.playlistNewPublic = false;
-                
-                // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .then( function(response){
-                    
-                        // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.playlistNewName;
-                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
-                    
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
-            }
-		}
-	};
-})
-
-
-/**
- * Dialog: Add tracks to playlist
- * Accepts a list of tracks, and provides a list of playlists that we can add to
- **/
-
-.directive('addtoplaylistdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
-            
-			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
-			
-			SpotifyService.getPlaylists( spotifyUserID, 50 )
-				.then(function( response ) {
-					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-				});
-			
-			/**
-			 * When we select the playlist for these tracks
-			 **/
-			$scope.playlistSelected = function( playlist ){
-			
-				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );				
-				var selectedTracksUris = [];
-				
-				// construct a flat array of track uris
-				angular.forEach( selectedTracks, function( track ){
-					
-					// accommodate TlTrack objects, with their nested track objects
-					if( typeof( track.track ) !== 'undefined' )
-						selectedTracksUris.push( track.track.uri );
-					
-					// not TlTrack, so not nested
-					else
-						selectedTracksUris.push( track.uri );					
-				});
-				
-				// get Spotify involved...
-				SpotifyService.addTracksToPlaylist( playlist.uri, selectedTracksUris )
-					.then( function(response){
-					
-						// remove this dialog, and initiate standard notification
-						DialogService.remove();
-						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
-					});
-			};
-		}
-	};
-})
-
-
-/**
- * Dialog: Control volume of Mopidy
- * Facilitates more fiddly controls, useful for touch devices
- **/
-
-.directive('volumecontrolsdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/volumecontrols.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
-			$scope.state = function(){
-				return PlayerService.state();
-			}
-			$scope.setVolume = function( event ){
-				var slider, offset, position, percent;
-				if( $(event.target).hasClass('slider') )
-					slider = $(event.target);
-				else
-					slider = $(event.target).closest('.slider');
-				
-				// calculate the actual destination seek time
-				offset = slider.offset();
-				position = event.pageX - offset.left;
-				percent = position / slider.innerWidth() * 100;
-				percent = parseInt(percent);
-				
-				PlayerService.setVolume( percent );
-			};
-		}
-	};
-})
-
-
-/**
- * Dialog: Setup new user
- * Initial setup
- **/
-
-.directive('initialsetupdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
-            $scope.saving = false;
-            $scope.save = function(){                
-				if( $scope.name && $scope.name != '' ){
-					
-					// set state to saving (this swaps save button for spinner)
-					$scope.saving = true;
-					
-					// perform the creation
-					SettingsService.setSetting('pushername', $scope.name);
-					DialogService.remove();
-				}else{
-					$scope.error = true;
-				}
-            }
-		}
-	};
-});
-
-
-
-
-
-
-
-
-
-/**
- * Create an Echonest service
- *
- * This holds all of the Echonest API calls, and returns the response (or promise)
- * back to the caller.
- * @return dataFactory array
- **/
- 
-angular.module('spotmop.services.echonest', [])
-
-.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$cacheFactory', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $cacheFactory, $q, SettingsService ){
-    
-    var baseURL = 'http://developer.echonest.com/api/v4/';
-    var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
-	
-	// setup response object
-    return {
-        
-        isOnline: false,
-        
-        start: function(){
-            
-            SettingsService.setSetting('echonestenabled',true);
-            
-            // if we don't have a taste profile, make one
-            if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
-                this.createTasteProfile()
-                    .success( function(response){ 
-                        SettingsService.setSetting('echonesttasteprofileid', response.response.id);
-                        this.isOnline = true;
-                        $rootScope.echonestOnline = true;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
-                    });
-            }else{
-                this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
-                    .success( function(response){
-                        this.isOnline = true;
-                        $rootScope.echonestOnline = true;
-                        $localStorage.echonesttasteprofile = response.response.catalog;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
-                    });
-            }
-        },
-        
-        stop: function(){            
-            SettingsService.setSetting('echonestenabled',false);            
-            $rootScope.echonestOnline = false;
-        },
-		
-        /**
-         * Taste Profile
-         **/
-		createTasteProfile: function(){
-            return $.ajax({
-                url: baseURL+'catalog/create',
-                method: "POST",
-                data: {
-                        api_key: apiKey,
-                        format: 'json',
-                        type: 'general',
-                        name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
-                    }
-            });
-        },
-        
-		getTasteProfile: function(){
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
-            return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
-                method: "GET"
-            });
-        },
-        
-		
-		/**
-		 * Add a number of trackids to the taste profile
-		 * NOTE: This hasn't been upgraded to return a deferred.promise because of CORS issue when using $http instead of $ajax ... need to investigate
-		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
-		 * @param trackid = string|array spotify uri
-		 * @param favorite = boolean (optional) add these track(s) as favorites
-		 * @return ajax request
-		 **/
-		addToTasteProfile: function( action, trackid ){
-			
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
-			var requestData = [];
-			var trackids = [];
-			
-			// if we've been given a single string, wrap it in an array
-			if( typeof( trackid ) === 'string' ){
-				trackids = [trackid];
-			}else{
-				trackids = trackid;
-			}
-			
-			// loop all the trackids (even if a single one, wrapped in an array)
-			angular.forEach( trackids, function( trackid ){
-			
-				// add each to our request payload
-				requestData.push( {
-								action: action,
-								item: {
-									track_id: trackid
-								}
-							} );
-			});
-		
-            return $.ajax({
-                url: baseURL+'tasteprofile/update',
-                method: "POST",
-				data: {
-						api_key: apiKey,
-						format: 'json',
-						data_type: 'json',
-						id: profileID,
-						data: JSON.stringify( requestData )
-					}
-            });
-        },
-        
-        
-        /**
-         * Get artist
-         **/
-		getArtistBiography: function( artistid ){
-		
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-        },
-		
-        
-        /**
-         * Recommended content
-		 * We disable caching on these calls because a single track play will alter the recommendations returned
-         **/
-		 
-		/**
-		 * Recommend artists based on another artist (or on our taste profile)
-		 * @param artistname = array of artist objects (optional)
-		 * @return promise
-		 **/
-		recommendedArtists: function( artists ){
-		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
-			
-			// no artist provided, so seed based on our taste profile
-			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
-				var seed = '&seed_catalog='+profileID;
-				
-			// the artist name
-			}else{
-				var seed = '';				
-				angular.forEach( artists, function(artist){
-					seed += '&name='+artist.name_encoded;
-				});
-			}
-			
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		favoriteArtists: function(){		
-		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		catalogRadio: function(){		
-		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		startArtistRadio: function( artistname ){
-		
-            var deferred = $q.defer();
-			
-            $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
-                    deferred.reject("Failed to create artist radio");
-                });
-				
-            return deferred.promise;
-        }
-	};
-}]);
-
-
-
-
-
-
-/**
- * Create a LastFM service 
- *
- * This holds all of the LastFM API calls, and returns the response (or promise)
- * back to the caller.
- * @return dataFactory array
- **/
- 
-angular.module('spotmop.services.lastfm', [])
-
-.factory("LastfmService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, NotifyService ){
-	
-	// setup response object
-    var service = {
-		
-		/**
-		 * Perform an API lookup
-		 * @param params = string (url params)
-		 * @return promise
-		 **/
-		sendRequest: function( params ){
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'?format=json&api_key='+apiKey+'&'+params
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-
-		trackInfo: function( artist, track ){
-			return this.sendRequest('method=track.getInfo&track='+track+'&artist='+artist);
-		},
-
-		albumInfo: function( artist, album ){
-			return this.sendRequest('method=album.getInfo&album='+album+'&artist='+artist);
-		},
-
-		artistInfo: function( artist ){
-			return this.sendRequest('method=artist.getInfo&artist='+artist);
-		}
-	};
-	
-	// specify the base URL for the API endpoints
-    var urlBase = 'http://ws.audioscrobbler.com/2.0';
-	var apiKey = SettingsService.getSetting("lastfmkey", '4320a3ef51c9b3d69de552ac083c55e3');
-	
-	// and finally, give us our service!
-	return service;
-}]);
-
-
-
-
-
-
-
-
-
-
-/*
- * Inspired and mostly coming from MartijnBoland's MopidyService.js
- * https://github.com/martijnboland/moped/blob/master/src/app/services/mopidyservice.js
- */
-'use strict';
-
-angular.module('spotmop.services.mopidy', [
-    //"spotmop.services.settings",
-    //'llNotifier'
-])
-
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
-	
-	// Create consolelog object for Mopidy to log it's logs on
-    var consoleLog = function () {};
-    var consoleError = console.error.bind(console);
-
-    /*
-     * Wrap calls to the Mopidy API and convert the promise to Angular $q's promise.
-     * 
-     * @param String functionNameToWrap
-     * @param Object thisObj
-     */
-	function wrapMopidyFunc(functionNameToWrap, thisObj) {
-		return function() {
-			var deferred = $q.defer();
-			var args = Array.prototype.slice.call(arguments);
-			var self = thisObj || this;
-            
-			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
-
-			if (self.isConnected) {
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}else{
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}
-			return deferred.promise;
-		};
-	}
-
-	/*
-     * Execute the given function
-     * 
-     * @param String functionName
-     * @param Object thisObj
-	 * @param Array args
-     */
-	function executeFunctionByName(functionName, context, args){
-		
-		var namespaces = functionName.split(".");
-		var func = namespaces.pop();
-        
-		for(var i = 0; i < namespaces.length; i++){
-			context = context[namespaces[i]];
-		}
-
-		return context[func].apply(context, args);
-	}
-
-	return {
-		mopidy: {},
-		isConnected: false,
-		
-		testMethod: function( uri ){
-			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uri });
-		},
-		
-		/*
-		 * Method to start the Mopidy conneciton
-		 */
-		start: function(){
-            var self = this;
-
-			// Emit message that we're starting the Mopidy service
-			$rootScope.$broadcast("spotmop:startingmopidy");
-
-            // Get mopidy ip and port from settigns
-            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
-			
-			// Initialize mopidy
-            try{
-    			this.mopidy = new Mopidy({
-    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
-    				callingConvention: 'by-position-or-by-name'
-    			});
-		
-				// this gives us a handy list of all functions available via mopidy
-				// console.log( this.mopidy );
-            }
-			catch(e){
-                // need to re-initiate notifier
-				console.log( "Connecting with Mopidy failed with the following error message: " + e);
-                // Try to connect without a given url
-                this.mopidy = new Mopidy({
-                    callingConvention: 'by-position-or-by-name'
-                });
-            }
-			
-			this.mopidy.on(consoleLog);
-			
-			// Convert Mopidy events to Angular events
-			this.mopidy.on(function(ev, args) {
-				$rootScope.$broadcast('mopidy:' + ev, args);
-				if (ev === 'state:online') {
-					self.isConnected = true;
-				}
-				if (ev === 'state:offline') {
-					self.isConnected = false;
-				}
-			});
-
-			$rootScope.$broadcast('spotmop:mopidystarted', this);
-		},
-		stop: function() {
-			$rootScope.$broadcast('spotmop:mopidystopping');
-			this.mopidy.close();
-			this.mopidy.off();
-			this.mopidy = null;
-			$rootScope.$broadcast('spotmop:mopidystopped');
-		},
-		restart: function() {
-			this.stop();
-			this.start();
-		},
-		getPlaylists: function() {
-			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
-		},
-		getPlaylist: function(uri) {
-			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
-		},
-		getLibrary: function() {
-			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
-		},
-		getLibraryItems: function(uri) {
-			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: uri });
-		},
-		refresh: function(uri) {
-			return wrapMopidyFunc("mopidy.library.refresh", this)({ uri: uri });
-		},
-		getDirectory: function(uri) {
-			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-		},
-		getTrack: function(uri) {
-			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-		},
-		getTracks: function(uris) {
-			return wrapMopidyFunc("mopidy.library.lookup", this)({ uris: uris });
-		},
-		getAlbum: function(uri) {
-			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-		},
-		getArtist: function(uri) {
-			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
-		},
-		search: function(query) {
-			return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
-		},
-		getCurrentTrack: function() {
-			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
-		},
-		getCurrentTlTrack: function() {
-			return wrapMopidyFunc("mopidy.playback.getCurrentTlTrack", this)();
-		},
-		moveTlTracks: function( start, end, to_position ) {
-			return wrapMopidyFunc("mopidy.tracklist.move", this)({ start: start, end: end, to_position: to_position });
-		},
-		getTimePosition: function() {
-			return wrapMopidyFunc("mopidy.playback.getTimePosition", this)();
-		},
-		seek: function(timePosition) {
-			return wrapMopidyFunc("mopidy.playback.seek", this)({ time_position: timePosition });
-		},
-		getVolume: function() {
-			return wrapMopidyFunc("mopidy.playback.getVolume", this)();
-		},
-		setVolume: function(volume) {
-			return wrapMopidyFunc("mopidy.playback.setVolume", this)({ volume: volume });
-		},
-		getMute: function(){
-			return wrapMopidyFunc("mopidy.playback.getMute", this)();
-		},
-		setMute: function( isMute ){
-			return wrapMopidyFunc("mopidy.playback.setMute", this)([ isMute ]);
-		},
-		getState: function() {
-			return wrapMopidyFunc("mopidy.playback.getState", this)();
-		},
-		playTrack: function(newTracklistUris, trackToPlayIndex) {
-			var self = this;
-
-			// stop playback
-			return self.mopidy.playback.stop()
-				.then(function() {
-
-					// clear the current tracklist
-					return self.mopidy.tracklist.clear();
-
-				}, consoleError)
-				.then(function() {
-
-					// add the surrounding tracks (ie the whole tracklist in focus)
-					return self.mopidy.tracklist.add({ uris: newTracklistUris });
-
-				}, consoleError)
-				.then(function() {
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-				}, consoleError);
-			}, consoleError);
-		},
-		playTlTrack: function( tlTrack ){
-		
-			// add to taste profile
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-			
-            return this.mopidy.playback.play( tlTrack );
-		},
-		playStream: function( streamUri, expectedTrackCount ){
-			
-			var self = this;
-			
-			// pre-fetch our playlist tracks
-			self.mopidy.library.lookup({ uri: streamUri })
-				.then( function(tracks){
-					
-					// if we haven't got as many tracks as expected
-					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
-					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
-						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 2 seconds for server to pre-load playlist...');
-						$timeout( function(){
-							playStream();
-						}, 2000 );
-						
-					// we have the expected track count already (already loaded/cached), go-go-gadget!
-					}else{
-						playStream();
-					}
-				}, consoleError );
-			
-			// play the stream
-			function playStream(){
-				self.stopPlayback(true)
-					.then(function() {
-						self.mopidy.tracklist.clear();
-					}, consoleError)
-					.then(function() {
-						self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
-					}, consoleError)
-					.then(function() {
-						self.mopidy.playback.play();
-					}, consoleError);			
-			}
-		},
-		play: function(){
-			return wrapMopidyFunc("mopidy.playback.play", this)();
-		},
-		pause: function() {
-			return wrapMopidyFunc("mopidy.playback.pause", this)();
-		},
-		stopPlayback: function(clearCurrentTrack) {
-			return wrapMopidyFunc("mopidy.playback.stop", this)();
-		},
-		previous: function() {
-			return wrapMopidyFunc("mopidy.playback.previous", this)();
-		},
-		next: function() {		
-			var name = SettingsService.getSetting('pushername', 'User');      
-			var ip = SettingsService.getSetting('pusherip', null);      
-            PusherService.send({
-                title: 'Track skipped',
-                body: name +' vetoed this track!',
-                clientip: ip,
-                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
-            });
-			return wrapMopidyFunc("mopidy.playback.next", this)();
-		},
-		getRepeat: function () {
-			return wrapMopidyFunc("mopidy.tracklist.getRepeat", this)();
-		},
-		setRepeat: function( isRepeat ){
-			return wrapMopidyFunc("mopidy.tracklist.setRepeat", this)([ isRepeat ]);
-		},
-		getRandom: function () {
-			return wrapMopidyFunc("mopidy.tracklist.getRandom", this)();
-		},
-		setRandom: function( isRandom ) {
-			return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
-		},
-		getConsume: function () {
-			return wrapMopidyFunc("mopidy.tracklist.getConsume", this)();
-		},
-		setConsume: function( isConsume ) {
-			return wrapMopidyFunc("mopidy.tracklist.setConsume", this)([ isConsume ]);
-		},
-		getCurrentTrackList: function () {
-			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
-		},
-		getCurrentTlTracks: function () {
-			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
-		},
-		addToTrackList: function( uris, atPosition ){
-			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
-			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
-		},
-		removeFromTrackList: function( tlids ){
-			var self = this;
-			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
-				return true;
-			});
-		}
-
-	};
-});
-
-/**
- * Notifications service
- *
- * Provides framework of simple user-oriented notification messages.
- * Also includes HTML5 browser notifications.
- **/
- 
-angular.module('spotmop.services.notify', [])
-
-
-/**
- * Service to facilitate the creation and management of dialogs globally
- **/
-.factory("NotifyService", ['$rootScope', '$compile', '$interval', '$timeout', 'SettingsService', function( $rootScope, $compile, $interval, $timeout, SettingsService ){
-    
-	// setup response object
-    return {
-	
-		/**
-		 * Create a new notification item
-		 * @param message = string (body of message)
-		 * @param duration = int (how long to hold message) optional
-		 **/
-		notify: function( message, duration ){
-		
-			if( typeof(duration) === 'undefined' )
-				var duration = 2500;
-			
-			var notification = $('<notification class="notification default">'+message+'</notification>');
-			$('#notifications').append( notification );
-			
-			// hide in when we meet our duration
-			// remember that we can disable hide by parsing duration=false
-			if( duration )
-				$timeout(
-					function(){
-						notification.fadeOut(200, function(){ notification.remove() } );
-					},
-					duration
-				);
-		},
-	
-		/**
-		 * Error message
-		 * @param icon = string (icon type to use)
-		 * @param duration = int (how long to hold message) optional
-		 **/
-		error: function( message, duration ){
-		
-			if( typeof(duration) === 'undefined' )
-				var duration = 2500;
-			
-			var notification = $('<notification class="notification error">'+message+'</notification>');
-			$('#notifications').append( notification );
-			
-			// hide in when we meet our duration
-			// remember that we can disable hide by parsing duration=false
-			if( duration )
-				$timeout(
-					function(){
-						notification.fadeOut(200, function(){ notification.remove() } );
-					},
-					duration
-				);
-		},
-	
-		/**
-		 * When a shortcut is triggered, notify, growl styles
-		 * @param icon = string (icon type to use)
-		 **/
-		shortcut: function( icon ){
-			
-			$('#notifications').find('notification.keyboard-shortcut').remove();
-			
-			var notification = $('<notification class="notification keyboard-shortcut"><i class="fa fa-'+icon+'"></i></notification>');
-			$('#notifications').append( notification );
-			
-			$timeout(
-				function(){
-					notification.fadeOut(200, function(){ notification.remove() } );
-				},
-				1500
-			);
-		},
-		
-		/**
-		 * HTML5 browser notifications
-		 * @param title = string
-		 * @param body = string
-		 * @param icon = string (optional)
-		 **/
-		browserNotify: function( title, body, icon ){
-				
-			// disabled by user
-			if( SettingsService.getSetting('notificationsDisabled', false) )
-				return false;
-	
-			// Determine the correct object to use
-			var notification = window.Notification || window.mozNotification || window.webkitNotification;
-		
-			// not supported
-			if ('undefined' === typeof notification)
-				return false;
-
-			// The user needs to allow this
-			if ('undefined' !== typeof notification)
-				notification.requestPermission(function(permission){});
-				
-			if( typeof(icon) === 'undefined' )
-				var icon = '';
-			
-			var trackNotification = new notification(
-				title,
-				{
-					body: body,
-					dir: 'auto',
-					lang: 'EN',
-					tag: 'spotmopNotification', 
-					icon: icon
-				}
-			);
-			
-			return true;
-		}
-	};
-}])
-
-
-/**
- * Behavior for the notification itself
- **/
-.directive("notification", function(){
-	
-	return {		
-		restrict: 'AE',
-		link: function($scope, $element, $attrs){
-			console.log( $element );
-		}
-	}
-});
-
-
-
-
-
-
-
-
-
-'use strict';
-
-angular.module('spotmop.services.pusher', [
-])
-
-.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, SettingsService, NotifyService){
-
-	// make sure we have a local storage container
-	if( typeof( $localStorage.pusher ) === 'undefined' )
-		$localStorage.pusher = {};
-		
-	// build the endpoint string
-	var urlBase = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ SettingsService.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
-    
-	var service = {
-		pusher: {},
-		
-		isConnected: false,
-		
-		start: function(){
-            var self = this;
-
-            // Get mopidy ip and port from settigns
-            var pusherhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var pusherport = SettingsService.getSetting("pusherport", "6681");
-			
-            try{
-				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
-				var pusher = new WebSocket(host);
-
-				pusher.onopen = function(){
-					$rootScope.$broadcast('spotmop:pusher:online');
-					this.isConnected = true;
-				}
-
-				pusher.onmessage = function( response ){
-                    
-					var data = JSON.parse(response.data);
-					
-					// if this is a pusher message (because Mopidy uses websockets too!)
-					if( data.pusher ){
-					
-                        // if it's an initial connection status message, just parse it through quietly
-                        if( data.startup ){
-                            console.info('Pusher connected as '+data.details.id);
-                            SettingsService.setSetting('pusherid', data.details.id);
-                            SettingsService.setSetting('pusherip', data.details.ip);
-                            
-                            // detect if the core has been updated
-                            if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
-                                NotifyService.notify('New version detected, clearing caches...');      
-                                $cacheFactory.get('$http').removeAll();                        
-                                SettingsService.setSetting('spotmopversion', data.version);
-                            }
-							
-                            // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', null)
-                            if( name )
-                                service.setMe( name );
-                        
-                        // standard notification, fire it out!
-                        }else{
-                            // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
-                                $rootScope.$broadcast('spotmop:pusher:received', data);
-                        }
-					}
-				}
-
-				pusher.onclose = function(){
-					$rootScope.$broadcast('spotmop:pusher:offline');
-					service.isConnected = false;
-                    setTimeout(function(){ service.start() }, 5000);
-				}
-				
-				service.pusher = pusher;
-            }catch(e){
-                // need to re-initiate notifier
-				console.log( "Connecting with Pusher failed with the following error message: " + e);
-            }
-		},
-		
-		stop: function() {
-			this.pusher = null;
-			this.isConnected = false;
-		},
-		
-		send: function( data ){
-			data.pusher = true;
-			data.id = SettingsService.getSetting('pusherid',null);
-			service.pusher.send( JSON.stringify(data) );
-		},
-        
-        /**
-         * Notify the Pusher service of our name
-         * @param name (string)
-         * @return deferred promise
-         **/
-        setMe: function( name ){
-            var id = SettingsService.getSetting('pusherid', null);
-            $.ajax({
-                method: 'GET',
-                cache: false,
-                url: urlBase+'pusher/me?id='+id+'&name='+name
-            });
-        },
-        
-        /**
-         * Get a list of all active connections
-         **/
-        getConnections: function(){
-            var deferred = $q.defer();
-            $http({
-                    method: 'GET',
-                    cache: false,
-                    url: urlBase+'pusher/connections'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-        }
-	};
-    
-    return service;
-});
-
-/**
- * Create a Spotify service 
- *
- * This holds all of the Spotify API calls, and returns the response (or promise)
- * back to the caller.
- * @return dataFactory array
- **/
- 
-angular.module('spotmop.services.spotify', [])
-
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, NotifyService ){
-	
-	// setup response object
-    var service = {
-		
-		start: function(){
-	
-			// inject our authorization frame, on the placeholder action
-			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
-			$(body).append(frame);
-			
-			// set container for spotify storage
-			if( typeof($localStorage.spotify) === 'undefined' )
-				$localStorage.spotify = {};
-				
-			if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
-				$localStorage.spotify.AccessToken = null;
-				
-			if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
-				$localStorage.spotify.RefreshToken = null;
-				
-			if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
-				$localStorage.spotify.AuthorizationCode = null;
-				
-			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
-				$localStorage.spotify.AccessTokenExpiry = null;
-			
-			// listen for incoming messages from the authorization iframe
-			window.addEventListener('message', function(event){
-				
-				// only allow incoming data from our authorized authenticator proxy
-				if( event.origin !== "http://jamesbarnsley.co.nz" )
-					return false;
-				
-				// convert to json
-				var data = JSON.parse(event.data);
-				
-				console.info('Spotify authorization successful');
-				
-				// take our returned data, and save it to our localStorage
-				$localStorage.spotify.AuthorizationCode = data.authorization_code;
-				$localStorage.spotify.AccessToken = data.access_token;
-				$localStorage.spotify.RefreshToken = data.refresh_token;
-				$rootScope.spotifyOnline = true;
-				$rootScope.$broadcast('spotmop:spotify:online');
-			}, false);
-			
-			
-			/**
-			 * The real starter
-			 **/
-			if( this.isAuthorized() ){
-				$rootScope.$broadcast('spotmop:spotify:online');
-			}else{
-				this.authorize();
-			}
-		},
-		
-		logout: function(){
-			$localStorage.spotify = {};
-			$rootScope.spotifyOnline = false;
-		},
-		
-		/**
-		 * Authorize this Spotmop instance with a Spotify account
-		 * This is only needed once (in theory) for this account on this device. It is used to acquire access tokens (which expire)
-		 **/
-		authorize: function(){
-			var frame = $(document).find('#authorization-frame');
-			frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
-		},
-		
-		isAuthorized: function(){
-			if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken )
-				return true;
-			return false;
-		},
-		
-		/**
-		 * Refresh our existing credentials, by parsing our Authorization refresh_token
-		 **/
-        refreshToken: function(){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
-					dataType: "json",
-					async: false,
-					timeout: 10000
-				})
-                .success(function( response ){
-					
-					// check for error response
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error('Spotify authorization error: '+response.error_description);
-						$rootScope.spotifyOnline = false;
-						deferred.reject( response.error.message );
-					}else{
-						$localStorage.spotify.AccessToken = response.access_token;
-						$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
-						$rootScope.spotifyOnline = true;					
-						deferred.resolve( response );
-					}
-                });
-				
-            return deferred.promise;
-        },
-        
-		/**
-		 * Get an element from a URI
-		 * @param element = string, the element we wish to extract
-		 * @param uri = string
-		 **/
-		getFromUri: function( element, uri ){
-			var exploded = uri.split(':');			
-			if( element == 'userid' && exploded[1] == 'user' )
-				return exploded[2];				
-			if( element == 'playlistid' && exploded[3] == 'playlist' )
-				return exploded[4];
-			if( element == 'artistid' && exploded[1] == 'artist' )
-				return exploded[2];				
-			if( element == 'albumid' && exploded[1] == 'album' )
-				return exploded[2];				
-			if( element == 'trackid' && exploded[1] == 'track' )
-				return exploded[2];				
-			return null;
-		},
-        
-		/**
-		 * Identify what kind of asset a URI is (playlist, album, etc)
-		 * @param uri = string
-		 * @return string
-		 **/
-		uriType: function( uri ){
-			var exploded = uri.split(':');
-			if( exploded[0] == 'spotify' && exploded[1] == 'artist' )
-				return 'artist';		
-			if( exploded[0] == 'spotify' && exploded[1] == 'album' )
-				return 'album';		
-			if( exploded[0] == 'spotify' && exploded[1] == 'user' && exploded[3] == 'playlist' )
-				return 'playlist';		
-			return null;
-		},
-        
-        /**
-         * Generic calls
-         */
-        getUrl: function( $url ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: $url,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error(response.error.message);
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-        },
-        
-        /**
-         * Users
-         **/
-        
-        getMe: function(){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'me/',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-        },
-        
-        getUser: function( useruri ){
-		
-			var userid = this.getFromUri( 'userid', useruri );
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'users/'+userid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-        },
-		
-		isFollowing: function( type, uri ){
-			
-			var id = this.getFromUri( type+'id', uri );
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'me/following/contains?type='+type+'&ids='+id,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-        
-        
-        /**
-         * Track based requests
-         **/
-	
-		getTrack: function( trackuri ){
-			
-			var trackid = this.getFromUri('trackid', trackuri);
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'tracks/'+trackid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-        
-	
-		/**
-		 * Library requests
-		 * These are mostly /me related
-		 **/   
-		
-		getMyTracks: function( userid ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'me/tracks/',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		}, 
-		
-		addTracksToLibrary: function( trackids ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'PUT',
-					url: urlBase+'me/tracks',
-					dataType: "json",
-					data: JSON.stringify( { ids: trackids } ),
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		deleteTracksFromLibrary: function( trackids ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'DELETE',
-					url: urlBase+'me/tracks',
-					dataType: "json",
-					data: JSON.stringify( { ids: trackids } ),
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getMyArtists: function( userid ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'me/following?type=artist',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		isFollowingArtist: function( artisturi, userid ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );			
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: false,
-					method: 'GET',
-					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		followArtist: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'PUT',
-					cache: false,
-					url: urlBase+'me/following?type=artist&ids='+artistid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		unfollowArtist: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'DELETE',
-					cache: false,
-					url: urlBase+'me/following?type=artist&ids='+artistid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-	
-		/**
-		 * Playlist-oriented requests
-		 **/     
-		
-		getPlaylists: function( userid, limit ){
-			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
-				
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: false,
-					method: 'GET',
-					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getPlaylist: function( playlisturi ){
-			
-			// get the user and playlist ids from the uri
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-				
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		isFollowingPlaylist: function( playlisturi, ids ){
-			
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		followPlaylist: function( playlisturi ){
-			
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'PUT',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		unfollowPlaylist: function( playlisturi ){
-			
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'DELETE',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		featuredPlaylists: function( limit ){
-			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
-			
-			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
-			var country = SettingsService.getSetting('countrycode','NZ');
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		addTracksToPlaylist: function( playlisturi, tracks ){
-			
-			// get the user and playlist ids from the uri
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'POST',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
-					dataType: "json",
-					data: JSON.stringify( { uris: tracks } ),
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
-            
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-            if( userid != SettingsService.getSetting('spotifyuserid',null) )
-                return false;
-			
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'PUT',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-					dataType: "json",
-					data: JSON.stringify({
-						range_start: range_start,
-						range_length: range_length,
-						insert_before: insert_before
-					}),
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		deleteTracksFromPlaylist: function( playlisturi, snapshotid, positions ){
-			
-			// get the user and playlist ids from the uri
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-            var deferred = $q.defer();
-			
-            $http({
-					method: 'DELETE',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
-					dataType: "json",
-					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		// create a new playlist
-		// @param userid id of the user to own this playlist (usually self)
-		// @param data json array {name: "Name", public: boolean}
-		createPlaylist: function( userid, data ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'POST',
-					url: urlBase+'users/'+userid+'/playlists/',
-					dataType: "json",
-					data: data,
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		// update a playlist's details
-		// @param playlisturi
-		// @param data json array {name: "Name", public: boolean}
-		updatePlaylist: function( playlisturi, data ){
-			
-			// get the user and playlist ids from the uri
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'PUT',
-					url: urlBase+'users/'+userid+'/playlists/'+playlistid,
-					dataType: "json",
-					data: data,
-					contentType: "application/json; charset=utf-8",
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		/**
-		 * Discover
-		 **/
-		newReleases: function( limit ){
-			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		discoverCategories: function( limit ){
-			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'browse/categories?limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getCategory: function( categoryid ){
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'browse/categories/'+categoryid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getCategoryPlaylists: function( categoryid, limit ){
-			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		/**
-		 * Artist
-		 **/
-		 
-		getArtist: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );
-			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		 
-		getArtists: function( artisturis ){
-			
-			var self = this;
-			var artistids = '';
-			angular.forEach( artisturis, function( artisturi ){
-				if( artistids != '' ) artistids += ',';
-				artistids += self.getFromUri( 'artistid', artisturi );
-			});
-			
-            var deferred = $q.defer();
-
-            $http({
-					method: 'GET',
-					url: urlBase+'artists/?ids='+artistids,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getAlbums: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getAlbum: function( albumuri ){
-						
-            var deferred = $q.defer();			
-			var albumid = this.getFromUri( 'albumid', albumuri );
-
-            $http({
-					method: 'GET',
-					url: urlBase+'albums/'+albumid,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getTopTracks: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );			
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getRelatedArtists: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/related-artists',
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		/**
-		 * Search results
-		 * @param type = string (album|artist|track|playlist)
-		 * @param query = string (search term)
-		 * @param limit = int (optional)
-		 **/
-		getSearchResults: function( type, query, limit ){
-		
-			if( typeof( limit ) === 'undefined' ) limit = 10;
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
-					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
-					}
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		}
-	};
-	
-	// specify the base URL for the API endpoints
-    var urlBase = 'https://api.spotify.com/v1/';
-	var country = SettingsService.getSetting("spotifycountry", 'NZ');
-	var locale = SettingsService.getSetting("spotifylocale", "en_NZ");
-	
-	// and finally, give us our service!
-	return service;
-}])
-
-
-
-/**
- * Authentication Intercepter which checks spotify's requests results for a 401 error
- * SOURCE: https://github.com/dirkgroenen
- **/
-.factory('SpotifyServiceIntercepter', function SpotifyServiceIntercepter($q, $rootScope, $injector, $localStorage){ 
-
-    "use strict";
-	var retryCount = 0;
-	
-	/**
-	 * Retry an originating request
-	 * Used when re-authentication has occured, and we're ready to try with new details
-	 **/
-	function retryHttpRequest(config, deferred, newAccessToken){
-		function successCallback(response){
-			deferred.resolve(response);
-		}
-		function errorCallback(response){
-			deferred.reject(response);
-		}
-		var $http = $injector.get('$http');
-		
-		// replace the access token with our new one
-		config.headers = { Authorization: 'Bearer '+ newAccessToken };
-		
-		// run the original request, which will then return the original callbacks
-		$http(config).then(successCallback, errorCallback);
-	}
-	
-	
-	/**
-	 * Response interceptor object
-	 **/
-    var interceptor = {	
-		responseError: function( response ){
-			
-			// check that it is a spotify request, and not a failed token request
-			// also limit to 3 retries
-			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
-					
-				retryCount++;
-				var deferred = $q.defer();				
-				
-				// if we're already authorized, we just need to force a token refresh
-				if( $injector.get('SpotifyService').isAuthorized() ){
-				
-					// refresh the token
-					$injector.get('SpotifyService').refreshToken()
-						.then( function(refreshResponse){
-							
-							// make sure our refresh request didn't error, otherwise we'll create an infinite loop
-							if( typeof(refreshResponse.error) !== 'undefined' )
-								return response;
-								
-							retryCount--;
-							
-							// now retry the original request
-							retryHttpRequest( response.config, deferred, refreshResponse.access_token );
-						});
-					
-					return deferred.promise;
-		
-				// not yet authorized, so authorize!
-				// this requires user interaction, so let's just allow the original request to fail
-				}else{
-					
-					// remove our current authorization, just to clear the decks
-					$localStorage.spotify = {};
-					$rootScope.spotifyOnline = false;
-					
-					// and re-authorize
-					$injector.get('SpotifyService').authorize();	
-					retryCount--;
-					return response;
-				}
-			}
-			
-			return response;
-		}
-    };
-
-    return interceptor;
-});
-
-
-
-
-
-
-
-
-
-
-'use strict';
-
-angular.module('spotmop.settings', [])
-
-/**
- * Routing 
- **/
-.config(function($stateProvider) {
-		
-	$stateProvider
-		.state('settings', {
-			url: "/settings",
-			templateUrl: "app/settings/template.html"
-		});
-})
-	
-/**
- * Main controller
- **/	
-.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
-	
-	// load our current settings into the template
-	$scope.version;
-	$scope.settings = SettingsService.getSettings();
-	$scope.currentSubpage = 'mopidy';
-	$scope.subpageNavigate = function( subpage ){
-		$scope.currentSubpage = subpage;
-	};
-    $scope.refreshSpotifyToken = function(){
-		NotifyService.notify( 'Refreshing token' );
-        SpotifyService.refreshToken().then( function(){});
-    };
-    $scope.spotifyLogout = function(){
-        SpotifyService.logout();
-    };
-	$scope.upgrade = function(){
-		NotifyService.notify( 'Upgrade started' );
-		SettingsService.upgrade()
-			.then( function(response){				
-				if( response.status == 'error' )
-					NotifyService.error( response.message );
-				else
-					NotifyService.notify( response.message );
-			});
-	}
-	
-	// some settings need extra behavior attached when changed
-	$rootScope.$on('spotmop:settings:changed', function( event, data ){
-		switch( data.name ){
-			case 'mopidyconsume':
-				MopidyService.setConsume( data.value );
-				break;
-			case 'echonestenabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
-				break;
-		}				
-	});
-	
-	// listen for changes from other clients
-	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
-		});
-	});
-	
-	$scope.deleteEchonestTasteProfile = function( confirmed ){
-		if( confirmed ){
-			NotifyService.notify( 'Profile deleted and Echonest disabled' );
-			SettingsService.setSetting('echonesttasteprofileid',null);
-            EchonestService.stop();			
-		}
-	};
-	$scope.resetSettings = function(){
-		NotifyService.notify( 'All settings reset... reloading' );		
-		localStorage.clear();		
-		location.reload();
-	};
-	
-	SettingsService.getVersion()
-		.then( function(response){
-			$scope.version = response;
-		});
-	
-	// save the fields to the localStorage
-	// this is fired when an input field is blurred
-	$scope.saveField = function( event ){
-		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
-	};	
-	$scope.savePusherName = function( name ){
-		PusherService.setMe( name );
-		SettingsService.setSetting( 'pushername', name );
-	};	
-    
-    PusherService.getConnections()
-        .then( function(connections){
-            $scope.clientConnections = connections;
-        });
-});
-
-/**
- * Create a Settings service
- *
- * This holds all of the calls for system settings, local storage included
- **/
- 
-angular.module('spotmop.services.settings', [])
-
-.factory("SettingsService", ['$rootScope', '$localStorage', '$interval', '$http', '$q', function( $rootScope, $localStorage, $interval, $http, $q ){
-	
-	// make sure we have a settings container
-	if( typeof( $localStorage.settings ) === 'undefined' )
-		$localStorage.settings = {};
-    
-	// setup response object
-	service = {
-		
-		setSetting: function( setting, value ){
-			// unsetting?
-			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
-				delete $localStorage.settings[setting];			
-			// setting
-            else
-				$localStorage.settings[setting] = value;
-		},
-		
-		getSetting: function( setting, defaultValue ){
-			if( typeof($localStorage.settings[setting]) !== 'undefined' )
-				return $localStorage.settings[setting];
-			return defaultValue;
-		},
-		
-		getSettings: function(){
-			return $localStorage.settings;
-		},
-		
-		
-		/**
-		 * Client identification details
-         * TODO: CORS issue, so have to use $.ajax
-		 **/	
-		getClient: function(){
-            return service.getSetting('client', {ip: null, name: 'User'});
-		},
-		setClient: function( parameter, value ){
-            // make sure we have a settings container
-            if( typeof( $localStorage.settings.client ) === 'undefined' )
-                $localStorage.settings.client = {};
-            $localStorage.settings.client[parameter] = value;
-		},
-        
-		getUser: function( username ){            
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'users'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-            return deferred.promise;
-		},
-        
-		setUser: function( username ){		
-            return $.ajax({
-                url: urlBase+'users',
-                method: "POST",
-                data: '{"name":"'+ username +'"}'
-            });
-		},
-		
-		
-		/**
-		 * Identify the client, by IP address
-		 **/
-		identifyClient: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'pusher/me'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		
-		/**
-		 * Perform a Spotmop upgrade
-		 **/
-		upgrade: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'POST',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		
-		/**
-		 * Identify our current Spotmop version
-		 **/
-		getVersion: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		}
-	};
-		
-	// build the endpoint string
-	var urlBase = 'http://'+ service.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ service.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
-	
-	return service;	
-}]);
-
-
-
-
-
-
-/**
- * Angular Google Analytics - Easy tracking for your AngularJS application
- * @version v0.0.18 - 2015-07-29
- * @link http://github.com/revolunet/angular-google-analytics
- * @author Julien Bouquillon <julien@revolunet.com>
- * @license MIT License, http://www.opensource.org/licenses/MIT
- */
-(function(n,t,e){"use strict";e.module("angular-google-analytics",[]).provider("Analytics",function(){var i,a,c,r,o,s,u=!1,g=!0,d="",l=!1,m="$routeChangeSuccess",_="auto",f=!1,h=!1,p=!1,k=!1,v=!1,E={allowLinker:!0},y=!1,w=!1;this._logs=[],this.setAccount=function(n){return i=n,!0},this.trackPages=function(n){return g=n,!0},this.trackPrefix=function(n){return d=n,!0},this.setDomainName=function(n){return c=n,!0},this.useDisplayFeatures=function(n){return a=!!n,!0},this.useAnalytics=function(n){return l=!!n,!0},this.useEnhancedLinkAttribution=function(n){return p=!!n,!0},this.useCrossDomainLinker=function(n){return v=!!n,!0},this.setCrossLinkDomains=function(n){return s=n,!0},this.setPageEvent=function(n){return m=n,!0},this.setCookieConfig=function(n){return _=n,!0},this.useECommerce=function(n,t){return f=!!n,h=!!t,!0},this.setRemoveRegExp=function(n){return n instanceof RegExp?(r=n,!0):!1},this.setExperimentId=function(n){return o=n,!0},this.ignoreFirstPageLoad=function(n){return k=!!n,!0},this.trackUrlParams=function(n){return y=!!n,!0},this.delayScriptTag=function(n){return w=!!n,!0},this.$get=["$document","$location","$log","$rootScope","$window",function(T,A,P,b,q){function C(n){!l&&q._gaq&&"function"==typeof n&&n()}function I(n){l&&q.ga&&"function"==typeof n&&n()}function j(n,t){return!e.isUndefined(t)&&"name"in t&&t.name?t.name+"."+n:n}function L(n,t){return n in t&&t[n]}var S=this,x=function(){var n=y?A.url():A.path();return r?n.replace(r,""):n},D=function(){var n={utm_source:"campaignSource",utm_medium:"campaignMedium",utm_term:"campaignTerm",utm_content:"campaignContent",utm_campaign:"campaignName"},t={};return e.forEach(A.search(),function(i,a){var c=n[a];e.isDefined(c)&&(t[c]=i)}),t};return this._log=function(){arguments.length>0&&(arguments.length>1&&"warn"===arguments[0]&&P.warn(Array.prototype.slice.call(arguments,1)),this._logs.push(arguments))},this._createScriptTag=function(){if(!i)return S._log("warn","No account id set to create script tag"),undefined;if(u)return S._log("warn","Script tag already created"),undefined;q._gaq=[],q._gaq.push(["_setAccount",i]),c&&q._gaq.push(["_setDomainName",c]),p&&q._gaq.push(["_require","inpage_linkid","//www.google-analytics.com/plugins/ga/inpage_linkid.js"]),g&&!k&&(r?q._gaq.push(["_trackPageview",x()]):q._gaq.push(["_trackPageview"]));var n;return n=a?("https:"===t.location.protocol?"https://":"http://")+"stats.g.doubleclick.net/dc.js":("https:"===t.location.protocol?"https://ssl":"http://www")+".google-analytics.com/ga.js",function(){var t=T[0],e=t.createElement("script");e.type="text/javascript",e.async=!0,e.src=n;var i=t.getElementsByTagName("script")[0];i.parentNode.insertBefore(e,i)}(n),u=!0,!0},this._createAnalyticsScriptTag=function(){if(!i)return S._log("warn","No account id set to create analytics script tag"),undefined;if(u)return S._log("warn","Analytics script tag already created"),undefined;if(function(n,t,e,i,a,c,r){n.GoogleAnalyticsObject=a,n[a]=n[a]||function(){(n[a].q=n[a].q||[]).push(arguments)},n[a].l=1*new Date,c=t.createElement(e),r=t.getElementsByTagName(e)[0],c.async=1,c.src=i,r.parentNode.insertBefore(c,r)}(n,t,"script","//www.google-analytics.com/analytics.js","ga"),e.isArray(i)?i.forEach(function(n){var t,i="cookieConfig"in n?n.cookieConfig:_;L("crossDomainLinker",n)&&(n.allowLinker=n.crossDomainLinker),e.forEach(["name","allowLinker"],function(i){i in n&&(e.isUndefined(t)&&(t={}),t[i]=n[i])}),e.isUndefined(t)?q.ga("create",n.tracker,i):q.ga("create",n.tracker,i,t),t&&"allowLinker"in t&&t.allowLinker&&(q.ga(j("require",n),"linker"),L("crossLinkDomains",n)&&q.ga(j("linker:autoLink",n),n.crossLinkDomains))}):v?(q.ga("create",i,_,E),q.ga("require","linker"),s&&q.ga("linker:autoLink",s)):q.ga("create",i,_),a&&q.ga("require","displayfeatures"),g&&!k&&q.ga("send","pageview",x()),q.ga&&(f&&(h?q.ga("require","ec","ec.js"):q.ga("require","ecommerce","ecommerce.js")),p&&q.ga("require","linkid","linkid.js"),o)){var c=t.createElement("script"),r=t.getElementsByTagName("script")[0];c.src="//www.google-analytics.com/cx/api.js?experiment="+o,r.parentNode.insertBefore(c,r)}return u=!0,!0},this._ecommerceEnabled=function(){return f&&!h},this._enhancedEcommerceEnabled=function(){return f&&h},this._trackPage=function(n,t,a){var c=this,r=arguments;n=n?n:x(),t=t?t:T[0].title,C(function(){q._gaq.push(["_set","title",t]),q._gaq.push(["_trackPageview",d+n]),c._log("_trackPageview",n,t,r)}),I(function(){var o={page:d+n,title:t};e.extend(o,D()),e.isObject(a)&&e.extend(o,a),e.isArray(i)?i.forEach(function(n){q.ga(j("send",n),"pageview",o)}):q.ga("send","pageview",o),c._log("pageview",n,t,r)})},this._trackEvent=function(n,t,a,c,r,o){var s=this,u=arguments;C(function(){q._gaq.push(["_trackEvent",n,t,a,c,!!r]),s._log("trackEvent",u)}),I(function(){var g={};e.isDefined(r)&&(g.nonInteraction=!!r),e.isObject(o)&&e.extend(g,o),e.isArray(i)?i.forEach(function(e){L("trackEvent",e)&&q.ga(j("send",e),"event",n,t,a,c,g)}):q.ga("send","event",n,t,a,c,g),s._log("event",u)})},this._addTrans=function(n,t,e,i,a,c,r,o,s){var u=this,g=arguments;C(function(){q._gaq.push(["_addTrans",n,t,e,i,a,c,r,o]),u._log("_addTrans",g)}),I(function(){u._ecommerceEnabled()&&(q.ga("ecommerce:addTransaction",{id:n,affiliation:t,revenue:e,tax:i,shipping:a,currency:s||"USD"}),u._log("ecommerce:addTransaction",g))})},this._addItem=function(n,t,e,i,a,c){var r=this,o=arguments;C(function(){q._gaq.push(["_addItem",n,t,e,i,a,c]),r._log("_addItem",o)}),I(function(){r._ecommerceEnabled()&&(q.ga("ecommerce:addItem",{id:n,name:e,sku:t,category:i,price:a,quantity:c}),r._log("ecommerce:addItem",o))})},this._trackTrans=function(){var n=this,t=arguments;C(function(){q._gaq.push(["_trackTrans"]),n._log("_trackTrans",t)}),I(function(){n._ecommerceEnabled()&&(q.ga("ecommerce:send"),n._log("ecommerce:send",t))})},this._clearTrans=function(){var n=this,t=arguments;I(function(){n._ecommerceEnabled()&&(q.ga("ecommerce:clear"),n._log("ecommerce:clear",t))})},this._addProduct=function(n,t,e,i,a,c,r,o,s){var u=this,g=arguments;C(function(){q._gaq.push(["_addProduct",n,t,e,i,a,c,r,o,s]),u._log("_addProduct",g)}),I(function(){u._enhancedEcommerceEnabled()&&(q.ga("ec:addProduct",{id:n,name:t,category:e,brand:i,variant:a,price:c,quantity:r,coupon:o,position:s}),u._log("ec:addProduct",g))})},this._addImpression=function(n,t,e,i,a,c,r,o){var s=this,u=arguments;C(function(){q._gaq.push(["_addImpression",n,t,e,i,a,c,r,o]),s._log("_addImpression",u)}),I(function(){s._enhancedEcommerceEnabled()&&(q.ga("ec:addImpression",{id:n,name:t,category:a,brand:i,variant:c,list:e,position:r,price:o}),s._log("ec:addImpression",u))})},this._addPromo=function(n,t,e,i){var a=this,c=arguments;C(function(){q._gaq.push(["_addPromo",n,t,e,i]),a._log("_addPromo",arguments)}),I(function(){a._enhancedEcommerceEnabled()&&(q.ga("ec:addPromo",{id:n,name:t,creative:e,position:i}),a._log("ec:addPromo",c))})},this._getActionFieldObject=function(n,t,e,i,a,c,r,o,s){var u={};return n&&(u.id=n),t&&(u.affiliation=t),e&&(u.revenue=e),i&&(u.tax=i),a&&(u.shipping=a),c&&(u.coupon=c),r&&(u.list=r),o&&(u.step=o),s&&(u.option=s),u},this._setAction=function(n,t){var e=this,i=arguments;C(function(){q._gaq.push(["_setAction",n,t]),e._log("__setAction",i)}),I(function(){e._enhancedEcommerceEnabled()&&(q.ga("ec:setAction",n,t),e._log("ec:setAction",i))})},this._trackTransaction=function(n,t,e,i,a,c,r,o,s){this._setAction("purchase",this._getActionFieldObject(n,t,e,i,a,c,r,o,s))},this._trackRefund=function(n){this._setAction("refund",this._getActionFieldObject(n))},this._trackCheckOut=function(n,t){this._setAction("checkout",this._getActionFieldObject(null,null,null,null,null,null,null,n,t))},this._trackCart=function(n){-1!==["add","remove"].indexOf(n)&&(this._setAction(n),this._send("event","UX","click",n+" to cart"))},this._promoClick=function(n){this._setAction("promo_click"),this._send("event","Internal Promotions","click",n)},this._productClick=function(n){this._setAction("click",this._getActionFieldObject(null,null,null,null,null,null,n,null,null)),this._send("event","UX","click",n)},this._send=function(){var n=this,t=Array.prototype.slice.call(arguments);t.unshift("send"),I(function(){q.ga.apply(this,t),n._log(t)})},this._pageView=function(){this._send("pageview")},this._set=function(n,t){var e=this;I(function(){q.ga("set",n,t),e._log("set",n,t)})},w||(l?this._createAnalyticsScriptTag():this._createScriptTag()),g&&b.$on(m,function(){S._trackPage()}),this._trackTimings=function(n,t,e,i){this._send("timing",n,t,e,i)},{_logs:S._logs,displayFeatures:a,ecommerce:f,enhancedEcommerce:h,enhancedLinkAttribution:p,getUrl:x,experimentId:o,ignoreFirstPageLoad:k,delayScriptTag:w,setCookieConfig:S._setCookieConfig,getCookieConfig:function(){return _},createAnalyticsScriptTag:function(n){return n&&(_=n),S._createAnalyticsScriptTag()},createScriptTag:function(n){return n&&(_=n),S._createScriptTag()},ecommerceEnabled:function(){return S._ecommerceEnabled()},enhancedEcommerceEnabled:function(){return S._enhancedEcommerceEnabled()},trackPage:function(n,t,e){S._trackPage(n,t,e)},trackEvent:function(n,t,e,i,a,c){S._trackEvent(n,t,e,i,a,c)},addTrans:function(n,t,e,i,a,c,r,o,s){S._addTrans(n,t,e,i,a,c,r,o,s)},addItem:function(n,t,e,i,a,c){S._addItem(n,t,e,i,a,c)},trackTrans:function(){S._trackTrans()},clearTrans:function(){S._clearTrans()},addProduct:function(n,t,e,i,a,c,r,o,s){S._addProduct(n,t,e,i,a,c,r,o,s)},addPromo:function(n,t,e,i){S._addPromo(n,t,e,i)},addImpression:function(n,t,e,i,a,c,r,o){S._addImpression(n,t,e,i,a,c,r,o)},productClick:function(n){S._productClick(n)},promoClick:function(n){S._promoClick(n)},trackDetail:function(){S._setAction("detail"),S._pageView()},trackCart:function(n){S._trackCart(n)},trackCheckout:function(n,t){S._trackCheckOut(n,t)},trackTimings:function(n,t,e,i){S._trackTimings(n,t,e,i)},trackTransaction:function(n,t,e,i,a,c,r,o,s){S._trackTransaction(n,t,e,i,a,c,r,o,s)},setAction:function(n,t){S._setAction(n,t)},send:function(n){S._send(n)},pageView:function(){S._pageView()},set:function(n,t){S._set(n,t)}}}]}).directive("gaTrackEvent",["Analytics","$parse",function(n,t){return{restrict:"A",link:function(e,i,a){var c=t(a.gaTrackEvent);i.bind("click",function(){(!a.gaTrackEventIf||e.$eval(a.gaTrackEventIf))&&c.length>1&&n.trackEvent.apply(n,c(e))})}}}])})(window,document,window.angular);
-/*
- AngularJS v1.4.0-rc.1
- (c) 2010-2015 Google, Inc. http://angularjs.org
- License: MIT
-*/
-(function(I,d,B){'use strict';function D(f,q){q=q||{};d.forEach(q,function(d,h){delete q[h]});for(var h in f)!f.hasOwnProperty(h)||"$"===h.charAt(0)&&"$"===h.charAt(1)||(q[h]=f[h]);return q}var w=d.$$minErr("$resource"),C=/^(\.[a-zA-Z_$@][0-9a-zA-Z_$@]*)+$/;d.module("ngResource",["ng"]).provider("$resource",function(){var f=this;this.defaults={stripTrailingSlashes:!0,actions:{get:{method:"GET"},save:{method:"POST"},query:{method:"GET",isArray:!0},remove:{method:"DELETE"},"delete":{method:"DELETE"}}};
-this.$get=["$http","$q",function(q,h){function t(d,g){this.template=d;this.defaults=s({},f.defaults,g);this.urlParams={}}function v(x,g,l,m){function c(b,k){var c={};k=s({},g,k);r(k,function(a,k){u(a)&&(a=a());var d;if(a&&a.charAt&&"@"==a.charAt(0)){d=b;var e=a.substr(1);if(null==e||""===e||"hasOwnProperty"===e||!C.test("."+e))throw w("badmember",e);for(var e=e.split("."),n=0,g=e.length;n<g&&d!==B;n++){var h=e[n];d=null!==d?d[h]:B}}else d=a;c[k]=d});return c}function F(b){return b.resource}function e(b){D(b||
-{},this)}var G=new t(x,m);l=s({},f.defaults.actions,l);e.prototype.toJSON=function(){var b=s({},this);delete b.$promise;delete b.$resolved;return b};r(l,function(b,k){var g=/^(POST|PUT|PATCH)$/i.test(b.method);e[k]=function(a,y,m,x){var n={},f,l,z;switch(arguments.length){case 4:z=x,l=m;case 3:case 2:if(u(y)){if(u(a)){l=a;z=y;break}l=y;z=m}else{n=a;f=y;l=m;break}case 1:u(a)?l=a:g?f=a:n=a;break;case 0:break;default:throw w("badargs",arguments.length);}var t=this instanceof e,p=t?f:b.isArray?[]:new e(f),
-A={},v=b.interceptor&&b.interceptor.response||F,C=b.interceptor&&b.interceptor.responseError||B;r(b,function(b,a){"params"!=a&&"isArray"!=a&&"interceptor"!=a&&(A[a]=H(b))});g&&(A.data=f);G.setUrlParams(A,s({},c(f,b.params||{}),n),b.url);n=q(A).then(function(a){var c=a.data,g=p.$promise;if(c){if(d.isArray(c)!==!!b.isArray)throw w("badcfg",k,b.isArray?"array":"object",d.isArray(c)?"array":"object");b.isArray?(p.length=0,r(c,function(a){"object"===typeof a?p.push(new e(a)):p.push(a)})):(D(c,p),p.$promise=
-g)}p.$resolved=!0;a.resource=p;return a},function(a){p.$resolved=!0;(z||E)(a);return h.reject(a)});n=n.then(function(a){var b=v(a);(l||E)(b,a.headers);return b},C);return t?n:(p.$promise=n,p.$resolved=!1,p)};e.prototype["$"+k]=function(a,b,c){u(a)&&(c=b,b=a,a={});a=e[k].call(this,a,this,b,c);return a.$promise||a}});e.bind=function(b){return v(x,s({},g,b),l)};return e}var E=d.noop,r=d.forEach,s=d.extend,H=d.copy,u=d.isFunction;t.prototype={setUrlParams:function(f,g,l){var m=this,c=l||m.template,h,
-e,q=m.urlParams={};r(c.split(/\W/),function(b){if("hasOwnProperty"===b)throw w("badname");!/^\d+$/.test(b)&&b&&(new RegExp("(^|[^\\\\]):"+b+"(\\W|$)")).test(c)&&(q[b]=!0)});c=c.replace(/\\:/g,":");g=g||{};r(m.urlParams,function(b,k){h=g.hasOwnProperty(k)?g[k]:m.defaults[k];d.isDefined(h)&&null!==h?(e=encodeURIComponent(h).replace(/%40/gi,"@").replace(/%3A/gi,":").replace(/%24/g,"$").replace(/%2C/gi,",").replace(/%20/g,"%20").replace(/%26/gi,"&").replace(/%3D/gi,"=").replace(/%2B/gi,"+"),c=c.replace(new RegExp(":"+
-k+"(\\W|$)","g"),function(b,a){return e+a})):c=c.replace(new RegExp("(/?):"+k+"(\\W|$)","g"),function(b,a,c){return"/"==c.charAt(0)?c:a+c})});m.defaults.stripTrailingSlashes&&(c=c.replace(/\/+$/,"")||"/");c=c.replace(/\/\.(?=\w+($|\?))/,".");f.url=c.replace(/\/\\\./,"/.");r(g,function(b,c){m.urlParams[c]||(f.params=f.params||{},f.params[c]=b)})}};return v}]})})(window,window.angular);
-//# sourceMappingURL=angular-resource.min.js.map
-
-/*! ngStorage 0.3.0 | Copyright (c) 2013 Gias Kay Lee | MIT License */"use strict";!function(){function a(a){return["$rootScope","$window",function(b,c){for(var d,e,f,g=c[a]||(console.warn("This browser does not support Web Storage!"),{}),h={$default:function(a){for(var b in a)angular.isDefined(h[b])||(h[b]=a[b]);return h},$reset:function(a){for(var b in h)"$"===b[0]||delete h[b];return h.$default(a)}},i=0;i<g.length;i++)(f=g.key(i))&&"ngStorage-"===f.slice(0,10)&&(h[f.slice(10)]=angular.fromJson(g.getItem(f)));return d=angular.copy(h),b.$watch(function(){e||(e=setTimeout(function(){if(e=null,!angular.equals(h,d)){angular.forEach(h,function(a,b){angular.isDefined(a)&&"$"!==b[0]&&g.setItem("ngStorage-"+b,angular.toJson(a)),delete d[b]});for(var a in d)g.removeItem("ngStorage-"+a);d=angular.copy(h)}},100))}),"localStorage"===a&&c.addEventListener&&c.addEventListener("storage",function(a){"ngStorage-"===a.key.slice(0,10)&&(a.newValue?h[a.key.slice(10)]=angular.fromJson(a.newValue):delete h[a.key.slice(10)],d=angular.copy(h),b.$apply())}),h}]}angular.module("ngStorage",[]).factory("$localStorage",a("localStorage")).factory("$sessionStorage",a("sessionStorage"))}();
-/*
- AngularJS v1.4.0-rc.1
- (c) 2010-2015 Google, Inc. http://angularjs.org
- License: MIT
-*/
-(function(y,u,z){'use strict';function s(f,k,p){n.directive(f,["$parse","$swipe",function(d,e){return function(l,m,g){function h(a){if(!b)return!1;var c=Math.abs(a.y-b.y);a=(a.x-b.x)*k;return q&&75>c&&0<a&&30<a&&.3>c/a}var c=d(g[f]),b,q,a=["touch"];u.isDefined(g.ngSwipeDisableMouse)||a.push("mouse");e.bind(m,{start:function(a,c){b=a;q=!0},cancel:function(a){q=!1},end:function(a,b){h(a)&&l.$apply(function(){m.triggerHandler(p);c(l,{$event:b})})}},a)}}])}var n=u.module("ngTouch",[]);n.factory("$swipe",
-[function(){function f(d){d=d.originalEvent||d;var e=d.touches&&d.touches.length?d.touches:[d];d=d.changedTouches&&d.changedTouches[0]||e[0];return{x:d.clientX,y:d.clientY}}function k(d,e){var l=[];u.forEach(d,function(d){(d=p[d][e])&&l.push(d)});return l.join(" ")}var p={mouse:{start:"mousedown",move:"mousemove",end:"mouseup"},touch:{start:"touchstart",move:"touchmove",end:"touchend",cancel:"touchcancel"}};return{bind:function(d,e,l){var m,g,h,c,b=!1;l=l||["mouse","touch"];d.on(k(l,"start"),function(a){h=
-f(a);b=!0;g=m=0;c=h;e.start&&e.start(h,a)});var q=k(l,"cancel");if(q)d.on(q,function(a){b=!1;e.cancel&&e.cancel(a)});d.on(k(l,"move"),function(a){if(b&&h){var d=f(a);m+=Math.abs(d.x-c.x);g+=Math.abs(d.y-c.y);c=d;10>m&&10>g||(g>m?(b=!1,e.cancel&&e.cancel(a)):(a.preventDefault(),e.move&&e.move(d,a)))}});d.on(k(l,"end"),function(a){b&&(b=!1,e.end&&e.end(f(a),a))})}}}]);n.config(["$provide",function(f){f.decorator("ngClickDirective",["$delegate",function(k){k.shift();return k}])}]);n.directive("ngClick",
-["$parse","$timeout","$rootElement",function(f,k,p){function d(c,b,d){for(var a=0;a<c.length;a+=2){var e=c[a+1],g=d;if(25>Math.abs(c[a]-b)&&25>Math.abs(e-g))return c.splice(a,a+2),!0}return!1}function e(c){if(!(2500<Date.now()-m)){var b=c.touches&&c.touches.length?c.touches:[c],e=b[0].clientX,b=b[0].clientY;1>e&&1>b||h&&h[0]===e&&h[1]===b||(h&&(h=null),"label"===c.target.tagName.toLowerCase()&&(h=[e,b]),d(g,e,b)||(c.stopPropagation(),c.preventDefault(),c.target&&c.target.blur()))}}function l(c){c=
-c.touches&&c.touches.length?c.touches:[c];var b=c[0].clientX,d=c[0].clientY;g.push(b,d);k(function(){for(var a=0;a<g.length;a+=2)if(g[a]==b&&g[a+1]==d){g.splice(a,a+2);break}},2500,!1)}var m,g,h;return function(c,b,h){function a(){n=!1;b.removeClass("ng-click-active")}var k=f(h.ngClick),n=!1,r,s,v,w;b.on("touchstart",function(a){n=!0;r=a.target?a.target:a.srcElement;3==r.nodeType&&(r=r.parentNode);b.addClass("ng-click-active");s=Date.now();a=a.originalEvent||a;a=(a.touches&&a.touches.length?a.touches:
-[a])[0];v=a.clientX;w=a.clientY});b.on("touchmove",function(b){a()});b.on("touchcancel",function(b){a()});b.on("touchend",function(c){var k=Date.now()-s,f=c.originalEvent||c,t=(f.changedTouches&&f.changedTouches.length?f.changedTouches:f.touches&&f.touches.length?f.touches:[f])[0],f=t.clientX,t=t.clientY,x=Math.sqrt(Math.pow(f-v,2)+Math.pow(t-w,2));n&&750>k&&12>x&&(g||(p[0].addEventListener("click",e,!0),p[0].addEventListener("touchstart",l,!0),g=[]),m=Date.now(),d(g,f,t),r&&r.blur(),u.isDefined(h.disabled)&&
-!1!==h.disabled||b.triggerHandler("click",[c]));a()});b.onclick=function(a){};b.on("click",function(a,b){c.$apply(function(){k(c,{$event:b||a})})});b.on("mousedown",function(a){b.addClass("ng-click-active")});b.on("mousemove mouseup",function(a){b.removeClass("ng-click-active")})}}]);s("ngSwipeLeft",-1,"swipeleft");s("ngSwipeRight",1,"swiperight")})(window,window.angular);
-//# sourceMappingURL=angular-touch.min.js.map
-
-/**
- * State-based routing for AngularJS
- * @version v0.2.15
- * @link http://angular-ui.github.com/
- * @license MIT License, http://www.opensource.org/licenses/MIT
- */
-"undefined"!=typeof module&&"undefined"!=typeof exports&&module.exports===exports&&(module.exports="ui.router"),function(a,b,c){"use strict";function d(a,b){return N(new(N(function(){},{prototype:a})),b)}function e(a){return M(arguments,function(b){b!==a&&M(b,function(b,c){a.hasOwnProperty(c)||(a[c]=b)})}),a}function f(a,b){var c=[];for(var d in a.path){if(a.path[d]!==b.path[d])break;c.push(a.path[d])}return c}function g(a){if(Object.keys)return Object.keys(a);var b=[];return M(a,function(a,c){b.push(c)}),b}function h(a,b){if(Array.prototype.indexOf)return a.indexOf(b,Number(arguments[2])||0);var c=a.length>>>0,d=Number(arguments[2])||0;for(d=0>d?Math.ceil(d):Math.floor(d),0>d&&(d+=c);c>d;d++)if(d in a&&a[d]===b)return d;return-1}function i(a,b,c,d){var e,i=f(c,d),j={},k=[];for(var l in i)if(i[l].params&&(e=g(i[l].params),e.length))for(var m in e)h(k,e[m])>=0||(k.push(e[m]),j[e[m]]=a[e[m]]);return N({},j,b)}function j(a,b,c){if(!c){c=[];for(var d in a)c.push(d)}for(var e=0;e<c.length;e++){var f=c[e];if(a[f]!=b[f])return!1}return!0}function k(a,b){var c={};return M(a,function(a){c[a]=b[a]}),c}function l(a){var b={},c=Array.prototype.concat.apply(Array.prototype,Array.prototype.slice.call(arguments,1));return M(c,function(c){c in a&&(b[c]=a[c])}),b}function m(a){var b={},c=Array.prototype.concat.apply(Array.prototype,Array.prototype.slice.call(arguments,1));for(var d in a)-1==h(c,d)&&(b[d]=a[d]);return b}function n(a,b){var c=L(a),d=c?[]:{};return M(a,function(a,e){b(a,e)&&(d[c?d.length:e]=a)}),d}function o(a,b){var c=L(a)?[]:{};return M(a,function(a,d){c[d]=b(a,d)}),c}function p(a,b){var d=1,f=2,i={},j=[],k=i,l=N(a.when(i),{$$promises:i,$$values:i});this.study=function(i){function n(a,c){if(s[c]!==f){if(r.push(c),s[c]===d)throw r.splice(0,h(r,c)),new Error("Cyclic dependency: "+r.join(" -> "));if(s[c]=d,J(a))q.push(c,[function(){return b.get(a)}],j);else{var e=b.annotate(a);M(e,function(a){a!==c&&i.hasOwnProperty(a)&&n(i[a],a)}),q.push(c,a,e)}r.pop(),s[c]=f}}function o(a){return K(a)&&a.then&&a.$$promises}if(!K(i))throw new Error("'invocables' must be an object");var p=g(i||{}),q=[],r=[],s={};return M(i,n),i=r=s=null,function(d,f,g){function h(){--u||(v||e(t,f.$$values),r.$$values=t,r.$$promises=r.$$promises||!0,delete r.$$inheritedValues,n.resolve(t))}function i(a){r.$$failure=a,n.reject(a)}function j(c,e,f){function j(a){l.reject(a),i(a)}function k(){if(!H(r.$$failure))try{l.resolve(b.invoke(e,g,t)),l.promise.then(function(a){t[c]=a,h()},j)}catch(a){j(a)}}var l=a.defer(),m=0;M(f,function(a){s.hasOwnProperty(a)&&!d.hasOwnProperty(a)&&(m++,s[a].then(function(b){t[a]=b,--m||k()},j))}),m||k(),s[c]=l.promise}if(o(d)&&g===c&&(g=f,f=d,d=null),d){if(!K(d))throw new Error("'locals' must be an object")}else d=k;if(f){if(!o(f))throw new Error("'parent' must be a promise returned by $resolve.resolve()")}else f=l;var n=a.defer(),r=n.promise,s=r.$$promises={},t=N({},d),u=1+q.length/3,v=!1;if(H(f.$$failure))return i(f.$$failure),r;f.$$inheritedValues&&e(t,m(f.$$inheritedValues,p)),N(s,f.$$promises),f.$$values?(v=e(t,m(f.$$values,p)),r.$$inheritedValues=m(f.$$values,p),h()):(f.$$inheritedValues&&(r.$$inheritedValues=m(f.$$inheritedValues,p)),f.then(h,i));for(var w=0,x=q.length;x>w;w+=3)d.hasOwnProperty(q[w])?h():j(q[w],q[w+1],q[w+2]);return r}},this.resolve=function(a,b,c,d){return this.study(a)(b,c,d)}}function q(a,b,c){this.fromConfig=function(a,b,c){return H(a.template)?this.fromString(a.template,b):H(a.templateUrl)?this.fromUrl(a.templateUrl,b):H(a.templateProvider)?this.fromProvider(a.templateProvider,b,c):null},this.fromString=function(a,b){return I(a)?a(b):a},this.fromUrl=function(c,d){return I(c)&&(c=c(d)),null==c?null:a.get(c,{cache:b,headers:{Accept:"text/html"}}).then(function(a){return a.data})},this.fromProvider=function(a,b,d){return c.invoke(a,null,d||{params:b})}}function r(a,b,e){function f(b,c,d,e){if(q.push(b),o[b])return o[b];if(!/^\w+(-+\w+)*(?:\[\])?$/.test(b))throw new Error("Invalid parameter name '"+b+"' in pattern '"+a+"'");if(p[b])throw new Error("Duplicate parameter name '"+b+"' in pattern '"+a+"'");return p[b]=new P.Param(b,c,d,e),p[b]}function g(a,b,c,d){var e=["",""],f=a.replace(/[\\\[\]\^$*+?.()|{}]/g,"\\$&");if(!b)return f;switch(c){case!1:e=["(",")"+(d?"?":"")];break;case!0:e=["?(",")?"];break;default:e=["("+c+"|",")?"]}return f+e[0]+b+e[1]}function h(e,f){var g,h,i,j,k;return g=e[2]||e[3],k=b.params[g],i=a.substring(m,e.index),h=f?e[4]:e[4]||("*"==e[1]?".*":null),j=P.type(h||"string")||d(P.type("string"),{pattern:new RegExp(h,b.caseInsensitive?"i":c)}),{id:g,regexp:h,segment:i,type:j,cfg:k}}b=N({params:{}},K(b)?b:{});var i,j=/([:*])([\w\[\]]+)|\{([\w\[\]]+)(?:\:((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,k=/([:]?)([\w\[\]-]+)|\{([\w\[\]-]+)(?:\:((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,l="^",m=0,n=this.segments=[],o=e?e.params:{},p=this.params=e?e.params.$$new():new P.ParamSet,q=[];this.source=a;for(var r,s,t;(i=j.exec(a))&&(r=h(i,!1),!(r.segment.indexOf("?")>=0));)s=f(r.id,r.type,r.cfg,"path"),l+=g(r.segment,s.type.pattern.source,s.squash,s.isOptional),n.push(r.segment),m=j.lastIndex;t=a.substring(m);var u=t.indexOf("?");if(u>=0){var v=this.sourceSearch=t.substring(u);if(t=t.substring(0,u),this.sourcePath=a.substring(0,m+u),v.length>0)for(m=0;i=k.exec(v);)r=h(i,!0),s=f(r.id,r.type,r.cfg,"search"),m=j.lastIndex}else this.sourcePath=a,this.sourceSearch="";l+=g(t)+(b.strict===!1?"/?":"")+"$",n.push(t),this.regexp=new RegExp(l,b.caseInsensitive?"i":c),this.prefix=n[0],this.$$paramNames=q}function s(a){N(this,a)}function t(){function a(a){return null!=a?a.toString().replace(/\//g,"%2F"):a}function e(a){return null!=a?a.toString().replace(/%2F/g,"/"):a}function f(){return{strict:p,caseInsensitive:m}}function i(a){return I(a)||L(a)&&I(a[a.length-1])}function j(){for(;w.length;){var a=w.shift();if(a.pattern)throw new Error("You cannot override a type's .pattern at runtime.");b.extend(u[a.name],l.invoke(a.def))}}function k(a){N(this,a||{})}P=this;var l,m=!1,p=!0,q=!1,u={},v=!0,w=[],x={string:{encode:a,decode:e,is:function(a){return null==a||!H(a)||"string"==typeof a},pattern:/[^/]*/},"int":{encode:a,decode:function(a){return parseInt(a,10)},is:function(a){return H(a)&&this.decode(a.toString())===a},pattern:/\d+/},bool:{encode:function(a){return a?1:0},decode:function(a){return 0!==parseInt(a,10)},is:function(a){return a===!0||a===!1},pattern:/0|1/},date:{encode:function(a){return this.is(a)?[a.getFullYear(),("0"+(a.getMonth()+1)).slice(-2),("0"+a.getDate()).slice(-2)].join("-"):c},decode:function(a){if(this.is(a))return a;var b=this.capture.exec(a);return b?new Date(b[1],b[2]-1,b[3]):c},is:function(a){return a instanceof Date&&!isNaN(a.valueOf())},equals:function(a,b){return this.is(a)&&this.is(b)&&a.toISOString()===b.toISOString()},pattern:/[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])/,capture:/([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/},json:{encode:b.toJson,decode:b.fromJson,is:b.isObject,equals:b.equals,pattern:/[^/]*/},any:{encode:b.identity,decode:b.identity,equals:b.equals,pattern:/.*/}};t.$$getDefaultValue=function(a){if(!i(a.value))return a.value;if(!l)throw new Error("Injectable functions cannot be called at configuration time");return l.invoke(a.value)},this.caseInsensitive=function(a){return H(a)&&(m=a),m},this.strictMode=function(a){return H(a)&&(p=a),p},this.defaultSquashPolicy=function(a){if(!H(a))return q;if(a!==!0&&a!==!1&&!J(a))throw new Error("Invalid squash policy: "+a+". Valid policies: false, true, arbitrary-string");return q=a,a},this.compile=function(a,b){return new r(a,N(f(),b))},this.isMatcher=function(a){if(!K(a))return!1;var b=!0;return M(r.prototype,function(c,d){I(c)&&(b=b&&H(a[d])&&I(a[d]))}),b},this.type=function(a,b,c){if(!H(b))return u[a];if(u.hasOwnProperty(a))throw new Error("A type named '"+a+"' has already been defined.");return u[a]=new s(N({name:a},b)),c&&(w.push({name:a,def:c}),v||j()),this},M(x,function(a,b){u[b]=new s(N({name:b},a))}),u=d(u,{}),this.$get=["$injector",function(a){return l=a,v=!1,j(),M(x,function(a,b){u[b]||(u[b]=new s(a))}),this}],this.Param=function(a,b,d,e){function f(a){var b=K(a)?g(a):[],c=-1===h(b,"value")&&-1===h(b,"type")&&-1===h(b,"squash")&&-1===h(b,"array");return c&&(a={value:a}),a.$$fn=i(a.value)?a.value:function(){return a.value},a}function j(b,c,d){if(b.type&&c)throw new Error("Param '"+a+"' has two type configurations.");return c?c:b.type?b.type instanceof s?b.type:new s(b.type):"config"===d?u.any:u.string}function k(){var b={array:"search"===e?"auto":!1},c=a.match(/\[\]$/)?{array:!0}:{};return N(b,c,d).array}function m(a,b){var c=a.squash;if(!b||c===!1)return!1;if(!H(c)||null==c)return q;if(c===!0||J(c))return c;throw new Error("Invalid squash policy: '"+c+"'. Valid policies: false, true, or arbitrary string")}function p(a,b,d,e){var f,g,i=[{from:"",to:d||b?c:""},{from:null,to:d||b?c:""}];return f=L(a.replace)?a.replace:[],J(e)&&f.push({from:e,to:c}),g=o(f,function(a){return a.from}),n(i,function(a){return-1===h(g,a.from)}).concat(f)}function r(){if(!l)throw new Error("Injectable functions cannot be called at configuration time");var a=l.invoke(d.$$fn);if(null!==a&&a!==c&&!w.type.is(a))throw new Error("Default value ("+a+") for parameter '"+w.id+"' is not an instance of Type ("+w.type.name+")");return a}function t(a){function b(a){return function(b){return b.from===a}}function c(a){var c=o(n(w.replace,b(a)),function(a){return a.to});return c.length?c[0]:a}return a=c(a),H(a)?w.type.$normalize(a):r()}function v(){return"{Param:"+a+" "+b+" squash: '"+z+"' optional: "+y+"}"}var w=this;d=f(d),b=j(d,b,e);var x=k();b=x?b.$asArray(x,"search"===e):b,"string"!==b.name||x||"path"!==e||d.value!==c||(d.value="");var y=d.value!==c,z=m(d,y),A=p(d,x,y,z);N(this,{id:a,type:b,location:e,array:x,squash:z,replace:A,isOptional:y,value:t,dynamic:c,config:d,toString:v})},k.prototype={$$new:function(){return d(this,N(new k,{$$parent:this}))},$$keys:function(){for(var a=[],b=[],c=this,d=g(k.prototype);c;)b.push(c),c=c.$$parent;return b.reverse(),M(b,function(b){M(g(b),function(b){-1===h(a,b)&&-1===h(d,b)&&a.push(b)})}),a},$$values:function(a){var b={},c=this;return M(c.$$keys(),function(d){b[d]=c[d].value(a&&a[d])}),b},$$equals:function(a,b){var c=!0,d=this;return M(d.$$keys(),function(e){var f=a&&a[e],g=b&&b[e];d[e].type.equals(f,g)||(c=!1)}),c},$$validates:function(a){var d,e,f,g,h,i=this.$$keys();for(d=0;d<i.length&&(e=this[i[d]],f=a[i[d]],f!==c&&null!==f||!e.isOptional);d++){if(g=e.type.$normalize(f),!e.type.is(g))return!1;if(h=e.type.encode(g),b.isString(h)&&!e.type.pattern.exec(h))return!1}return!0},$$parent:c},this.ParamSet=k}function u(a,d){function e(a){var b=/^\^((?:\\[^a-zA-Z0-9]|[^\\\[\]\^$*+?.()|{}]+)*)/.exec(a.source);return null!=b?b[1].replace(/\\(.)/g,"$1"):""}function f(a,b){return a.replace(/\$(\$|\d{1,2})/,function(a,c){return b["$"===c?0:Number(c)]})}function g(a,b,c){if(!c)return!1;var d=a.invoke(b,b,{$match:c});return H(d)?d:!0}function h(d,e,f,g){function h(a,b,c){return"/"===p?a:b?p.slice(0,-1)+a:c?p.slice(1)+a:a}function m(a){function b(a){var b=a(f,d);return b?(J(b)&&d.replace().url(b),!0):!1}if(!a||!a.defaultPrevented){o&&d.url()===o;o=c;var e,g=j.length;for(e=0;g>e;e++)if(b(j[e]))return;k&&b(k)}}function n(){return i=i||e.$on("$locationChangeSuccess",m)}var o,p=g.baseHref(),q=d.url();return l||n(),{sync:function(){m()},listen:function(){return n()},update:function(a){return a?void(q=d.url()):void(d.url()!==q&&(d.url(q),d.replace()))},push:function(a,b,e){var f=a.format(b||{});null!==f&&b&&b["#"]&&(f+="#"+b["#"]),d.url(f),o=e&&e.$$avoidResync?d.url():c,e&&e.replace&&d.replace()},href:function(c,e,f){if(!c.validates(e))return null;var g=a.html5Mode();b.isObject(g)&&(g=g.enabled);var i=c.format(e);if(f=f||{},g||null===i||(i="#"+a.hashPrefix()+i),null!==i&&e&&e["#"]&&(i+="#"+e["#"]),i=h(i,g,f.absolute),!f.absolute||!i)return i;var j=!g&&i?"/":"",k=d.port();return k=80===k||443===k?"":":"+k,[d.protocol(),"://",d.host(),k,j,i].join("")}}}var i,j=[],k=null,l=!1;this.rule=function(a){if(!I(a))throw new Error("'rule' must be a function");return j.push(a),this},this.otherwise=function(a){if(J(a)){var b=a;a=function(){return b}}else if(!I(a))throw new Error("'rule' must be a function");return k=a,this},this.when=function(a,b){var c,h=J(b);if(J(a)&&(a=d.compile(a)),!h&&!I(b)&&!L(b))throw new Error("invalid 'handler' in when()");var i={matcher:function(a,b){return h&&(c=d.compile(b),b=["$match",function(a){return c.format(a)}]),N(function(c,d){return g(c,b,a.exec(d.path(),d.search()))},{prefix:J(a.prefix)?a.prefix:""})},regex:function(a,b){if(a.global||a.sticky)throw new Error("when() RegExp must not be global or sticky");return h&&(c=b,b=["$match",function(a){return f(c,a)}]),N(function(c,d){return g(c,b,a.exec(d.path()))},{prefix:e(a)})}},j={matcher:d.isMatcher(a),regex:a instanceof RegExp};for(var k in j)if(j[k])return this.rule(i[k](a,b));throw new Error("invalid 'what' in when()")},this.deferIntercept=function(a){a===c&&(a=!0),l=a},this.$get=h,h.$inject=["$location","$rootScope","$injector","$browser"]}function v(a,e){function f(a){return 0===a.indexOf(".")||0===a.indexOf("^")}function m(a,b){if(!a)return c;var d=J(a),e=d?a:a.name,g=f(e);if(g){if(!b)throw new Error("No reference point given for path '"+e+"'");b=m(b);for(var h=e.split("."),i=0,j=h.length,k=b;j>i;i++)if(""!==h[i]||0!==i){if("^"!==h[i])break;if(!k.parent)throw new Error("Path '"+e+"' not valid for state '"+b.name+"'");k=k.parent}else k=b;h=h.slice(i).join("."),e=k.name+(k.name&&h?".":"")+h}var l=z[e];return!l||!d&&(d||l!==a&&l.self!==a)?c:l}function n(a,b){A[a]||(A[a]=[]),A[a].push(b)}function p(a){for(var b=A[a]||[];b.length;)q(b.shift())}function q(b){b=d(b,{self:b,resolve:b.resolve||{},toString:function(){return this.name}});var c=b.name;if(!J(c)||c.indexOf("@")>=0)throw new Error("State must have a valid name");if(z.hasOwnProperty(c))throw new Error("State '"+c+"'' is already defined");var e=-1!==c.indexOf(".")?c.substring(0,c.lastIndexOf(".")):J(b.parent)?b.parent:K(b.parent)&&J(b.parent.name)?b.parent.name:"";if(e&&!z[e])return n(e,b.self);for(var f in C)I(C[f])&&(b[f]=C[f](b,C.$delegates[f]));return z[c]=b,!b[B]&&b.url&&a.when(b.url,["$match","$stateParams",function(a,c){y.$current.navigable==b&&j(a,c)||y.transitionTo(b,a,{inherit:!0,location:!1})}]),p(c),b}function r(a){return a.indexOf("*")>-1}function s(a){for(var b=a.split("."),c=y.$current.name.split("."),d=0,e=b.length;e>d;d++)"*"===b[d]&&(c[d]="*");return"**"===b[0]&&(c=c.slice(h(c,b[1])),c.unshift("**")),"**"===b[b.length-1]&&(c.splice(h(c,b[b.length-2])+1,Number.MAX_VALUE),c.push("**")),b.length!=c.length?!1:c.join("")===b.join("")}function t(a,b){return J(a)&&!H(b)?C[a]:I(b)&&J(a)?(C[a]&&!C.$delegates[a]&&(C.$delegates[a]=C[a]),C[a]=b,this):this}function u(a,b){return K(a)?b=a:b.name=a,q(b),this}function v(a,e,f,h,l,n,p,q,t){function u(b,c,d,f){var g=a.$broadcast("$stateNotFound",b,c,d);if(g.defaultPrevented)return p.update(),D;if(!g.retry)return null;if(f.$retry)return p.update(),E;var h=y.transition=e.when(g.retry);return h.then(function(){return h!==y.transition?A:(b.options.$retry=!0,y.transitionTo(b.to,b.toParams,b.options))},function(){return D}),p.update(),h}function v(a,c,d,g,i,j){function m(){var c=[];return M(a.views,function(d,e){var g=d.resolve&&d.resolve!==a.resolve?d.resolve:{};g.$template=[function(){return f.load(e,{view:d,locals:i.globals,params:n,notify:j.notify})||""}],c.push(l.resolve(g,i.globals,i.resolve,a).then(function(c){if(I(d.controllerProvider)||L(d.controllerProvider)){var f=b.extend({},g,i.globals);c.$$controller=h.invoke(d.controllerProvider,null,f)}else c.$$controller=d.controller;c.$$state=a,c.$$controllerAs=d.controllerAs,i[e]=c}))}),e.all(c).then(function(){return i.globals})}var n=d?c:k(a.params.$$keys(),c),o={$stateParams:n};i.resolve=l.resolve(a.resolve,o,i.resolve,a);var p=[i.resolve.then(function(a){i.globals=a})];return g&&p.push(g),e.all(p).then(m).then(function(a){return i})}var A=e.reject(new Error("transition superseded")),C=e.reject(new Error("transition prevented")),D=e.reject(new Error("transition aborted")),E=e.reject(new Error("transition failed"));return x.locals={resolve:null,globals:{$stateParams:{}}},y={params:{},current:x.self,$current:x,transition:null},y.reload=function(a){return y.transitionTo(y.current,n,{reload:a||!0,inherit:!1,notify:!0})},y.go=function(a,b,c){return y.transitionTo(a,b,N({inherit:!0,relative:y.$current},c))},y.transitionTo=function(b,c,f){c=c||{},f=N({location:!0,inherit:!1,relative:null,notify:!0,reload:!1,$retry:!1},f||{});var g,j=y.$current,l=y.params,o=j.path,q=m(b,f.relative),r=c["#"];if(!H(q)){var s={to:b,toParams:c,options:f},t=u(s,j.self,l,f);if(t)return t;if(b=s.to,c=s.toParams,f=s.options,q=m(b,f.relative),!H(q)){if(!f.relative)throw new Error("No such state '"+b+"'");throw new Error("Could not resolve '"+b+"' from state '"+f.relative+"'")}}if(q[B])throw new Error("Cannot transition to abstract state '"+b+"'");if(f.inherit&&(c=i(n,c||{},y.$current,q)),!q.params.$$validates(c))return E;c=q.params.$$values(c),b=q;var z=b.path,D=0,F=z[D],G=x.locals,I=[];if(f.reload){if(J(f.reload)||K(f.reload)){if(K(f.reload)&&!f.reload.name)throw new Error("Invalid reload state object");var L=f.reload===!0?o[0]:m(f.reload);if(f.reload&&!L)throw new Error("No such reload state '"+(J(f.reload)?f.reload:f.reload.name)+"'");for(;F&&F===o[D]&&F!==L;)G=I[D]=F.locals,D++,F=z[D]}}else for(;F&&F===o[D]&&F.ownParams.$$equals(c,l);)G=I[D]=F.locals,D++,F=z[D];if(w(b,c,j,l,G,f))return r&&(c["#"]=r),y.params=c,O(y.params,n),f.location&&b.navigable&&b.navigable.url&&(p.push(b.navigable.url,c,{$$avoidResync:!0,replace:"replace"===f.location}),p.update(!0)),y.transition=null,e.when(y.current);if(c=k(b.params.$$keys(),c||{}),f.notify&&a.$broadcast("$stateChangeStart",b.self,c,j.self,l).defaultPrevented)return a.$broadcast("$stateChangeCancel",b.self,c,j.self,l),p.update(),C;for(var M=e.when(G),P=D;P<z.length;P++,F=z[P])G=I[P]=d(G),M=v(F,c,F===b,M,G,f);var Q=y.transition=M.then(function(){var d,e,g;if(y.transition!==Q)return A;for(d=o.length-1;d>=D;d--)g=o[d],g.self.onExit&&h.invoke(g.self.onExit,g.self,g.locals.globals),g.locals=null;for(d=D;d<z.length;d++)e=z[d],e.locals=I[d],e.self.onEnter&&h.invoke(e.self.onEnter,e.self,e.locals.globals);return r&&(c["#"]=r),y.transition!==Q?A:(y.$current=b,y.current=b.self,y.params=c,O(y.params,n),y.transition=null,f.location&&b.navigable&&p.push(b.navigable.url,b.navigable.locals.globals.$stateParams,{$$avoidResync:!0,replace:"replace"===f.location}),f.notify&&a.$broadcast("$stateChangeSuccess",b.self,c,j.self,l),p.update(!0),y.current)},function(d){return y.transition!==Q?A:(y.transition=null,g=a.$broadcast("$stateChangeError",b.self,c,j.self,l,d),g.defaultPrevented||p.update(),e.reject(d))});return Q},y.is=function(a,b,d){d=N({relative:y.$current},d||{});var e=m(a,d.relative);return H(e)?y.$current!==e?!1:b?j(e.params.$$values(b),n):!0:c},y.includes=function(a,b,d){if(d=N({relative:y.$current},d||{}),J(a)&&r(a)){if(!s(a))return!1;a=y.$current.name}var e=m(a,d.relative);return H(e)?H(y.$current.includes[e.name])?b?j(e.params.$$values(b),n,g(b)):!0:!1:c},y.href=function(a,b,d){d=N({lossy:!0,inherit:!0,absolute:!1,relative:y.$current},d||{});var e=m(a,d.relative);if(!H(e))return null;d.inherit&&(b=i(n,b||{},y.$current,e));var f=e&&d.lossy?e.navigable:e;return f&&f.url!==c&&null!==f.url?p.href(f.url,k(e.params.$$keys().concat("#"),b||{}),{absolute:d.absolute}):null},y.get=function(a,b){if(0===arguments.length)return o(g(z),function(a){return z[a].self});var c=m(a,b||y.$current);return c&&c.self?c.self:null},y}function w(a,b,c,d,e,f){function g(a,b,c){function d(b){return"search"!=a.params[b].location}var e=a.params.$$keys().filter(d),f=l.apply({},[a.params].concat(e)),g=new P.ParamSet(f);return g.$$equals(b,c)}return!f.reload&&a===c&&(e===c.locals||a.self.reloadOnSearch===!1&&g(c,d,b))?!0:void 0}var x,y,z={},A={},B="abstract",C={parent:function(a){if(H(a.parent)&&a.parent)return m(a.parent);var b=/^(.+)\.[^.]+$/.exec(a.name);return b?m(b[1]):x},data:function(a){return a.parent&&a.parent.data&&(a.data=a.self.data=N({},a.parent.data,a.data)),a.data},url:function(a){var b=a.url,c={params:a.params||{}};if(J(b))return"^"==b.charAt(0)?e.compile(b.substring(1),c):(a.parent.navigable||x).url.concat(b,c);if(!b||e.isMatcher(b))return b;throw new Error("Invalid url '"+b+"' in state '"+a+"'")},navigable:function(a){return a.url?a:a.parent?a.parent.navigable:null},ownParams:function(a){var b=a.url&&a.url.params||new P.ParamSet;return M(a.params||{},function(a,c){b[c]||(b[c]=new P.Param(c,null,a,"config"))}),b},params:function(a){return a.parent&&a.parent.params?N(a.parent.params.$$new(),a.ownParams):new P.ParamSet},views:function(a){var b={};return M(H(a.views)?a.views:{"":a},function(c,d){d.indexOf("@")<0&&(d+="@"+a.parent.name),b[d]=c}),b},path:function(a){return a.parent?a.parent.path.concat(a):[]},includes:function(a){var b=a.parent?N({},a.parent.includes):{};return b[a.name]=!0,b},$delegates:{}};x=q({name:"",url:"^",views:null,"abstract":!0}),x.navigable=null,this.decorator=t,this.state=u,this.$get=v,v.$inject=["$rootScope","$q","$view","$injector","$resolve","$stateParams","$urlRouter","$location","$urlMatcherFactory"]}function w(){function a(a,b){return{load:function(c,d){var e,f={template:null,controller:null,view:null,locals:null,notify:!0,async:!0,params:{}};return d=N(f,d),d.view&&(e=b.fromConfig(d.view,d.params,d.locals)),e&&d.notify&&a.$broadcast("$viewContentLoading",d),e}}}this.$get=a,a.$inject=["$rootScope","$templateFactory"]}function x(){var a=!1;this.useAnchorScroll=function(){a=!0},this.$get=["$anchorScroll","$timeout",function(b,c){return a?b:function(a){return c(function(){a[0].scrollIntoView()},0,!1)}}]}function y(a,c,d,e){function f(){return c.has?function(a){return c.has(a)?c.get(a):null}:function(a){try{return c.get(a)}catch(b){return null}}}function g(a,b){var c=function(){return{enter:function(a,b,c){b.after(a),c()},leave:function(a,b){a.remove(),b()}}};if(j)return{enter:function(a,b,c){var d=j.enter(a,null,b,c);d&&d.then&&d.then(c)},leave:function(a,b){var c=j.leave(a,b);c&&c.then&&c.then(b)}};if(i){var d=i&&i(b,a);return{enter:function(a,b,c){d.enter(a,null,b),c()},leave:function(a,b){d.leave(a),b()}}}return c()}var h=f(),i=h("$animator"),j=h("$animate"),k={restrict:"ECA",terminal:!0,priority:400,transclude:"element",compile:function(c,f,h){return function(c,f,i){function j(){l&&(l.remove(),l=null),n&&(n.$destroy(),n=null),m&&(r.leave(m,function(){l=null}),l=m,m=null)}function k(g){var k,l=A(c,i,f,e),s=l&&a.$current&&a.$current.locals[l];if(g||s!==o){k=c.$new(),o=a.$current.locals[l];var t=h(k,function(a){r.enter(a,f,function(){n&&n.$emit("$viewContentAnimationEnded"),(b.isDefined(q)&&!q||c.$eval(q))&&d(a)}),j()});m=t,n=k,n.$emit("$viewContentLoaded"),n.$eval(p)}}var l,m,n,o,p=i.onload||"",q=i.autoscroll,r=g(i,c);c.$on("$stateChangeSuccess",function(){k(!1)}),c.$on("$viewContentLoading",function(){k(!1)}),k(!0)}}};return k}function z(a,b,c,d){return{restrict:"ECA",priority:-400,compile:function(e){var f=e.html();return function(e,g,h){var i=c.$current,j=A(e,h,g,d),k=i&&i.locals[j];if(k){g.data("$uiView",{name:j,state:k.$$state}),g.html(k.$template?k.$template:f);var l=a(g.contents());if(k.$$controller){k.$scope=e,k.$element=g;var m=b(k.$$controller,k);k.$$controllerAs&&(e[k.$$controllerAs]=m),g.data("$ngControllerController",m),g.children().data("$ngControllerController",m)}l(e)}}}}}function A(a,b,c,d){var e=d(b.uiView||b.name||"")(a),f=c.inheritedData("$uiView");return e.indexOf("@")>=0?e:e+"@"+(f?f.state.name:"")}function B(a,b){var c,d=a.match(/^\s*({[^}]*})\s*$/);if(d&&(a=b+"("+d[1]+")"),c=a.replace(/\n/g," ").match(/^([^(]+?)\s*(\((.*)\))?$/),!c||4!==c.length)throw new Error("Invalid state ref '"+a+"'");return{state:c[1],paramExpr:c[3]||null}}function C(a){var b=a.parent().inheritedData("$uiView");return b&&b.state&&b.state.name?b.state:void 0}function D(a,c){var d=["location","inherit","reload","absolute"];return{restrict:"A",require:["?^uiSrefActive","?^uiSrefActiveEq"],link:function(e,f,g,h){var i=B(g.uiSref,a.current.name),j=null,k=C(f)||a.$current,l="[object SVGAnimatedString]"===Object.prototype.toString.call(f.prop("href"))?"xlink:href":"href",m=null,n="A"===f.prop("tagName").toUpperCase(),o="FORM"===f[0].nodeName,p=o?"action":l,q=!0,r={relative:k,inherit:!0},s=e.$eval(g.uiSrefOpts)||{};b.forEach(d,function(a){a in s&&(r[a]=s[a])});var t=function(c){if(c&&(j=b.copy(c)),q){m=a.href(i.state,j,r);var d=h[1]||h[0];return d&&d.$$addStateInfo(i.state,j),null===m?(q=!1,!1):void g.$set(p,m)}};i.paramExpr&&(e.$watch(i.paramExpr,function(a,b){a!==j&&t(a)},!0),j=b.copy(e.$eval(i.paramExpr))),t(),o||f.bind("click",function(b){var d=b.which||b.button;if(!(d>1||b.ctrlKey||b.metaKey||b.shiftKey||f.attr("target"))){var e=c(function(){a.go(i.state,j,r)});b.preventDefault();var g=n&&!m?1:0;b.preventDefault=function(){g--<=0&&c.cancel(e)}}})}}}function E(a,b,c){return{restrict:"A",controller:["$scope","$element","$attrs",function(b,d,e){function f(){g()?d.addClass(i):d.removeClass(i)}function g(){for(var a=0;a<j.length;a++)if(h(j[a].state,j[a].params))return!0;return!1}function h(b,c){return"undefined"!=typeof e.uiSrefActiveEq?a.is(b.name,c):a.includes(b.name,c)}var i,j=[];i=c(e.uiSrefActiveEq||e.uiSrefActive||"",!1)(b),this.$$addStateInfo=function(b,c){var e=a.get(b,C(d));j.push({state:e||{name:b},params:c}),f()},b.$on("$stateChangeSuccess",f)}]}}function F(a){var b=function(b){return a.is(b)};return b.$stateful=!0,b}function G(a){var b=function(b){return a.includes(b)};return b.$stateful=!0,b}var H=b.isDefined,I=b.isFunction,J=b.isString,K=b.isObject,L=b.isArray,M=b.forEach,N=b.extend,O=b.copy;b.module("ui.router.util",["ng"]),b.module("ui.router.router",["ui.router.util"]),b.module("ui.router.state",["ui.router.router","ui.router.util"]),b.module("ui.router",["ui.router.state"]),b.module("ui.router.compat",["ui.router"]),p.$inject=["$q","$injector"],b.module("ui.router.util").service("$resolve",p),q.$inject=["$http","$templateCache","$injector"],b.module("ui.router.util").service("$templateFactory",q);var P;r.prototype.concat=function(a,b){var c={caseInsensitive:P.caseInsensitive(),strict:P.strictMode(),squash:P.defaultSquashPolicy()};return new r(this.sourcePath+a+this.sourceSearch,N(c,b),this)},r.prototype.toString=function(){return this.source},r.prototype.exec=function(a,b){function c(a){function b(a){return a.split("").reverse().join("")}function c(a){return a.replace(/\\-/g,"-")}var d=b(a).split(/-(?!\\)/),e=o(d,b);return o(e,c).reverse()}var d=this.regexp.exec(a);if(!d)return null;b=b||{};var e,f,g,h=this.parameters(),i=h.length,j=this.segments.length-1,k={};if(j!==d.length-1)throw new Error("Unbalanced capture group in route '"+this.source+"'");for(e=0;j>e;e++){g=h[e];var l=this.params[g],m=d[e+1];for(f=0;f<l.replace;f++)l.replace[f].from===m&&(m=l.replace[f].to);m&&l.array===!0&&(m=c(m)),k[g]=l.value(m)}for(;i>e;e++)g=h[e],k[g]=this.params[g].value(b[g]);return k},r.prototype.parameters=function(a){return H(a)?this.params[a]||null:this.$$paramNames},r.prototype.validates=function(a){return this.params.$$validates(a)},r.prototype.format=function(a){function b(a){return encodeURIComponent(a).replace(/-/g,function(a){return"%5C%"+a.charCodeAt(0).toString(16).toUpperCase()})}a=a||{};var c=this.segments,d=this.parameters(),e=this.params;if(!this.validates(a))return null;var f,g=!1,h=c.length-1,i=d.length,j=c[0];for(f=0;i>f;f++){var k=h>f,l=d[f],m=e[l],n=m.value(a[l]),p=m.isOptional&&m.type.equals(m.value(),n),q=p?m.squash:!1,r=m.type.encode(n);if(k){var s=c[f+1];if(q===!1)null!=r&&(j+=L(r)?o(r,b).join("-"):encodeURIComponent(r)),j+=s;else if(q===!0){var t=j.match(/\/$/)?/\/?(.*)/:/(.*)/;j+=s.match(t)[1]}else J(q)&&(j+=q+s)}else{if(null==r||p&&q!==!1)continue;L(r)||(r=[r]),r=o(r,encodeURIComponent).join("&"+l+"="),j+=(g?"&":"?")+(l+"="+r),g=!0}}return j},s.prototype.is=function(a,b){return!0},s.prototype.encode=function(a,b){return a},s.prototype.decode=function(a,b){return a},s.prototype.equals=function(a,b){return a==b},s.prototype.$subPattern=function(){var a=this.pattern.toString();return a.substr(1,a.length-2)},s.prototype.pattern=/.*/,s.prototype.toString=function(){return"{Type:"+this.name+"}"},s.prototype.$normalize=function(a){return this.is(a)?a:this.decode(a)},s.prototype.$asArray=function(a,b){function d(a,b){function d(a,b){return function(){return a[b].apply(a,arguments)}}function e(a){return L(a)?a:H(a)?[a]:[]}function f(a){switch(a.length){case 0:return c;case 1:return"auto"===b?a[0]:a;default:return a}}function g(a){return!a}function h(a,b){return function(c){c=e(c);var d=o(c,a);return b===!0?0===n(d,g).length:f(d)}}function i(a){return function(b,c){var d=e(b),f=e(c);if(d.length!==f.length)return!1;for(var g=0;g<d.length;g++)if(!a(d[g],f[g]))return!1;return!0}}this.encode=h(d(a,"encode")),this.decode=h(d(a,"decode")),this.is=h(d(a,"is"),!0),this.equals=i(d(a,"equals")),this.pattern=a.pattern,this.$normalize=h(d(a,"$normalize")),this.name=a.name,this.$arrayMode=b}if(!a)return this;if("auto"===a&&!b)throw new Error("'auto' array mode is for query parameters only");return new d(this,a)},b.module("ui.router.util").provider("$urlMatcherFactory",t),b.module("ui.router.util").run(["$urlMatcherFactory",function(a){}]),u.$inject=["$locationProvider","$urlMatcherFactoryProvider"],b.module("ui.router.router").provider("$urlRouter",u),v.$inject=["$urlRouterProvider","$urlMatcherFactoryProvider"],b.module("ui.router.state").value("$stateParams",{}).provider("$state",v),w.$inject=[],b.module("ui.router.state").provider("$view",w),b.module("ui.router.state").provider("$uiViewScroll",x),y.$inject=["$state","$injector","$uiViewScroll","$interpolate"],z.$inject=["$compile","$controller","$state","$interpolate"],b.module("ui.router.state").directive("uiView",y),b.module("ui.router.state").directive("uiView",z),D.$inject=["$state","$timeout"],E.$inject=["$state","$stateParams","$interpolate"],b.module("ui.router.state").directive("uiSref",D).directive("uiSrefActive",E).directive("uiSrefActiveEq",E),F.$inject=["$state"],G.$inject=["$state"],b.module("ui.router.state").filter("isState",F).filter("includedByState",G)}(window,window.angular);
 /**
  * @license AngularJS v1.4.0-rc.1
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -34620,6 +27870,55 @@ var minlengthDirective = function() {
 })(window, document);
 
 !window.angular.$$csp() && window.angular.element(document).find('head').prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-animate-anchor{position:absolute;}</style>');
+/*! jQuery v2.1.4 | (c) 2005, 2015 jQuery Foundation, Inc. | jquery.org/license */
+!function(a,b){"object"==typeof module&&"object"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.document)throw new Error("jQuery requires a window with a document");return b(a)}:b(a)}("undefined"!=typeof window?window:this,function(a,b){var c=[],d=c.slice,e=c.concat,f=c.push,g=c.indexOf,h={},i=h.toString,j=h.hasOwnProperty,k={},l=a.document,m="2.1.4",n=function(a,b){return new n.fn.init(a,b)},o=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,p=/^-ms-/,q=/-([\da-z])/gi,r=function(a,b){return b.toUpperCase()};n.fn=n.prototype={jquery:m,constructor:n,selector:"",length:0,toArray:function(){return d.call(this)},get:function(a){return null!=a?0>a?this[a+this.length]:this[a]:d.call(this)},pushStack:function(a){var b=n.merge(this.constructor(),a);return b.prevObject=this,b.context=this.context,b},each:function(a,b){return n.each(this,a,b)},map:function(a){return this.pushStack(n.map(this,function(b,c){return a.call(b,c,b)}))},slice:function(){return this.pushStack(d.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},eq:function(a){var b=this.length,c=+a+(0>a?b:0);return this.pushStack(c>=0&&b>c?[this[c]]:[])},end:function(){return this.prevObject||this.constructor(null)},push:f,sort:c.sort,splice:c.splice},n.extend=n.fn.extend=function(){var a,b,c,d,e,f,g=arguments[0]||{},h=1,i=arguments.length,j=!1;for("boolean"==typeof g&&(j=g,g=arguments[h]||{},h++),"object"==typeof g||n.isFunction(g)||(g={}),h===i&&(g=this,h--);i>h;h++)if(null!=(a=arguments[h]))for(b in a)c=g[b],d=a[b],g!==d&&(j&&d&&(n.isPlainObject(d)||(e=n.isArray(d)))?(e?(e=!1,f=c&&n.isArray(c)?c:[]):f=c&&n.isPlainObject(c)?c:{},g[b]=n.extend(j,f,d)):void 0!==d&&(g[b]=d));return g},n.extend({expando:"jQuery"+(m+Math.random()).replace(/\D/g,""),isReady:!0,error:function(a){throw new Error(a)},noop:function(){},isFunction:function(a){return"function"===n.type(a)},isArray:Array.isArray,isWindow:function(a){return null!=a&&a===a.window},isNumeric:function(a){return!n.isArray(a)&&a-parseFloat(a)+1>=0},isPlainObject:function(a){return"object"!==n.type(a)||a.nodeType||n.isWindow(a)?!1:a.constructor&&!j.call(a.constructor.prototype,"isPrototypeOf")?!1:!0},isEmptyObject:function(a){var b;for(b in a)return!1;return!0},type:function(a){return null==a?a+"":"object"==typeof a||"function"==typeof a?h[i.call(a)]||"object":typeof a},globalEval:function(a){var b,c=eval;a=n.trim(a),a&&(1===a.indexOf("use strict")?(b=l.createElement("script"),b.text=a,l.head.appendChild(b).parentNode.removeChild(b)):c(a))},camelCase:function(a){return a.replace(p,"ms-").replace(q,r)},nodeName:function(a,b){return a.nodeName&&a.nodeName.toLowerCase()===b.toLowerCase()},each:function(a,b,c){var d,e=0,f=a.length,g=s(a);if(c){if(g){for(;f>e;e++)if(d=b.apply(a[e],c),d===!1)break}else for(e in a)if(d=b.apply(a[e],c),d===!1)break}else if(g){for(;f>e;e++)if(d=b.call(a[e],e,a[e]),d===!1)break}else for(e in a)if(d=b.call(a[e],e,a[e]),d===!1)break;return a},trim:function(a){return null==a?"":(a+"").replace(o,"")},makeArray:function(a,b){var c=b||[];return null!=a&&(s(Object(a))?n.merge(c,"string"==typeof a?[a]:a):f.call(c,a)),c},inArray:function(a,b,c){return null==b?-1:g.call(b,a,c)},merge:function(a,b){for(var c=+b.length,d=0,e=a.length;c>d;d++)a[e++]=b[d];return a.length=e,a},grep:function(a,b,c){for(var d,e=[],f=0,g=a.length,h=!c;g>f;f++)d=!b(a[f],f),d!==h&&e.push(a[f]);return e},map:function(a,b,c){var d,f=0,g=a.length,h=s(a),i=[];if(h)for(;g>f;f++)d=b(a[f],f,c),null!=d&&i.push(d);else for(f in a)d=b(a[f],f,c),null!=d&&i.push(d);return e.apply([],i)},guid:1,proxy:function(a,b){var c,e,f;return"string"==typeof b&&(c=a[b],b=a,a=c),n.isFunction(a)?(e=d.call(arguments,2),f=function(){return a.apply(b||this,e.concat(d.call(arguments)))},f.guid=a.guid=a.guid||n.guid++,f):void 0},now:Date.now,support:k}),n.each("Boolean Number String Function Array Date RegExp Object Error".split(" "),function(a,b){h["[object "+b+"]"]=b.toLowerCase()});function s(a){var b="length"in a&&a.length,c=n.type(a);return"function"===c||n.isWindow(a)?!1:1===a.nodeType&&b?!0:"array"===c||0===b||"number"==typeof b&&b>0&&b-1 in a}var t=function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u="sizzle"+1*new Date,v=a.document,w=0,x=0,y=ha(),z=ha(),A=ha(),B=function(a,b){return a===b&&(l=!0),0},C=1<<31,D={}.hasOwnProperty,E=[],F=E.pop,G=E.push,H=E.push,I=E.slice,J=function(a,b){for(var c=0,d=a.length;d>c;c++)if(a[c]===b)return c;return-1},K="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",L="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",N=M.replace("w","w#"),O="\\["+L+"*("+M+")(?:"+L+"*([*^$|!~]?=)"+L+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+N+"))|)"+L+"*\\]",P=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+O+")*)|.*)\\)|)",Q=new RegExp(L+"+","g"),R=new RegExp("^"+L+"+|((?:^|[^\\\\])(?:\\\\.)*)"+L+"+$","g"),S=new RegExp("^"+L+"*,"+L+"*"),T=new RegExp("^"+L+"*([>+~]|"+L+")"+L+"*"),U=new RegExp("="+L+"*([^\\]'\"]*?)"+L+"*\\]","g"),V=new RegExp(P),W=new RegExp("^"+N+"$"),X={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M.replace("w","w*")+")"),ATTR:new RegExp("^"+O),PSEUDO:new RegExp("^"+P),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+L+"*(even|odd|(([+-]|)(\\d*)n|)"+L+"*(?:([+-]|)"+L+"*(\\d+)|))"+L+"*\\)|)","i"),bool:new RegExp("^(?:"+K+")$","i"),needsContext:new RegExp("^"+L+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+L+"*((?:-\\d)?\\d*)"+L+"*\\)|)(?=[^-]|$)","i")},Y=/^(?:input|select|textarea|button)$/i,Z=/^h\d$/i,$=/^[^{]+\{\s*\[native \w/,_=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,aa=/[+~]/,ba=/'|\\/g,ca=new RegExp("\\\\([\\da-f]{1,6}"+L+"?|("+L+")|.)","ig"),da=function(a,b,c){var d="0x"+b-65536;return d!==d||c?b:0>d?String.fromCharCode(d+65536):String.fromCharCode(d>>10|55296,1023&d|56320)},ea=function(){m()};try{H.apply(E=I.call(v.childNodes),v.childNodes),E[v.childNodes.length].nodeType}catch(fa){H={apply:E.length?function(a,b){G.apply(a,I.call(b))}:function(a,b){var c=a.length,d=0;while(a[c++]=b[d++]);a.length=c-1}}}function ga(a,b,d,e){var f,h,j,k,l,o,r,s,w,x;if((b?b.ownerDocument||b:v)!==n&&m(b),b=b||n,d=d||[],k=b.nodeType,"string"!=typeof a||!a||1!==k&&9!==k&&11!==k)return d;if(!e&&p){if(11!==k&&(f=_.exec(a)))if(j=f[1]){if(9===k){if(h=b.getElementById(j),!h||!h.parentNode)return d;if(h.id===j)return d.push(h),d}else if(b.ownerDocument&&(h=b.ownerDocument.getElementById(j))&&t(b,h)&&h.id===j)return d.push(h),d}else{if(f[2])return H.apply(d,b.getElementsByTagName(a)),d;if((j=f[3])&&c.getElementsByClassName)return H.apply(d,b.getElementsByClassName(j)),d}if(c.qsa&&(!q||!q.test(a))){if(s=r=u,w=b,x=1!==k&&a,1===k&&"object"!==b.nodeName.toLowerCase()){o=g(a),(r=b.getAttribute("id"))?s=r.replace(ba,"\\$&"):b.setAttribute("id",s),s="[id='"+s+"'] ",l=o.length;while(l--)o[l]=s+ra(o[l]);w=aa.test(a)&&pa(b.parentNode)||b,x=o.join(",")}if(x)try{return H.apply(d,w.querySelectorAll(x)),d}catch(y){}finally{r||b.removeAttribute("id")}}}return i(a.replace(R,"$1"),b,d,e)}function ha(){var a=[];function b(c,e){return a.push(c+" ")>d.cacheLength&&delete b[a.shift()],b[c+" "]=e}return b}function ia(a){return a[u]=!0,a}function ja(a){var b=n.createElement("div");try{return!!a(b)}catch(c){return!1}finally{b.parentNode&&b.parentNode.removeChild(b),b=null}}function ka(a,b){var c=a.split("|"),e=a.length;while(e--)d.attrHandle[c[e]]=b}function la(a,b){var c=b&&a,d=c&&1===a.nodeType&&1===b.nodeType&&(~b.sourceIndex||C)-(~a.sourceIndex||C);if(d)return d;if(c)while(c=c.nextSibling)if(c===b)return-1;return a?1:-1}function ma(a){return function(b){var c=b.nodeName.toLowerCase();return"input"===c&&b.type===a}}function na(a){return function(b){var c=b.nodeName.toLowerCase();return("input"===c||"button"===c)&&b.type===a}}function oa(a){return ia(function(b){return b=+b,ia(function(c,d){var e,f=a([],c.length,b),g=f.length;while(g--)c[e=f[g]]&&(c[e]=!(d[e]=c[e]))})})}function pa(a){return a&&"undefined"!=typeof a.getElementsByTagName&&a}c=ga.support={},f=ga.isXML=function(a){var b=a&&(a.ownerDocument||a).documentElement;return b?"HTML"!==b.nodeName:!1},m=ga.setDocument=function(a){var b,e,g=a?a.ownerDocument||a:v;return g!==n&&9===g.nodeType&&g.documentElement?(n=g,o=g.documentElement,e=g.defaultView,e&&e!==e.top&&(e.addEventListener?e.addEventListener("unload",ea,!1):e.attachEvent&&e.attachEvent("onunload",ea)),p=!f(g),c.attributes=ja(function(a){return a.className="i",!a.getAttribute("className")}),c.getElementsByTagName=ja(function(a){return a.appendChild(g.createComment("")),!a.getElementsByTagName("*").length}),c.getElementsByClassName=$.test(g.getElementsByClassName),c.getById=ja(function(a){return o.appendChild(a).id=u,!g.getElementsByName||!g.getElementsByName(u).length}),c.getById?(d.find.ID=function(a,b){if("undefined"!=typeof b.getElementById&&p){var c=b.getElementById(a);return c&&c.parentNode?[c]:[]}},d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){return a.getAttribute("id")===b}}):(delete d.find.ID,d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){var c="undefined"!=typeof a.getAttributeNode&&a.getAttributeNode("id");return c&&c.value===b}}),d.find.TAG=c.getElementsByTagName?function(a,b){return"undefined"!=typeof b.getElementsByTagName?b.getElementsByTagName(a):c.qsa?b.querySelectorAll(a):void 0}:function(a,b){var c,d=[],e=0,f=b.getElementsByTagName(a);if("*"===a){while(c=f[e++])1===c.nodeType&&d.push(c);return d}return f},d.find.CLASS=c.getElementsByClassName&&function(a,b){return p?b.getElementsByClassName(a):void 0},r=[],q=[],(c.qsa=$.test(g.querySelectorAll))&&(ja(function(a){o.appendChild(a).innerHTML="<a id='"+u+"'></a><select id='"+u+"-\f]' msallowcapture=''><option selected=''></option></select>",a.querySelectorAll("[msallowcapture^='']").length&&q.push("[*^$]="+L+"*(?:''|\"\")"),a.querySelectorAll("[selected]").length||q.push("\\["+L+"*(?:value|"+K+")"),a.querySelectorAll("[id~="+u+"-]").length||q.push("~="),a.querySelectorAll(":checked").length||q.push(":checked"),a.querySelectorAll("a#"+u+"+*").length||q.push(".#.+[+~]")}),ja(function(a){var b=g.createElement("input");b.setAttribute("type","hidden"),a.appendChild(b).setAttribute("name","D"),a.querySelectorAll("[name=d]").length&&q.push("name"+L+"*[*^$|!~]?="),a.querySelectorAll(":enabled").length||q.push(":enabled",":disabled"),a.querySelectorAll("*,:x"),q.push(",.*:")})),(c.matchesSelector=$.test(s=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.oMatchesSelector||o.msMatchesSelector))&&ja(function(a){c.disconnectedMatch=s.call(a,"div"),s.call(a,"[s!='']:x"),r.push("!=",P)}),q=q.length&&new RegExp(q.join("|")),r=r.length&&new RegExp(r.join("|")),b=$.test(o.compareDocumentPosition),t=b||$.test(o.contains)?function(a,b){var c=9===a.nodeType?a.documentElement:a,d=b&&b.parentNode;return a===d||!(!d||1!==d.nodeType||!(c.contains?c.contains(d):a.compareDocumentPosition&&16&a.compareDocumentPosition(d)))}:function(a,b){if(b)while(b=b.parentNode)if(b===a)return!0;return!1},B=b?function(a,b){if(a===b)return l=!0,0;var d=!a.compareDocumentPosition-!b.compareDocumentPosition;return d?d:(d=(a.ownerDocument||a)===(b.ownerDocument||b)?a.compareDocumentPosition(b):1,1&d||!c.sortDetached&&b.compareDocumentPosition(a)===d?a===g||a.ownerDocument===v&&t(v,a)?-1:b===g||b.ownerDocument===v&&t(v,b)?1:k?J(k,a)-J(k,b):0:4&d?-1:1)}:function(a,b){if(a===b)return l=!0,0;var c,d=0,e=a.parentNode,f=b.parentNode,h=[a],i=[b];if(!e||!f)return a===g?-1:b===g?1:e?-1:f?1:k?J(k,a)-J(k,b):0;if(e===f)return la(a,b);c=a;while(c=c.parentNode)h.unshift(c);c=b;while(c=c.parentNode)i.unshift(c);while(h[d]===i[d])d++;return d?la(h[d],i[d]):h[d]===v?-1:i[d]===v?1:0},g):n},ga.matches=function(a,b){return ga(a,null,null,b)},ga.matchesSelector=function(a,b){if((a.ownerDocument||a)!==n&&m(a),b=b.replace(U,"='$1']"),!(!c.matchesSelector||!p||r&&r.test(b)||q&&q.test(b)))try{var d=s.call(a,b);if(d||c.disconnectedMatch||a.document&&11!==a.document.nodeType)return d}catch(e){}return ga(b,n,null,[a]).length>0},ga.contains=function(a,b){return(a.ownerDocument||a)!==n&&m(a),t(a,b)},ga.attr=function(a,b){(a.ownerDocument||a)!==n&&m(a);var e=d.attrHandle[b.toLowerCase()],f=e&&D.call(d.attrHandle,b.toLowerCase())?e(a,b,!p):void 0;return void 0!==f?f:c.attributes||!p?a.getAttribute(b):(f=a.getAttributeNode(b))&&f.specified?f.value:null},ga.error=function(a){throw new Error("Syntax error, unrecognized expression: "+a)},ga.uniqueSort=function(a){var b,d=[],e=0,f=0;if(l=!c.detectDuplicates,k=!c.sortStable&&a.slice(0),a.sort(B),l){while(b=a[f++])b===a[f]&&(e=d.push(f));while(e--)a.splice(d[e],1)}return k=null,a},e=ga.getText=function(a){var b,c="",d=0,f=a.nodeType;if(f){if(1===f||9===f||11===f){if("string"==typeof a.textContent)return a.textContent;for(a=a.firstChild;a;a=a.nextSibling)c+=e(a)}else if(3===f||4===f)return a.nodeValue}else while(b=a[d++])c+=e(b);return c},d=ga.selectors={cacheLength:50,createPseudo:ia,match:X,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(a){return a[1]=a[1].replace(ca,da),a[3]=(a[3]||a[4]||a[5]||"").replace(ca,da),"~="===a[2]&&(a[3]=" "+a[3]+" "),a.slice(0,4)},CHILD:function(a){return a[1]=a[1].toLowerCase(),"nth"===a[1].slice(0,3)?(a[3]||ga.error(a[0]),a[4]=+(a[4]?a[5]+(a[6]||1):2*("even"===a[3]||"odd"===a[3])),a[5]=+(a[7]+a[8]||"odd"===a[3])):a[3]&&ga.error(a[0]),a},PSEUDO:function(a){var b,c=!a[6]&&a[2];return X.CHILD.test(a[0])?null:(a[3]?a[2]=a[4]||a[5]||"":c&&V.test(c)&&(b=g(c,!0))&&(b=c.indexOf(")",c.length-b)-c.length)&&(a[0]=a[0].slice(0,b),a[2]=c.slice(0,b)),a.slice(0,3))}},filter:{TAG:function(a){var b=a.replace(ca,da).toLowerCase();return"*"===a?function(){return!0}:function(a){return a.nodeName&&a.nodeName.toLowerCase()===b}},CLASS:function(a){var b=y[a+" "];return b||(b=new RegExp("(^|"+L+")"+a+"("+L+"|$)"))&&y(a,function(a){return b.test("string"==typeof a.className&&a.className||"undefined"!=typeof a.getAttribute&&a.getAttribute("class")||"")})},ATTR:function(a,b,c){return function(d){var e=ga.attr(d,a);return null==e?"!="===b:b?(e+="","="===b?e===c:"!="===b?e!==c:"^="===b?c&&0===e.indexOf(c):"*="===b?c&&e.indexOf(c)>-1:"$="===b?c&&e.slice(-c.length)===c:"~="===b?(" "+e.replace(Q," ")+" ").indexOf(c)>-1:"|="===b?e===c||e.slice(0,c.length+1)===c+"-":!1):!0}},CHILD:function(a,b,c,d,e){var f="nth"!==a.slice(0,3),g="last"!==a.slice(-4),h="of-type"===b;return 1===d&&0===e?function(a){return!!a.parentNode}:function(b,c,i){var j,k,l,m,n,o,p=f!==g?"nextSibling":"previousSibling",q=b.parentNode,r=h&&b.nodeName.toLowerCase(),s=!i&&!h;if(q){if(f){while(p){l=b;while(l=l[p])if(h?l.nodeName.toLowerCase()===r:1===l.nodeType)return!1;o=p="only"===a&&!o&&"nextSibling"}return!0}if(o=[g?q.firstChild:q.lastChild],g&&s){k=q[u]||(q[u]={}),j=k[a]||[],n=j[0]===w&&j[1],m=j[0]===w&&j[2],l=n&&q.childNodes[n];while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if(1===l.nodeType&&++m&&l===b){k[a]=[w,n,m];break}}else if(s&&(j=(b[u]||(b[u]={}))[a])&&j[0]===w)m=j[1];else while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if((h?l.nodeName.toLowerCase()===r:1===l.nodeType)&&++m&&(s&&((l[u]||(l[u]={}))[a]=[w,m]),l===b))break;return m-=e,m===d||m%d===0&&m/d>=0}}},PSEUDO:function(a,b){var c,e=d.pseudos[a]||d.setFilters[a.toLowerCase()]||ga.error("unsupported pseudo: "+a);return e[u]?e(b):e.length>1?(c=[a,a,"",b],d.setFilters.hasOwnProperty(a.toLowerCase())?ia(function(a,c){var d,f=e(a,b),g=f.length;while(g--)d=J(a,f[g]),a[d]=!(c[d]=f[g])}):function(a){return e(a,0,c)}):e}},pseudos:{not:ia(function(a){var b=[],c=[],d=h(a.replace(R,"$1"));return d[u]?ia(function(a,b,c,e){var f,g=d(a,null,e,[]),h=a.length;while(h--)(f=g[h])&&(a[h]=!(b[h]=f))}):function(a,e,f){return b[0]=a,d(b,null,f,c),b[0]=null,!c.pop()}}),has:ia(function(a){return function(b){return ga(a,b).length>0}}),contains:ia(function(a){return a=a.replace(ca,da),function(b){return(b.textContent||b.innerText||e(b)).indexOf(a)>-1}}),lang:ia(function(a){return W.test(a||"")||ga.error("unsupported lang: "+a),a=a.replace(ca,da).toLowerCase(),function(b){var c;do if(c=p?b.lang:b.getAttribute("xml:lang")||b.getAttribute("lang"))return c=c.toLowerCase(),c===a||0===c.indexOf(a+"-");while((b=b.parentNode)&&1===b.nodeType);return!1}}),target:function(b){var c=a.location&&a.location.hash;return c&&c.slice(1)===b.id},root:function(a){return a===o},focus:function(a){return a===n.activeElement&&(!n.hasFocus||n.hasFocus())&&!!(a.type||a.href||~a.tabIndex)},enabled:function(a){return a.disabled===!1},disabled:function(a){return a.disabled===!0},checked:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&!!a.checked||"option"===b&&!!a.selected},selected:function(a){return a.parentNode&&a.parentNode.selectedIndex,a.selected===!0},empty:function(a){for(a=a.firstChild;a;a=a.nextSibling)if(a.nodeType<6)return!1;return!0},parent:function(a){return!d.pseudos.empty(a)},header:function(a){return Z.test(a.nodeName)},input:function(a){return Y.test(a.nodeName)},button:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&"button"===a.type||"button"===b},text:function(a){var b;return"input"===a.nodeName.toLowerCase()&&"text"===a.type&&(null==(b=a.getAttribute("type"))||"text"===b.toLowerCase())},first:oa(function(){return[0]}),last:oa(function(a,b){return[b-1]}),eq:oa(function(a,b,c){return[0>c?c+b:c]}),even:oa(function(a,b){for(var c=0;b>c;c+=2)a.push(c);return a}),odd:oa(function(a,b){for(var c=1;b>c;c+=2)a.push(c);return a}),lt:oa(function(a,b,c){for(var d=0>c?c+b:c;--d>=0;)a.push(d);return a}),gt:oa(function(a,b,c){for(var d=0>c?c+b:c;++d<b;)a.push(d);return a})}},d.pseudos.nth=d.pseudos.eq;for(b in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})d.pseudos[b]=ma(b);for(b in{submit:!0,reset:!0})d.pseudos[b]=na(b);function qa(){}qa.prototype=d.filters=d.pseudos,d.setFilters=new qa,g=ga.tokenize=function(a,b){var c,e,f,g,h,i,j,k=z[a+" "];if(k)return b?0:k.slice(0);h=a,i=[],j=d.preFilter;while(h){(!c||(e=S.exec(h)))&&(e&&(h=h.slice(e[0].length)||h),i.push(f=[])),c=!1,(e=T.exec(h))&&(c=e.shift(),f.push({value:c,type:e[0].replace(R," ")}),h=h.slice(c.length));for(g in d.filter)!(e=X[g].exec(h))||j[g]&&!(e=j[g](e))||(c=e.shift(),f.push({value:c,type:g,matches:e}),h=h.slice(c.length));if(!c)break}return b?h.length:h?ga.error(a):z(a,i).slice(0)};function ra(a){for(var b=0,c=a.length,d="";c>b;b++)d+=a[b].value;return d}function sa(a,b,c){var d=b.dir,e=c&&"parentNode"===d,f=x++;return b.first?function(b,c,f){while(b=b[d])if(1===b.nodeType||e)return a(b,c,f)}:function(b,c,g){var h,i,j=[w,f];if(g){while(b=b[d])if((1===b.nodeType||e)&&a(b,c,g))return!0}else while(b=b[d])if(1===b.nodeType||e){if(i=b[u]||(b[u]={}),(h=i[d])&&h[0]===w&&h[1]===f)return j[2]=h[2];if(i[d]=j,j[2]=a(b,c,g))return!0}}}function ta(a){return a.length>1?function(b,c,d){var e=a.length;while(e--)if(!a[e](b,c,d))return!1;return!0}:a[0]}function ua(a,b,c){for(var d=0,e=b.length;e>d;d++)ga(a,b[d],c);return c}function va(a,b,c,d,e){for(var f,g=[],h=0,i=a.length,j=null!=b;i>h;h++)(f=a[h])&&(!c||c(f,d,e))&&(g.push(f),j&&b.push(h));return g}function wa(a,b,c,d,e,f){return d&&!d[u]&&(d=wa(d)),e&&!e[u]&&(e=wa(e,f)),ia(function(f,g,h,i){var j,k,l,m=[],n=[],o=g.length,p=f||ua(b||"*",h.nodeType?[h]:h,[]),q=!a||!f&&b?p:va(p,m,a,h,i),r=c?e||(f?a:o||d)?[]:g:q;if(c&&c(q,r,h,i),d){j=va(r,n),d(j,[],h,i),k=j.length;while(k--)(l=j[k])&&(r[n[k]]=!(q[n[k]]=l))}if(f){if(e||a){if(e){j=[],k=r.length;while(k--)(l=r[k])&&j.push(q[k]=l);e(null,r=[],j,i)}k=r.length;while(k--)(l=r[k])&&(j=e?J(f,l):m[k])>-1&&(f[j]=!(g[j]=l))}}else r=va(r===g?r.splice(o,r.length):r),e?e(null,g,r,i):H.apply(g,r)})}function xa(a){for(var b,c,e,f=a.length,g=d.relative[a[0].type],h=g||d.relative[" "],i=g?1:0,k=sa(function(a){return a===b},h,!0),l=sa(function(a){return J(b,a)>-1},h,!0),m=[function(a,c,d){var e=!g&&(d||c!==j)||((b=c).nodeType?k(a,c,d):l(a,c,d));return b=null,e}];f>i;i++)if(c=d.relative[a[i].type])m=[sa(ta(m),c)];else{if(c=d.filter[a[i].type].apply(null,a[i].matches),c[u]){for(e=++i;f>e;e++)if(d.relative[a[e].type])break;return wa(i>1&&ta(m),i>1&&ra(a.slice(0,i-1).concat({value:" "===a[i-2].type?"*":""})).replace(R,"$1"),c,e>i&&xa(a.slice(i,e)),f>e&&xa(a=a.slice(e)),f>e&&ra(a))}m.push(c)}return ta(m)}function ya(a,b){var c=b.length>0,e=a.length>0,f=function(f,g,h,i,k){var l,m,o,p=0,q="0",r=f&&[],s=[],t=j,u=f||e&&d.find.TAG("*",k),v=w+=null==t?1:Math.random()||.1,x=u.length;for(k&&(j=g!==n&&g);q!==x&&null!=(l=u[q]);q++){if(e&&l){m=0;while(o=a[m++])if(o(l,g,h)){i.push(l);break}k&&(w=v)}c&&((l=!o&&l)&&p--,f&&r.push(l))}if(p+=q,c&&q!==p){m=0;while(o=b[m++])o(r,s,g,h);if(f){if(p>0)while(q--)r[q]||s[q]||(s[q]=F.call(i));s=va(s)}H.apply(i,s),k&&!f&&s.length>0&&p+b.length>1&&ga.uniqueSort(i)}return k&&(w=v,j=t),r};return c?ia(f):f}return h=ga.compile=function(a,b){var c,d=[],e=[],f=A[a+" "];if(!f){b||(b=g(a)),c=b.length;while(c--)f=xa(b[c]),f[u]?d.push(f):e.push(f);f=A(a,ya(e,d)),f.selector=a}return f},i=ga.select=function(a,b,e,f){var i,j,k,l,m,n="function"==typeof a&&a,o=!f&&g(a=n.selector||a);if(e=e||[],1===o.length){if(j=o[0]=o[0].slice(0),j.length>2&&"ID"===(k=j[0]).type&&c.getById&&9===b.nodeType&&p&&d.relative[j[1].type]){if(b=(d.find.ID(k.matches[0].replace(ca,da),b)||[])[0],!b)return e;n&&(b=b.parentNode),a=a.slice(j.shift().value.length)}i=X.needsContext.test(a)?0:j.length;while(i--){if(k=j[i],d.relative[l=k.type])break;if((m=d.find[l])&&(f=m(k.matches[0].replace(ca,da),aa.test(j[0].type)&&pa(b.parentNode)||b))){if(j.splice(i,1),a=f.length&&ra(j),!a)return H.apply(e,f),e;break}}}return(n||h(a,o))(f,b,!p,e,aa.test(a)&&pa(b.parentNode)||b),e},c.sortStable=u.split("").sort(B).join("")===u,c.detectDuplicates=!!l,m(),c.sortDetached=ja(function(a){return 1&a.compareDocumentPosition(n.createElement("div"))}),ja(function(a){return a.innerHTML="<a href='#'></a>","#"===a.firstChild.getAttribute("href")})||ka("type|href|height|width",function(a,b,c){return c?void 0:a.getAttribute(b,"type"===b.toLowerCase()?1:2)}),c.attributes&&ja(function(a){return a.innerHTML="<input/>",a.firstChild.setAttribute("value",""),""===a.firstChild.getAttribute("value")})||ka("value",function(a,b,c){return c||"input"!==a.nodeName.toLowerCase()?void 0:a.defaultValue}),ja(function(a){return null==a.getAttribute("disabled")})||ka(K,function(a,b,c){var d;return c?void 0:a[b]===!0?b.toLowerCase():(d=a.getAttributeNode(b))&&d.specified?d.value:null}),ga}(a);n.find=t,n.expr=t.selectors,n.expr[":"]=n.expr.pseudos,n.unique=t.uniqueSort,n.text=t.getText,n.isXMLDoc=t.isXML,n.contains=t.contains;var u=n.expr.match.needsContext,v=/^<(\w+)\s*\/?>(?:<\/\1>|)$/,w=/^.[^:#\[\.,]*$/;function x(a,b,c){if(n.isFunction(b))return n.grep(a,function(a,d){return!!b.call(a,d,a)!==c});if(b.nodeType)return n.grep(a,function(a){return a===b!==c});if("string"==typeof b){if(w.test(b))return n.filter(b,a,c);b=n.filter(b,a)}return n.grep(a,function(a){return g.call(b,a)>=0!==c})}n.filter=function(a,b,c){var d=b[0];return c&&(a=":not("+a+")"),1===b.length&&1===d.nodeType?n.find.matchesSelector(d,a)?[d]:[]:n.find.matches(a,n.grep(b,function(a){return 1===a.nodeType}))},n.fn.extend({find:function(a){var b,c=this.length,d=[],e=this;if("string"!=typeof a)return this.pushStack(n(a).filter(function(){for(b=0;c>b;b++)if(n.contains(e[b],this))return!0}));for(b=0;c>b;b++)n.find(a,e[b],d);return d=this.pushStack(c>1?n.unique(d):d),d.selector=this.selector?this.selector+" "+a:a,d},filter:function(a){return this.pushStack(x(this,a||[],!1))},not:function(a){return this.pushStack(x(this,a||[],!0))},is:function(a){return!!x(this,"string"==typeof a&&u.test(a)?n(a):a||[],!1).length}});var y,z=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,A=n.fn.init=function(a,b){var c,d;if(!a)return this;if("string"==typeof a){if(c="<"===a[0]&&">"===a[a.length-1]&&a.length>=3?[null,a,null]:z.exec(a),!c||!c[1]&&b)return!b||b.jquery?(b||y).find(a):this.constructor(b).find(a);if(c[1]){if(b=b instanceof n?b[0]:b,n.merge(this,n.parseHTML(c[1],b&&b.nodeType?b.ownerDocument||b:l,!0)),v.test(c[1])&&n.isPlainObject(b))for(c in b)n.isFunction(this[c])?this[c](b[c]):this.attr(c,b[c]);return this}return d=l.getElementById(c[2]),d&&d.parentNode&&(this.length=1,this[0]=d),this.context=l,this.selector=a,this}return a.nodeType?(this.context=this[0]=a,this.length=1,this):n.isFunction(a)?"undefined"!=typeof y.ready?y.ready(a):a(n):(void 0!==a.selector&&(this.selector=a.selector,this.context=a.context),n.makeArray(a,this))};A.prototype=n.fn,y=n(l);var B=/^(?:parents|prev(?:Until|All))/,C={children:!0,contents:!0,next:!0,prev:!0};n.extend({dir:function(a,b,c){var d=[],e=void 0!==c;while((a=a[b])&&9!==a.nodeType)if(1===a.nodeType){if(e&&n(a).is(c))break;d.push(a)}return d},sibling:function(a,b){for(var c=[];a;a=a.nextSibling)1===a.nodeType&&a!==b&&c.push(a);return c}}),n.fn.extend({has:function(a){var b=n(a,this),c=b.length;return this.filter(function(){for(var a=0;c>a;a++)if(n.contains(this,b[a]))return!0})},closest:function(a,b){for(var c,d=0,e=this.length,f=[],g=u.test(a)||"string"!=typeof a?n(a,b||this.context):0;e>d;d++)for(c=this[d];c&&c!==b;c=c.parentNode)if(c.nodeType<11&&(g?g.index(c)>-1:1===c.nodeType&&n.find.matchesSelector(c,a))){f.push(c);break}return this.pushStack(f.length>1?n.unique(f):f)},index:function(a){return a?"string"==typeof a?g.call(n(a),this[0]):g.call(this,a.jquery?a[0]:a):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(a,b){return this.pushStack(n.unique(n.merge(this.get(),n(a,b))))},addBack:function(a){return this.add(null==a?this.prevObject:this.prevObject.filter(a))}});function D(a,b){while((a=a[b])&&1!==a.nodeType);return a}n.each({parent:function(a){var b=a.parentNode;return b&&11!==b.nodeType?b:null},parents:function(a){return n.dir(a,"parentNode")},parentsUntil:function(a,b,c){return n.dir(a,"parentNode",c)},next:function(a){return D(a,"nextSibling")},prev:function(a){return D(a,"previousSibling")},nextAll:function(a){return n.dir(a,"nextSibling")},prevAll:function(a){return n.dir(a,"previousSibling")},nextUntil:function(a,b,c){return n.dir(a,"nextSibling",c)},prevUntil:function(a,b,c){return n.dir(a,"previousSibling",c)},siblings:function(a){return n.sibling((a.parentNode||{}).firstChild,a)},children:function(a){return n.sibling(a.firstChild)},contents:function(a){return a.contentDocument||n.merge([],a.childNodes)}},function(a,b){n.fn[a]=function(c,d){var e=n.map(this,b,c);return"Until"!==a.slice(-5)&&(d=c),d&&"string"==typeof d&&(e=n.filter(d,e)),this.length>1&&(C[a]||n.unique(e),B.test(a)&&e.reverse()),this.pushStack(e)}});var E=/\S+/g,F={};function G(a){var b=F[a]={};return n.each(a.match(E)||[],function(a,c){b[c]=!0}),b}n.Callbacks=function(a){a="string"==typeof a?F[a]||G(a):n.extend({},a);var b,c,d,e,f,g,h=[],i=!a.once&&[],j=function(l){for(b=a.memory&&l,c=!0,g=e||0,e=0,f=h.length,d=!0;h&&f>g;g++)if(h[g].apply(l[0],l[1])===!1&&a.stopOnFalse){b=!1;break}d=!1,h&&(i?i.length&&j(i.shift()):b?h=[]:k.disable())},k={add:function(){if(h){var c=h.length;!function g(b){n.each(b,function(b,c){var d=n.type(c);"function"===d?a.unique&&k.has(c)||h.push(c):c&&c.length&&"string"!==d&&g(c)})}(arguments),d?f=h.length:b&&(e=c,j(b))}return this},remove:function(){return h&&n.each(arguments,function(a,b){var c;while((c=n.inArray(b,h,c))>-1)h.splice(c,1),d&&(f>=c&&f--,g>=c&&g--)}),this},has:function(a){return a?n.inArray(a,h)>-1:!(!h||!h.length)},empty:function(){return h=[],f=0,this},disable:function(){return h=i=b=void 0,this},disabled:function(){return!h},lock:function(){return i=void 0,b||k.disable(),this},locked:function(){return!i},fireWith:function(a,b){return!h||c&&!i||(b=b||[],b=[a,b.slice?b.slice():b],d?i.push(b):j(b)),this},fire:function(){return k.fireWith(this,arguments),this},fired:function(){return!!c}};return k},n.extend({Deferred:function(a){var b=[["resolve","done",n.Callbacks("once memory"),"resolved"],["reject","fail",n.Callbacks("once memory"),"rejected"],["notify","progress",n.Callbacks("memory")]],c="pending",d={state:function(){return c},always:function(){return e.done(arguments).fail(arguments),this},then:function(){var a=arguments;return n.Deferred(function(c){n.each(b,function(b,f){var g=n.isFunction(a[b])&&a[b];e[f[1]](function(){var a=g&&g.apply(this,arguments);a&&n.isFunction(a.promise)?a.promise().done(c.resolve).fail(c.reject).progress(c.notify):c[f[0]+"With"](this===d?c.promise():this,g?[a]:arguments)})}),a=null}).promise()},promise:function(a){return null!=a?n.extend(a,d):d}},e={};return d.pipe=d.then,n.each(b,function(a,f){var g=f[2],h=f[3];d[f[1]]=g.add,h&&g.add(function(){c=h},b[1^a][2].disable,b[2][2].lock),e[f[0]]=function(){return e[f[0]+"With"](this===e?d:this,arguments),this},e[f[0]+"With"]=g.fireWith}),d.promise(e),a&&a.call(e,e),e},when:function(a){var b=0,c=d.call(arguments),e=c.length,f=1!==e||a&&n.isFunction(a.promise)?e:0,g=1===f?a:n.Deferred(),h=function(a,b,c){return function(e){b[a]=this,c[a]=arguments.length>1?d.call(arguments):e,c===i?g.notifyWith(b,c):--f||g.resolveWith(b,c)}},i,j,k;if(e>1)for(i=new Array(e),j=new Array(e),k=new Array(e);e>b;b++)c[b]&&n.isFunction(c[b].promise)?c[b].promise().done(h(b,k,c)).fail(g.reject).progress(h(b,j,i)):--f;return f||g.resolveWith(k,c),g.promise()}});var H;n.fn.ready=function(a){return n.ready.promise().done(a),this},n.extend({isReady:!1,readyWait:1,holdReady:function(a){a?n.readyWait++:n.ready(!0)},ready:function(a){(a===!0?--n.readyWait:n.isReady)||(n.isReady=!0,a!==!0&&--n.readyWait>0||(H.resolveWith(l,[n]),n.fn.triggerHandler&&(n(l).triggerHandler("ready"),n(l).off("ready"))))}});function I(){l.removeEventListener("DOMContentLoaded",I,!1),a.removeEventListener("load",I,!1),n.ready()}n.ready.promise=function(b){return H||(H=n.Deferred(),"complete"===l.readyState?setTimeout(n.ready):(l.addEventListener("DOMContentLoaded",I,!1),a.addEventListener("load",I,!1))),H.promise(b)},n.ready.promise();var J=n.access=function(a,b,c,d,e,f,g){var h=0,i=a.length,j=null==c;if("object"===n.type(c)){e=!0;for(h in c)n.access(a,b,h,c[h],!0,f,g)}else if(void 0!==d&&(e=!0,n.isFunction(d)||(g=!0),j&&(g?(b.call(a,d),b=null):(j=b,b=function(a,b,c){return j.call(n(a),c)})),b))for(;i>h;h++)b(a[h],c,g?d:d.call(a[h],h,b(a[h],c)));return e?a:j?b.call(a):i?b(a[0],c):f};n.acceptData=function(a){return 1===a.nodeType||9===a.nodeType||!+a.nodeType};function K(){Object.defineProperty(this.cache={},0,{get:function(){return{}}}),this.expando=n.expando+K.uid++}K.uid=1,K.accepts=n.acceptData,K.prototype={key:function(a){if(!K.accepts(a))return 0;var b={},c=a[this.expando];if(!c){c=K.uid++;try{b[this.expando]={value:c},Object.defineProperties(a,b)}catch(d){b[this.expando]=c,n.extend(a,b)}}return this.cache[c]||(this.cache[c]={}),c},set:function(a,b,c){var d,e=this.key(a),f=this.cache[e];if("string"==typeof b)f[b]=c;else if(n.isEmptyObject(f))n.extend(this.cache[e],b);else for(d in b)f[d]=b[d];return f},get:function(a,b){var c=this.cache[this.key(a)];return void 0===b?c:c[b]},access:function(a,b,c){var d;return void 0===b||b&&"string"==typeof b&&void 0===c?(d=this.get(a,b),void 0!==d?d:this.get(a,n.camelCase(b))):(this.set(a,b,c),void 0!==c?c:b)},remove:function(a,b){var c,d,e,f=this.key(a),g=this.cache[f];if(void 0===b)this.cache[f]={};else{n.isArray(b)?d=b.concat(b.map(n.camelCase)):(e=n.camelCase(b),b in g?d=[b,e]:(d=e,d=d in g?[d]:d.match(E)||[])),c=d.length;while(c--)delete g[d[c]]}},hasData:function(a){return!n.isEmptyObject(this.cache[a[this.expando]]||{})},discard:function(a){a[this.expando]&&delete this.cache[a[this.expando]]}};var L=new K,M=new K,N=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,O=/([A-Z])/g;function P(a,b,c){var d;if(void 0===c&&1===a.nodeType)if(d="data-"+b.replace(O,"-$1").toLowerCase(),c=a.getAttribute(d),"string"==typeof c){try{c="true"===c?!0:"false"===c?!1:"null"===c?null:+c+""===c?+c:N.test(c)?n.parseJSON(c):c}catch(e){}M.set(a,b,c)}else c=void 0;return c}n.extend({hasData:function(a){return M.hasData(a)||L.hasData(a)},data:function(a,b,c){
+return M.access(a,b,c)},removeData:function(a,b){M.remove(a,b)},_data:function(a,b,c){return L.access(a,b,c)},_removeData:function(a,b){L.remove(a,b)}}),n.fn.extend({data:function(a,b){var c,d,e,f=this[0],g=f&&f.attributes;if(void 0===a){if(this.length&&(e=M.get(f),1===f.nodeType&&!L.get(f,"hasDataAttrs"))){c=g.length;while(c--)g[c]&&(d=g[c].name,0===d.indexOf("data-")&&(d=n.camelCase(d.slice(5)),P(f,d,e[d])));L.set(f,"hasDataAttrs",!0)}return e}return"object"==typeof a?this.each(function(){M.set(this,a)}):J(this,function(b){var c,d=n.camelCase(a);if(f&&void 0===b){if(c=M.get(f,a),void 0!==c)return c;if(c=M.get(f,d),void 0!==c)return c;if(c=P(f,d,void 0),void 0!==c)return c}else this.each(function(){var c=M.get(this,d);M.set(this,d,b),-1!==a.indexOf("-")&&void 0!==c&&M.set(this,a,b)})},null,b,arguments.length>1,null,!0)},removeData:function(a){return this.each(function(){M.remove(this,a)})}}),n.extend({queue:function(a,b,c){var d;return a?(b=(b||"fx")+"queue",d=L.get(a,b),c&&(!d||n.isArray(c)?d=L.access(a,b,n.makeArray(c)):d.push(c)),d||[]):void 0},dequeue:function(a,b){b=b||"fx";var c=n.queue(a,b),d=c.length,e=c.shift(),f=n._queueHooks(a,b),g=function(){n.dequeue(a,b)};"inprogress"===e&&(e=c.shift(),d--),e&&("fx"===b&&c.unshift("inprogress"),delete f.stop,e.call(a,g,f)),!d&&f&&f.empty.fire()},_queueHooks:function(a,b){var c=b+"queueHooks";return L.get(a,c)||L.access(a,c,{empty:n.Callbacks("once memory").add(function(){L.remove(a,[b+"queue",c])})})}}),n.fn.extend({queue:function(a,b){var c=2;return"string"!=typeof a&&(b=a,a="fx",c--),arguments.length<c?n.queue(this[0],a):void 0===b?this:this.each(function(){var c=n.queue(this,a,b);n._queueHooks(this,a),"fx"===a&&"inprogress"!==c[0]&&n.dequeue(this,a)})},dequeue:function(a){return this.each(function(){n.dequeue(this,a)})},clearQueue:function(a){return this.queue(a||"fx",[])},promise:function(a,b){var c,d=1,e=n.Deferred(),f=this,g=this.length,h=function(){--d||e.resolveWith(f,[f])};"string"!=typeof a&&(b=a,a=void 0),a=a||"fx";while(g--)c=L.get(f[g],a+"queueHooks"),c&&c.empty&&(d++,c.empty.add(h));return h(),e.promise(b)}});var Q=/[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,R=["Top","Right","Bottom","Left"],S=function(a,b){return a=b||a,"none"===n.css(a,"display")||!n.contains(a.ownerDocument,a)},T=/^(?:checkbox|radio)$/i;!function(){var a=l.createDocumentFragment(),b=a.appendChild(l.createElement("div")),c=l.createElement("input");c.setAttribute("type","radio"),c.setAttribute("checked","checked"),c.setAttribute("name","t"),b.appendChild(c),k.checkClone=b.cloneNode(!0).cloneNode(!0).lastChild.checked,b.innerHTML="<textarea>x</textarea>",k.noCloneChecked=!!b.cloneNode(!0).lastChild.defaultValue}();var U="undefined";k.focusinBubbles="onfocusin"in a;var V=/^key/,W=/^(?:mouse|pointer|contextmenu)|click/,X=/^(?:focusinfocus|focusoutblur)$/,Y=/^([^.]*)(?:\.(.+)|)$/;function Z(){return!0}function $(){return!1}function _(){try{return l.activeElement}catch(a){}}n.event={global:{},add:function(a,b,c,d,e){var f,g,h,i,j,k,l,m,o,p,q,r=L.get(a);if(r){c.handler&&(f=c,c=f.handler,e=f.selector),c.guid||(c.guid=n.guid++),(i=r.events)||(i=r.events={}),(g=r.handle)||(g=r.handle=function(b){return typeof n!==U&&n.event.triggered!==b.type?n.event.dispatch.apply(a,arguments):void 0}),b=(b||"").match(E)||[""],j=b.length;while(j--)h=Y.exec(b[j])||[],o=q=h[1],p=(h[2]||"").split(".").sort(),o&&(l=n.event.special[o]||{},o=(e?l.delegateType:l.bindType)||o,l=n.event.special[o]||{},k=n.extend({type:o,origType:q,data:d,handler:c,guid:c.guid,selector:e,needsContext:e&&n.expr.match.needsContext.test(e),namespace:p.join(".")},f),(m=i[o])||(m=i[o]=[],m.delegateCount=0,l.setup&&l.setup.call(a,d,p,g)!==!1||a.addEventListener&&a.addEventListener(o,g,!1)),l.add&&(l.add.call(a,k),k.handler.guid||(k.handler.guid=c.guid)),e?m.splice(m.delegateCount++,0,k):m.push(k),n.event.global[o]=!0)}},remove:function(a,b,c,d,e){var f,g,h,i,j,k,l,m,o,p,q,r=L.hasData(a)&&L.get(a);if(r&&(i=r.events)){b=(b||"").match(E)||[""],j=b.length;while(j--)if(h=Y.exec(b[j])||[],o=q=h[1],p=(h[2]||"").split(".").sort(),o){l=n.event.special[o]||{},o=(d?l.delegateType:l.bindType)||o,m=i[o]||[],h=h[2]&&new RegExp("(^|\\.)"+p.join("\\.(?:.*\\.|)")+"(\\.|$)"),g=f=m.length;while(f--)k=m[f],!e&&q!==k.origType||c&&c.guid!==k.guid||h&&!h.test(k.namespace)||d&&d!==k.selector&&("**"!==d||!k.selector)||(m.splice(f,1),k.selector&&m.delegateCount--,l.remove&&l.remove.call(a,k));g&&!m.length&&(l.teardown&&l.teardown.call(a,p,r.handle)!==!1||n.removeEvent(a,o,r.handle),delete i[o])}else for(o in i)n.event.remove(a,o+b[j],c,d,!0);n.isEmptyObject(i)&&(delete r.handle,L.remove(a,"events"))}},trigger:function(b,c,d,e){var f,g,h,i,k,m,o,p=[d||l],q=j.call(b,"type")?b.type:b,r=j.call(b,"namespace")?b.namespace.split("."):[];if(g=h=d=d||l,3!==d.nodeType&&8!==d.nodeType&&!X.test(q+n.event.triggered)&&(q.indexOf(".")>=0&&(r=q.split("."),q=r.shift(),r.sort()),k=q.indexOf(":")<0&&"on"+q,b=b[n.expando]?b:new n.Event(q,"object"==typeof b&&b),b.isTrigger=e?2:3,b.namespace=r.join("."),b.namespace_re=b.namespace?new RegExp("(^|\\.)"+r.join("\\.(?:.*\\.|)")+"(\\.|$)"):null,b.result=void 0,b.target||(b.target=d),c=null==c?[b]:n.makeArray(c,[b]),o=n.event.special[q]||{},e||!o.trigger||o.trigger.apply(d,c)!==!1)){if(!e&&!o.noBubble&&!n.isWindow(d)){for(i=o.delegateType||q,X.test(i+q)||(g=g.parentNode);g;g=g.parentNode)p.push(g),h=g;h===(d.ownerDocument||l)&&p.push(h.defaultView||h.parentWindow||a)}f=0;while((g=p[f++])&&!b.isPropagationStopped())b.type=f>1?i:o.bindType||q,m=(L.get(g,"events")||{})[b.type]&&L.get(g,"handle"),m&&m.apply(g,c),m=k&&g[k],m&&m.apply&&n.acceptData(g)&&(b.result=m.apply(g,c),b.result===!1&&b.preventDefault());return b.type=q,e||b.isDefaultPrevented()||o._default&&o._default.apply(p.pop(),c)!==!1||!n.acceptData(d)||k&&n.isFunction(d[q])&&!n.isWindow(d)&&(h=d[k],h&&(d[k]=null),n.event.triggered=q,d[q](),n.event.triggered=void 0,h&&(d[k]=h)),b.result}},dispatch:function(a){a=n.event.fix(a);var b,c,e,f,g,h=[],i=d.call(arguments),j=(L.get(this,"events")||{})[a.type]||[],k=n.event.special[a.type]||{};if(i[0]=a,a.delegateTarget=this,!k.preDispatch||k.preDispatch.call(this,a)!==!1){h=n.event.handlers.call(this,a,j),b=0;while((f=h[b++])&&!a.isPropagationStopped()){a.currentTarget=f.elem,c=0;while((g=f.handlers[c++])&&!a.isImmediatePropagationStopped())(!a.namespace_re||a.namespace_re.test(g.namespace))&&(a.handleObj=g,a.data=g.data,e=((n.event.special[g.origType]||{}).handle||g.handler).apply(f.elem,i),void 0!==e&&(a.result=e)===!1&&(a.preventDefault(),a.stopPropagation()))}return k.postDispatch&&k.postDispatch.call(this,a),a.result}},handlers:function(a,b){var c,d,e,f,g=[],h=b.delegateCount,i=a.target;if(h&&i.nodeType&&(!a.button||"click"!==a.type))for(;i!==this;i=i.parentNode||this)if(i.disabled!==!0||"click"!==a.type){for(d=[],c=0;h>c;c++)f=b[c],e=f.selector+" ",void 0===d[e]&&(d[e]=f.needsContext?n(e,this).index(i)>=0:n.find(e,this,null,[i]).length),d[e]&&d.push(f);d.length&&g.push({elem:i,handlers:d})}return h<b.length&&g.push({elem:this,handlers:b.slice(h)}),g},props:"altKey bubbles cancelable ctrlKey currentTarget eventPhase metaKey relatedTarget shiftKey target timeStamp view which".split(" "),fixHooks:{},keyHooks:{props:"char charCode key keyCode".split(" "),filter:function(a,b){return null==a.which&&(a.which=null!=b.charCode?b.charCode:b.keyCode),a}},mouseHooks:{props:"button buttons clientX clientY offsetX offsetY pageX pageY screenX screenY toElement".split(" "),filter:function(a,b){var c,d,e,f=b.button;return null==a.pageX&&null!=b.clientX&&(c=a.target.ownerDocument||l,d=c.documentElement,e=c.body,a.pageX=b.clientX+(d&&d.scrollLeft||e&&e.scrollLeft||0)-(d&&d.clientLeft||e&&e.clientLeft||0),a.pageY=b.clientY+(d&&d.scrollTop||e&&e.scrollTop||0)-(d&&d.clientTop||e&&e.clientTop||0)),a.which||void 0===f||(a.which=1&f?1:2&f?3:4&f?2:0),a}},fix:function(a){if(a[n.expando])return a;var b,c,d,e=a.type,f=a,g=this.fixHooks[e];g||(this.fixHooks[e]=g=W.test(e)?this.mouseHooks:V.test(e)?this.keyHooks:{}),d=g.props?this.props.concat(g.props):this.props,a=new n.Event(f),b=d.length;while(b--)c=d[b],a[c]=f[c];return a.target||(a.target=l),3===a.target.nodeType&&(a.target=a.target.parentNode),g.filter?g.filter(a,f):a},special:{load:{noBubble:!0},focus:{trigger:function(){return this!==_()&&this.focus?(this.focus(),!1):void 0},delegateType:"focusin"},blur:{trigger:function(){return this===_()&&this.blur?(this.blur(),!1):void 0},delegateType:"focusout"},click:{trigger:function(){return"checkbox"===this.type&&this.click&&n.nodeName(this,"input")?(this.click(),!1):void 0},_default:function(a){return n.nodeName(a.target,"a")}},beforeunload:{postDispatch:function(a){void 0!==a.result&&a.originalEvent&&(a.originalEvent.returnValue=a.result)}}},simulate:function(a,b,c,d){var e=n.extend(new n.Event,c,{type:a,isSimulated:!0,originalEvent:{}});d?n.event.trigger(e,null,b):n.event.dispatch.call(b,e),e.isDefaultPrevented()&&c.preventDefault()}},n.removeEvent=function(a,b,c){a.removeEventListener&&a.removeEventListener(b,c,!1)},n.Event=function(a,b){return this instanceof n.Event?(a&&a.type?(this.originalEvent=a,this.type=a.type,this.isDefaultPrevented=a.defaultPrevented||void 0===a.defaultPrevented&&a.returnValue===!1?Z:$):this.type=a,b&&n.extend(this,b),this.timeStamp=a&&a.timeStamp||n.now(),void(this[n.expando]=!0)):new n.Event(a,b)},n.Event.prototype={isDefaultPrevented:$,isPropagationStopped:$,isImmediatePropagationStopped:$,preventDefault:function(){var a=this.originalEvent;this.isDefaultPrevented=Z,a&&a.preventDefault&&a.preventDefault()},stopPropagation:function(){var a=this.originalEvent;this.isPropagationStopped=Z,a&&a.stopPropagation&&a.stopPropagation()},stopImmediatePropagation:function(){var a=this.originalEvent;this.isImmediatePropagationStopped=Z,a&&a.stopImmediatePropagation&&a.stopImmediatePropagation(),this.stopPropagation()}},n.each({mouseenter:"mouseover",mouseleave:"mouseout",pointerenter:"pointerover",pointerleave:"pointerout"},function(a,b){n.event.special[a]={delegateType:b,bindType:b,handle:function(a){var c,d=this,e=a.relatedTarget,f=a.handleObj;return(!e||e!==d&&!n.contains(d,e))&&(a.type=f.origType,c=f.handler.apply(this,arguments),a.type=b),c}}}),k.focusinBubbles||n.each({focus:"focusin",blur:"focusout"},function(a,b){var c=function(a){n.event.simulate(b,a.target,n.event.fix(a),!0)};n.event.special[b]={setup:function(){var d=this.ownerDocument||this,e=L.access(d,b);e||d.addEventListener(a,c,!0),L.access(d,b,(e||0)+1)},teardown:function(){var d=this.ownerDocument||this,e=L.access(d,b)-1;e?L.access(d,b,e):(d.removeEventListener(a,c,!0),L.remove(d,b))}}}),n.fn.extend({on:function(a,b,c,d,e){var f,g;if("object"==typeof a){"string"!=typeof b&&(c=c||b,b=void 0);for(g in a)this.on(g,b,c,a[g],e);return this}if(null==c&&null==d?(d=b,c=b=void 0):null==d&&("string"==typeof b?(d=c,c=void 0):(d=c,c=b,b=void 0)),d===!1)d=$;else if(!d)return this;return 1===e&&(f=d,d=function(a){return n().off(a),f.apply(this,arguments)},d.guid=f.guid||(f.guid=n.guid++)),this.each(function(){n.event.add(this,a,d,c,b)})},one:function(a,b,c,d){return this.on(a,b,c,d,1)},off:function(a,b,c){var d,e;if(a&&a.preventDefault&&a.handleObj)return d=a.handleObj,n(a.delegateTarget).off(d.namespace?d.origType+"."+d.namespace:d.origType,d.selector,d.handler),this;if("object"==typeof a){for(e in a)this.off(e,b,a[e]);return this}return(b===!1||"function"==typeof b)&&(c=b,b=void 0),c===!1&&(c=$),this.each(function(){n.event.remove(this,a,c,b)})},trigger:function(a,b){return this.each(function(){n.event.trigger(a,b,this)})},triggerHandler:function(a,b){var c=this[0];return c?n.event.trigger(a,b,c,!0):void 0}});var aa=/<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/gi,ba=/<([\w:]+)/,ca=/<|&#?\w+;/,da=/<(?:script|style|link)/i,ea=/checked\s*(?:[^=]|=\s*.checked.)/i,fa=/^$|\/(?:java|ecma)script/i,ga=/^true\/(.*)/,ha=/^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g,ia={option:[1,"<select multiple='multiple'>","</select>"],thead:[1,"<table>","</table>"],col:[2,"<table><colgroup>","</colgroup></table>"],tr:[2,"<table><tbody>","</tbody></table>"],td:[3,"<table><tbody><tr>","</tr></tbody></table>"],_default:[0,"",""]};ia.optgroup=ia.option,ia.tbody=ia.tfoot=ia.colgroup=ia.caption=ia.thead,ia.th=ia.td;function ja(a,b){return n.nodeName(a,"table")&&n.nodeName(11!==b.nodeType?b:b.firstChild,"tr")?a.getElementsByTagName("tbody")[0]||a.appendChild(a.ownerDocument.createElement("tbody")):a}function ka(a){return a.type=(null!==a.getAttribute("type"))+"/"+a.type,a}function la(a){var b=ga.exec(a.type);return b?a.type=b[1]:a.removeAttribute("type"),a}function ma(a,b){for(var c=0,d=a.length;d>c;c++)L.set(a[c],"globalEval",!b||L.get(b[c],"globalEval"))}function na(a,b){var c,d,e,f,g,h,i,j;if(1===b.nodeType){if(L.hasData(a)&&(f=L.access(a),g=L.set(b,f),j=f.events)){delete g.handle,g.events={};for(e in j)for(c=0,d=j[e].length;d>c;c++)n.event.add(b,e,j[e][c])}M.hasData(a)&&(h=M.access(a),i=n.extend({},h),M.set(b,i))}}function oa(a,b){var c=a.getElementsByTagName?a.getElementsByTagName(b||"*"):a.querySelectorAll?a.querySelectorAll(b||"*"):[];return void 0===b||b&&n.nodeName(a,b)?n.merge([a],c):c}function pa(a,b){var c=b.nodeName.toLowerCase();"input"===c&&T.test(a.type)?b.checked=a.checked:("input"===c||"textarea"===c)&&(b.defaultValue=a.defaultValue)}n.extend({clone:function(a,b,c){var d,e,f,g,h=a.cloneNode(!0),i=n.contains(a.ownerDocument,a);if(!(k.noCloneChecked||1!==a.nodeType&&11!==a.nodeType||n.isXMLDoc(a)))for(g=oa(h),f=oa(a),d=0,e=f.length;e>d;d++)pa(f[d],g[d]);if(b)if(c)for(f=f||oa(a),g=g||oa(h),d=0,e=f.length;e>d;d++)na(f[d],g[d]);else na(a,h);return g=oa(h,"script"),g.length>0&&ma(g,!i&&oa(a,"script")),h},buildFragment:function(a,b,c,d){for(var e,f,g,h,i,j,k=b.createDocumentFragment(),l=[],m=0,o=a.length;o>m;m++)if(e=a[m],e||0===e)if("object"===n.type(e))n.merge(l,e.nodeType?[e]:e);else if(ca.test(e)){f=f||k.appendChild(b.createElement("div")),g=(ba.exec(e)||["",""])[1].toLowerCase(),h=ia[g]||ia._default,f.innerHTML=h[1]+e.replace(aa,"<$1></$2>")+h[2],j=h[0];while(j--)f=f.lastChild;n.merge(l,f.childNodes),f=k.firstChild,f.textContent=""}else l.push(b.createTextNode(e));k.textContent="",m=0;while(e=l[m++])if((!d||-1===n.inArray(e,d))&&(i=n.contains(e.ownerDocument,e),f=oa(k.appendChild(e),"script"),i&&ma(f),c)){j=0;while(e=f[j++])fa.test(e.type||"")&&c.push(e)}return k},cleanData:function(a){for(var b,c,d,e,f=n.event.special,g=0;void 0!==(c=a[g]);g++){if(n.acceptData(c)&&(e=c[L.expando],e&&(b=L.cache[e]))){if(b.events)for(d in b.events)f[d]?n.event.remove(c,d):n.removeEvent(c,d,b.handle);L.cache[e]&&delete L.cache[e]}delete M.cache[c[M.expando]]}}}),n.fn.extend({text:function(a){return J(this,function(a){return void 0===a?n.text(this):this.empty().each(function(){(1===this.nodeType||11===this.nodeType||9===this.nodeType)&&(this.textContent=a)})},null,a,arguments.length)},append:function(){return this.domManip(arguments,function(a){if(1===this.nodeType||11===this.nodeType||9===this.nodeType){var b=ja(this,a);b.appendChild(a)}})},prepend:function(){return this.domManip(arguments,function(a){if(1===this.nodeType||11===this.nodeType||9===this.nodeType){var b=ja(this,a);b.insertBefore(a,b.firstChild)}})},before:function(){return this.domManip(arguments,function(a){this.parentNode&&this.parentNode.insertBefore(a,this)})},after:function(){return this.domManip(arguments,function(a){this.parentNode&&this.parentNode.insertBefore(a,this.nextSibling)})},remove:function(a,b){for(var c,d=a?n.filter(a,this):this,e=0;null!=(c=d[e]);e++)b||1!==c.nodeType||n.cleanData(oa(c)),c.parentNode&&(b&&n.contains(c.ownerDocument,c)&&ma(oa(c,"script")),c.parentNode.removeChild(c));return this},empty:function(){for(var a,b=0;null!=(a=this[b]);b++)1===a.nodeType&&(n.cleanData(oa(a,!1)),a.textContent="");return this},clone:function(a,b){return a=null==a?!1:a,b=null==b?a:b,this.map(function(){return n.clone(this,a,b)})},html:function(a){return J(this,function(a){var b=this[0]||{},c=0,d=this.length;if(void 0===a&&1===b.nodeType)return b.innerHTML;if("string"==typeof a&&!da.test(a)&&!ia[(ba.exec(a)||["",""])[1].toLowerCase()]){a=a.replace(aa,"<$1></$2>");try{for(;d>c;c++)b=this[c]||{},1===b.nodeType&&(n.cleanData(oa(b,!1)),b.innerHTML=a);b=0}catch(e){}}b&&this.empty().append(a)},null,a,arguments.length)},replaceWith:function(){var a=arguments[0];return this.domManip(arguments,function(b){a=this.parentNode,n.cleanData(oa(this)),a&&a.replaceChild(b,this)}),a&&(a.length||a.nodeType)?this:this.remove()},detach:function(a){return this.remove(a,!0)},domManip:function(a,b){a=e.apply([],a);var c,d,f,g,h,i,j=0,l=this.length,m=this,o=l-1,p=a[0],q=n.isFunction(p);if(q||l>1&&"string"==typeof p&&!k.checkClone&&ea.test(p))return this.each(function(c){var d=m.eq(c);q&&(a[0]=p.call(this,c,d.html())),d.domManip(a,b)});if(l&&(c=n.buildFragment(a,this[0].ownerDocument,!1,this),d=c.firstChild,1===c.childNodes.length&&(c=d),d)){for(f=n.map(oa(c,"script"),ka),g=f.length;l>j;j++)h=c,j!==o&&(h=n.clone(h,!0,!0),g&&n.merge(f,oa(h,"script"))),b.call(this[j],h,j);if(g)for(i=f[f.length-1].ownerDocument,n.map(f,la),j=0;g>j;j++)h=f[j],fa.test(h.type||"")&&!L.access(h,"globalEval")&&n.contains(i,h)&&(h.src?n._evalUrl&&n._evalUrl(h.src):n.globalEval(h.textContent.replace(ha,"")))}return this}}),n.each({appendTo:"append",prependTo:"prepend",insertBefore:"before",insertAfter:"after",replaceAll:"replaceWith"},function(a,b){n.fn[a]=function(a){for(var c,d=[],e=n(a),g=e.length-1,h=0;g>=h;h++)c=h===g?this:this.clone(!0),n(e[h])[b](c),f.apply(d,c.get());return this.pushStack(d)}});var qa,ra={};function sa(b,c){var d,e=n(c.createElement(b)).appendTo(c.body),f=a.getDefaultComputedStyle&&(d=a.getDefaultComputedStyle(e[0]))?d.display:n.css(e[0],"display");return e.detach(),f}function ta(a){var b=l,c=ra[a];return c||(c=sa(a,b),"none"!==c&&c||(qa=(qa||n("<iframe frameborder='0' width='0' height='0'/>")).appendTo(b.documentElement),b=qa[0].contentDocument,b.write(),b.close(),c=sa(a,b),qa.detach()),ra[a]=c),c}var ua=/^margin/,va=new RegExp("^("+Q+")(?!px)[a-z%]+$","i"),wa=function(b){return b.ownerDocument.defaultView.opener?b.ownerDocument.defaultView.getComputedStyle(b,null):a.getComputedStyle(b,null)};function xa(a,b,c){var d,e,f,g,h=a.style;return c=c||wa(a),c&&(g=c.getPropertyValue(b)||c[b]),c&&(""!==g||n.contains(a.ownerDocument,a)||(g=n.style(a,b)),va.test(g)&&ua.test(b)&&(d=h.width,e=h.minWidth,f=h.maxWidth,h.minWidth=h.maxWidth=h.width=g,g=c.width,h.width=d,h.minWidth=e,h.maxWidth=f)),void 0!==g?g+"":g}function ya(a,b){return{get:function(){return a()?void delete this.get:(this.get=b).apply(this,arguments)}}}!function(){var b,c,d=l.documentElement,e=l.createElement("div"),f=l.createElement("div");if(f.style){f.style.backgroundClip="content-box",f.cloneNode(!0).style.backgroundClip="",k.clearCloneStyle="content-box"===f.style.backgroundClip,e.style.cssText="border:0;width:0;height:0;top:0;left:-9999px;margin-top:1px;position:absolute",e.appendChild(f);function g(){f.style.cssText="-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;display:block;margin-top:1%;top:1%;border:1px;padding:1px;width:4px;position:absolute",f.innerHTML="",d.appendChild(e);var g=a.getComputedStyle(f,null);b="1%"!==g.top,c="4px"===g.width,d.removeChild(e)}a.getComputedStyle&&n.extend(k,{pixelPosition:function(){return g(),b},boxSizingReliable:function(){return null==c&&g(),c},reliableMarginRight:function(){var b,c=f.appendChild(l.createElement("div"));return c.style.cssText=f.style.cssText="-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;display:block;margin:0;border:0;padding:0",c.style.marginRight=c.style.width="0",f.style.width="1px",d.appendChild(e),b=!parseFloat(a.getComputedStyle(c,null).marginRight),d.removeChild(e),f.removeChild(c),b}})}}(),n.swap=function(a,b,c,d){var e,f,g={};for(f in b)g[f]=a.style[f],a.style[f]=b[f];e=c.apply(a,d||[]);for(f in b)a.style[f]=g[f];return e};var za=/^(none|table(?!-c[ea]).+)/,Aa=new RegExp("^("+Q+")(.*)$","i"),Ba=new RegExp("^([+-])=("+Q+")","i"),Ca={position:"absolute",visibility:"hidden",display:"block"},Da={letterSpacing:"0",fontWeight:"400"},Ea=["Webkit","O","Moz","ms"];function Fa(a,b){if(b in a)return b;var c=b[0].toUpperCase()+b.slice(1),d=b,e=Ea.length;while(e--)if(b=Ea[e]+c,b in a)return b;return d}function Ga(a,b,c){var d=Aa.exec(b);return d?Math.max(0,d[1]-(c||0))+(d[2]||"px"):b}function Ha(a,b,c,d,e){for(var f=c===(d?"border":"content")?4:"width"===b?1:0,g=0;4>f;f+=2)"margin"===c&&(g+=n.css(a,c+R[f],!0,e)),d?("content"===c&&(g-=n.css(a,"padding"+R[f],!0,e)),"margin"!==c&&(g-=n.css(a,"border"+R[f]+"Width",!0,e))):(g+=n.css(a,"padding"+R[f],!0,e),"padding"!==c&&(g+=n.css(a,"border"+R[f]+"Width",!0,e)));return g}function Ia(a,b,c){var d=!0,e="width"===b?a.offsetWidth:a.offsetHeight,f=wa(a),g="border-box"===n.css(a,"boxSizing",!1,f);if(0>=e||null==e){if(e=xa(a,b,f),(0>e||null==e)&&(e=a.style[b]),va.test(e))return e;d=g&&(k.boxSizingReliable()||e===a.style[b]),e=parseFloat(e)||0}return e+Ha(a,b,c||(g?"border":"content"),d,f)+"px"}function Ja(a,b){for(var c,d,e,f=[],g=0,h=a.length;h>g;g++)d=a[g],d.style&&(f[g]=L.get(d,"olddisplay"),c=d.style.display,b?(f[g]||"none"!==c||(d.style.display=""),""===d.style.display&&S(d)&&(f[g]=L.access(d,"olddisplay",ta(d.nodeName)))):(e=S(d),"none"===c&&e||L.set(d,"olddisplay",e?c:n.css(d,"display"))));for(g=0;h>g;g++)d=a[g],d.style&&(b&&"none"!==d.style.display&&""!==d.style.display||(d.style.display=b?f[g]||"":"none"));return a}n.extend({cssHooks:{opacity:{get:function(a,b){if(b){var c=xa(a,"opacity");return""===c?"1":c}}}},cssNumber:{columnCount:!0,fillOpacity:!0,flexGrow:!0,flexShrink:!0,fontWeight:!0,lineHeight:!0,opacity:!0,order:!0,orphans:!0,widows:!0,zIndex:!0,zoom:!0},cssProps:{"float":"cssFloat"},style:function(a,b,c,d){if(a&&3!==a.nodeType&&8!==a.nodeType&&a.style){var e,f,g,h=n.camelCase(b),i=a.style;return b=n.cssProps[h]||(n.cssProps[h]=Fa(i,h)),g=n.cssHooks[b]||n.cssHooks[h],void 0===c?g&&"get"in g&&void 0!==(e=g.get(a,!1,d))?e:i[b]:(f=typeof c,"string"===f&&(e=Ba.exec(c))&&(c=(e[1]+1)*e[2]+parseFloat(n.css(a,b)),f="number"),null!=c&&c===c&&("number"!==f||n.cssNumber[h]||(c+="px"),k.clearCloneStyle||""!==c||0!==b.indexOf("background")||(i[b]="inherit"),g&&"set"in g&&void 0===(c=g.set(a,c,d))||(i[b]=c)),void 0)}},css:function(a,b,c,d){var e,f,g,h=n.camelCase(b);return b=n.cssProps[h]||(n.cssProps[h]=Fa(a.style,h)),g=n.cssHooks[b]||n.cssHooks[h],g&&"get"in g&&(e=g.get(a,!0,c)),void 0===e&&(e=xa(a,b,d)),"normal"===e&&b in Da&&(e=Da[b]),""===c||c?(f=parseFloat(e),c===!0||n.isNumeric(f)?f||0:e):e}}),n.each(["height","width"],function(a,b){n.cssHooks[b]={get:function(a,c,d){return c?za.test(n.css(a,"display"))&&0===a.offsetWidth?n.swap(a,Ca,function(){return Ia(a,b,d)}):Ia(a,b,d):void 0},set:function(a,c,d){var e=d&&wa(a);return Ga(a,c,d?Ha(a,b,d,"border-box"===n.css(a,"boxSizing",!1,e),e):0)}}}),n.cssHooks.marginRight=ya(k.reliableMarginRight,function(a,b){return b?n.swap(a,{display:"inline-block"},xa,[a,"marginRight"]):void 0}),n.each({margin:"",padding:"",border:"Width"},function(a,b){n.cssHooks[a+b]={expand:function(c){for(var d=0,e={},f="string"==typeof c?c.split(" "):[c];4>d;d++)e[a+R[d]+b]=f[d]||f[d-2]||f[0];return e}},ua.test(a)||(n.cssHooks[a+b].set=Ga)}),n.fn.extend({css:function(a,b){return J(this,function(a,b,c){var d,e,f={},g=0;if(n.isArray(b)){for(d=wa(a),e=b.length;e>g;g++)f[b[g]]=n.css(a,b[g],!1,d);return f}return void 0!==c?n.style(a,b,c):n.css(a,b)},a,b,arguments.length>1)},show:function(){return Ja(this,!0)},hide:function(){return Ja(this)},toggle:function(a){return"boolean"==typeof a?a?this.show():this.hide():this.each(function(){S(this)?n(this).show():n(this).hide()})}});function Ka(a,b,c,d,e){return new Ka.prototype.init(a,b,c,d,e)}n.Tween=Ka,Ka.prototype={constructor:Ka,init:function(a,b,c,d,e,f){this.elem=a,this.prop=c,this.easing=e||"swing",this.options=b,this.start=this.now=this.cur(),this.end=d,this.unit=f||(n.cssNumber[c]?"":"px")},cur:function(){var a=Ka.propHooks[this.prop];return a&&a.get?a.get(this):Ka.propHooks._default.get(this)},run:function(a){var b,c=Ka.propHooks[this.prop];return this.options.duration?this.pos=b=n.easing[this.easing](a,this.options.duration*a,0,1,this.options.duration):this.pos=b=a,this.now=(this.end-this.start)*b+this.start,this.options.step&&this.options.step.call(this.elem,this.now,this),c&&c.set?c.set(this):Ka.propHooks._default.set(this),this}},Ka.prototype.init.prototype=Ka.prototype,Ka.propHooks={_default:{get:function(a){var b;return null==a.elem[a.prop]||a.elem.style&&null!=a.elem.style[a.prop]?(b=n.css(a.elem,a.prop,""),b&&"auto"!==b?b:0):a.elem[a.prop]},set:function(a){n.fx.step[a.prop]?n.fx.step[a.prop](a):a.elem.style&&(null!=a.elem.style[n.cssProps[a.prop]]||n.cssHooks[a.prop])?n.style(a.elem,a.prop,a.now+a.unit):a.elem[a.prop]=a.now}}},Ka.propHooks.scrollTop=Ka.propHooks.scrollLeft={set:function(a){a.elem.nodeType&&a.elem.parentNode&&(a.elem[a.prop]=a.now)}},n.easing={linear:function(a){return a},swing:function(a){return.5-Math.cos(a*Math.PI)/2}},n.fx=Ka.prototype.init,n.fx.step={};var La,Ma,Na=/^(?:toggle|show|hide)$/,Oa=new RegExp("^(?:([+-])=|)("+Q+")([a-z%]*)$","i"),Pa=/queueHooks$/,Qa=[Va],Ra={"*":[function(a,b){var c=this.createTween(a,b),d=c.cur(),e=Oa.exec(b),f=e&&e[3]||(n.cssNumber[a]?"":"px"),g=(n.cssNumber[a]||"px"!==f&&+d)&&Oa.exec(n.css(c.elem,a)),h=1,i=20;if(g&&g[3]!==f){f=f||g[3],e=e||[],g=+d||1;do h=h||".5",g/=h,n.style(c.elem,a,g+f);while(h!==(h=c.cur()/d)&&1!==h&&--i)}return e&&(g=c.start=+g||+d||0,c.unit=f,c.end=e[1]?g+(e[1]+1)*e[2]:+e[2]),c}]};function Sa(){return setTimeout(function(){La=void 0}),La=n.now()}function Ta(a,b){var c,d=0,e={height:a};for(b=b?1:0;4>d;d+=2-b)c=R[d],e["margin"+c]=e["padding"+c]=a;return b&&(e.opacity=e.width=a),e}function Ua(a,b,c){for(var d,e=(Ra[b]||[]).concat(Ra["*"]),f=0,g=e.length;g>f;f++)if(d=e[f].call(c,b,a))return d}function Va(a,b,c){var d,e,f,g,h,i,j,k,l=this,m={},o=a.style,p=a.nodeType&&S(a),q=L.get(a,"fxshow");c.queue||(h=n._queueHooks(a,"fx"),null==h.unqueued&&(h.unqueued=0,i=h.empty.fire,h.empty.fire=function(){h.unqueued||i()}),h.unqueued++,l.always(function(){l.always(function(){h.unqueued--,n.queue(a,"fx").length||h.empty.fire()})})),1===a.nodeType&&("height"in b||"width"in b)&&(c.overflow=[o.overflow,o.overflowX,o.overflowY],j=n.css(a,"display"),k="none"===j?L.get(a,"olddisplay")||ta(a.nodeName):j,"inline"===k&&"none"===n.css(a,"float")&&(o.display="inline-block")),c.overflow&&(o.overflow="hidden",l.always(function(){o.overflow=c.overflow[0],o.overflowX=c.overflow[1],o.overflowY=c.overflow[2]}));for(d in b)if(e=b[d],Na.exec(e)){if(delete b[d],f=f||"toggle"===e,e===(p?"hide":"show")){if("show"!==e||!q||void 0===q[d])continue;p=!0}m[d]=q&&q[d]||n.style(a,d)}else j=void 0;if(n.isEmptyObject(m))"inline"===("none"===j?ta(a.nodeName):j)&&(o.display=j);else{q?"hidden"in q&&(p=q.hidden):q=L.access(a,"fxshow",{}),f&&(q.hidden=!p),p?n(a).show():l.done(function(){n(a).hide()}),l.done(function(){var b;L.remove(a,"fxshow");for(b in m)n.style(a,b,m[b])});for(d in m)g=Ua(p?q[d]:0,d,l),d in q||(q[d]=g.start,p&&(g.end=g.start,g.start="width"===d||"height"===d?1:0))}}function Wa(a,b){var c,d,e,f,g;for(c in a)if(d=n.camelCase(c),e=b[d],f=a[c],n.isArray(f)&&(e=f[1],f=a[c]=f[0]),c!==d&&(a[d]=f,delete a[c]),g=n.cssHooks[d],g&&"expand"in g){f=g.expand(f),delete a[d];for(c in f)c in a||(a[c]=f[c],b[c]=e)}else b[d]=e}function Xa(a,b,c){var d,e,f=0,g=Qa.length,h=n.Deferred().always(function(){delete i.elem}),i=function(){if(e)return!1;for(var b=La||Sa(),c=Math.max(0,j.startTime+j.duration-b),d=c/j.duration||0,f=1-d,g=0,i=j.tweens.length;i>g;g++)j.tweens[g].run(f);return h.notifyWith(a,[j,f,c]),1>f&&i?c:(h.resolveWith(a,[j]),!1)},j=h.promise({elem:a,props:n.extend({},b),opts:n.extend(!0,{specialEasing:{}},c),originalProperties:b,originalOptions:c,startTime:La||Sa(),duration:c.duration,tweens:[],createTween:function(b,c){var d=n.Tween(a,j.opts,b,c,j.opts.specialEasing[b]||j.opts.easing);return j.tweens.push(d),d},stop:function(b){var c=0,d=b?j.tweens.length:0;if(e)return this;for(e=!0;d>c;c++)j.tweens[c].run(1);return b?h.resolveWith(a,[j,b]):h.rejectWith(a,[j,b]),this}}),k=j.props;for(Wa(k,j.opts.specialEasing);g>f;f++)if(d=Qa[f].call(j,a,k,j.opts))return d;return n.map(k,Ua,j),n.isFunction(j.opts.start)&&j.opts.start.call(a,j),n.fx.timer(n.extend(i,{elem:a,anim:j,queue:j.opts.queue})),j.progress(j.opts.progress).done(j.opts.done,j.opts.complete).fail(j.opts.fail).always(j.opts.always)}n.Animation=n.extend(Xa,{tweener:function(a,b){n.isFunction(a)?(b=a,a=["*"]):a=a.split(" ");for(var c,d=0,e=a.length;e>d;d++)c=a[d],Ra[c]=Ra[c]||[],Ra[c].unshift(b)},prefilter:function(a,b){b?Qa.unshift(a):Qa.push(a)}}),n.speed=function(a,b,c){var d=a&&"object"==typeof a?n.extend({},a):{complete:c||!c&&b||n.isFunction(a)&&a,duration:a,easing:c&&b||b&&!n.isFunction(b)&&b};return d.duration=n.fx.off?0:"number"==typeof d.duration?d.duration:d.duration in n.fx.speeds?n.fx.speeds[d.duration]:n.fx.speeds._default,(null==d.queue||d.queue===!0)&&(d.queue="fx"),d.old=d.complete,d.complete=function(){n.isFunction(d.old)&&d.old.call(this),d.queue&&n.dequeue(this,d.queue)},d},n.fn.extend({fadeTo:function(a,b,c,d){return this.filter(S).css("opacity",0).show().end().animate({opacity:b},a,c,d)},animate:function(a,b,c,d){var e=n.isEmptyObject(a),f=n.speed(b,c,d),g=function(){var b=Xa(this,n.extend({},a),f);(e||L.get(this,"finish"))&&b.stop(!0)};return g.finish=g,e||f.queue===!1?this.each(g):this.queue(f.queue,g)},stop:function(a,b,c){var d=function(a){var b=a.stop;delete a.stop,b(c)};return"string"!=typeof a&&(c=b,b=a,a=void 0),b&&a!==!1&&this.queue(a||"fx",[]),this.each(function(){var b=!0,e=null!=a&&a+"queueHooks",f=n.timers,g=L.get(this);if(e)g[e]&&g[e].stop&&d(g[e]);else for(e in g)g[e]&&g[e].stop&&Pa.test(e)&&d(g[e]);for(e=f.length;e--;)f[e].elem!==this||null!=a&&f[e].queue!==a||(f[e].anim.stop(c),b=!1,f.splice(e,1));(b||!c)&&n.dequeue(this,a)})},finish:function(a){return a!==!1&&(a=a||"fx"),this.each(function(){var b,c=L.get(this),d=c[a+"queue"],e=c[a+"queueHooks"],f=n.timers,g=d?d.length:0;for(c.finish=!0,n.queue(this,a,[]),e&&e.stop&&e.stop.call(this,!0),b=f.length;b--;)f[b].elem===this&&f[b].queue===a&&(f[b].anim.stop(!0),f.splice(b,1));for(b=0;g>b;b++)d[b]&&d[b].finish&&d[b].finish.call(this);delete c.finish})}}),n.each(["toggle","show","hide"],function(a,b){var c=n.fn[b];n.fn[b]=function(a,d,e){return null==a||"boolean"==typeof a?c.apply(this,arguments):this.animate(Ta(b,!0),a,d,e)}}),n.each({slideDown:Ta("show"),slideUp:Ta("hide"),slideToggle:Ta("toggle"),fadeIn:{opacity:"show"},fadeOut:{opacity:"hide"},fadeToggle:{opacity:"toggle"}},function(a,b){n.fn[a]=function(a,c,d){return this.animate(b,a,c,d)}}),n.timers=[],n.fx.tick=function(){var a,b=0,c=n.timers;for(La=n.now();b<c.length;b++)a=c[b],a()||c[b]!==a||c.splice(b--,1);c.length||n.fx.stop(),La=void 0},n.fx.timer=function(a){n.timers.push(a),a()?n.fx.start():n.timers.pop()},n.fx.interval=13,n.fx.start=function(){Ma||(Ma=setInterval(n.fx.tick,n.fx.interval))},n.fx.stop=function(){clearInterval(Ma),Ma=null},n.fx.speeds={slow:600,fast:200,_default:400},n.fn.delay=function(a,b){return a=n.fx?n.fx.speeds[a]||a:a,b=b||"fx",this.queue(b,function(b,c){var d=setTimeout(b,a);c.stop=function(){clearTimeout(d)}})},function(){var a=l.createElement("input"),b=l.createElement("select"),c=b.appendChild(l.createElement("option"));a.type="checkbox",k.checkOn=""!==a.value,k.optSelected=c.selected,b.disabled=!0,k.optDisabled=!c.disabled,a=l.createElement("input"),a.value="t",a.type="radio",k.radioValue="t"===a.value}();var Ya,Za,$a=n.expr.attrHandle;n.fn.extend({attr:function(a,b){return J(this,n.attr,a,b,arguments.length>1)},removeAttr:function(a){return this.each(function(){n.removeAttr(this,a)})}}),n.extend({attr:function(a,b,c){var d,e,f=a.nodeType;if(a&&3!==f&&8!==f&&2!==f)return typeof a.getAttribute===U?n.prop(a,b,c):(1===f&&n.isXMLDoc(a)||(b=b.toLowerCase(),d=n.attrHooks[b]||(n.expr.match.bool.test(b)?Za:Ya)),
+void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?void 0:e):null!==c?d&&"set"in d&&void 0!==(e=d.set(a,c,b))?e:(a.setAttribute(b,c+""),c):void n.removeAttr(a,b))},removeAttr:function(a,b){var c,d,e=0,f=b&&b.match(E);if(f&&1===a.nodeType)while(c=f[e++])d=n.propFix[c]||c,n.expr.match.bool.test(c)&&(a[d]=!1),a.removeAttribute(c)},attrHooks:{type:{set:function(a,b){if(!k.radioValue&&"radio"===b&&n.nodeName(a,"input")){var c=a.value;return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Za={set:function(a,b,c){return b===!1?n.removeAttr(a,c):a.setAttribute(c,c),c}},n.each(n.expr.match.bool.source.match(/\w+/g),function(a,b){var c=$a[b]||n.find.attr;$a[b]=function(a,b,d){var e,f;return d||(f=$a[b],$a[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$a[b]=f),e}});var _a=/^(?:input|select|textarea|button)$/i;n.fn.extend({prop:function(a,b){return J(this,n.prop,a,b,arguments.length>1)},removeProp:function(a){return this.each(function(){delete this[n.propFix[a]||a]})}}),n.extend({propFix:{"for":"htmlFor","class":"className"},prop:function(a,b,c){var d,e,f,g=a.nodeType;if(a&&3!==g&&8!==g&&2!==g)return f=1!==g||!n.isXMLDoc(a),f&&(b=n.propFix[b]||b,e=n.propHooks[b]),void 0!==c?e&&"set"in e&&void 0!==(d=e.set(a,c,b))?d:a[b]=c:e&&"get"in e&&null!==(d=e.get(a,b))?d:a[b]},propHooks:{tabIndex:{get:function(a){return a.hasAttribute("tabindex")||_a.test(a.nodeName)||a.href?a.tabIndex:-1}}}}),k.optSelected||(n.propHooks.selected={get:function(a){var b=a.parentNode;return b&&b.parentNode&&b.parentNode.selectedIndex,null}}),n.each(["tabIndex","readOnly","maxLength","cellSpacing","cellPadding","rowSpan","colSpan","useMap","frameBorder","contentEditable"],function(){n.propFix[this.toLowerCase()]=this});var ab=/[\t\r\n\f]/g;n.fn.extend({addClass:function(a){var b,c,d,e,f,g,h="string"==typeof a&&a,i=0,j=this.length;if(n.isFunction(a))return this.each(function(b){n(this).addClass(a.call(this,b,this.className))});if(h)for(b=(a||"").match(E)||[];j>i;i++)if(c=this[i],d=1===c.nodeType&&(c.className?(" "+c.className+" ").replace(ab," "):" ")){f=0;while(e=b[f++])d.indexOf(" "+e+" ")<0&&(d+=e+" ");g=n.trim(d),c.className!==g&&(c.className=g)}return this},removeClass:function(a){var b,c,d,e,f,g,h=0===arguments.length||"string"==typeof a&&a,i=0,j=this.length;if(n.isFunction(a))return this.each(function(b){n(this).removeClass(a.call(this,b,this.className))});if(h)for(b=(a||"").match(E)||[];j>i;i++)if(c=this[i],d=1===c.nodeType&&(c.className?(" "+c.className+" ").replace(ab," "):"")){f=0;while(e=b[f++])while(d.indexOf(" "+e+" ")>=0)d=d.replace(" "+e+" "," ");g=a?n.trim(d):"",c.className!==g&&(c.className=g)}return this},toggleClass:function(a,b){var c=typeof a;return"boolean"==typeof b&&"string"===c?b?this.addClass(a):this.removeClass(a):this.each(n.isFunction(a)?function(c){n(this).toggleClass(a.call(this,c,this.className,b),b)}:function(){if("string"===c){var b,d=0,e=n(this),f=a.match(E)||[];while(b=f[d++])e.hasClass(b)?e.removeClass(b):e.addClass(b)}else(c===U||"boolean"===c)&&(this.className&&L.set(this,"__className__",this.className),this.className=this.className||a===!1?"":L.get(this,"__className__")||"")})},hasClass:function(a){for(var b=" "+a+" ",c=0,d=this.length;d>c;c++)if(1===this[c].nodeType&&(" "+this[c].className+" ").replace(ab," ").indexOf(b)>=0)return!0;return!1}});var bb=/\r/g;n.fn.extend({val:function(a){var b,c,d,e=this[0];{if(arguments.length)return d=n.isFunction(a),this.each(function(c){var e;1===this.nodeType&&(e=d?a.call(this,c,n(this).val()):a,null==e?e="":"number"==typeof e?e+="":n.isArray(e)&&(e=n.map(e,function(a){return null==a?"":a+""})),b=n.valHooks[this.type]||n.valHooks[this.nodeName.toLowerCase()],b&&"set"in b&&void 0!==b.set(this,e,"value")||(this.value=e))});if(e)return b=n.valHooks[e.type]||n.valHooks[e.nodeName.toLowerCase()],b&&"get"in b&&void 0!==(c=b.get(e,"value"))?c:(c=e.value,"string"==typeof c?c.replace(bb,""):null==c?"":c)}}}),n.extend({valHooks:{option:{get:function(a){var b=n.find.attr(a,"value");return null!=b?b:n.trim(n.text(a))}},select:{get:function(a){for(var b,c,d=a.options,e=a.selectedIndex,f="select-one"===a.type||0>e,g=f?null:[],h=f?e+1:d.length,i=0>e?h:f?e:0;h>i;i++)if(c=d[i],!(!c.selected&&i!==e||(k.optDisabled?c.disabled:null!==c.getAttribute("disabled"))||c.parentNode.disabled&&n.nodeName(c.parentNode,"optgroup"))){if(b=n(c).val(),f)return b;g.push(b)}return g},set:function(a,b){var c,d,e=a.options,f=n.makeArray(b),g=e.length;while(g--)d=e[g],(d.selected=n.inArray(d.value,f)>=0)&&(c=!0);return c||(a.selectedIndex=-1),f}}}}),n.each(["radio","checkbox"],function(){n.valHooks[this]={set:function(a,b){return n.isArray(b)?a.checked=n.inArray(n(a).val(),b)>=0:void 0}},k.checkOn||(n.valHooks[this].get=function(a){return null===a.getAttribute("value")?"on":a.value})}),n.each("blur focus focusin focusout load resize scroll unload click dblclick mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave change select submit keydown keypress keyup error contextmenu".split(" "),function(a,b){n.fn[b]=function(a,c){return arguments.length>0?this.on(b,null,a,c):this.trigger(b)}}),n.fn.extend({hover:function(a,b){return this.mouseenter(a).mouseleave(b||a)},bind:function(a,b,c){return this.on(a,null,b,c)},unbind:function(a,b){return this.off(a,null,b)},delegate:function(a,b,c,d){return this.on(b,a,c,d)},undelegate:function(a,b,c){return 1===arguments.length?this.off(a,"**"):this.off(b,a||"**",c)}});var cb=n.now(),db=/\?/;n.parseJSON=function(a){return JSON.parse(a+"")},n.parseXML=function(a){var b,c;if(!a||"string"!=typeof a)return null;try{c=new DOMParser,b=c.parseFromString(a,"text/xml")}catch(d){b=void 0}return(!b||b.getElementsByTagName("parsererror").length)&&n.error("Invalid XML: "+a),b};var eb=/#.*$/,fb=/([?&])_=[^&]*/,gb=/^(.*?):[ \t]*([^\r\n]*)$/gm,hb=/^(?:about|app|app-storage|.+-extension|file|res|widget):$/,ib=/^(?:GET|HEAD)$/,jb=/^\/\//,kb=/^([\w.+-]+:)(?:\/\/(?:[^\/?#]*@|)([^\/?#:]*)(?::(\d+)|)|)/,lb={},mb={},nb="*/".concat("*"),ob=a.location.href,pb=kb.exec(ob.toLowerCase())||[];function qb(a){return function(b,c){"string"!=typeof b&&(c=b,b="*");var d,e=0,f=b.toLowerCase().match(E)||[];if(n.isFunction(c))while(d=f[e++])"+"===d[0]?(d=d.slice(1)||"*",(a[d]=a[d]||[]).unshift(c)):(a[d]=a[d]||[]).push(c)}}function rb(a,b,c,d){var e={},f=a===mb;function g(h){var i;return e[h]=!0,n.each(a[h]||[],function(a,h){var j=h(b,c,d);return"string"!=typeof j||f||e[j]?f?!(i=j):void 0:(b.dataTypes.unshift(j),g(j),!1)}),i}return g(b.dataTypes[0])||!e["*"]&&g("*")}function sb(a,b){var c,d,e=n.ajaxSettings.flatOptions||{};for(c in b)void 0!==b[c]&&((e[c]?a:d||(d={}))[c]=b[c]);return d&&n.extend(!0,a,d),a}function tb(a,b,c){var d,e,f,g,h=a.contents,i=a.dataTypes;while("*"===i[0])i.shift(),void 0===d&&(d=a.mimeType||b.getResponseHeader("Content-Type"));if(d)for(e in h)if(h[e]&&h[e].test(d)){i.unshift(e);break}if(i[0]in c)f=i[0];else{for(e in c){if(!i[0]||a.converters[e+" "+i[0]]){f=e;break}g||(g=e)}f=f||g}return f?(f!==i[0]&&i.unshift(f),c[f]):void 0}function ub(a,b,c,d){var e,f,g,h,i,j={},k=a.dataTypes.slice();if(k[1])for(g in a.converters)j[g.toLowerCase()]=a.converters[g];f=k.shift();while(f)if(a.responseFields[f]&&(c[a.responseFields[f]]=b),!i&&d&&a.dataFilter&&(b=a.dataFilter(b,a.dataType)),i=f,f=k.shift())if("*"===f)f=i;else if("*"!==i&&i!==f){if(g=j[i+" "+f]||j["* "+f],!g)for(e in j)if(h=e.split(" "),h[1]===f&&(g=j[i+" "+h[0]]||j["* "+h[0]])){g===!0?g=j[e]:j[e]!==!0&&(f=h[0],k.unshift(h[1]));break}if(g!==!0)if(g&&a["throws"])b=g(b);else try{b=g(b)}catch(l){return{state:"parsererror",error:g?l:"No conversion from "+i+" to "+f}}}return{state:"success",data:b}}n.extend({active:0,lastModified:{},etag:{},ajaxSettings:{url:ob,type:"GET",isLocal:hb.test(pb[1]),global:!0,processData:!0,async:!0,contentType:"application/x-www-form-urlencoded; charset=UTF-8",accepts:{"*":nb,text:"text/plain",html:"text/html",xml:"application/xml, text/xml",json:"application/json, text/javascript"},contents:{xml:/xml/,html:/html/,json:/json/},responseFields:{xml:"responseXML",text:"responseText",json:"responseJSON"},converters:{"* text":String,"text html":!0,"text json":n.parseJSON,"text xml":n.parseXML},flatOptions:{url:!0,context:!0}},ajaxSetup:function(a,b){return b?sb(sb(a,n.ajaxSettings),b):sb(n.ajaxSettings,a)},ajaxPrefilter:qb(lb),ajaxTransport:qb(mb),ajax:function(a,b){"object"==typeof a&&(b=a,a=void 0),b=b||{};var c,d,e,f,g,h,i,j,k=n.ajaxSetup({},b),l=k.context||k,m=k.context&&(l.nodeType||l.jquery)?n(l):n.event,o=n.Deferred(),p=n.Callbacks("once memory"),q=k.statusCode||{},r={},s={},t=0,u="canceled",v={readyState:0,getResponseHeader:function(a){var b;if(2===t){if(!f){f={};while(b=gb.exec(e))f[b[1].toLowerCase()]=b[2]}b=f[a.toLowerCase()]}return null==b?null:b},getAllResponseHeaders:function(){return 2===t?e:null},setRequestHeader:function(a,b){var c=a.toLowerCase();return t||(a=s[c]=s[c]||a,r[a]=b),this},overrideMimeType:function(a){return t||(k.mimeType=a),this},statusCode:function(a){var b;if(a)if(2>t)for(b in a)q[b]=[q[b],a[b]];else v.always(a[v.status]);return this},abort:function(a){var b=a||u;return c&&c.abort(b),x(0,b),this}};if(o.promise(v).complete=p.add,v.success=v.done,v.error=v.fail,k.url=((a||k.url||ob)+"").replace(eb,"").replace(jb,pb[1]+"//"),k.type=b.method||b.type||k.method||k.type,k.dataTypes=n.trim(k.dataType||"*").toLowerCase().match(E)||[""],null==k.crossDomain&&(h=kb.exec(k.url.toLowerCase()),k.crossDomain=!(!h||h[1]===pb[1]&&h[2]===pb[2]&&(h[3]||("http:"===h[1]?"80":"443"))===(pb[3]||("http:"===pb[1]?"80":"443")))),k.data&&k.processData&&"string"!=typeof k.data&&(k.data=n.param(k.data,k.traditional)),rb(lb,k,b,v),2===t)return v;i=n.event&&k.global,i&&0===n.active++&&n.event.trigger("ajaxStart"),k.type=k.type.toUpperCase(),k.hasContent=!ib.test(k.type),d=k.url,k.hasContent||(k.data&&(d=k.url+=(db.test(d)?"&":"?")+k.data,delete k.data),k.cache===!1&&(k.url=fb.test(d)?d.replace(fb,"$1_="+cb++):d+(db.test(d)?"&":"?")+"_="+cb++)),k.ifModified&&(n.lastModified[d]&&v.setRequestHeader("If-Modified-Since",n.lastModified[d]),n.etag[d]&&v.setRequestHeader("If-None-Match",n.etag[d])),(k.data&&k.hasContent&&k.contentType!==!1||b.contentType)&&v.setRequestHeader("Content-Type",k.contentType),v.setRequestHeader("Accept",k.dataTypes[0]&&k.accepts[k.dataTypes[0]]?k.accepts[k.dataTypes[0]]+("*"!==k.dataTypes[0]?", "+nb+"; q=0.01":""):k.accepts["*"]);for(j in k.headers)v.setRequestHeader(j,k.headers[j]);if(k.beforeSend&&(k.beforeSend.call(l,v,k)===!1||2===t))return v.abort();u="abort";for(j in{success:1,error:1,complete:1})v[j](k[j]);if(c=rb(mb,k,b,v)){v.readyState=1,i&&m.trigger("ajaxSend",[v,k]),k.async&&k.timeout>0&&(g=setTimeout(function(){v.abort("timeout")},k.timeout));try{t=1,c.send(r,x)}catch(w){if(!(2>t))throw w;x(-1,w)}}else x(-1,"No Transport");function x(a,b,f,h){var j,r,s,u,w,x=b;2!==t&&(t=2,g&&clearTimeout(g),c=void 0,e=h||"",v.readyState=a>0?4:0,j=a>=200&&300>a||304===a,f&&(u=tb(k,v,f)),u=ub(k,u,v,j),j?(k.ifModified&&(w=v.getResponseHeader("Last-Modified"),w&&(n.lastModified[d]=w),w=v.getResponseHeader("etag"),w&&(n.etag[d]=w)),204===a||"HEAD"===k.type?x="nocontent":304===a?x="notmodified":(x=u.state,r=u.data,s=u.error,j=!s)):(s=x,(a||!x)&&(x="error",0>a&&(a=0))),v.status=a,v.statusText=(b||x)+"",j?o.resolveWith(l,[r,x,v]):o.rejectWith(l,[v,x,s]),v.statusCode(q),q=void 0,i&&m.trigger(j?"ajaxSuccess":"ajaxError",[v,k,j?r:s]),p.fireWith(l,[v,x]),i&&(m.trigger("ajaxComplete",[v,k]),--n.active||n.event.trigger("ajaxStop")))}return v},getJSON:function(a,b,c){return n.get(a,b,c,"json")},getScript:function(a,b){return n.get(a,void 0,b,"script")}}),n.each(["get","post"],function(a,b){n[b]=function(a,c,d,e){return n.isFunction(c)&&(e=e||d,d=c,c=void 0),n.ajax({url:a,type:b,dataType:e,data:c,success:d})}}),n._evalUrl=function(a){return n.ajax({url:a,type:"GET",dataType:"script",async:!1,global:!1,"throws":!0})},n.fn.extend({wrapAll:function(a){var b;return n.isFunction(a)?this.each(function(b){n(this).wrapAll(a.call(this,b))}):(this[0]&&(b=n(a,this[0].ownerDocument).eq(0).clone(!0),this[0].parentNode&&b.insertBefore(this[0]),b.map(function(){var a=this;while(a.firstElementChild)a=a.firstElementChild;return a}).append(this)),this)},wrapInner:function(a){return this.each(n.isFunction(a)?function(b){n(this).wrapInner(a.call(this,b))}:function(){var b=n(this),c=b.contents();c.length?c.wrapAll(a):b.append(a)})},wrap:function(a){var b=n.isFunction(a);return this.each(function(c){n(this).wrapAll(b?a.call(this,c):a)})},unwrap:function(){return this.parent().each(function(){n.nodeName(this,"body")||n(this).replaceWith(this.childNodes)}).end()}}),n.expr.filters.hidden=function(a){return a.offsetWidth<=0&&a.offsetHeight<=0},n.expr.filters.visible=function(a){return!n.expr.filters.hidden(a)};var vb=/%20/g,wb=/\[\]$/,xb=/\r?\n/g,yb=/^(?:submit|button|image|reset|file)$/i,zb=/^(?:input|select|textarea|keygen)/i;function Ab(a,b,c,d){var e;if(n.isArray(b))n.each(b,function(b,e){c||wb.test(a)?d(a,e):Ab(a+"["+("object"==typeof e?b:"")+"]",e,c,d)});else if(c||"object"!==n.type(b))d(a,b);else for(e in b)Ab(a+"["+e+"]",b[e],c,d)}n.param=function(a,b){var c,d=[],e=function(a,b){b=n.isFunction(b)?b():null==b?"":b,d[d.length]=encodeURIComponent(a)+"="+encodeURIComponent(b)};if(void 0===b&&(b=n.ajaxSettings&&n.ajaxSettings.traditional),n.isArray(a)||a.jquery&&!n.isPlainObject(a))n.each(a,function(){e(this.name,this.value)});else for(c in a)Ab(c,a[c],b,e);return d.join("&").replace(vb,"+")},n.fn.extend({serialize:function(){return n.param(this.serializeArray())},serializeArray:function(){return this.map(function(){var a=n.prop(this,"elements");return a?n.makeArray(a):this}).filter(function(){var a=this.type;return this.name&&!n(this).is(":disabled")&&zb.test(this.nodeName)&&!yb.test(a)&&(this.checked||!T.test(a))}).map(function(a,b){var c=n(this).val();return null==c?null:n.isArray(c)?n.map(c,function(a){return{name:b.name,value:a.replace(xb,"\r\n")}}):{name:b.name,value:c.replace(xb,"\r\n")}}).get()}}),n.ajaxSettings.xhr=function(){try{return new XMLHttpRequest}catch(a){}};var Bb=0,Cb={},Db={0:200,1223:204},Eb=n.ajaxSettings.xhr();a.attachEvent&&a.attachEvent("onunload",function(){for(var a in Cb)Cb[a]()}),k.cors=!!Eb&&"withCredentials"in Eb,k.ajax=Eb=!!Eb,n.ajaxTransport(function(a){var b;return k.cors||Eb&&!a.crossDomain?{send:function(c,d){var e,f=a.xhr(),g=++Bb;if(f.open(a.type,a.url,a.async,a.username,a.password),a.xhrFields)for(e in a.xhrFields)f[e]=a.xhrFields[e];a.mimeType&&f.overrideMimeType&&f.overrideMimeType(a.mimeType),a.crossDomain||c["X-Requested-With"]||(c["X-Requested-With"]="XMLHttpRequest");for(e in c)f.setRequestHeader(e,c[e]);b=function(a){return function(){b&&(delete Cb[g],b=f.onload=f.onerror=null,"abort"===a?f.abort():"error"===a?d(f.status,f.statusText):d(Db[f.status]||f.status,f.statusText,"string"==typeof f.responseText?{text:f.responseText}:void 0,f.getAllResponseHeaders()))}},f.onload=b(),f.onerror=b("error"),b=Cb[g]=b("abort");try{f.send(a.hasContent&&a.data||null)}catch(h){if(b)throw h}},abort:function(){b&&b()}}:void 0}),n.ajaxSetup({accepts:{script:"text/javascript, application/javascript, application/ecmascript, application/x-ecmascript"},contents:{script:/(?:java|ecma)script/},converters:{"text script":function(a){return n.globalEval(a),a}}}),n.ajaxPrefilter("script",function(a){void 0===a.cache&&(a.cache=!1),a.crossDomain&&(a.type="GET")}),n.ajaxTransport("script",function(a){if(a.crossDomain){var b,c;return{send:function(d,e){b=n("<script>").prop({async:!0,charset:a.scriptCharset,src:a.url}).on("load error",c=function(a){b.remove(),c=null,a&&e("error"===a.type?404:200,a.type)}),l.head.appendChild(b[0])},abort:function(){c&&c()}}}});var Fb=[],Gb=/(=)\?(?=&|$)|\?\?/;n.ajaxSetup({jsonp:"callback",jsonpCallback:function(){var a=Fb.pop()||n.expando+"_"+cb++;return this[a]=!0,a}}),n.ajaxPrefilter("json jsonp",function(b,c,d){var e,f,g,h=b.jsonp!==!1&&(Gb.test(b.url)?"url":"string"==typeof b.data&&!(b.contentType||"").indexOf("application/x-www-form-urlencoded")&&Gb.test(b.data)&&"data");return h||"jsonp"===b.dataTypes[0]?(e=b.jsonpCallback=n.isFunction(b.jsonpCallback)?b.jsonpCallback():b.jsonpCallback,h?b[h]=b[h].replace(Gb,"$1"+e):b.jsonp!==!1&&(b.url+=(db.test(b.url)?"&":"?")+b.jsonp+"="+e),b.converters["script json"]=function(){return g||n.error(e+" was not called"),g[0]},b.dataTypes[0]="json",f=a[e],a[e]=function(){g=arguments},d.always(function(){a[e]=f,b[e]&&(b.jsonpCallback=c.jsonpCallback,Fb.push(e)),g&&n.isFunction(f)&&f(g[0]),g=f=void 0}),"script"):void 0}),n.parseHTML=function(a,b,c){if(!a||"string"!=typeof a)return null;"boolean"==typeof b&&(c=b,b=!1),b=b||l;var d=v.exec(a),e=!c&&[];return d?[b.createElement(d[1])]:(d=n.buildFragment([a],b,e),e&&e.length&&n(e).remove(),n.merge([],d.childNodes))};var Hb=n.fn.load;n.fn.load=function(a,b,c){if("string"!=typeof a&&Hb)return Hb.apply(this,arguments);var d,e,f,g=this,h=a.indexOf(" ");return h>=0&&(d=n.trim(a.slice(h)),a=a.slice(0,h)),n.isFunction(b)?(c=b,b=void 0):b&&"object"==typeof b&&(e="POST"),g.length>0&&n.ajax({url:a,type:e,dataType:"html",data:b}).done(function(a){f=arguments,g.html(d?n("<div>").append(n.parseHTML(a)).find(d):a)}).complete(c&&function(a,b){g.each(c,f||[a.responseText,b,a])}),this},n.each(["ajaxStart","ajaxStop","ajaxComplete","ajaxError","ajaxSuccess","ajaxSend"],function(a,b){n.fn[b]=function(a){return this.on(b,a)}}),n.expr.filters.animated=function(a){return n.grep(n.timers,function(b){return a===b.elem}).length};var Ib=a.document.documentElement;function Jb(a){return n.isWindow(a)?a:9===a.nodeType&&a.defaultView}n.offset={setOffset:function(a,b,c){var d,e,f,g,h,i,j,k=n.css(a,"position"),l=n(a),m={};"static"===k&&(a.style.position="relative"),h=l.offset(),f=n.css(a,"top"),i=n.css(a,"left"),j=("absolute"===k||"fixed"===k)&&(f+i).indexOf("auto")>-1,j?(d=l.position(),g=d.top,e=d.left):(g=parseFloat(f)||0,e=parseFloat(i)||0),n.isFunction(b)&&(b=b.call(a,c,h)),null!=b.top&&(m.top=b.top-h.top+g),null!=b.left&&(m.left=b.left-h.left+e),"using"in b?b.using.call(a,m):l.css(m)}},n.fn.extend({offset:function(a){if(arguments.length)return void 0===a?this:this.each(function(b){n.offset.setOffset(this,a,b)});var b,c,d=this[0],e={top:0,left:0},f=d&&d.ownerDocument;if(f)return b=f.documentElement,n.contains(b,d)?(typeof d.getBoundingClientRect!==U&&(e=d.getBoundingClientRect()),c=Jb(f),{top:e.top+c.pageYOffset-b.clientTop,left:e.left+c.pageXOffset-b.clientLeft}):e},position:function(){if(this[0]){var a,b,c=this[0],d={top:0,left:0};return"fixed"===n.css(c,"position")?b=c.getBoundingClientRect():(a=this.offsetParent(),b=this.offset(),n.nodeName(a[0],"html")||(d=a.offset()),d.top+=n.css(a[0],"borderTopWidth",!0),d.left+=n.css(a[0],"borderLeftWidth",!0)),{top:b.top-d.top-n.css(c,"marginTop",!0),left:b.left-d.left-n.css(c,"marginLeft",!0)}}},offsetParent:function(){return this.map(function(){var a=this.offsetParent||Ib;while(a&&!n.nodeName(a,"html")&&"static"===n.css(a,"position"))a=a.offsetParent;return a||Ib})}}),n.each({scrollLeft:"pageXOffset",scrollTop:"pageYOffset"},function(b,c){var d="pageYOffset"===c;n.fn[b]=function(e){return J(this,function(b,e,f){var g=Jb(b);return void 0===f?g?g[c]:b[e]:void(g?g.scrollTo(d?a.pageXOffset:f,d?f:a.pageYOffset):b[e]=f)},b,e,arguments.length,null)}}),n.each(["top","left"],function(a,b){n.cssHooks[b]=ya(k.pixelPosition,function(a,c){return c?(c=xa(a,b),va.test(c)?n(a).position()[b]+"px":c):void 0})}),n.each({Height:"height",Width:"width"},function(a,b){n.each({padding:"inner"+a,content:b,"":"outer"+a},function(c,d){n.fn[d]=function(d,e){var f=arguments.length&&(c||"boolean"!=typeof d),g=c||(d===!0||e===!0?"margin":"border");return J(this,function(b,c,d){var e;return n.isWindow(b)?b.document.documentElement["client"+a]:9===b.nodeType?(e=b.documentElement,Math.max(b.body["scroll"+a],e["scroll"+a],b.body["offset"+a],e["offset"+a],e["client"+a])):void 0===d?n.css(b,c,g):n.style(b,c,d,g)},b,f?d:void 0,f,null)}})}),n.fn.size=function(){return this.length},n.fn.andSelf=n.fn.addBack,"function"==typeof define&&define.amd&&define("jquery",[],function(){return n});var Kb=a.jQuery,Lb=a.$;return n.noConflict=function(b){return a.$===n&&(a.$=Lb),b&&a.jQuery===n&&(a.jQuery=Kb),n},typeof b===U&&(a.jQuery=a.$=n),n});
+
+/**
+ * Angular Google Analytics - Easy tracking for your AngularJS application
+ * @version v0.0.18 - 2015-07-29
+ * @link http://github.com/revolunet/angular-google-analytics
+ * @author Julien Bouquillon <julien@revolunet.com>
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+(function(n,t,e){"use strict";e.module("angular-google-analytics",[]).provider("Analytics",function(){var i,a,c,r,o,s,u=!1,g=!0,d="",l=!1,m="$routeChangeSuccess",_="auto",f=!1,h=!1,p=!1,k=!1,v=!1,E={allowLinker:!0},y=!1,w=!1;this._logs=[],this.setAccount=function(n){return i=n,!0},this.trackPages=function(n){return g=n,!0},this.trackPrefix=function(n){return d=n,!0},this.setDomainName=function(n){return c=n,!0},this.useDisplayFeatures=function(n){return a=!!n,!0},this.useAnalytics=function(n){return l=!!n,!0},this.useEnhancedLinkAttribution=function(n){return p=!!n,!0},this.useCrossDomainLinker=function(n){return v=!!n,!0},this.setCrossLinkDomains=function(n){return s=n,!0},this.setPageEvent=function(n){return m=n,!0},this.setCookieConfig=function(n){return _=n,!0},this.useECommerce=function(n,t){return f=!!n,h=!!t,!0},this.setRemoveRegExp=function(n){return n instanceof RegExp?(r=n,!0):!1},this.setExperimentId=function(n){return o=n,!0},this.ignoreFirstPageLoad=function(n){return k=!!n,!0},this.trackUrlParams=function(n){return y=!!n,!0},this.delayScriptTag=function(n){return w=!!n,!0},this.$get=["$document","$location","$log","$rootScope","$window",function(T,A,P,b,q){function C(n){!l&&q._gaq&&"function"==typeof n&&n()}function I(n){l&&q.ga&&"function"==typeof n&&n()}function j(n,t){return!e.isUndefined(t)&&"name"in t&&t.name?t.name+"."+n:n}function L(n,t){return n in t&&t[n]}var S=this,x=function(){var n=y?A.url():A.path();return r?n.replace(r,""):n},D=function(){var n={utm_source:"campaignSource",utm_medium:"campaignMedium",utm_term:"campaignTerm",utm_content:"campaignContent",utm_campaign:"campaignName"},t={};return e.forEach(A.search(),function(i,a){var c=n[a];e.isDefined(c)&&(t[c]=i)}),t};return this._log=function(){arguments.length>0&&(arguments.length>1&&"warn"===arguments[0]&&P.warn(Array.prototype.slice.call(arguments,1)),this._logs.push(arguments))},this._createScriptTag=function(){if(!i)return S._log("warn","No account id set to create script tag"),undefined;if(u)return S._log("warn","Script tag already created"),undefined;q._gaq=[],q._gaq.push(["_setAccount",i]),c&&q._gaq.push(["_setDomainName",c]),p&&q._gaq.push(["_require","inpage_linkid","//www.google-analytics.com/plugins/ga/inpage_linkid.js"]),g&&!k&&(r?q._gaq.push(["_trackPageview",x()]):q._gaq.push(["_trackPageview"]));var n;return n=a?("https:"===t.location.protocol?"https://":"http://")+"stats.g.doubleclick.net/dc.js":("https:"===t.location.protocol?"https://ssl":"http://www")+".google-analytics.com/ga.js",function(){var t=T[0],e=t.createElement("script");e.type="text/javascript",e.async=!0,e.src=n;var i=t.getElementsByTagName("script")[0];i.parentNode.insertBefore(e,i)}(n),u=!0,!0},this._createAnalyticsScriptTag=function(){if(!i)return S._log("warn","No account id set to create analytics script tag"),undefined;if(u)return S._log("warn","Analytics script tag already created"),undefined;if(function(n,t,e,i,a,c,r){n.GoogleAnalyticsObject=a,n[a]=n[a]||function(){(n[a].q=n[a].q||[]).push(arguments)},n[a].l=1*new Date,c=t.createElement(e),r=t.getElementsByTagName(e)[0],c.async=1,c.src=i,r.parentNode.insertBefore(c,r)}(n,t,"script","//www.google-analytics.com/analytics.js","ga"),e.isArray(i)?i.forEach(function(n){var t,i="cookieConfig"in n?n.cookieConfig:_;L("crossDomainLinker",n)&&(n.allowLinker=n.crossDomainLinker),e.forEach(["name","allowLinker"],function(i){i in n&&(e.isUndefined(t)&&(t={}),t[i]=n[i])}),e.isUndefined(t)?q.ga("create",n.tracker,i):q.ga("create",n.tracker,i,t),t&&"allowLinker"in t&&t.allowLinker&&(q.ga(j("require",n),"linker"),L("crossLinkDomains",n)&&q.ga(j("linker:autoLink",n),n.crossLinkDomains))}):v?(q.ga("create",i,_,E),q.ga("require","linker"),s&&q.ga("linker:autoLink",s)):q.ga("create",i,_),a&&q.ga("require","displayfeatures"),g&&!k&&q.ga("send","pageview",x()),q.ga&&(f&&(h?q.ga("require","ec","ec.js"):q.ga("require","ecommerce","ecommerce.js")),p&&q.ga("require","linkid","linkid.js"),o)){var c=t.createElement("script"),r=t.getElementsByTagName("script")[0];c.src="//www.google-analytics.com/cx/api.js?experiment="+o,r.parentNode.insertBefore(c,r)}return u=!0,!0},this._ecommerceEnabled=function(){return f&&!h},this._enhancedEcommerceEnabled=function(){return f&&h},this._trackPage=function(n,t,a){var c=this,r=arguments;n=n?n:x(),t=t?t:T[0].title,C(function(){q._gaq.push(["_set","title",t]),q._gaq.push(["_trackPageview",d+n]),c._log("_trackPageview",n,t,r)}),I(function(){var o={page:d+n,title:t};e.extend(o,D()),e.isObject(a)&&e.extend(o,a),e.isArray(i)?i.forEach(function(n){q.ga(j("send",n),"pageview",o)}):q.ga("send","pageview",o),c._log("pageview",n,t,r)})},this._trackEvent=function(n,t,a,c,r,o){var s=this,u=arguments;C(function(){q._gaq.push(["_trackEvent",n,t,a,c,!!r]),s._log("trackEvent",u)}),I(function(){var g={};e.isDefined(r)&&(g.nonInteraction=!!r),e.isObject(o)&&e.extend(g,o),e.isArray(i)?i.forEach(function(e){L("trackEvent",e)&&q.ga(j("send",e),"event",n,t,a,c,g)}):q.ga("send","event",n,t,a,c,g),s._log("event",u)})},this._addTrans=function(n,t,e,i,a,c,r,o,s){var u=this,g=arguments;C(function(){q._gaq.push(["_addTrans",n,t,e,i,a,c,r,o]),u._log("_addTrans",g)}),I(function(){u._ecommerceEnabled()&&(q.ga("ecommerce:addTransaction",{id:n,affiliation:t,revenue:e,tax:i,shipping:a,currency:s||"USD"}),u._log("ecommerce:addTransaction",g))})},this._addItem=function(n,t,e,i,a,c){var r=this,o=arguments;C(function(){q._gaq.push(["_addItem",n,t,e,i,a,c]),r._log("_addItem",o)}),I(function(){r._ecommerceEnabled()&&(q.ga("ecommerce:addItem",{id:n,name:e,sku:t,category:i,price:a,quantity:c}),r._log("ecommerce:addItem",o))})},this._trackTrans=function(){var n=this,t=arguments;C(function(){q._gaq.push(["_trackTrans"]),n._log("_trackTrans",t)}),I(function(){n._ecommerceEnabled()&&(q.ga("ecommerce:send"),n._log("ecommerce:send",t))})},this._clearTrans=function(){var n=this,t=arguments;I(function(){n._ecommerceEnabled()&&(q.ga("ecommerce:clear"),n._log("ecommerce:clear",t))})},this._addProduct=function(n,t,e,i,a,c,r,o,s){var u=this,g=arguments;C(function(){q._gaq.push(["_addProduct",n,t,e,i,a,c,r,o,s]),u._log("_addProduct",g)}),I(function(){u._enhancedEcommerceEnabled()&&(q.ga("ec:addProduct",{id:n,name:t,category:e,brand:i,variant:a,price:c,quantity:r,coupon:o,position:s}),u._log("ec:addProduct",g))})},this._addImpression=function(n,t,e,i,a,c,r,o){var s=this,u=arguments;C(function(){q._gaq.push(["_addImpression",n,t,e,i,a,c,r,o]),s._log("_addImpression",u)}),I(function(){s._enhancedEcommerceEnabled()&&(q.ga("ec:addImpression",{id:n,name:t,category:a,brand:i,variant:c,list:e,position:r,price:o}),s._log("ec:addImpression",u))})},this._addPromo=function(n,t,e,i){var a=this,c=arguments;C(function(){q._gaq.push(["_addPromo",n,t,e,i]),a._log("_addPromo",arguments)}),I(function(){a._enhancedEcommerceEnabled()&&(q.ga("ec:addPromo",{id:n,name:t,creative:e,position:i}),a._log("ec:addPromo",c))})},this._getActionFieldObject=function(n,t,e,i,a,c,r,o,s){var u={};return n&&(u.id=n),t&&(u.affiliation=t),e&&(u.revenue=e),i&&(u.tax=i),a&&(u.shipping=a),c&&(u.coupon=c),r&&(u.list=r),o&&(u.step=o),s&&(u.option=s),u},this._setAction=function(n,t){var e=this,i=arguments;C(function(){q._gaq.push(["_setAction",n,t]),e._log("__setAction",i)}),I(function(){e._enhancedEcommerceEnabled()&&(q.ga("ec:setAction",n,t),e._log("ec:setAction",i))})},this._trackTransaction=function(n,t,e,i,a,c,r,o,s){this._setAction("purchase",this._getActionFieldObject(n,t,e,i,a,c,r,o,s))},this._trackRefund=function(n){this._setAction("refund",this._getActionFieldObject(n))},this._trackCheckOut=function(n,t){this._setAction("checkout",this._getActionFieldObject(null,null,null,null,null,null,null,n,t))},this._trackCart=function(n){-1!==["add","remove"].indexOf(n)&&(this._setAction(n),this._send("event","UX","click",n+" to cart"))},this._promoClick=function(n){this._setAction("promo_click"),this._send("event","Internal Promotions","click",n)},this._productClick=function(n){this._setAction("click",this._getActionFieldObject(null,null,null,null,null,null,n,null,null)),this._send("event","UX","click",n)},this._send=function(){var n=this,t=Array.prototype.slice.call(arguments);t.unshift("send"),I(function(){q.ga.apply(this,t),n._log(t)})},this._pageView=function(){this._send("pageview")},this._set=function(n,t){var e=this;I(function(){q.ga("set",n,t),e._log("set",n,t)})},w||(l?this._createAnalyticsScriptTag():this._createScriptTag()),g&&b.$on(m,function(){S._trackPage()}),this._trackTimings=function(n,t,e,i){this._send("timing",n,t,e,i)},{_logs:S._logs,displayFeatures:a,ecommerce:f,enhancedEcommerce:h,enhancedLinkAttribution:p,getUrl:x,experimentId:o,ignoreFirstPageLoad:k,delayScriptTag:w,setCookieConfig:S._setCookieConfig,getCookieConfig:function(){return _},createAnalyticsScriptTag:function(n){return n&&(_=n),S._createAnalyticsScriptTag()},createScriptTag:function(n){return n&&(_=n),S._createScriptTag()},ecommerceEnabled:function(){return S._ecommerceEnabled()},enhancedEcommerceEnabled:function(){return S._enhancedEcommerceEnabled()},trackPage:function(n,t,e){S._trackPage(n,t,e)},trackEvent:function(n,t,e,i,a,c){S._trackEvent(n,t,e,i,a,c)},addTrans:function(n,t,e,i,a,c,r,o,s){S._addTrans(n,t,e,i,a,c,r,o,s)},addItem:function(n,t,e,i,a,c){S._addItem(n,t,e,i,a,c)},trackTrans:function(){S._trackTrans()},clearTrans:function(){S._clearTrans()},addProduct:function(n,t,e,i,a,c,r,o,s){S._addProduct(n,t,e,i,a,c,r,o,s)},addPromo:function(n,t,e,i){S._addPromo(n,t,e,i)},addImpression:function(n,t,e,i,a,c,r,o){S._addImpression(n,t,e,i,a,c,r,o)},productClick:function(n){S._productClick(n)},promoClick:function(n){S._promoClick(n)},trackDetail:function(){S._setAction("detail"),S._pageView()},trackCart:function(n){S._trackCart(n)},trackCheckout:function(n,t){S._trackCheckOut(n,t)},trackTimings:function(n,t,e,i){S._trackTimings(n,t,e,i)},trackTransaction:function(n,t,e,i,a,c,r,o,s){S._trackTransaction(n,t,e,i,a,c,r,o,s)},setAction:function(n,t){S._setAction(n,t)},send:function(n){S._send(n)},pageView:function(){S._pageView()},set:function(n,t){S._set(n,t)}}}]}).directive("gaTrackEvent",["Analytics","$parse",function(n,t){return{restrict:"A",link:function(e,i,a){var c=t(a.gaTrackEvent);i.bind("click",function(){(!a.gaTrackEventIf||e.$eval(a.gaTrackEventIf))&&c.length>1&&n.trackEvent.apply(n,c(e))})}}}])})(window,document,window.angular);
+/*
+ AngularJS v1.4.0-rc.1
+ (c) 2010-2015 Google, Inc. http://angularjs.org
+ License: MIT
+*/
+(function(I,d,B){'use strict';function D(f,q){q=q||{};d.forEach(q,function(d,h){delete q[h]});for(var h in f)!f.hasOwnProperty(h)||"$"===h.charAt(0)&&"$"===h.charAt(1)||(q[h]=f[h]);return q}var w=d.$$minErr("$resource"),C=/^(\.[a-zA-Z_$@][0-9a-zA-Z_$@]*)+$/;d.module("ngResource",["ng"]).provider("$resource",function(){var f=this;this.defaults={stripTrailingSlashes:!0,actions:{get:{method:"GET"},save:{method:"POST"},query:{method:"GET",isArray:!0},remove:{method:"DELETE"},"delete":{method:"DELETE"}}};
+this.$get=["$http","$q",function(q,h){function t(d,g){this.template=d;this.defaults=s({},f.defaults,g);this.urlParams={}}function v(x,g,l,m){function c(b,k){var c={};k=s({},g,k);r(k,function(a,k){u(a)&&(a=a());var d;if(a&&a.charAt&&"@"==a.charAt(0)){d=b;var e=a.substr(1);if(null==e||""===e||"hasOwnProperty"===e||!C.test("."+e))throw w("badmember",e);for(var e=e.split("."),n=0,g=e.length;n<g&&d!==B;n++){var h=e[n];d=null!==d?d[h]:B}}else d=a;c[k]=d});return c}function F(b){return b.resource}function e(b){D(b||
+{},this)}var G=new t(x,m);l=s({},f.defaults.actions,l);e.prototype.toJSON=function(){var b=s({},this);delete b.$promise;delete b.$resolved;return b};r(l,function(b,k){var g=/^(POST|PUT|PATCH)$/i.test(b.method);e[k]=function(a,y,m,x){var n={},f,l,z;switch(arguments.length){case 4:z=x,l=m;case 3:case 2:if(u(y)){if(u(a)){l=a;z=y;break}l=y;z=m}else{n=a;f=y;l=m;break}case 1:u(a)?l=a:g?f=a:n=a;break;case 0:break;default:throw w("badargs",arguments.length);}var t=this instanceof e,p=t?f:b.isArray?[]:new e(f),
+A={},v=b.interceptor&&b.interceptor.response||F,C=b.interceptor&&b.interceptor.responseError||B;r(b,function(b,a){"params"!=a&&"isArray"!=a&&"interceptor"!=a&&(A[a]=H(b))});g&&(A.data=f);G.setUrlParams(A,s({},c(f,b.params||{}),n),b.url);n=q(A).then(function(a){var c=a.data,g=p.$promise;if(c){if(d.isArray(c)!==!!b.isArray)throw w("badcfg",k,b.isArray?"array":"object",d.isArray(c)?"array":"object");b.isArray?(p.length=0,r(c,function(a){"object"===typeof a?p.push(new e(a)):p.push(a)})):(D(c,p),p.$promise=
+g)}p.$resolved=!0;a.resource=p;return a},function(a){p.$resolved=!0;(z||E)(a);return h.reject(a)});n=n.then(function(a){var b=v(a);(l||E)(b,a.headers);return b},C);return t?n:(p.$promise=n,p.$resolved=!1,p)};e.prototype["$"+k]=function(a,b,c){u(a)&&(c=b,b=a,a={});a=e[k].call(this,a,this,b,c);return a.$promise||a}});e.bind=function(b){return v(x,s({},g,b),l)};return e}var E=d.noop,r=d.forEach,s=d.extend,H=d.copy,u=d.isFunction;t.prototype={setUrlParams:function(f,g,l){var m=this,c=l||m.template,h,
+e,q=m.urlParams={};r(c.split(/\W/),function(b){if("hasOwnProperty"===b)throw w("badname");!/^\d+$/.test(b)&&b&&(new RegExp("(^|[^\\\\]):"+b+"(\\W|$)")).test(c)&&(q[b]=!0)});c=c.replace(/\\:/g,":");g=g||{};r(m.urlParams,function(b,k){h=g.hasOwnProperty(k)?g[k]:m.defaults[k];d.isDefined(h)&&null!==h?(e=encodeURIComponent(h).replace(/%40/gi,"@").replace(/%3A/gi,":").replace(/%24/g,"$").replace(/%2C/gi,",").replace(/%20/g,"%20").replace(/%26/gi,"&").replace(/%3D/gi,"=").replace(/%2B/gi,"+"),c=c.replace(new RegExp(":"+
+k+"(\\W|$)","g"),function(b,a){return e+a})):c=c.replace(new RegExp("(/?):"+k+"(\\W|$)","g"),function(b,a,c){return"/"==c.charAt(0)?c:a+c})});m.defaults.stripTrailingSlashes&&(c=c.replace(/\/+$/,"")||"/");c=c.replace(/\/\.(?=\w+($|\?))/,".");f.url=c.replace(/\/\\\./,"/.");r(g,function(b,c){m.urlParams[c]||(f.params=f.params||{},f.params[c]=b)})}};return v}]})})(window,window.angular);
+//# sourceMappingURL=angular-resource.min.js.map
+
+/*! ngStorage 0.3.0 | Copyright (c) 2013 Gias Kay Lee | MIT License */"use strict";!function(){function a(a){return["$rootScope","$window",function(b,c){for(var d,e,f,g=c[a]||(console.warn("This browser does not support Web Storage!"),{}),h={$default:function(a){for(var b in a)angular.isDefined(h[b])||(h[b]=a[b]);return h},$reset:function(a){for(var b in h)"$"===b[0]||delete h[b];return h.$default(a)}},i=0;i<g.length;i++)(f=g.key(i))&&"ngStorage-"===f.slice(0,10)&&(h[f.slice(10)]=angular.fromJson(g.getItem(f)));return d=angular.copy(h),b.$watch(function(){e||(e=setTimeout(function(){if(e=null,!angular.equals(h,d)){angular.forEach(h,function(a,b){angular.isDefined(a)&&"$"!==b[0]&&g.setItem("ngStorage-"+b,angular.toJson(a)),delete d[b]});for(var a in d)g.removeItem("ngStorage-"+a);d=angular.copy(h)}},100))}),"localStorage"===a&&c.addEventListener&&c.addEventListener("storage",function(a){"ngStorage-"===a.key.slice(0,10)&&(a.newValue?h[a.key.slice(10)]=angular.fromJson(a.newValue):delete h[a.key.slice(10)],d=angular.copy(h),b.$apply())}),h}]}angular.module("ngStorage",[]).factory("$localStorage",a("localStorage")).factory("$sessionStorage",a("sessionStorage"))}();
+/*
+ AngularJS v1.4.0-rc.1
+ (c) 2010-2015 Google, Inc. http://angularjs.org
+ License: MIT
+*/
+(function(y,u,z){'use strict';function s(f,k,p){n.directive(f,["$parse","$swipe",function(d,e){return function(l,m,g){function h(a){if(!b)return!1;var c=Math.abs(a.y-b.y);a=(a.x-b.x)*k;return q&&75>c&&0<a&&30<a&&.3>c/a}var c=d(g[f]),b,q,a=["touch"];u.isDefined(g.ngSwipeDisableMouse)||a.push("mouse");e.bind(m,{start:function(a,c){b=a;q=!0},cancel:function(a){q=!1},end:function(a,b){h(a)&&l.$apply(function(){m.triggerHandler(p);c(l,{$event:b})})}},a)}}])}var n=u.module("ngTouch",[]);n.factory("$swipe",
+[function(){function f(d){d=d.originalEvent||d;var e=d.touches&&d.touches.length?d.touches:[d];d=d.changedTouches&&d.changedTouches[0]||e[0];return{x:d.clientX,y:d.clientY}}function k(d,e){var l=[];u.forEach(d,function(d){(d=p[d][e])&&l.push(d)});return l.join(" ")}var p={mouse:{start:"mousedown",move:"mousemove",end:"mouseup"},touch:{start:"touchstart",move:"touchmove",end:"touchend",cancel:"touchcancel"}};return{bind:function(d,e,l){var m,g,h,c,b=!1;l=l||["mouse","touch"];d.on(k(l,"start"),function(a){h=
+f(a);b=!0;g=m=0;c=h;e.start&&e.start(h,a)});var q=k(l,"cancel");if(q)d.on(q,function(a){b=!1;e.cancel&&e.cancel(a)});d.on(k(l,"move"),function(a){if(b&&h){var d=f(a);m+=Math.abs(d.x-c.x);g+=Math.abs(d.y-c.y);c=d;10>m&&10>g||(g>m?(b=!1,e.cancel&&e.cancel(a)):(a.preventDefault(),e.move&&e.move(d,a)))}});d.on(k(l,"end"),function(a){b&&(b=!1,e.end&&e.end(f(a),a))})}}}]);n.config(["$provide",function(f){f.decorator("ngClickDirective",["$delegate",function(k){k.shift();return k}])}]);n.directive("ngClick",
+["$parse","$timeout","$rootElement",function(f,k,p){function d(c,b,d){for(var a=0;a<c.length;a+=2){var e=c[a+1],g=d;if(25>Math.abs(c[a]-b)&&25>Math.abs(e-g))return c.splice(a,a+2),!0}return!1}function e(c){if(!(2500<Date.now()-m)){var b=c.touches&&c.touches.length?c.touches:[c],e=b[0].clientX,b=b[0].clientY;1>e&&1>b||h&&h[0]===e&&h[1]===b||(h&&(h=null),"label"===c.target.tagName.toLowerCase()&&(h=[e,b]),d(g,e,b)||(c.stopPropagation(),c.preventDefault(),c.target&&c.target.blur()))}}function l(c){c=
+c.touches&&c.touches.length?c.touches:[c];var b=c[0].clientX,d=c[0].clientY;g.push(b,d);k(function(){for(var a=0;a<g.length;a+=2)if(g[a]==b&&g[a+1]==d){g.splice(a,a+2);break}},2500,!1)}var m,g,h;return function(c,b,h){function a(){n=!1;b.removeClass("ng-click-active")}var k=f(h.ngClick),n=!1,r,s,v,w;b.on("touchstart",function(a){n=!0;r=a.target?a.target:a.srcElement;3==r.nodeType&&(r=r.parentNode);b.addClass("ng-click-active");s=Date.now();a=a.originalEvent||a;a=(a.touches&&a.touches.length?a.touches:
+[a])[0];v=a.clientX;w=a.clientY});b.on("touchmove",function(b){a()});b.on("touchcancel",function(b){a()});b.on("touchend",function(c){var k=Date.now()-s,f=c.originalEvent||c,t=(f.changedTouches&&f.changedTouches.length?f.changedTouches:f.touches&&f.touches.length?f.touches:[f])[0],f=t.clientX,t=t.clientY,x=Math.sqrt(Math.pow(f-v,2)+Math.pow(t-w,2));n&&750>k&&12>x&&(g||(p[0].addEventListener("click",e,!0),p[0].addEventListener("touchstart",l,!0),g=[]),m=Date.now(),d(g,f,t),r&&r.blur(),u.isDefined(h.disabled)&&
+!1!==h.disabled||b.triggerHandler("click",[c]));a()});b.onclick=function(a){};b.on("click",function(a,b){c.$apply(function(){k(c,{$event:b||a})})});b.on("mousedown",function(a){b.addClass("ng-click-active")});b.on("mousemove mouseup",function(a){b.removeClass("ng-click-active")})}}]);s("ngSwipeLeft",-1,"swipeleft");s("ngSwipeRight",1,"swiperight")})(window,window.angular);
+//# sourceMappingURL=angular-touch.min.js.map
+
+/**
+ * State-based routing for AngularJS
+ * @version v0.2.15
+ * @link http://angular-ui.github.com/
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+"undefined"!=typeof module&&"undefined"!=typeof exports&&module.exports===exports&&(module.exports="ui.router"),function(a,b,c){"use strict";function d(a,b){return N(new(N(function(){},{prototype:a})),b)}function e(a){return M(arguments,function(b){b!==a&&M(b,function(b,c){a.hasOwnProperty(c)||(a[c]=b)})}),a}function f(a,b){var c=[];for(var d in a.path){if(a.path[d]!==b.path[d])break;c.push(a.path[d])}return c}function g(a){if(Object.keys)return Object.keys(a);var b=[];return M(a,function(a,c){b.push(c)}),b}function h(a,b){if(Array.prototype.indexOf)return a.indexOf(b,Number(arguments[2])||0);var c=a.length>>>0,d=Number(arguments[2])||0;for(d=0>d?Math.ceil(d):Math.floor(d),0>d&&(d+=c);c>d;d++)if(d in a&&a[d]===b)return d;return-1}function i(a,b,c,d){var e,i=f(c,d),j={},k=[];for(var l in i)if(i[l].params&&(e=g(i[l].params),e.length))for(var m in e)h(k,e[m])>=0||(k.push(e[m]),j[e[m]]=a[e[m]]);return N({},j,b)}function j(a,b,c){if(!c){c=[];for(var d in a)c.push(d)}for(var e=0;e<c.length;e++){var f=c[e];if(a[f]!=b[f])return!1}return!0}function k(a,b){var c={};return M(a,function(a){c[a]=b[a]}),c}function l(a){var b={},c=Array.prototype.concat.apply(Array.prototype,Array.prototype.slice.call(arguments,1));return M(c,function(c){c in a&&(b[c]=a[c])}),b}function m(a){var b={},c=Array.prototype.concat.apply(Array.prototype,Array.prototype.slice.call(arguments,1));for(var d in a)-1==h(c,d)&&(b[d]=a[d]);return b}function n(a,b){var c=L(a),d=c?[]:{};return M(a,function(a,e){b(a,e)&&(d[c?d.length:e]=a)}),d}function o(a,b){var c=L(a)?[]:{};return M(a,function(a,d){c[d]=b(a,d)}),c}function p(a,b){var d=1,f=2,i={},j=[],k=i,l=N(a.when(i),{$$promises:i,$$values:i});this.study=function(i){function n(a,c){if(s[c]!==f){if(r.push(c),s[c]===d)throw r.splice(0,h(r,c)),new Error("Cyclic dependency: "+r.join(" -> "));if(s[c]=d,J(a))q.push(c,[function(){return b.get(a)}],j);else{var e=b.annotate(a);M(e,function(a){a!==c&&i.hasOwnProperty(a)&&n(i[a],a)}),q.push(c,a,e)}r.pop(),s[c]=f}}function o(a){return K(a)&&a.then&&a.$$promises}if(!K(i))throw new Error("'invocables' must be an object");var p=g(i||{}),q=[],r=[],s={};return M(i,n),i=r=s=null,function(d,f,g){function h(){--u||(v||e(t,f.$$values),r.$$values=t,r.$$promises=r.$$promises||!0,delete r.$$inheritedValues,n.resolve(t))}function i(a){r.$$failure=a,n.reject(a)}function j(c,e,f){function j(a){l.reject(a),i(a)}function k(){if(!H(r.$$failure))try{l.resolve(b.invoke(e,g,t)),l.promise.then(function(a){t[c]=a,h()},j)}catch(a){j(a)}}var l=a.defer(),m=0;M(f,function(a){s.hasOwnProperty(a)&&!d.hasOwnProperty(a)&&(m++,s[a].then(function(b){t[a]=b,--m||k()},j))}),m||k(),s[c]=l.promise}if(o(d)&&g===c&&(g=f,f=d,d=null),d){if(!K(d))throw new Error("'locals' must be an object")}else d=k;if(f){if(!o(f))throw new Error("'parent' must be a promise returned by $resolve.resolve()")}else f=l;var n=a.defer(),r=n.promise,s=r.$$promises={},t=N({},d),u=1+q.length/3,v=!1;if(H(f.$$failure))return i(f.$$failure),r;f.$$inheritedValues&&e(t,m(f.$$inheritedValues,p)),N(s,f.$$promises),f.$$values?(v=e(t,m(f.$$values,p)),r.$$inheritedValues=m(f.$$values,p),h()):(f.$$inheritedValues&&(r.$$inheritedValues=m(f.$$inheritedValues,p)),f.then(h,i));for(var w=0,x=q.length;x>w;w+=3)d.hasOwnProperty(q[w])?h():j(q[w],q[w+1],q[w+2]);return r}},this.resolve=function(a,b,c,d){return this.study(a)(b,c,d)}}function q(a,b,c){this.fromConfig=function(a,b,c){return H(a.template)?this.fromString(a.template,b):H(a.templateUrl)?this.fromUrl(a.templateUrl,b):H(a.templateProvider)?this.fromProvider(a.templateProvider,b,c):null},this.fromString=function(a,b){return I(a)?a(b):a},this.fromUrl=function(c,d){return I(c)&&(c=c(d)),null==c?null:a.get(c,{cache:b,headers:{Accept:"text/html"}}).then(function(a){return a.data})},this.fromProvider=function(a,b,d){return c.invoke(a,null,d||{params:b})}}function r(a,b,e){function f(b,c,d,e){if(q.push(b),o[b])return o[b];if(!/^\w+(-+\w+)*(?:\[\])?$/.test(b))throw new Error("Invalid parameter name '"+b+"' in pattern '"+a+"'");if(p[b])throw new Error("Duplicate parameter name '"+b+"' in pattern '"+a+"'");return p[b]=new P.Param(b,c,d,e),p[b]}function g(a,b,c,d){var e=["",""],f=a.replace(/[\\\[\]\^$*+?.()|{}]/g,"\\$&");if(!b)return f;switch(c){case!1:e=["(",")"+(d?"?":"")];break;case!0:e=["?(",")?"];break;default:e=["("+c+"|",")?"]}return f+e[0]+b+e[1]}function h(e,f){var g,h,i,j,k;return g=e[2]||e[3],k=b.params[g],i=a.substring(m,e.index),h=f?e[4]:e[4]||("*"==e[1]?".*":null),j=P.type(h||"string")||d(P.type("string"),{pattern:new RegExp(h,b.caseInsensitive?"i":c)}),{id:g,regexp:h,segment:i,type:j,cfg:k}}b=N({params:{}},K(b)?b:{});var i,j=/([:*])([\w\[\]]+)|\{([\w\[\]]+)(?:\:((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,k=/([:]?)([\w\[\]-]+)|\{([\w\[\]-]+)(?:\:((?:[^{}\\]+|\\.|\{(?:[^{}\\]+|\\.)*\})+))?\}/g,l="^",m=0,n=this.segments=[],o=e?e.params:{},p=this.params=e?e.params.$$new():new P.ParamSet,q=[];this.source=a;for(var r,s,t;(i=j.exec(a))&&(r=h(i,!1),!(r.segment.indexOf("?")>=0));)s=f(r.id,r.type,r.cfg,"path"),l+=g(r.segment,s.type.pattern.source,s.squash,s.isOptional),n.push(r.segment),m=j.lastIndex;t=a.substring(m);var u=t.indexOf("?");if(u>=0){var v=this.sourceSearch=t.substring(u);if(t=t.substring(0,u),this.sourcePath=a.substring(0,m+u),v.length>0)for(m=0;i=k.exec(v);)r=h(i,!0),s=f(r.id,r.type,r.cfg,"search"),m=j.lastIndex}else this.sourcePath=a,this.sourceSearch="";l+=g(t)+(b.strict===!1?"/?":"")+"$",n.push(t),this.regexp=new RegExp(l,b.caseInsensitive?"i":c),this.prefix=n[0],this.$$paramNames=q}function s(a){N(this,a)}function t(){function a(a){return null!=a?a.toString().replace(/\//g,"%2F"):a}function e(a){return null!=a?a.toString().replace(/%2F/g,"/"):a}function f(){return{strict:p,caseInsensitive:m}}function i(a){return I(a)||L(a)&&I(a[a.length-1])}function j(){for(;w.length;){var a=w.shift();if(a.pattern)throw new Error("You cannot override a type's .pattern at runtime.");b.extend(u[a.name],l.invoke(a.def))}}function k(a){N(this,a||{})}P=this;var l,m=!1,p=!0,q=!1,u={},v=!0,w=[],x={string:{encode:a,decode:e,is:function(a){return null==a||!H(a)||"string"==typeof a},pattern:/[^/]*/},"int":{encode:a,decode:function(a){return parseInt(a,10)},is:function(a){return H(a)&&this.decode(a.toString())===a},pattern:/\d+/},bool:{encode:function(a){return a?1:0},decode:function(a){return 0!==parseInt(a,10)},is:function(a){return a===!0||a===!1},pattern:/0|1/},date:{encode:function(a){return this.is(a)?[a.getFullYear(),("0"+(a.getMonth()+1)).slice(-2),("0"+a.getDate()).slice(-2)].join("-"):c},decode:function(a){if(this.is(a))return a;var b=this.capture.exec(a);return b?new Date(b[1],b[2]-1,b[3]):c},is:function(a){return a instanceof Date&&!isNaN(a.valueOf())},equals:function(a,b){return this.is(a)&&this.is(b)&&a.toISOString()===b.toISOString()},pattern:/[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])/,capture:/([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])/},json:{encode:b.toJson,decode:b.fromJson,is:b.isObject,equals:b.equals,pattern:/[^/]*/},any:{encode:b.identity,decode:b.identity,equals:b.equals,pattern:/.*/}};t.$$getDefaultValue=function(a){if(!i(a.value))return a.value;if(!l)throw new Error("Injectable functions cannot be called at configuration time");return l.invoke(a.value)},this.caseInsensitive=function(a){return H(a)&&(m=a),m},this.strictMode=function(a){return H(a)&&(p=a),p},this.defaultSquashPolicy=function(a){if(!H(a))return q;if(a!==!0&&a!==!1&&!J(a))throw new Error("Invalid squash policy: "+a+". Valid policies: false, true, arbitrary-string");return q=a,a},this.compile=function(a,b){return new r(a,N(f(),b))},this.isMatcher=function(a){if(!K(a))return!1;var b=!0;return M(r.prototype,function(c,d){I(c)&&(b=b&&H(a[d])&&I(a[d]))}),b},this.type=function(a,b,c){if(!H(b))return u[a];if(u.hasOwnProperty(a))throw new Error("A type named '"+a+"' has already been defined.");return u[a]=new s(N({name:a},b)),c&&(w.push({name:a,def:c}),v||j()),this},M(x,function(a,b){u[b]=new s(N({name:b},a))}),u=d(u,{}),this.$get=["$injector",function(a){return l=a,v=!1,j(),M(x,function(a,b){u[b]||(u[b]=new s(a))}),this}],this.Param=function(a,b,d,e){function f(a){var b=K(a)?g(a):[],c=-1===h(b,"value")&&-1===h(b,"type")&&-1===h(b,"squash")&&-1===h(b,"array");return c&&(a={value:a}),a.$$fn=i(a.value)?a.value:function(){return a.value},a}function j(b,c,d){if(b.type&&c)throw new Error("Param '"+a+"' has two type configurations.");return c?c:b.type?b.type instanceof s?b.type:new s(b.type):"config"===d?u.any:u.string}function k(){var b={array:"search"===e?"auto":!1},c=a.match(/\[\]$/)?{array:!0}:{};return N(b,c,d).array}function m(a,b){var c=a.squash;if(!b||c===!1)return!1;if(!H(c)||null==c)return q;if(c===!0||J(c))return c;throw new Error("Invalid squash policy: '"+c+"'. Valid policies: false, true, or arbitrary string")}function p(a,b,d,e){var f,g,i=[{from:"",to:d||b?c:""},{from:null,to:d||b?c:""}];return f=L(a.replace)?a.replace:[],J(e)&&f.push({from:e,to:c}),g=o(f,function(a){return a.from}),n(i,function(a){return-1===h(g,a.from)}).concat(f)}function r(){if(!l)throw new Error("Injectable functions cannot be called at configuration time");var a=l.invoke(d.$$fn);if(null!==a&&a!==c&&!w.type.is(a))throw new Error("Default value ("+a+") for parameter '"+w.id+"' is not an instance of Type ("+w.type.name+")");return a}function t(a){function b(a){return function(b){return b.from===a}}function c(a){var c=o(n(w.replace,b(a)),function(a){return a.to});return c.length?c[0]:a}return a=c(a),H(a)?w.type.$normalize(a):r()}function v(){return"{Param:"+a+" "+b+" squash: '"+z+"' optional: "+y+"}"}var w=this;d=f(d),b=j(d,b,e);var x=k();b=x?b.$asArray(x,"search"===e):b,"string"!==b.name||x||"path"!==e||d.value!==c||(d.value="");var y=d.value!==c,z=m(d,y),A=p(d,x,y,z);N(this,{id:a,type:b,location:e,array:x,squash:z,replace:A,isOptional:y,value:t,dynamic:c,config:d,toString:v})},k.prototype={$$new:function(){return d(this,N(new k,{$$parent:this}))},$$keys:function(){for(var a=[],b=[],c=this,d=g(k.prototype);c;)b.push(c),c=c.$$parent;return b.reverse(),M(b,function(b){M(g(b),function(b){-1===h(a,b)&&-1===h(d,b)&&a.push(b)})}),a},$$values:function(a){var b={},c=this;return M(c.$$keys(),function(d){b[d]=c[d].value(a&&a[d])}),b},$$equals:function(a,b){var c=!0,d=this;return M(d.$$keys(),function(e){var f=a&&a[e],g=b&&b[e];d[e].type.equals(f,g)||(c=!1)}),c},$$validates:function(a){var d,e,f,g,h,i=this.$$keys();for(d=0;d<i.length&&(e=this[i[d]],f=a[i[d]],f!==c&&null!==f||!e.isOptional);d++){if(g=e.type.$normalize(f),!e.type.is(g))return!1;if(h=e.type.encode(g),b.isString(h)&&!e.type.pattern.exec(h))return!1}return!0},$$parent:c},this.ParamSet=k}function u(a,d){function e(a){var b=/^\^((?:\\[^a-zA-Z0-9]|[^\\\[\]\^$*+?.()|{}]+)*)/.exec(a.source);return null!=b?b[1].replace(/\\(.)/g,"$1"):""}function f(a,b){return a.replace(/\$(\$|\d{1,2})/,function(a,c){return b["$"===c?0:Number(c)]})}function g(a,b,c){if(!c)return!1;var d=a.invoke(b,b,{$match:c});return H(d)?d:!0}function h(d,e,f,g){function h(a,b,c){return"/"===p?a:b?p.slice(0,-1)+a:c?p.slice(1)+a:a}function m(a){function b(a){var b=a(f,d);return b?(J(b)&&d.replace().url(b),!0):!1}if(!a||!a.defaultPrevented){o&&d.url()===o;o=c;var e,g=j.length;for(e=0;g>e;e++)if(b(j[e]))return;k&&b(k)}}function n(){return i=i||e.$on("$locationChangeSuccess",m)}var o,p=g.baseHref(),q=d.url();return l||n(),{sync:function(){m()},listen:function(){return n()},update:function(a){return a?void(q=d.url()):void(d.url()!==q&&(d.url(q),d.replace()))},push:function(a,b,e){var f=a.format(b||{});null!==f&&b&&b["#"]&&(f+="#"+b["#"]),d.url(f),o=e&&e.$$avoidResync?d.url():c,e&&e.replace&&d.replace()},href:function(c,e,f){if(!c.validates(e))return null;var g=a.html5Mode();b.isObject(g)&&(g=g.enabled);var i=c.format(e);if(f=f||{},g||null===i||(i="#"+a.hashPrefix()+i),null!==i&&e&&e["#"]&&(i+="#"+e["#"]),i=h(i,g,f.absolute),!f.absolute||!i)return i;var j=!g&&i?"/":"",k=d.port();return k=80===k||443===k?"":":"+k,[d.protocol(),"://",d.host(),k,j,i].join("")}}}var i,j=[],k=null,l=!1;this.rule=function(a){if(!I(a))throw new Error("'rule' must be a function");return j.push(a),this},this.otherwise=function(a){if(J(a)){var b=a;a=function(){return b}}else if(!I(a))throw new Error("'rule' must be a function");return k=a,this},this.when=function(a,b){var c,h=J(b);if(J(a)&&(a=d.compile(a)),!h&&!I(b)&&!L(b))throw new Error("invalid 'handler' in when()");var i={matcher:function(a,b){return h&&(c=d.compile(b),b=["$match",function(a){return c.format(a)}]),N(function(c,d){return g(c,b,a.exec(d.path(),d.search()))},{prefix:J(a.prefix)?a.prefix:""})},regex:function(a,b){if(a.global||a.sticky)throw new Error("when() RegExp must not be global or sticky");return h&&(c=b,b=["$match",function(a){return f(c,a)}]),N(function(c,d){return g(c,b,a.exec(d.path()))},{prefix:e(a)})}},j={matcher:d.isMatcher(a),regex:a instanceof RegExp};for(var k in j)if(j[k])return this.rule(i[k](a,b));throw new Error("invalid 'what' in when()")},this.deferIntercept=function(a){a===c&&(a=!0),l=a},this.$get=h,h.$inject=["$location","$rootScope","$injector","$browser"]}function v(a,e){function f(a){return 0===a.indexOf(".")||0===a.indexOf("^")}function m(a,b){if(!a)return c;var d=J(a),e=d?a:a.name,g=f(e);if(g){if(!b)throw new Error("No reference point given for path '"+e+"'");b=m(b);for(var h=e.split("."),i=0,j=h.length,k=b;j>i;i++)if(""!==h[i]||0!==i){if("^"!==h[i])break;if(!k.parent)throw new Error("Path '"+e+"' not valid for state '"+b.name+"'");k=k.parent}else k=b;h=h.slice(i).join("."),e=k.name+(k.name&&h?".":"")+h}var l=z[e];return!l||!d&&(d||l!==a&&l.self!==a)?c:l}function n(a,b){A[a]||(A[a]=[]),A[a].push(b)}function p(a){for(var b=A[a]||[];b.length;)q(b.shift())}function q(b){b=d(b,{self:b,resolve:b.resolve||{},toString:function(){return this.name}});var c=b.name;if(!J(c)||c.indexOf("@")>=0)throw new Error("State must have a valid name");if(z.hasOwnProperty(c))throw new Error("State '"+c+"'' is already defined");var e=-1!==c.indexOf(".")?c.substring(0,c.lastIndexOf(".")):J(b.parent)?b.parent:K(b.parent)&&J(b.parent.name)?b.parent.name:"";if(e&&!z[e])return n(e,b.self);for(var f in C)I(C[f])&&(b[f]=C[f](b,C.$delegates[f]));return z[c]=b,!b[B]&&b.url&&a.when(b.url,["$match","$stateParams",function(a,c){y.$current.navigable==b&&j(a,c)||y.transitionTo(b,a,{inherit:!0,location:!1})}]),p(c),b}function r(a){return a.indexOf("*")>-1}function s(a){for(var b=a.split("."),c=y.$current.name.split("."),d=0,e=b.length;e>d;d++)"*"===b[d]&&(c[d]="*");return"**"===b[0]&&(c=c.slice(h(c,b[1])),c.unshift("**")),"**"===b[b.length-1]&&(c.splice(h(c,b[b.length-2])+1,Number.MAX_VALUE),c.push("**")),b.length!=c.length?!1:c.join("")===b.join("")}function t(a,b){return J(a)&&!H(b)?C[a]:I(b)&&J(a)?(C[a]&&!C.$delegates[a]&&(C.$delegates[a]=C[a]),C[a]=b,this):this}function u(a,b){return K(a)?b=a:b.name=a,q(b),this}function v(a,e,f,h,l,n,p,q,t){function u(b,c,d,f){var g=a.$broadcast("$stateNotFound",b,c,d);if(g.defaultPrevented)return p.update(),D;if(!g.retry)return null;if(f.$retry)return p.update(),E;var h=y.transition=e.when(g.retry);return h.then(function(){return h!==y.transition?A:(b.options.$retry=!0,y.transitionTo(b.to,b.toParams,b.options))},function(){return D}),p.update(),h}function v(a,c,d,g,i,j){function m(){var c=[];return M(a.views,function(d,e){var g=d.resolve&&d.resolve!==a.resolve?d.resolve:{};g.$template=[function(){return f.load(e,{view:d,locals:i.globals,params:n,notify:j.notify})||""}],c.push(l.resolve(g,i.globals,i.resolve,a).then(function(c){if(I(d.controllerProvider)||L(d.controllerProvider)){var f=b.extend({},g,i.globals);c.$$controller=h.invoke(d.controllerProvider,null,f)}else c.$$controller=d.controller;c.$$state=a,c.$$controllerAs=d.controllerAs,i[e]=c}))}),e.all(c).then(function(){return i.globals})}var n=d?c:k(a.params.$$keys(),c),o={$stateParams:n};i.resolve=l.resolve(a.resolve,o,i.resolve,a);var p=[i.resolve.then(function(a){i.globals=a})];return g&&p.push(g),e.all(p).then(m).then(function(a){return i})}var A=e.reject(new Error("transition superseded")),C=e.reject(new Error("transition prevented")),D=e.reject(new Error("transition aborted")),E=e.reject(new Error("transition failed"));return x.locals={resolve:null,globals:{$stateParams:{}}},y={params:{},current:x.self,$current:x,transition:null},y.reload=function(a){return y.transitionTo(y.current,n,{reload:a||!0,inherit:!1,notify:!0})},y.go=function(a,b,c){return y.transitionTo(a,b,N({inherit:!0,relative:y.$current},c))},y.transitionTo=function(b,c,f){c=c||{},f=N({location:!0,inherit:!1,relative:null,notify:!0,reload:!1,$retry:!1},f||{});var g,j=y.$current,l=y.params,o=j.path,q=m(b,f.relative),r=c["#"];if(!H(q)){var s={to:b,toParams:c,options:f},t=u(s,j.self,l,f);if(t)return t;if(b=s.to,c=s.toParams,f=s.options,q=m(b,f.relative),!H(q)){if(!f.relative)throw new Error("No such state '"+b+"'");throw new Error("Could not resolve '"+b+"' from state '"+f.relative+"'")}}if(q[B])throw new Error("Cannot transition to abstract state '"+b+"'");if(f.inherit&&(c=i(n,c||{},y.$current,q)),!q.params.$$validates(c))return E;c=q.params.$$values(c),b=q;var z=b.path,D=0,F=z[D],G=x.locals,I=[];if(f.reload){if(J(f.reload)||K(f.reload)){if(K(f.reload)&&!f.reload.name)throw new Error("Invalid reload state object");var L=f.reload===!0?o[0]:m(f.reload);if(f.reload&&!L)throw new Error("No such reload state '"+(J(f.reload)?f.reload:f.reload.name)+"'");for(;F&&F===o[D]&&F!==L;)G=I[D]=F.locals,D++,F=z[D]}}else for(;F&&F===o[D]&&F.ownParams.$$equals(c,l);)G=I[D]=F.locals,D++,F=z[D];if(w(b,c,j,l,G,f))return r&&(c["#"]=r),y.params=c,O(y.params,n),f.location&&b.navigable&&b.navigable.url&&(p.push(b.navigable.url,c,{$$avoidResync:!0,replace:"replace"===f.location}),p.update(!0)),y.transition=null,e.when(y.current);if(c=k(b.params.$$keys(),c||{}),f.notify&&a.$broadcast("$stateChangeStart",b.self,c,j.self,l).defaultPrevented)return a.$broadcast("$stateChangeCancel",b.self,c,j.self,l),p.update(),C;for(var M=e.when(G),P=D;P<z.length;P++,F=z[P])G=I[P]=d(G),M=v(F,c,F===b,M,G,f);var Q=y.transition=M.then(function(){var d,e,g;if(y.transition!==Q)return A;for(d=o.length-1;d>=D;d--)g=o[d],g.self.onExit&&h.invoke(g.self.onExit,g.self,g.locals.globals),g.locals=null;for(d=D;d<z.length;d++)e=z[d],e.locals=I[d],e.self.onEnter&&h.invoke(e.self.onEnter,e.self,e.locals.globals);return r&&(c["#"]=r),y.transition!==Q?A:(y.$current=b,y.current=b.self,y.params=c,O(y.params,n),y.transition=null,f.location&&b.navigable&&p.push(b.navigable.url,b.navigable.locals.globals.$stateParams,{$$avoidResync:!0,replace:"replace"===f.location}),f.notify&&a.$broadcast("$stateChangeSuccess",b.self,c,j.self,l),p.update(!0),y.current)},function(d){return y.transition!==Q?A:(y.transition=null,g=a.$broadcast("$stateChangeError",b.self,c,j.self,l,d),g.defaultPrevented||p.update(),e.reject(d))});return Q},y.is=function(a,b,d){d=N({relative:y.$current},d||{});var e=m(a,d.relative);return H(e)?y.$current!==e?!1:b?j(e.params.$$values(b),n):!0:c},y.includes=function(a,b,d){if(d=N({relative:y.$current},d||{}),J(a)&&r(a)){if(!s(a))return!1;a=y.$current.name}var e=m(a,d.relative);return H(e)?H(y.$current.includes[e.name])?b?j(e.params.$$values(b),n,g(b)):!0:!1:c},y.href=function(a,b,d){d=N({lossy:!0,inherit:!0,absolute:!1,relative:y.$current},d||{});var e=m(a,d.relative);if(!H(e))return null;d.inherit&&(b=i(n,b||{},y.$current,e));var f=e&&d.lossy?e.navigable:e;return f&&f.url!==c&&null!==f.url?p.href(f.url,k(e.params.$$keys().concat("#"),b||{}),{absolute:d.absolute}):null},y.get=function(a,b){if(0===arguments.length)return o(g(z),function(a){return z[a].self});var c=m(a,b||y.$current);return c&&c.self?c.self:null},y}function w(a,b,c,d,e,f){function g(a,b,c){function d(b){return"search"!=a.params[b].location}var e=a.params.$$keys().filter(d),f=l.apply({},[a.params].concat(e)),g=new P.ParamSet(f);return g.$$equals(b,c)}return!f.reload&&a===c&&(e===c.locals||a.self.reloadOnSearch===!1&&g(c,d,b))?!0:void 0}var x,y,z={},A={},B="abstract",C={parent:function(a){if(H(a.parent)&&a.parent)return m(a.parent);var b=/^(.+)\.[^.]+$/.exec(a.name);return b?m(b[1]):x},data:function(a){return a.parent&&a.parent.data&&(a.data=a.self.data=N({},a.parent.data,a.data)),a.data},url:function(a){var b=a.url,c={params:a.params||{}};if(J(b))return"^"==b.charAt(0)?e.compile(b.substring(1),c):(a.parent.navigable||x).url.concat(b,c);if(!b||e.isMatcher(b))return b;throw new Error("Invalid url '"+b+"' in state '"+a+"'")},navigable:function(a){return a.url?a:a.parent?a.parent.navigable:null},ownParams:function(a){var b=a.url&&a.url.params||new P.ParamSet;return M(a.params||{},function(a,c){b[c]||(b[c]=new P.Param(c,null,a,"config"))}),b},params:function(a){return a.parent&&a.parent.params?N(a.parent.params.$$new(),a.ownParams):new P.ParamSet},views:function(a){var b={};return M(H(a.views)?a.views:{"":a},function(c,d){d.indexOf("@")<0&&(d+="@"+a.parent.name),b[d]=c}),b},path:function(a){return a.parent?a.parent.path.concat(a):[]},includes:function(a){var b=a.parent?N({},a.parent.includes):{};return b[a.name]=!0,b},$delegates:{}};x=q({name:"",url:"^",views:null,"abstract":!0}),x.navigable=null,this.decorator=t,this.state=u,this.$get=v,v.$inject=["$rootScope","$q","$view","$injector","$resolve","$stateParams","$urlRouter","$location","$urlMatcherFactory"]}function w(){function a(a,b){return{load:function(c,d){var e,f={template:null,controller:null,view:null,locals:null,notify:!0,async:!0,params:{}};return d=N(f,d),d.view&&(e=b.fromConfig(d.view,d.params,d.locals)),e&&d.notify&&a.$broadcast("$viewContentLoading",d),e}}}this.$get=a,a.$inject=["$rootScope","$templateFactory"]}function x(){var a=!1;this.useAnchorScroll=function(){a=!0},this.$get=["$anchorScroll","$timeout",function(b,c){return a?b:function(a){return c(function(){a[0].scrollIntoView()},0,!1)}}]}function y(a,c,d,e){function f(){return c.has?function(a){return c.has(a)?c.get(a):null}:function(a){try{return c.get(a)}catch(b){return null}}}function g(a,b){var c=function(){return{enter:function(a,b,c){b.after(a),c()},leave:function(a,b){a.remove(),b()}}};if(j)return{enter:function(a,b,c){var d=j.enter(a,null,b,c);d&&d.then&&d.then(c)},leave:function(a,b){var c=j.leave(a,b);c&&c.then&&c.then(b)}};if(i){var d=i&&i(b,a);return{enter:function(a,b,c){d.enter(a,null,b),c()},leave:function(a,b){d.leave(a),b()}}}return c()}var h=f(),i=h("$animator"),j=h("$animate"),k={restrict:"ECA",terminal:!0,priority:400,transclude:"element",compile:function(c,f,h){return function(c,f,i){function j(){l&&(l.remove(),l=null),n&&(n.$destroy(),n=null),m&&(r.leave(m,function(){l=null}),l=m,m=null)}function k(g){var k,l=A(c,i,f,e),s=l&&a.$current&&a.$current.locals[l];if(g||s!==o){k=c.$new(),o=a.$current.locals[l];var t=h(k,function(a){r.enter(a,f,function(){n&&n.$emit("$viewContentAnimationEnded"),(b.isDefined(q)&&!q||c.$eval(q))&&d(a)}),j()});m=t,n=k,n.$emit("$viewContentLoaded"),n.$eval(p)}}var l,m,n,o,p=i.onload||"",q=i.autoscroll,r=g(i,c);c.$on("$stateChangeSuccess",function(){k(!1)}),c.$on("$viewContentLoading",function(){k(!1)}),k(!0)}}};return k}function z(a,b,c,d){return{restrict:"ECA",priority:-400,compile:function(e){var f=e.html();return function(e,g,h){var i=c.$current,j=A(e,h,g,d),k=i&&i.locals[j];if(k){g.data("$uiView",{name:j,state:k.$$state}),g.html(k.$template?k.$template:f);var l=a(g.contents());if(k.$$controller){k.$scope=e,k.$element=g;var m=b(k.$$controller,k);k.$$controllerAs&&(e[k.$$controllerAs]=m),g.data("$ngControllerController",m),g.children().data("$ngControllerController",m)}l(e)}}}}}function A(a,b,c,d){var e=d(b.uiView||b.name||"")(a),f=c.inheritedData("$uiView");return e.indexOf("@")>=0?e:e+"@"+(f?f.state.name:"")}function B(a,b){var c,d=a.match(/^\s*({[^}]*})\s*$/);if(d&&(a=b+"("+d[1]+")"),c=a.replace(/\n/g," ").match(/^([^(]+?)\s*(\((.*)\))?$/),!c||4!==c.length)throw new Error("Invalid state ref '"+a+"'");return{state:c[1],paramExpr:c[3]||null}}function C(a){var b=a.parent().inheritedData("$uiView");return b&&b.state&&b.state.name?b.state:void 0}function D(a,c){var d=["location","inherit","reload","absolute"];return{restrict:"A",require:["?^uiSrefActive","?^uiSrefActiveEq"],link:function(e,f,g,h){var i=B(g.uiSref,a.current.name),j=null,k=C(f)||a.$current,l="[object SVGAnimatedString]"===Object.prototype.toString.call(f.prop("href"))?"xlink:href":"href",m=null,n="A"===f.prop("tagName").toUpperCase(),o="FORM"===f[0].nodeName,p=o?"action":l,q=!0,r={relative:k,inherit:!0},s=e.$eval(g.uiSrefOpts)||{};b.forEach(d,function(a){a in s&&(r[a]=s[a])});var t=function(c){if(c&&(j=b.copy(c)),q){m=a.href(i.state,j,r);var d=h[1]||h[0];return d&&d.$$addStateInfo(i.state,j),null===m?(q=!1,!1):void g.$set(p,m)}};i.paramExpr&&(e.$watch(i.paramExpr,function(a,b){a!==j&&t(a)},!0),j=b.copy(e.$eval(i.paramExpr))),t(),o||f.bind("click",function(b){var d=b.which||b.button;if(!(d>1||b.ctrlKey||b.metaKey||b.shiftKey||f.attr("target"))){var e=c(function(){a.go(i.state,j,r)});b.preventDefault();var g=n&&!m?1:0;b.preventDefault=function(){g--<=0&&c.cancel(e)}}})}}}function E(a,b,c){return{restrict:"A",controller:["$scope","$element","$attrs",function(b,d,e){function f(){g()?d.addClass(i):d.removeClass(i)}function g(){for(var a=0;a<j.length;a++)if(h(j[a].state,j[a].params))return!0;return!1}function h(b,c){return"undefined"!=typeof e.uiSrefActiveEq?a.is(b.name,c):a.includes(b.name,c)}var i,j=[];i=c(e.uiSrefActiveEq||e.uiSrefActive||"",!1)(b),this.$$addStateInfo=function(b,c){var e=a.get(b,C(d));j.push({state:e||{name:b},params:c}),f()},b.$on("$stateChangeSuccess",f)}]}}function F(a){var b=function(b){return a.is(b)};return b.$stateful=!0,b}function G(a){var b=function(b){return a.includes(b)};return b.$stateful=!0,b}var H=b.isDefined,I=b.isFunction,J=b.isString,K=b.isObject,L=b.isArray,M=b.forEach,N=b.extend,O=b.copy;b.module("ui.router.util",["ng"]),b.module("ui.router.router",["ui.router.util"]),b.module("ui.router.state",["ui.router.router","ui.router.util"]),b.module("ui.router",["ui.router.state"]),b.module("ui.router.compat",["ui.router"]),p.$inject=["$q","$injector"],b.module("ui.router.util").service("$resolve",p),q.$inject=["$http","$templateCache","$injector"],b.module("ui.router.util").service("$templateFactory",q);var P;r.prototype.concat=function(a,b){var c={caseInsensitive:P.caseInsensitive(),strict:P.strictMode(),squash:P.defaultSquashPolicy()};return new r(this.sourcePath+a+this.sourceSearch,N(c,b),this)},r.prototype.toString=function(){return this.source},r.prototype.exec=function(a,b){function c(a){function b(a){return a.split("").reverse().join("")}function c(a){return a.replace(/\\-/g,"-")}var d=b(a).split(/-(?!\\)/),e=o(d,b);return o(e,c).reverse()}var d=this.regexp.exec(a);if(!d)return null;b=b||{};var e,f,g,h=this.parameters(),i=h.length,j=this.segments.length-1,k={};if(j!==d.length-1)throw new Error("Unbalanced capture group in route '"+this.source+"'");for(e=0;j>e;e++){g=h[e];var l=this.params[g],m=d[e+1];for(f=0;f<l.replace;f++)l.replace[f].from===m&&(m=l.replace[f].to);m&&l.array===!0&&(m=c(m)),k[g]=l.value(m)}for(;i>e;e++)g=h[e],k[g]=this.params[g].value(b[g]);return k},r.prototype.parameters=function(a){return H(a)?this.params[a]||null:this.$$paramNames},r.prototype.validates=function(a){return this.params.$$validates(a)},r.prototype.format=function(a){function b(a){return encodeURIComponent(a).replace(/-/g,function(a){return"%5C%"+a.charCodeAt(0).toString(16).toUpperCase()})}a=a||{};var c=this.segments,d=this.parameters(),e=this.params;if(!this.validates(a))return null;var f,g=!1,h=c.length-1,i=d.length,j=c[0];for(f=0;i>f;f++){var k=h>f,l=d[f],m=e[l],n=m.value(a[l]),p=m.isOptional&&m.type.equals(m.value(),n),q=p?m.squash:!1,r=m.type.encode(n);if(k){var s=c[f+1];if(q===!1)null!=r&&(j+=L(r)?o(r,b).join("-"):encodeURIComponent(r)),j+=s;else if(q===!0){var t=j.match(/\/$/)?/\/?(.*)/:/(.*)/;j+=s.match(t)[1]}else J(q)&&(j+=q+s)}else{if(null==r||p&&q!==!1)continue;L(r)||(r=[r]),r=o(r,encodeURIComponent).join("&"+l+"="),j+=(g?"&":"?")+(l+"="+r),g=!0}}return j},s.prototype.is=function(a,b){return!0},s.prototype.encode=function(a,b){return a},s.prototype.decode=function(a,b){return a},s.prototype.equals=function(a,b){return a==b},s.prototype.$subPattern=function(){var a=this.pattern.toString();return a.substr(1,a.length-2)},s.prototype.pattern=/.*/,s.prototype.toString=function(){return"{Type:"+this.name+"}"},s.prototype.$normalize=function(a){return this.is(a)?a:this.decode(a)},s.prototype.$asArray=function(a,b){function d(a,b){function d(a,b){return function(){return a[b].apply(a,arguments)}}function e(a){return L(a)?a:H(a)?[a]:[]}function f(a){switch(a.length){case 0:return c;case 1:return"auto"===b?a[0]:a;default:return a}}function g(a){return!a}function h(a,b){return function(c){c=e(c);var d=o(c,a);return b===!0?0===n(d,g).length:f(d)}}function i(a){return function(b,c){var d=e(b),f=e(c);if(d.length!==f.length)return!1;for(var g=0;g<d.length;g++)if(!a(d[g],f[g]))return!1;return!0}}this.encode=h(d(a,"encode")),this.decode=h(d(a,"decode")),this.is=h(d(a,"is"),!0),this.equals=i(d(a,"equals")),this.pattern=a.pattern,this.$normalize=h(d(a,"$normalize")),this.name=a.name,this.$arrayMode=b}if(!a)return this;if("auto"===a&&!b)throw new Error("'auto' array mode is for query parameters only");return new d(this,a)},b.module("ui.router.util").provider("$urlMatcherFactory",t),b.module("ui.router.util").run(["$urlMatcherFactory",function(a){}]),u.$inject=["$locationProvider","$urlMatcherFactoryProvider"],b.module("ui.router.router").provider("$urlRouter",u),v.$inject=["$urlRouterProvider","$urlMatcherFactoryProvider"],b.module("ui.router.state").value("$stateParams",{}).provider("$state",v),w.$inject=[],b.module("ui.router.state").provider("$view",w),b.module("ui.router.state").provider("$uiViewScroll",x),y.$inject=["$state","$injector","$uiViewScroll","$interpolate"],z.$inject=["$compile","$controller","$state","$interpolate"],b.module("ui.router.state").directive("uiView",y),b.module("ui.router.state").directive("uiView",z),D.$inject=["$state","$timeout"],E.$inject=["$state","$stateParams","$interpolate"],b.module("ui.router.state").directive("uiSref",D).directive("uiSrefActive",E).directive("uiSrefActiveEq",E),F.$inject=["$state"],G.$inject=["$state"],b.module("ui.router.state").filter("isState",F).filter("includedByState",G)}(window,window.angular);
 /* BackgroundCheck
    http://kennethcachia.com/background-check
    v1.2.2 */
@@ -35330,11 +28629,6 @@ drop = $.event.special.drop = {
 $special.dropinit = $special.dropstart = $special.dropend = drop;
 
 })(jQuery); // confine scope	
-/*! jQuery v2.1.4 | (c) 2005, 2015 jQuery Foundation, Inc. | jquery.org/license */
-!function(a,b){"object"==typeof module&&"object"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.document)throw new Error("jQuery requires a window with a document");return b(a)}:b(a)}("undefined"!=typeof window?window:this,function(a,b){var c=[],d=c.slice,e=c.concat,f=c.push,g=c.indexOf,h={},i=h.toString,j=h.hasOwnProperty,k={},l=a.document,m="2.1.4",n=function(a,b){return new n.fn.init(a,b)},o=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,p=/^-ms-/,q=/-([\da-z])/gi,r=function(a,b){return b.toUpperCase()};n.fn=n.prototype={jquery:m,constructor:n,selector:"",length:0,toArray:function(){return d.call(this)},get:function(a){return null!=a?0>a?this[a+this.length]:this[a]:d.call(this)},pushStack:function(a){var b=n.merge(this.constructor(),a);return b.prevObject=this,b.context=this.context,b},each:function(a,b){return n.each(this,a,b)},map:function(a){return this.pushStack(n.map(this,function(b,c){return a.call(b,c,b)}))},slice:function(){return this.pushStack(d.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},eq:function(a){var b=this.length,c=+a+(0>a?b:0);return this.pushStack(c>=0&&b>c?[this[c]]:[])},end:function(){return this.prevObject||this.constructor(null)},push:f,sort:c.sort,splice:c.splice},n.extend=n.fn.extend=function(){var a,b,c,d,e,f,g=arguments[0]||{},h=1,i=arguments.length,j=!1;for("boolean"==typeof g&&(j=g,g=arguments[h]||{},h++),"object"==typeof g||n.isFunction(g)||(g={}),h===i&&(g=this,h--);i>h;h++)if(null!=(a=arguments[h]))for(b in a)c=g[b],d=a[b],g!==d&&(j&&d&&(n.isPlainObject(d)||(e=n.isArray(d)))?(e?(e=!1,f=c&&n.isArray(c)?c:[]):f=c&&n.isPlainObject(c)?c:{},g[b]=n.extend(j,f,d)):void 0!==d&&(g[b]=d));return g},n.extend({expando:"jQuery"+(m+Math.random()).replace(/\D/g,""),isReady:!0,error:function(a){throw new Error(a)},noop:function(){},isFunction:function(a){return"function"===n.type(a)},isArray:Array.isArray,isWindow:function(a){return null!=a&&a===a.window},isNumeric:function(a){return!n.isArray(a)&&a-parseFloat(a)+1>=0},isPlainObject:function(a){return"object"!==n.type(a)||a.nodeType||n.isWindow(a)?!1:a.constructor&&!j.call(a.constructor.prototype,"isPrototypeOf")?!1:!0},isEmptyObject:function(a){var b;for(b in a)return!1;return!0},type:function(a){return null==a?a+"":"object"==typeof a||"function"==typeof a?h[i.call(a)]||"object":typeof a},globalEval:function(a){var b,c=eval;a=n.trim(a),a&&(1===a.indexOf("use strict")?(b=l.createElement("script"),b.text=a,l.head.appendChild(b).parentNode.removeChild(b)):c(a))},camelCase:function(a){return a.replace(p,"ms-").replace(q,r)},nodeName:function(a,b){return a.nodeName&&a.nodeName.toLowerCase()===b.toLowerCase()},each:function(a,b,c){var d,e=0,f=a.length,g=s(a);if(c){if(g){for(;f>e;e++)if(d=b.apply(a[e],c),d===!1)break}else for(e in a)if(d=b.apply(a[e],c),d===!1)break}else if(g){for(;f>e;e++)if(d=b.call(a[e],e,a[e]),d===!1)break}else for(e in a)if(d=b.call(a[e],e,a[e]),d===!1)break;return a},trim:function(a){return null==a?"":(a+"").replace(o,"")},makeArray:function(a,b){var c=b||[];return null!=a&&(s(Object(a))?n.merge(c,"string"==typeof a?[a]:a):f.call(c,a)),c},inArray:function(a,b,c){return null==b?-1:g.call(b,a,c)},merge:function(a,b){for(var c=+b.length,d=0,e=a.length;c>d;d++)a[e++]=b[d];return a.length=e,a},grep:function(a,b,c){for(var d,e=[],f=0,g=a.length,h=!c;g>f;f++)d=!b(a[f],f),d!==h&&e.push(a[f]);return e},map:function(a,b,c){var d,f=0,g=a.length,h=s(a),i=[];if(h)for(;g>f;f++)d=b(a[f],f,c),null!=d&&i.push(d);else for(f in a)d=b(a[f],f,c),null!=d&&i.push(d);return e.apply([],i)},guid:1,proxy:function(a,b){var c,e,f;return"string"==typeof b&&(c=a[b],b=a,a=c),n.isFunction(a)?(e=d.call(arguments,2),f=function(){return a.apply(b||this,e.concat(d.call(arguments)))},f.guid=a.guid=a.guid||n.guid++,f):void 0},now:Date.now,support:k}),n.each("Boolean Number String Function Array Date RegExp Object Error".split(" "),function(a,b){h["[object "+b+"]"]=b.toLowerCase()});function s(a){var b="length"in a&&a.length,c=n.type(a);return"function"===c||n.isWindow(a)?!1:1===a.nodeType&&b?!0:"array"===c||0===b||"number"==typeof b&&b>0&&b-1 in a}var t=function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u="sizzle"+1*new Date,v=a.document,w=0,x=0,y=ha(),z=ha(),A=ha(),B=function(a,b){return a===b&&(l=!0),0},C=1<<31,D={}.hasOwnProperty,E=[],F=E.pop,G=E.push,H=E.push,I=E.slice,J=function(a,b){for(var c=0,d=a.length;d>c;c++)if(a[c]===b)return c;return-1},K="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",L="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",N=M.replace("w","w#"),O="\\["+L+"*("+M+")(?:"+L+"*([*^$|!~]?=)"+L+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+N+"))|)"+L+"*\\]",P=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+O+")*)|.*)\\)|)",Q=new RegExp(L+"+","g"),R=new RegExp("^"+L+"+|((?:^|[^\\\\])(?:\\\\.)*)"+L+"+$","g"),S=new RegExp("^"+L+"*,"+L+"*"),T=new RegExp("^"+L+"*([>+~]|"+L+")"+L+"*"),U=new RegExp("="+L+"*([^\\]'\"]*?)"+L+"*\\]","g"),V=new RegExp(P),W=new RegExp("^"+N+"$"),X={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M.replace("w","w*")+")"),ATTR:new RegExp("^"+O),PSEUDO:new RegExp("^"+P),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+L+"*(even|odd|(([+-]|)(\\d*)n|)"+L+"*(?:([+-]|)"+L+"*(\\d+)|))"+L+"*\\)|)","i"),bool:new RegExp("^(?:"+K+")$","i"),needsContext:new RegExp("^"+L+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+L+"*((?:-\\d)?\\d*)"+L+"*\\)|)(?=[^-]|$)","i")},Y=/^(?:input|select|textarea|button)$/i,Z=/^h\d$/i,$=/^[^{]+\{\s*\[native \w/,_=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,aa=/[+~]/,ba=/'|\\/g,ca=new RegExp("\\\\([\\da-f]{1,6}"+L+"?|("+L+")|.)","ig"),da=function(a,b,c){var d="0x"+b-65536;return d!==d||c?b:0>d?String.fromCharCode(d+65536):String.fromCharCode(d>>10|55296,1023&d|56320)},ea=function(){m()};try{H.apply(E=I.call(v.childNodes),v.childNodes),E[v.childNodes.length].nodeType}catch(fa){H={apply:E.length?function(a,b){G.apply(a,I.call(b))}:function(a,b){var c=a.length,d=0;while(a[c++]=b[d++]);a.length=c-1}}}function ga(a,b,d,e){var f,h,j,k,l,o,r,s,w,x;if((b?b.ownerDocument||b:v)!==n&&m(b),b=b||n,d=d||[],k=b.nodeType,"string"!=typeof a||!a||1!==k&&9!==k&&11!==k)return d;if(!e&&p){if(11!==k&&(f=_.exec(a)))if(j=f[1]){if(9===k){if(h=b.getElementById(j),!h||!h.parentNode)return d;if(h.id===j)return d.push(h),d}else if(b.ownerDocument&&(h=b.ownerDocument.getElementById(j))&&t(b,h)&&h.id===j)return d.push(h),d}else{if(f[2])return H.apply(d,b.getElementsByTagName(a)),d;if((j=f[3])&&c.getElementsByClassName)return H.apply(d,b.getElementsByClassName(j)),d}if(c.qsa&&(!q||!q.test(a))){if(s=r=u,w=b,x=1!==k&&a,1===k&&"object"!==b.nodeName.toLowerCase()){o=g(a),(r=b.getAttribute("id"))?s=r.replace(ba,"\\$&"):b.setAttribute("id",s),s="[id='"+s+"'] ",l=o.length;while(l--)o[l]=s+ra(o[l]);w=aa.test(a)&&pa(b.parentNode)||b,x=o.join(",")}if(x)try{return H.apply(d,w.querySelectorAll(x)),d}catch(y){}finally{r||b.removeAttribute("id")}}}return i(a.replace(R,"$1"),b,d,e)}function ha(){var a=[];function b(c,e){return a.push(c+" ")>d.cacheLength&&delete b[a.shift()],b[c+" "]=e}return b}function ia(a){return a[u]=!0,a}function ja(a){var b=n.createElement("div");try{return!!a(b)}catch(c){return!1}finally{b.parentNode&&b.parentNode.removeChild(b),b=null}}function ka(a,b){var c=a.split("|"),e=a.length;while(e--)d.attrHandle[c[e]]=b}function la(a,b){var c=b&&a,d=c&&1===a.nodeType&&1===b.nodeType&&(~b.sourceIndex||C)-(~a.sourceIndex||C);if(d)return d;if(c)while(c=c.nextSibling)if(c===b)return-1;return a?1:-1}function ma(a){return function(b){var c=b.nodeName.toLowerCase();return"input"===c&&b.type===a}}function na(a){return function(b){var c=b.nodeName.toLowerCase();return("input"===c||"button"===c)&&b.type===a}}function oa(a){return ia(function(b){return b=+b,ia(function(c,d){var e,f=a([],c.length,b),g=f.length;while(g--)c[e=f[g]]&&(c[e]=!(d[e]=c[e]))})})}function pa(a){return a&&"undefined"!=typeof a.getElementsByTagName&&a}c=ga.support={},f=ga.isXML=function(a){var b=a&&(a.ownerDocument||a).documentElement;return b?"HTML"!==b.nodeName:!1},m=ga.setDocument=function(a){var b,e,g=a?a.ownerDocument||a:v;return g!==n&&9===g.nodeType&&g.documentElement?(n=g,o=g.documentElement,e=g.defaultView,e&&e!==e.top&&(e.addEventListener?e.addEventListener("unload",ea,!1):e.attachEvent&&e.attachEvent("onunload",ea)),p=!f(g),c.attributes=ja(function(a){return a.className="i",!a.getAttribute("className")}),c.getElementsByTagName=ja(function(a){return a.appendChild(g.createComment("")),!a.getElementsByTagName("*").length}),c.getElementsByClassName=$.test(g.getElementsByClassName),c.getById=ja(function(a){return o.appendChild(a).id=u,!g.getElementsByName||!g.getElementsByName(u).length}),c.getById?(d.find.ID=function(a,b){if("undefined"!=typeof b.getElementById&&p){var c=b.getElementById(a);return c&&c.parentNode?[c]:[]}},d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){return a.getAttribute("id")===b}}):(delete d.find.ID,d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){var c="undefined"!=typeof a.getAttributeNode&&a.getAttributeNode("id");return c&&c.value===b}}),d.find.TAG=c.getElementsByTagName?function(a,b){return"undefined"!=typeof b.getElementsByTagName?b.getElementsByTagName(a):c.qsa?b.querySelectorAll(a):void 0}:function(a,b){var c,d=[],e=0,f=b.getElementsByTagName(a);if("*"===a){while(c=f[e++])1===c.nodeType&&d.push(c);return d}return f},d.find.CLASS=c.getElementsByClassName&&function(a,b){return p?b.getElementsByClassName(a):void 0},r=[],q=[],(c.qsa=$.test(g.querySelectorAll))&&(ja(function(a){o.appendChild(a).innerHTML="<a id='"+u+"'></a><select id='"+u+"-\f]' msallowcapture=''><option selected=''></option></select>",a.querySelectorAll("[msallowcapture^='']").length&&q.push("[*^$]="+L+"*(?:''|\"\")"),a.querySelectorAll("[selected]").length||q.push("\\["+L+"*(?:value|"+K+")"),a.querySelectorAll("[id~="+u+"-]").length||q.push("~="),a.querySelectorAll(":checked").length||q.push(":checked"),a.querySelectorAll("a#"+u+"+*").length||q.push(".#.+[+~]")}),ja(function(a){var b=g.createElement("input");b.setAttribute("type","hidden"),a.appendChild(b).setAttribute("name","D"),a.querySelectorAll("[name=d]").length&&q.push("name"+L+"*[*^$|!~]?="),a.querySelectorAll(":enabled").length||q.push(":enabled",":disabled"),a.querySelectorAll("*,:x"),q.push(",.*:")})),(c.matchesSelector=$.test(s=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.oMatchesSelector||o.msMatchesSelector))&&ja(function(a){c.disconnectedMatch=s.call(a,"div"),s.call(a,"[s!='']:x"),r.push("!=",P)}),q=q.length&&new RegExp(q.join("|")),r=r.length&&new RegExp(r.join("|")),b=$.test(o.compareDocumentPosition),t=b||$.test(o.contains)?function(a,b){var c=9===a.nodeType?a.documentElement:a,d=b&&b.parentNode;return a===d||!(!d||1!==d.nodeType||!(c.contains?c.contains(d):a.compareDocumentPosition&&16&a.compareDocumentPosition(d)))}:function(a,b){if(b)while(b=b.parentNode)if(b===a)return!0;return!1},B=b?function(a,b){if(a===b)return l=!0,0;var d=!a.compareDocumentPosition-!b.compareDocumentPosition;return d?d:(d=(a.ownerDocument||a)===(b.ownerDocument||b)?a.compareDocumentPosition(b):1,1&d||!c.sortDetached&&b.compareDocumentPosition(a)===d?a===g||a.ownerDocument===v&&t(v,a)?-1:b===g||b.ownerDocument===v&&t(v,b)?1:k?J(k,a)-J(k,b):0:4&d?-1:1)}:function(a,b){if(a===b)return l=!0,0;var c,d=0,e=a.parentNode,f=b.parentNode,h=[a],i=[b];if(!e||!f)return a===g?-1:b===g?1:e?-1:f?1:k?J(k,a)-J(k,b):0;if(e===f)return la(a,b);c=a;while(c=c.parentNode)h.unshift(c);c=b;while(c=c.parentNode)i.unshift(c);while(h[d]===i[d])d++;return d?la(h[d],i[d]):h[d]===v?-1:i[d]===v?1:0},g):n},ga.matches=function(a,b){return ga(a,null,null,b)},ga.matchesSelector=function(a,b){if((a.ownerDocument||a)!==n&&m(a),b=b.replace(U,"='$1']"),!(!c.matchesSelector||!p||r&&r.test(b)||q&&q.test(b)))try{var d=s.call(a,b);if(d||c.disconnectedMatch||a.document&&11!==a.document.nodeType)return d}catch(e){}return ga(b,n,null,[a]).length>0},ga.contains=function(a,b){return(a.ownerDocument||a)!==n&&m(a),t(a,b)},ga.attr=function(a,b){(a.ownerDocument||a)!==n&&m(a);var e=d.attrHandle[b.toLowerCase()],f=e&&D.call(d.attrHandle,b.toLowerCase())?e(a,b,!p):void 0;return void 0!==f?f:c.attributes||!p?a.getAttribute(b):(f=a.getAttributeNode(b))&&f.specified?f.value:null},ga.error=function(a){throw new Error("Syntax error, unrecognized expression: "+a)},ga.uniqueSort=function(a){var b,d=[],e=0,f=0;if(l=!c.detectDuplicates,k=!c.sortStable&&a.slice(0),a.sort(B),l){while(b=a[f++])b===a[f]&&(e=d.push(f));while(e--)a.splice(d[e],1)}return k=null,a},e=ga.getText=function(a){var b,c="",d=0,f=a.nodeType;if(f){if(1===f||9===f||11===f){if("string"==typeof a.textContent)return a.textContent;for(a=a.firstChild;a;a=a.nextSibling)c+=e(a)}else if(3===f||4===f)return a.nodeValue}else while(b=a[d++])c+=e(b);return c},d=ga.selectors={cacheLength:50,createPseudo:ia,match:X,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(a){return a[1]=a[1].replace(ca,da),a[3]=(a[3]||a[4]||a[5]||"").replace(ca,da),"~="===a[2]&&(a[3]=" "+a[3]+" "),a.slice(0,4)},CHILD:function(a){return a[1]=a[1].toLowerCase(),"nth"===a[1].slice(0,3)?(a[3]||ga.error(a[0]),a[4]=+(a[4]?a[5]+(a[6]||1):2*("even"===a[3]||"odd"===a[3])),a[5]=+(a[7]+a[8]||"odd"===a[3])):a[3]&&ga.error(a[0]),a},PSEUDO:function(a){var b,c=!a[6]&&a[2];return X.CHILD.test(a[0])?null:(a[3]?a[2]=a[4]||a[5]||"":c&&V.test(c)&&(b=g(c,!0))&&(b=c.indexOf(")",c.length-b)-c.length)&&(a[0]=a[0].slice(0,b),a[2]=c.slice(0,b)),a.slice(0,3))}},filter:{TAG:function(a){var b=a.replace(ca,da).toLowerCase();return"*"===a?function(){return!0}:function(a){return a.nodeName&&a.nodeName.toLowerCase()===b}},CLASS:function(a){var b=y[a+" "];return b||(b=new RegExp("(^|"+L+")"+a+"("+L+"|$)"))&&y(a,function(a){return b.test("string"==typeof a.className&&a.className||"undefined"!=typeof a.getAttribute&&a.getAttribute("class")||"")})},ATTR:function(a,b,c){return function(d){var e=ga.attr(d,a);return null==e?"!="===b:b?(e+="","="===b?e===c:"!="===b?e!==c:"^="===b?c&&0===e.indexOf(c):"*="===b?c&&e.indexOf(c)>-1:"$="===b?c&&e.slice(-c.length)===c:"~="===b?(" "+e.replace(Q," ")+" ").indexOf(c)>-1:"|="===b?e===c||e.slice(0,c.length+1)===c+"-":!1):!0}},CHILD:function(a,b,c,d,e){var f="nth"!==a.slice(0,3),g="last"!==a.slice(-4),h="of-type"===b;return 1===d&&0===e?function(a){return!!a.parentNode}:function(b,c,i){var j,k,l,m,n,o,p=f!==g?"nextSibling":"previousSibling",q=b.parentNode,r=h&&b.nodeName.toLowerCase(),s=!i&&!h;if(q){if(f){while(p){l=b;while(l=l[p])if(h?l.nodeName.toLowerCase()===r:1===l.nodeType)return!1;o=p="only"===a&&!o&&"nextSibling"}return!0}if(o=[g?q.firstChild:q.lastChild],g&&s){k=q[u]||(q[u]={}),j=k[a]||[],n=j[0]===w&&j[1],m=j[0]===w&&j[2],l=n&&q.childNodes[n];while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if(1===l.nodeType&&++m&&l===b){k[a]=[w,n,m];break}}else if(s&&(j=(b[u]||(b[u]={}))[a])&&j[0]===w)m=j[1];else while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if((h?l.nodeName.toLowerCase()===r:1===l.nodeType)&&++m&&(s&&((l[u]||(l[u]={}))[a]=[w,m]),l===b))break;return m-=e,m===d||m%d===0&&m/d>=0}}},PSEUDO:function(a,b){var c,e=d.pseudos[a]||d.setFilters[a.toLowerCase()]||ga.error("unsupported pseudo: "+a);return e[u]?e(b):e.length>1?(c=[a,a,"",b],d.setFilters.hasOwnProperty(a.toLowerCase())?ia(function(a,c){var d,f=e(a,b),g=f.length;while(g--)d=J(a,f[g]),a[d]=!(c[d]=f[g])}):function(a){return e(a,0,c)}):e}},pseudos:{not:ia(function(a){var b=[],c=[],d=h(a.replace(R,"$1"));return d[u]?ia(function(a,b,c,e){var f,g=d(a,null,e,[]),h=a.length;while(h--)(f=g[h])&&(a[h]=!(b[h]=f))}):function(a,e,f){return b[0]=a,d(b,null,f,c),b[0]=null,!c.pop()}}),has:ia(function(a){return function(b){return ga(a,b).length>0}}),contains:ia(function(a){return a=a.replace(ca,da),function(b){return(b.textContent||b.innerText||e(b)).indexOf(a)>-1}}),lang:ia(function(a){return W.test(a||"")||ga.error("unsupported lang: "+a),a=a.replace(ca,da).toLowerCase(),function(b){var c;do if(c=p?b.lang:b.getAttribute("xml:lang")||b.getAttribute("lang"))return c=c.toLowerCase(),c===a||0===c.indexOf(a+"-");while((b=b.parentNode)&&1===b.nodeType);return!1}}),target:function(b){var c=a.location&&a.location.hash;return c&&c.slice(1)===b.id},root:function(a){return a===o},focus:function(a){return a===n.activeElement&&(!n.hasFocus||n.hasFocus())&&!!(a.type||a.href||~a.tabIndex)},enabled:function(a){return a.disabled===!1},disabled:function(a){return a.disabled===!0},checked:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&!!a.checked||"option"===b&&!!a.selected},selected:function(a){return a.parentNode&&a.parentNode.selectedIndex,a.selected===!0},empty:function(a){for(a=a.firstChild;a;a=a.nextSibling)if(a.nodeType<6)return!1;return!0},parent:function(a){return!d.pseudos.empty(a)},header:function(a){return Z.test(a.nodeName)},input:function(a){return Y.test(a.nodeName)},button:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&"button"===a.type||"button"===b},text:function(a){var b;return"input"===a.nodeName.toLowerCase()&&"text"===a.type&&(null==(b=a.getAttribute("type"))||"text"===b.toLowerCase())},first:oa(function(){return[0]}),last:oa(function(a,b){return[b-1]}),eq:oa(function(a,b,c){return[0>c?c+b:c]}),even:oa(function(a,b){for(var c=0;b>c;c+=2)a.push(c);return a}),odd:oa(function(a,b){for(var c=1;b>c;c+=2)a.push(c);return a}),lt:oa(function(a,b,c){for(var d=0>c?c+b:c;--d>=0;)a.push(d);return a}),gt:oa(function(a,b,c){for(var d=0>c?c+b:c;++d<b;)a.push(d);return a})}},d.pseudos.nth=d.pseudos.eq;for(b in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})d.pseudos[b]=ma(b);for(b in{submit:!0,reset:!0})d.pseudos[b]=na(b);function qa(){}qa.prototype=d.filters=d.pseudos,d.setFilters=new qa,g=ga.tokenize=function(a,b){var c,e,f,g,h,i,j,k=z[a+" "];if(k)return b?0:k.slice(0);h=a,i=[],j=d.preFilter;while(h){(!c||(e=S.exec(h)))&&(e&&(h=h.slice(e[0].length)||h),i.push(f=[])),c=!1,(e=T.exec(h))&&(c=e.shift(),f.push({value:c,type:e[0].replace(R," ")}),h=h.slice(c.length));for(g in d.filter)!(e=X[g].exec(h))||j[g]&&!(e=j[g](e))||(c=e.shift(),f.push({value:c,type:g,matches:e}),h=h.slice(c.length));if(!c)break}return b?h.length:h?ga.error(a):z(a,i).slice(0)};function ra(a){for(var b=0,c=a.length,d="";c>b;b++)d+=a[b].value;return d}function sa(a,b,c){var d=b.dir,e=c&&"parentNode"===d,f=x++;return b.first?function(b,c,f){while(b=b[d])if(1===b.nodeType||e)return a(b,c,f)}:function(b,c,g){var h,i,j=[w,f];if(g){while(b=b[d])if((1===b.nodeType||e)&&a(b,c,g))return!0}else while(b=b[d])if(1===b.nodeType||e){if(i=b[u]||(b[u]={}),(h=i[d])&&h[0]===w&&h[1]===f)return j[2]=h[2];if(i[d]=j,j[2]=a(b,c,g))return!0}}}function ta(a){return a.length>1?function(b,c,d){var e=a.length;while(e--)if(!a[e](b,c,d))return!1;return!0}:a[0]}function ua(a,b,c){for(var d=0,e=b.length;e>d;d++)ga(a,b[d],c);return c}function va(a,b,c,d,e){for(var f,g=[],h=0,i=a.length,j=null!=b;i>h;h++)(f=a[h])&&(!c||c(f,d,e))&&(g.push(f),j&&b.push(h));return g}function wa(a,b,c,d,e,f){return d&&!d[u]&&(d=wa(d)),e&&!e[u]&&(e=wa(e,f)),ia(function(f,g,h,i){var j,k,l,m=[],n=[],o=g.length,p=f||ua(b||"*",h.nodeType?[h]:h,[]),q=!a||!f&&b?p:va(p,m,a,h,i),r=c?e||(f?a:o||d)?[]:g:q;if(c&&c(q,r,h,i),d){j=va(r,n),d(j,[],h,i),k=j.length;while(k--)(l=j[k])&&(r[n[k]]=!(q[n[k]]=l))}if(f){if(e||a){if(e){j=[],k=r.length;while(k--)(l=r[k])&&j.push(q[k]=l);e(null,r=[],j,i)}k=r.length;while(k--)(l=r[k])&&(j=e?J(f,l):m[k])>-1&&(f[j]=!(g[j]=l))}}else r=va(r===g?r.splice(o,r.length):r),e?e(null,g,r,i):H.apply(g,r)})}function xa(a){for(var b,c,e,f=a.length,g=d.relative[a[0].type],h=g||d.relative[" "],i=g?1:0,k=sa(function(a){return a===b},h,!0),l=sa(function(a){return J(b,a)>-1},h,!0),m=[function(a,c,d){var e=!g&&(d||c!==j)||((b=c).nodeType?k(a,c,d):l(a,c,d));return b=null,e}];f>i;i++)if(c=d.relative[a[i].type])m=[sa(ta(m),c)];else{if(c=d.filter[a[i].type].apply(null,a[i].matches),c[u]){for(e=++i;f>e;e++)if(d.relative[a[e].type])break;return wa(i>1&&ta(m),i>1&&ra(a.slice(0,i-1).concat({value:" "===a[i-2].type?"*":""})).replace(R,"$1"),c,e>i&&xa(a.slice(i,e)),f>e&&xa(a=a.slice(e)),f>e&&ra(a))}m.push(c)}return ta(m)}function ya(a,b){var c=b.length>0,e=a.length>0,f=function(f,g,h,i,k){var l,m,o,p=0,q="0",r=f&&[],s=[],t=j,u=f||e&&d.find.TAG("*",k),v=w+=null==t?1:Math.random()||.1,x=u.length;for(k&&(j=g!==n&&g);q!==x&&null!=(l=u[q]);q++){if(e&&l){m=0;while(o=a[m++])if(o(l,g,h)){i.push(l);break}k&&(w=v)}c&&((l=!o&&l)&&p--,f&&r.push(l))}if(p+=q,c&&q!==p){m=0;while(o=b[m++])o(r,s,g,h);if(f){if(p>0)while(q--)r[q]||s[q]||(s[q]=F.call(i));s=va(s)}H.apply(i,s),k&&!f&&s.length>0&&p+b.length>1&&ga.uniqueSort(i)}return k&&(w=v,j=t),r};return c?ia(f):f}return h=ga.compile=function(a,b){var c,d=[],e=[],f=A[a+" "];if(!f){b||(b=g(a)),c=b.length;while(c--)f=xa(b[c]),f[u]?d.push(f):e.push(f);f=A(a,ya(e,d)),f.selector=a}return f},i=ga.select=function(a,b,e,f){var i,j,k,l,m,n="function"==typeof a&&a,o=!f&&g(a=n.selector||a);if(e=e||[],1===o.length){if(j=o[0]=o[0].slice(0),j.length>2&&"ID"===(k=j[0]).type&&c.getById&&9===b.nodeType&&p&&d.relative[j[1].type]){if(b=(d.find.ID(k.matches[0].replace(ca,da),b)||[])[0],!b)return e;n&&(b=b.parentNode),a=a.slice(j.shift().value.length)}i=X.needsContext.test(a)?0:j.length;while(i--){if(k=j[i],d.relative[l=k.type])break;if((m=d.find[l])&&(f=m(k.matches[0].replace(ca,da),aa.test(j[0].type)&&pa(b.parentNode)||b))){if(j.splice(i,1),a=f.length&&ra(j),!a)return H.apply(e,f),e;break}}}return(n||h(a,o))(f,b,!p,e,aa.test(a)&&pa(b.parentNode)||b),e},c.sortStable=u.split("").sort(B).join("")===u,c.detectDuplicates=!!l,m(),c.sortDetached=ja(function(a){return 1&a.compareDocumentPosition(n.createElement("div"))}),ja(function(a){return a.innerHTML="<a href='#'></a>","#"===a.firstChild.getAttribute("href")})||ka("type|href|height|width",function(a,b,c){return c?void 0:a.getAttribute(b,"type"===b.toLowerCase()?1:2)}),c.attributes&&ja(function(a){return a.innerHTML="<input/>",a.firstChild.setAttribute("value",""),""===a.firstChild.getAttribute("value")})||ka("value",function(a,b,c){return c||"input"!==a.nodeName.toLowerCase()?void 0:a.defaultValue}),ja(function(a){return null==a.getAttribute("disabled")})||ka(K,function(a,b,c){var d;return c?void 0:a[b]===!0?b.toLowerCase():(d=a.getAttributeNode(b))&&d.specified?d.value:null}),ga}(a);n.find=t,n.expr=t.selectors,n.expr[":"]=n.expr.pseudos,n.unique=t.uniqueSort,n.text=t.getText,n.isXMLDoc=t.isXML,n.contains=t.contains;var u=n.expr.match.needsContext,v=/^<(\w+)\s*\/?>(?:<\/\1>|)$/,w=/^.[^:#\[\.,]*$/;function x(a,b,c){if(n.isFunction(b))return n.grep(a,function(a,d){return!!b.call(a,d,a)!==c});if(b.nodeType)return n.grep(a,function(a){return a===b!==c});if("string"==typeof b){if(w.test(b))return n.filter(b,a,c);b=n.filter(b,a)}return n.grep(a,function(a){return g.call(b,a)>=0!==c})}n.filter=function(a,b,c){var d=b[0];return c&&(a=":not("+a+")"),1===b.length&&1===d.nodeType?n.find.matchesSelector(d,a)?[d]:[]:n.find.matches(a,n.grep(b,function(a){return 1===a.nodeType}))},n.fn.extend({find:function(a){var b,c=this.length,d=[],e=this;if("string"!=typeof a)return this.pushStack(n(a).filter(function(){for(b=0;c>b;b++)if(n.contains(e[b],this))return!0}));for(b=0;c>b;b++)n.find(a,e[b],d);return d=this.pushStack(c>1?n.unique(d):d),d.selector=this.selector?this.selector+" "+a:a,d},filter:function(a){return this.pushStack(x(this,a||[],!1))},not:function(a){return this.pushStack(x(this,a||[],!0))},is:function(a){return!!x(this,"string"==typeof a&&u.test(a)?n(a):a||[],!1).length}});var y,z=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,A=n.fn.init=function(a,b){var c,d;if(!a)return this;if("string"==typeof a){if(c="<"===a[0]&&">"===a[a.length-1]&&a.length>=3?[null,a,null]:z.exec(a),!c||!c[1]&&b)return!b||b.jquery?(b||y).find(a):this.constructor(b).find(a);if(c[1]){if(b=b instanceof n?b[0]:b,n.merge(this,n.parseHTML(c[1],b&&b.nodeType?b.ownerDocument||b:l,!0)),v.test(c[1])&&n.isPlainObject(b))for(c in b)n.isFunction(this[c])?this[c](b[c]):this.attr(c,b[c]);return this}return d=l.getElementById(c[2]),d&&d.parentNode&&(this.length=1,this[0]=d),this.context=l,this.selector=a,this}return a.nodeType?(this.context=this[0]=a,this.length=1,this):n.isFunction(a)?"undefined"!=typeof y.ready?y.ready(a):a(n):(void 0!==a.selector&&(this.selector=a.selector,this.context=a.context),n.makeArray(a,this))};A.prototype=n.fn,y=n(l);var B=/^(?:parents|prev(?:Until|All))/,C={children:!0,contents:!0,next:!0,prev:!0};n.extend({dir:function(a,b,c){var d=[],e=void 0!==c;while((a=a[b])&&9!==a.nodeType)if(1===a.nodeType){if(e&&n(a).is(c))break;d.push(a)}return d},sibling:function(a,b){for(var c=[];a;a=a.nextSibling)1===a.nodeType&&a!==b&&c.push(a);return c}}),n.fn.extend({has:function(a){var b=n(a,this),c=b.length;return this.filter(function(){for(var a=0;c>a;a++)if(n.contains(this,b[a]))return!0})},closest:function(a,b){for(var c,d=0,e=this.length,f=[],g=u.test(a)||"string"!=typeof a?n(a,b||this.context):0;e>d;d++)for(c=this[d];c&&c!==b;c=c.parentNode)if(c.nodeType<11&&(g?g.index(c)>-1:1===c.nodeType&&n.find.matchesSelector(c,a))){f.push(c);break}return this.pushStack(f.length>1?n.unique(f):f)},index:function(a){return a?"string"==typeof a?g.call(n(a),this[0]):g.call(this,a.jquery?a[0]:a):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(a,b){return this.pushStack(n.unique(n.merge(this.get(),n(a,b))))},addBack:function(a){return this.add(null==a?this.prevObject:this.prevObject.filter(a))}});function D(a,b){while((a=a[b])&&1!==a.nodeType);return a}n.each({parent:function(a){var b=a.parentNode;return b&&11!==b.nodeType?b:null},parents:function(a){return n.dir(a,"parentNode")},parentsUntil:function(a,b,c){return n.dir(a,"parentNode",c)},next:function(a){return D(a,"nextSibling")},prev:function(a){return D(a,"previousSibling")},nextAll:function(a){return n.dir(a,"nextSibling")},prevAll:function(a){return n.dir(a,"previousSibling")},nextUntil:function(a,b,c){return n.dir(a,"nextSibling",c)},prevUntil:function(a,b,c){return n.dir(a,"previousSibling",c)},siblings:function(a){return n.sibling((a.parentNode||{}).firstChild,a)},children:function(a){return n.sibling(a.firstChild)},contents:function(a){return a.contentDocument||n.merge([],a.childNodes)}},function(a,b){n.fn[a]=function(c,d){var e=n.map(this,b,c);return"Until"!==a.slice(-5)&&(d=c),d&&"string"==typeof d&&(e=n.filter(d,e)),this.length>1&&(C[a]||n.unique(e),B.test(a)&&e.reverse()),this.pushStack(e)}});var E=/\S+/g,F={};function G(a){var b=F[a]={};return n.each(a.match(E)||[],function(a,c){b[c]=!0}),b}n.Callbacks=function(a){a="string"==typeof a?F[a]||G(a):n.extend({},a);var b,c,d,e,f,g,h=[],i=!a.once&&[],j=function(l){for(b=a.memory&&l,c=!0,g=e||0,e=0,f=h.length,d=!0;h&&f>g;g++)if(h[g].apply(l[0],l[1])===!1&&a.stopOnFalse){b=!1;break}d=!1,h&&(i?i.length&&j(i.shift()):b?h=[]:k.disable())},k={add:function(){if(h){var c=h.length;!function g(b){n.each(b,function(b,c){var d=n.type(c);"function"===d?a.unique&&k.has(c)||h.push(c):c&&c.length&&"string"!==d&&g(c)})}(arguments),d?f=h.length:b&&(e=c,j(b))}return this},remove:function(){return h&&n.each(arguments,function(a,b){var c;while((c=n.inArray(b,h,c))>-1)h.splice(c,1),d&&(f>=c&&f--,g>=c&&g--)}),this},has:function(a){return a?n.inArray(a,h)>-1:!(!h||!h.length)},empty:function(){return h=[],f=0,this},disable:function(){return h=i=b=void 0,this},disabled:function(){return!h},lock:function(){return i=void 0,b||k.disable(),this},locked:function(){return!i},fireWith:function(a,b){return!h||c&&!i||(b=b||[],b=[a,b.slice?b.slice():b],d?i.push(b):j(b)),this},fire:function(){return k.fireWith(this,arguments),this},fired:function(){return!!c}};return k},n.extend({Deferred:function(a){var b=[["resolve","done",n.Callbacks("once memory"),"resolved"],["reject","fail",n.Callbacks("once memory"),"rejected"],["notify","progress",n.Callbacks("memory")]],c="pending",d={state:function(){return c},always:function(){return e.done(arguments).fail(arguments),this},then:function(){var a=arguments;return n.Deferred(function(c){n.each(b,function(b,f){var g=n.isFunction(a[b])&&a[b];e[f[1]](function(){var a=g&&g.apply(this,arguments);a&&n.isFunction(a.promise)?a.promise().done(c.resolve).fail(c.reject).progress(c.notify):c[f[0]+"With"](this===d?c.promise():this,g?[a]:arguments)})}),a=null}).promise()},promise:function(a){return null!=a?n.extend(a,d):d}},e={};return d.pipe=d.then,n.each(b,function(a,f){var g=f[2],h=f[3];d[f[1]]=g.add,h&&g.add(function(){c=h},b[1^a][2].disable,b[2][2].lock),e[f[0]]=function(){return e[f[0]+"With"](this===e?d:this,arguments),this},e[f[0]+"With"]=g.fireWith}),d.promise(e),a&&a.call(e,e),e},when:function(a){var b=0,c=d.call(arguments),e=c.length,f=1!==e||a&&n.isFunction(a.promise)?e:0,g=1===f?a:n.Deferred(),h=function(a,b,c){return function(e){b[a]=this,c[a]=arguments.length>1?d.call(arguments):e,c===i?g.notifyWith(b,c):--f||g.resolveWith(b,c)}},i,j,k;if(e>1)for(i=new Array(e),j=new Array(e),k=new Array(e);e>b;b++)c[b]&&n.isFunction(c[b].promise)?c[b].promise().done(h(b,k,c)).fail(g.reject).progress(h(b,j,i)):--f;return f||g.resolveWith(k,c),g.promise()}});var H;n.fn.ready=function(a){return n.ready.promise().done(a),this},n.extend({isReady:!1,readyWait:1,holdReady:function(a){a?n.readyWait++:n.ready(!0)},ready:function(a){(a===!0?--n.readyWait:n.isReady)||(n.isReady=!0,a!==!0&&--n.readyWait>0||(H.resolveWith(l,[n]),n.fn.triggerHandler&&(n(l).triggerHandler("ready"),n(l).off("ready"))))}});function I(){l.removeEventListener("DOMContentLoaded",I,!1),a.removeEventListener("load",I,!1),n.ready()}n.ready.promise=function(b){return H||(H=n.Deferred(),"complete"===l.readyState?setTimeout(n.ready):(l.addEventListener("DOMContentLoaded",I,!1),a.addEventListener("load",I,!1))),H.promise(b)},n.ready.promise();var J=n.access=function(a,b,c,d,e,f,g){var h=0,i=a.length,j=null==c;if("object"===n.type(c)){e=!0;for(h in c)n.access(a,b,h,c[h],!0,f,g)}else if(void 0!==d&&(e=!0,n.isFunction(d)||(g=!0),j&&(g?(b.call(a,d),b=null):(j=b,b=function(a,b,c){return j.call(n(a),c)})),b))for(;i>h;h++)b(a[h],c,g?d:d.call(a[h],h,b(a[h],c)));return e?a:j?b.call(a):i?b(a[0],c):f};n.acceptData=function(a){return 1===a.nodeType||9===a.nodeType||!+a.nodeType};function K(){Object.defineProperty(this.cache={},0,{get:function(){return{}}}),this.expando=n.expando+K.uid++}K.uid=1,K.accepts=n.acceptData,K.prototype={key:function(a){if(!K.accepts(a))return 0;var b={},c=a[this.expando];if(!c){c=K.uid++;try{b[this.expando]={value:c},Object.defineProperties(a,b)}catch(d){b[this.expando]=c,n.extend(a,b)}}return this.cache[c]||(this.cache[c]={}),c},set:function(a,b,c){var d,e=this.key(a),f=this.cache[e];if("string"==typeof b)f[b]=c;else if(n.isEmptyObject(f))n.extend(this.cache[e],b);else for(d in b)f[d]=b[d];return f},get:function(a,b){var c=this.cache[this.key(a)];return void 0===b?c:c[b]},access:function(a,b,c){var d;return void 0===b||b&&"string"==typeof b&&void 0===c?(d=this.get(a,b),void 0!==d?d:this.get(a,n.camelCase(b))):(this.set(a,b,c),void 0!==c?c:b)},remove:function(a,b){var c,d,e,f=this.key(a),g=this.cache[f];if(void 0===b)this.cache[f]={};else{n.isArray(b)?d=b.concat(b.map(n.camelCase)):(e=n.camelCase(b),b in g?d=[b,e]:(d=e,d=d in g?[d]:d.match(E)||[])),c=d.length;while(c--)delete g[d[c]]}},hasData:function(a){return!n.isEmptyObject(this.cache[a[this.expando]]||{})},discard:function(a){a[this.expando]&&delete this.cache[a[this.expando]]}};var L=new K,M=new K,N=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,O=/([A-Z])/g;function P(a,b,c){var d;if(void 0===c&&1===a.nodeType)if(d="data-"+b.replace(O,"-$1").toLowerCase(),c=a.getAttribute(d),"string"==typeof c){try{c="true"===c?!0:"false"===c?!1:"null"===c?null:+c+""===c?+c:N.test(c)?n.parseJSON(c):c}catch(e){}M.set(a,b,c)}else c=void 0;return c}n.extend({hasData:function(a){return M.hasData(a)||L.hasData(a)},data:function(a,b,c){
-return M.access(a,b,c)},removeData:function(a,b){M.remove(a,b)},_data:function(a,b,c){return L.access(a,b,c)},_removeData:function(a,b){L.remove(a,b)}}),n.fn.extend({data:function(a,b){var c,d,e,f=this[0],g=f&&f.attributes;if(void 0===a){if(this.length&&(e=M.get(f),1===f.nodeType&&!L.get(f,"hasDataAttrs"))){c=g.length;while(c--)g[c]&&(d=g[c].name,0===d.indexOf("data-")&&(d=n.camelCase(d.slice(5)),P(f,d,e[d])));L.set(f,"hasDataAttrs",!0)}return e}return"object"==typeof a?this.each(function(){M.set(this,a)}):J(this,function(b){var c,d=n.camelCase(a);if(f&&void 0===b){if(c=M.get(f,a),void 0!==c)return c;if(c=M.get(f,d),void 0!==c)return c;if(c=P(f,d,void 0),void 0!==c)return c}else this.each(function(){var c=M.get(this,d);M.set(this,d,b),-1!==a.indexOf("-")&&void 0!==c&&M.set(this,a,b)})},null,b,arguments.length>1,null,!0)},removeData:function(a){return this.each(function(){M.remove(this,a)})}}),n.extend({queue:function(a,b,c){var d;return a?(b=(b||"fx")+"queue",d=L.get(a,b),c&&(!d||n.isArray(c)?d=L.access(a,b,n.makeArray(c)):d.push(c)),d||[]):void 0},dequeue:function(a,b){b=b||"fx";var c=n.queue(a,b),d=c.length,e=c.shift(),f=n._queueHooks(a,b),g=function(){n.dequeue(a,b)};"inprogress"===e&&(e=c.shift(),d--),e&&("fx"===b&&c.unshift("inprogress"),delete f.stop,e.call(a,g,f)),!d&&f&&f.empty.fire()},_queueHooks:function(a,b){var c=b+"queueHooks";return L.get(a,c)||L.access(a,c,{empty:n.Callbacks("once memory").add(function(){L.remove(a,[b+"queue",c])})})}}),n.fn.extend({queue:function(a,b){var c=2;return"string"!=typeof a&&(b=a,a="fx",c--),arguments.length<c?n.queue(this[0],a):void 0===b?this:this.each(function(){var c=n.queue(this,a,b);n._queueHooks(this,a),"fx"===a&&"inprogress"!==c[0]&&n.dequeue(this,a)})},dequeue:function(a){return this.each(function(){n.dequeue(this,a)})},clearQueue:function(a){return this.queue(a||"fx",[])},promise:function(a,b){var c,d=1,e=n.Deferred(),f=this,g=this.length,h=function(){--d||e.resolveWith(f,[f])};"string"!=typeof a&&(b=a,a=void 0),a=a||"fx";while(g--)c=L.get(f[g],a+"queueHooks"),c&&c.empty&&(d++,c.empty.add(h));return h(),e.promise(b)}});var Q=/[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,R=["Top","Right","Bottom","Left"],S=function(a,b){return a=b||a,"none"===n.css(a,"display")||!n.contains(a.ownerDocument,a)},T=/^(?:checkbox|radio)$/i;!function(){var a=l.createDocumentFragment(),b=a.appendChild(l.createElement("div")),c=l.createElement("input");c.setAttribute("type","radio"),c.setAttribute("checked","checked"),c.setAttribute("name","t"),b.appendChild(c),k.checkClone=b.cloneNode(!0).cloneNode(!0).lastChild.checked,b.innerHTML="<textarea>x</textarea>",k.noCloneChecked=!!b.cloneNode(!0).lastChild.defaultValue}();var U="undefined";k.focusinBubbles="onfocusin"in a;var V=/^key/,W=/^(?:mouse|pointer|contextmenu)|click/,X=/^(?:focusinfocus|focusoutblur)$/,Y=/^([^.]*)(?:\.(.+)|)$/;function Z(){return!0}function $(){return!1}function _(){try{return l.activeElement}catch(a){}}n.event={global:{},add:function(a,b,c,d,e){var f,g,h,i,j,k,l,m,o,p,q,r=L.get(a);if(r){c.handler&&(f=c,c=f.handler,e=f.selector),c.guid||(c.guid=n.guid++),(i=r.events)||(i=r.events={}),(g=r.handle)||(g=r.handle=function(b){return typeof n!==U&&n.event.triggered!==b.type?n.event.dispatch.apply(a,arguments):void 0}),b=(b||"").match(E)||[""],j=b.length;while(j--)h=Y.exec(b[j])||[],o=q=h[1],p=(h[2]||"").split(".").sort(),o&&(l=n.event.special[o]||{},o=(e?l.delegateType:l.bindType)||o,l=n.event.special[o]||{},k=n.extend({type:o,origType:q,data:d,handler:c,guid:c.guid,selector:e,needsContext:e&&n.expr.match.needsContext.test(e),namespace:p.join(".")},f),(m=i[o])||(m=i[o]=[],m.delegateCount=0,l.setup&&l.setup.call(a,d,p,g)!==!1||a.addEventListener&&a.addEventListener(o,g,!1)),l.add&&(l.add.call(a,k),k.handler.guid||(k.handler.guid=c.guid)),e?m.splice(m.delegateCount++,0,k):m.push(k),n.event.global[o]=!0)}},remove:function(a,b,c,d,e){var f,g,h,i,j,k,l,m,o,p,q,r=L.hasData(a)&&L.get(a);if(r&&(i=r.events)){b=(b||"").match(E)||[""],j=b.length;while(j--)if(h=Y.exec(b[j])||[],o=q=h[1],p=(h[2]||"").split(".").sort(),o){l=n.event.special[o]||{},o=(d?l.delegateType:l.bindType)||o,m=i[o]||[],h=h[2]&&new RegExp("(^|\\.)"+p.join("\\.(?:.*\\.|)")+"(\\.|$)"),g=f=m.length;while(f--)k=m[f],!e&&q!==k.origType||c&&c.guid!==k.guid||h&&!h.test(k.namespace)||d&&d!==k.selector&&("**"!==d||!k.selector)||(m.splice(f,1),k.selector&&m.delegateCount--,l.remove&&l.remove.call(a,k));g&&!m.length&&(l.teardown&&l.teardown.call(a,p,r.handle)!==!1||n.removeEvent(a,o,r.handle),delete i[o])}else for(o in i)n.event.remove(a,o+b[j],c,d,!0);n.isEmptyObject(i)&&(delete r.handle,L.remove(a,"events"))}},trigger:function(b,c,d,e){var f,g,h,i,k,m,o,p=[d||l],q=j.call(b,"type")?b.type:b,r=j.call(b,"namespace")?b.namespace.split("."):[];if(g=h=d=d||l,3!==d.nodeType&&8!==d.nodeType&&!X.test(q+n.event.triggered)&&(q.indexOf(".")>=0&&(r=q.split("."),q=r.shift(),r.sort()),k=q.indexOf(":")<0&&"on"+q,b=b[n.expando]?b:new n.Event(q,"object"==typeof b&&b),b.isTrigger=e?2:3,b.namespace=r.join("."),b.namespace_re=b.namespace?new RegExp("(^|\\.)"+r.join("\\.(?:.*\\.|)")+"(\\.|$)"):null,b.result=void 0,b.target||(b.target=d),c=null==c?[b]:n.makeArray(c,[b]),o=n.event.special[q]||{},e||!o.trigger||o.trigger.apply(d,c)!==!1)){if(!e&&!o.noBubble&&!n.isWindow(d)){for(i=o.delegateType||q,X.test(i+q)||(g=g.parentNode);g;g=g.parentNode)p.push(g),h=g;h===(d.ownerDocument||l)&&p.push(h.defaultView||h.parentWindow||a)}f=0;while((g=p[f++])&&!b.isPropagationStopped())b.type=f>1?i:o.bindType||q,m=(L.get(g,"events")||{})[b.type]&&L.get(g,"handle"),m&&m.apply(g,c),m=k&&g[k],m&&m.apply&&n.acceptData(g)&&(b.result=m.apply(g,c),b.result===!1&&b.preventDefault());return b.type=q,e||b.isDefaultPrevented()||o._default&&o._default.apply(p.pop(),c)!==!1||!n.acceptData(d)||k&&n.isFunction(d[q])&&!n.isWindow(d)&&(h=d[k],h&&(d[k]=null),n.event.triggered=q,d[q](),n.event.triggered=void 0,h&&(d[k]=h)),b.result}},dispatch:function(a){a=n.event.fix(a);var b,c,e,f,g,h=[],i=d.call(arguments),j=(L.get(this,"events")||{})[a.type]||[],k=n.event.special[a.type]||{};if(i[0]=a,a.delegateTarget=this,!k.preDispatch||k.preDispatch.call(this,a)!==!1){h=n.event.handlers.call(this,a,j),b=0;while((f=h[b++])&&!a.isPropagationStopped()){a.currentTarget=f.elem,c=0;while((g=f.handlers[c++])&&!a.isImmediatePropagationStopped())(!a.namespace_re||a.namespace_re.test(g.namespace))&&(a.handleObj=g,a.data=g.data,e=((n.event.special[g.origType]||{}).handle||g.handler).apply(f.elem,i),void 0!==e&&(a.result=e)===!1&&(a.preventDefault(),a.stopPropagation()))}return k.postDispatch&&k.postDispatch.call(this,a),a.result}},handlers:function(a,b){var c,d,e,f,g=[],h=b.delegateCount,i=a.target;if(h&&i.nodeType&&(!a.button||"click"!==a.type))for(;i!==this;i=i.parentNode||this)if(i.disabled!==!0||"click"!==a.type){for(d=[],c=0;h>c;c++)f=b[c],e=f.selector+" ",void 0===d[e]&&(d[e]=f.needsContext?n(e,this).index(i)>=0:n.find(e,this,null,[i]).length),d[e]&&d.push(f);d.length&&g.push({elem:i,handlers:d})}return h<b.length&&g.push({elem:this,handlers:b.slice(h)}),g},props:"altKey bubbles cancelable ctrlKey currentTarget eventPhase metaKey relatedTarget shiftKey target timeStamp view which".split(" "),fixHooks:{},keyHooks:{props:"char charCode key keyCode".split(" "),filter:function(a,b){return null==a.which&&(a.which=null!=b.charCode?b.charCode:b.keyCode),a}},mouseHooks:{props:"button buttons clientX clientY offsetX offsetY pageX pageY screenX screenY toElement".split(" "),filter:function(a,b){var c,d,e,f=b.button;return null==a.pageX&&null!=b.clientX&&(c=a.target.ownerDocument||l,d=c.documentElement,e=c.body,a.pageX=b.clientX+(d&&d.scrollLeft||e&&e.scrollLeft||0)-(d&&d.clientLeft||e&&e.clientLeft||0),a.pageY=b.clientY+(d&&d.scrollTop||e&&e.scrollTop||0)-(d&&d.clientTop||e&&e.clientTop||0)),a.which||void 0===f||(a.which=1&f?1:2&f?3:4&f?2:0),a}},fix:function(a){if(a[n.expando])return a;var b,c,d,e=a.type,f=a,g=this.fixHooks[e];g||(this.fixHooks[e]=g=W.test(e)?this.mouseHooks:V.test(e)?this.keyHooks:{}),d=g.props?this.props.concat(g.props):this.props,a=new n.Event(f),b=d.length;while(b--)c=d[b],a[c]=f[c];return a.target||(a.target=l),3===a.target.nodeType&&(a.target=a.target.parentNode),g.filter?g.filter(a,f):a},special:{load:{noBubble:!0},focus:{trigger:function(){return this!==_()&&this.focus?(this.focus(),!1):void 0},delegateType:"focusin"},blur:{trigger:function(){return this===_()&&this.blur?(this.blur(),!1):void 0},delegateType:"focusout"},click:{trigger:function(){return"checkbox"===this.type&&this.click&&n.nodeName(this,"input")?(this.click(),!1):void 0},_default:function(a){return n.nodeName(a.target,"a")}},beforeunload:{postDispatch:function(a){void 0!==a.result&&a.originalEvent&&(a.originalEvent.returnValue=a.result)}}},simulate:function(a,b,c,d){var e=n.extend(new n.Event,c,{type:a,isSimulated:!0,originalEvent:{}});d?n.event.trigger(e,null,b):n.event.dispatch.call(b,e),e.isDefaultPrevented()&&c.preventDefault()}},n.removeEvent=function(a,b,c){a.removeEventListener&&a.removeEventListener(b,c,!1)},n.Event=function(a,b){return this instanceof n.Event?(a&&a.type?(this.originalEvent=a,this.type=a.type,this.isDefaultPrevented=a.defaultPrevented||void 0===a.defaultPrevented&&a.returnValue===!1?Z:$):this.type=a,b&&n.extend(this,b),this.timeStamp=a&&a.timeStamp||n.now(),void(this[n.expando]=!0)):new n.Event(a,b)},n.Event.prototype={isDefaultPrevented:$,isPropagationStopped:$,isImmediatePropagationStopped:$,preventDefault:function(){var a=this.originalEvent;this.isDefaultPrevented=Z,a&&a.preventDefault&&a.preventDefault()},stopPropagation:function(){var a=this.originalEvent;this.isPropagationStopped=Z,a&&a.stopPropagation&&a.stopPropagation()},stopImmediatePropagation:function(){var a=this.originalEvent;this.isImmediatePropagationStopped=Z,a&&a.stopImmediatePropagation&&a.stopImmediatePropagation(),this.stopPropagation()}},n.each({mouseenter:"mouseover",mouseleave:"mouseout",pointerenter:"pointerover",pointerleave:"pointerout"},function(a,b){n.event.special[a]={delegateType:b,bindType:b,handle:function(a){var c,d=this,e=a.relatedTarget,f=a.handleObj;return(!e||e!==d&&!n.contains(d,e))&&(a.type=f.origType,c=f.handler.apply(this,arguments),a.type=b),c}}}),k.focusinBubbles||n.each({focus:"focusin",blur:"focusout"},function(a,b){var c=function(a){n.event.simulate(b,a.target,n.event.fix(a),!0)};n.event.special[b]={setup:function(){var d=this.ownerDocument||this,e=L.access(d,b);e||d.addEventListener(a,c,!0),L.access(d,b,(e||0)+1)},teardown:function(){var d=this.ownerDocument||this,e=L.access(d,b)-1;e?L.access(d,b,e):(d.removeEventListener(a,c,!0),L.remove(d,b))}}}),n.fn.extend({on:function(a,b,c,d,e){var f,g;if("object"==typeof a){"string"!=typeof b&&(c=c||b,b=void 0);for(g in a)this.on(g,b,c,a[g],e);return this}if(null==c&&null==d?(d=b,c=b=void 0):null==d&&("string"==typeof b?(d=c,c=void 0):(d=c,c=b,b=void 0)),d===!1)d=$;else if(!d)return this;return 1===e&&(f=d,d=function(a){return n().off(a),f.apply(this,arguments)},d.guid=f.guid||(f.guid=n.guid++)),this.each(function(){n.event.add(this,a,d,c,b)})},one:function(a,b,c,d){return this.on(a,b,c,d,1)},off:function(a,b,c){var d,e;if(a&&a.preventDefault&&a.handleObj)return d=a.handleObj,n(a.delegateTarget).off(d.namespace?d.origType+"."+d.namespace:d.origType,d.selector,d.handler),this;if("object"==typeof a){for(e in a)this.off(e,b,a[e]);return this}return(b===!1||"function"==typeof b)&&(c=b,b=void 0),c===!1&&(c=$),this.each(function(){n.event.remove(this,a,c,b)})},trigger:function(a,b){return this.each(function(){n.event.trigger(a,b,this)})},triggerHandler:function(a,b){var c=this[0];return c?n.event.trigger(a,b,c,!0):void 0}});var aa=/<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/gi,ba=/<([\w:]+)/,ca=/<|&#?\w+;/,da=/<(?:script|style|link)/i,ea=/checked\s*(?:[^=]|=\s*.checked.)/i,fa=/^$|\/(?:java|ecma)script/i,ga=/^true\/(.*)/,ha=/^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g,ia={option:[1,"<select multiple='multiple'>","</select>"],thead:[1,"<table>","</table>"],col:[2,"<table><colgroup>","</colgroup></table>"],tr:[2,"<table><tbody>","</tbody></table>"],td:[3,"<table><tbody><tr>","</tr></tbody></table>"],_default:[0,"",""]};ia.optgroup=ia.option,ia.tbody=ia.tfoot=ia.colgroup=ia.caption=ia.thead,ia.th=ia.td;function ja(a,b){return n.nodeName(a,"table")&&n.nodeName(11!==b.nodeType?b:b.firstChild,"tr")?a.getElementsByTagName("tbody")[0]||a.appendChild(a.ownerDocument.createElement("tbody")):a}function ka(a){return a.type=(null!==a.getAttribute("type"))+"/"+a.type,a}function la(a){var b=ga.exec(a.type);return b?a.type=b[1]:a.removeAttribute("type"),a}function ma(a,b){for(var c=0,d=a.length;d>c;c++)L.set(a[c],"globalEval",!b||L.get(b[c],"globalEval"))}function na(a,b){var c,d,e,f,g,h,i,j;if(1===b.nodeType){if(L.hasData(a)&&(f=L.access(a),g=L.set(b,f),j=f.events)){delete g.handle,g.events={};for(e in j)for(c=0,d=j[e].length;d>c;c++)n.event.add(b,e,j[e][c])}M.hasData(a)&&(h=M.access(a),i=n.extend({},h),M.set(b,i))}}function oa(a,b){var c=a.getElementsByTagName?a.getElementsByTagName(b||"*"):a.querySelectorAll?a.querySelectorAll(b||"*"):[];return void 0===b||b&&n.nodeName(a,b)?n.merge([a],c):c}function pa(a,b){var c=b.nodeName.toLowerCase();"input"===c&&T.test(a.type)?b.checked=a.checked:("input"===c||"textarea"===c)&&(b.defaultValue=a.defaultValue)}n.extend({clone:function(a,b,c){var d,e,f,g,h=a.cloneNode(!0),i=n.contains(a.ownerDocument,a);if(!(k.noCloneChecked||1!==a.nodeType&&11!==a.nodeType||n.isXMLDoc(a)))for(g=oa(h),f=oa(a),d=0,e=f.length;e>d;d++)pa(f[d],g[d]);if(b)if(c)for(f=f||oa(a),g=g||oa(h),d=0,e=f.length;e>d;d++)na(f[d],g[d]);else na(a,h);return g=oa(h,"script"),g.length>0&&ma(g,!i&&oa(a,"script")),h},buildFragment:function(a,b,c,d){for(var e,f,g,h,i,j,k=b.createDocumentFragment(),l=[],m=0,o=a.length;o>m;m++)if(e=a[m],e||0===e)if("object"===n.type(e))n.merge(l,e.nodeType?[e]:e);else if(ca.test(e)){f=f||k.appendChild(b.createElement("div")),g=(ba.exec(e)||["",""])[1].toLowerCase(),h=ia[g]||ia._default,f.innerHTML=h[1]+e.replace(aa,"<$1></$2>")+h[2],j=h[0];while(j--)f=f.lastChild;n.merge(l,f.childNodes),f=k.firstChild,f.textContent=""}else l.push(b.createTextNode(e));k.textContent="",m=0;while(e=l[m++])if((!d||-1===n.inArray(e,d))&&(i=n.contains(e.ownerDocument,e),f=oa(k.appendChild(e),"script"),i&&ma(f),c)){j=0;while(e=f[j++])fa.test(e.type||"")&&c.push(e)}return k},cleanData:function(a){for(var b,c,d,e,f=n.event.special,g=0;void 0!==(c=a[g]);g++){if(n.acceptData(c)&&(e=c[L.expando],e&&(b=L.cache[e]))){if(b.events)for(d in b.events)f[d]?n.event.remove(c,d):n.removeEvent(c,d,b.handle);L.cache[e]&&delete L.cache[e]}delete M.cache[c[M.expando]]}}}),n.fn.extend({text:function(a){return J(this,function(a){return void 0===a?n.text(this):this.empty().each(function(){(1===this.nodeType||11===this.nodeType||9===this.nodeType)&&(this.textContent=a)})},null,a,arguments.length)},append:function(){return this.domManip(arguments,function(a){if(1===this.nodeType||11===this.nodeType||9===this.nodeType){var b=ja(this,a);b.appendChild(a)}})},prepend:function(){return this.domManip(arguments,function(a){if(1===this.nodeType||11===this.nodeType||9===this.nodeType){var b=ja(this,a);b.insertBefore(a,b.firstChild)}})},before:function(){return this.domManip(arguments,function(a){this.parentNode&&this.parentNode.insertBefore(a,this)})},after:function(){return this.domManip(arguments,function(a){this.parentNode&&this.parentNode.insertBefore(a,this.nextSibling)})},remove:function(a,b){for(var c,d=a?n.filter(a,this):this,e=0;null!=(c=d[e]);e++)b||1!==c.nodeType||n.cleanData(oa(c)),c.parentNode&&(b&&n.contains(c.ownerDocument,c)&&ma(oa(c,"script")),c.parentNode.removeChild(c));return this},empty:function(){for(var a,b=0;null!=(a=this[b]);b++)1===a.nodeType&&(n.cleanData(oa(a,!1)),a.textContent="");return this},clone:function(a,b){return a=null==a?!1:a,b=null==b?a:b,this.map(function(){return n.clone(this,a,b)})},html:function(a){return J(this,function(a){var b=this[0]||{},c=0,d=this.length;if(void 0===a&&1===b.nodeType)return b.innerHTML;if("string"==typeof a&&!da.test(a)&&!ia[(ba.exec(a)||["",""])[1].toLowerCase()]){a=a.replace(aa,"<$1></$2>");try{for(;d>c;c++)b=this[c]||{},1===b.nodeType&&(n.cleanData(oa(b,!1)),b.innerHTML=a);b=0}catch(e){}}b&&this.empty().append(a)},null,a,arguments.length)},replaceWith:function(){var a=arguments[0];return this.domManip(arguments,function(b){a=this.parentNode,n.cleanData(oa(this)),a&&a.replaceChild(b,this)}),a&&(a.length||a.nodeType)?this:this.remove()},detach:function(a){return this.remove(a,!0)},domManip:function(a,b){a=e.apply([],a);var c,d,f,g,h,i,j=0,l=this.length,m=this,o=l-1,p=a[0],q=n.isFunction(p);if(q||l>1&&"string"==typeof p&&!k.checkClone&&ea.test(p))return this.each(function(c){var d=m.eq(c);q&&(a[0]=p.call(this,c,d.html())),d.domManip(a,b)});if(l&&(c=n.buildFragment(a,this[0].ownerDocument,!1,this),d=c.firstChild,1===c.childNodes.length&&(c=d),d)){for(f=n.map(oa(c,"script"),ka),g=f.length;l>j;j++)h=c,j!==o&&(h=n.clone(h,!0,!0),g&&n.merge(f,oa(h,"script"))),b.call(this[j],h,j);if(g)for(i=f[f.length-1].ownerDocument,n.map(f,la),j=0;g>j;j++)h=f[j],fa.test(h.type||"")&&!L.access(h,"globalEval")&&n.contains(i,h)&&(h.src?n._evalUrl&&n._evalUrl(h.src):n.globalEval(h.textContent.replace(ha,"")))}return this}}),n.each({appendTo:"append",prependTo:"prepend",insertBefore:"before",insertAfter:"after",replaceAll:"replaceWith"},function(a,b){n.fn[a]=function(a){for(var c,d=[],e=n(a),g=e.length-1,h=0;g>=h;h++)c=h===g?this:this.clone(!0),n(e[h])[b](c),f.apply(d,c.get());return this.pushStack(d)}});var qa,ra={};function sa(b,c){var d,e=n(c.createElement(b)).appendTo(c.body),f=a.getDefaultComputedStyle&&(d=a.getDefaultComputedStyle(e[0]))?d.display:n.css(e[0],"display");return e.detach(),f}function ta(a){var b=l,c=ra[a];return c||(c=sa(a,b),"none"!==c&&c||(qa=(qa||n("<iframe frameborder='0' width='0' height='0'/>")).appendTo(b.documentElement),b=qa[0].contentDocument,b.write(),b.close(),c=sa(a,b),qa.detach()),ra[a]=c),c}var ua=/^margin/,va=new RegExp("^("+Q+")(?!px)[a-z%]+$","i"),wa=function(b){return b.ownerDocument.defaultView.opener?b.ownerDocument.defaultView.getComputedStyle(b,null):a.getComputedStyle(b,null)};function xa(a,b,c){var d,e,f,g,h=a.style;return c=c||wa(a),c&&(g=c.getPropertyValue(b)||c[b]),c&&(""!==g||n.contains(a.ownerDocument,a)||(g=n.style(a,b)),va.test(g)&&ua.test(b)&&(d=h.width,e=h.minWidth,f=h.maxWidth,h.minWidth=h.maxWidth=h.width=g,g=c.width,h.width=d,h.minWidth=e,h.maxWidth=f)),void 0!==g?g+"":g}function ya(a,b){return{get:function(){return a()?void delete this.get:(this.get=b).apply(this,arguments)}}}!function(){var b,c,d=l.documentElement,e=l.createElement("div"),f=l.createElement("div");if(f.style){f.style.backgroundClip="content-box",f.cloneNode(!0).style.backgroundClip="",k.clearCloneStyle="content-box"===f.style.backgroundClip,e.style.cssText="border:0;width:0;height:0;top:0;left:-9999px;margin-top:1px;position:absolute",e.appendChild(f);function g(){f.style.cssText="-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;display:block;margin-top:1%;top:1%;border:1px;padding:1px;width:4px;position:absolute",f.innerHTML="",d.appendChild(e);var g=a.getComputedStyle(f,null);b="1%"!==g.top,c="4px"===g.width,d.removeChild(e)}a.getComputedStyle&&n.extend(k,{pixelPosition:function(){return g(),b},boxSizingReliable:function(){return null==c&&g(),c},reliableMarginRight:function(){var b,c=f.appendChild(l.createElement("div"));return c.style.cssText=f.style.cssText="-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box;display:block;margin:0;border:0;padding:0",c.style.marginRight=c.style.width="0",f.style.width="1px",d.appendChild(e),b=!parseFloat(a.getComputedStyle(c,null).marginRight),d.removeChild(e),f.removeChild(c),b}})}}(),n.swap=function(a,b,c,d){var e,f,g={};for(f in b)g[f]=a.style[f],a.style[f]=b[f];e=c.apply(a,d||[]);for(f in b)a.style[f]=g[f];return e};var za=/^(none|table(?!-c[ea]).+)/,Aa=new RegExp("^("+Q+")(.*)$","i"),Ba=new RegExp("^([+-])=("+Q+")","i"),Ca={position:"absolute",visibility:"hidden",display:"block"},Da={letterSpacing:"0",fontWeight:"400"},Ea=["Webkit","O","Moz","ms"];function Fa(a,b){if(b in a)return b;var c=b[0].toUpperCase()+b.slice(1),d=b,e=Ea.length;while(e--)if(b=Ea[e]+c,b in a)return b;return d}function Ga(a,b,c){var d=Aa.exec(b);return d?Math.max(0,d[1]-(c||0))+(d[2]||"px"):b}function Ha(a,b,c,d,e){for(var f=c===(d?"border":"content")?4:"width"===b?1:0,g=0;4>f;f+=2)"margin"===c&&(g+=n.css(a,c+R[f],!0,e)),d?("content"===c&&(g-=n.css(a,"padding"+R[f],!0,e)),"margin"!==c&&(g-=n.css(a,"border"+R[f]+"Width",!0,e))):(g+=n.css(a,"padding"+R[f],!0,e),"padding"!==c&&(g+=n.css(a,"border"+R[f]+"Width",!0,e)));return g}function Ia(a,b,c){var d=!0,e="width"===b?a.offsetWidth:a.offsetHeight,f=wa(a),g="border-box"===n.css(a,"boxSizing",!1,f);if(0>=e||null==e){if(e=xa(a,b,f),(0>e||null==e)&&(e=a.style[b]),va.test(e))return e;d=g&&(k.boxSizingReliable()||e===a.style[b]),e=parseFloat(e)||0}return e+Ha(a,b,c||(g?"border":"content"),d,f)+"px"}function Ja(a,b){for(var c,d,e,f=[],g=0,h=a.length;h>g;g++)d=a[g],d.style&&(f[g]=L.get(d,"olddisplay"),c=d.style.display,b?(f[g]||"none"!==c||(d.style.display=""),""===d.style.display&&S(d)&&(f[g]=L.access(d,"olddisplay",ta(d.nodeName)))):(e=S(d),"none"===c&&e||L.set(d,"olddisplay",e?c:n.css(d,"display"))));for(g=0;h>g;g++)d=a[g],d.style&&(b&&"none"!==d.style.display&&""!==d.style.display||(d.style.display=b?f[g]||"":"none"));return a}n.extend({cssHooks:{opacity:{get:function(a,b){if(b){var c=xa(a,"opacity");return""===c?"1":c}}}},cssNumber:{columnCount:!0,fillOpacity:!0,flexGrow:!0,flexShrink:!0,fontWeight:!0,lineHeight:!0,opacity:!0,order:!0,orphans:!0,widows:!0,zIndex:!0,zoom:!0},cssProps:{"float":"cssFloat"},style:function(a,b,c,d){if(a&&3!==a.nodeType&&8!==a.nodeType&&a.style){var e,f,g,h=n.camelCase(b),i=a.style;return b=n.cssProps[h]||(n.cssProps[h]=Fa(i,h)),g=n.cssHooks[b]||n.cssHooks[h],void 0===c?g&&"get"in g&&void 0!==(e=g.get(a,!1,d))?e:i[b]:(f=typeof c,"string"===f&&(e=Ba.exec(c))&&(c=(e[1]+1)*e[2]+parseFloat(n.css(a,b)),f="number"),null!=c&&c===c&&("number"!==f||n.cssNumber[h]||(c+="px"),k.clearCloneStyle||""!==c||0!==b.indexOf("background")||(i[b]="inherit"),g&&"set"in g&&void 0===(c=g.set(a,c,d))||(i[b]=c)),void 0)}},css:function(a,b,c,d){var e,f,g,h=n.camelCase(b);return b=n.cssProps[h]||(n.cssProps[h]=Fa(a.style,h)),g=n.cssHooks[b]||n.cssHooks[h],g&&"get"in g&&(e=g.get(a,!0,c)),void 0===e&&(e=xa(a,b,d)),"normal"===e&&b in Da&&(e=Da[b]),""===c||c?(f=parseFloat(e),c===!0||n.isNumeric(f)?f||0:e):e}}),n.each(["height","width"],function(a,b){n.cssHooks[b]={get:function(a,c,d){return c?za.test(n.css(a,"display"))&&0===a.offsetWidth?n.swap(a,Ca,function(){return Ia(a,b,d)}):Ia(a,b,d):void 0},set:function(a,c,d){var e=d&&wa(a);return Ga(a,c,d?Ha(a,b,d,"border-box"===n.css(a,"boxSizing",!1,e),e):0)}}}),n.cssHooks.marginRight=ya(k.reliableMarginRight,function(a,b){return b?n.swap(a,{display:"inline-block"},xa,[a,"marginRight"]):void 0}),n.each({margin:"",padding:"",border:"Width"},function(a,b){n.cssHooks[a+b]={expand:function(c){for(var d=0,e={},f="string"==typeof c?c.split(" "):[c];4>d;d++)e[a+R[d]+b]=f[d]||f[d-2]||f[0];return e}},ua.test(a)||(n.cssHooks[a+b].set=Ga)}),n.fn.extend({css:function(a,b){return J(this,function(a,b,c){var d,e,f={},g=0;if(n.isArray(b)){for(d=wa(a),e=b.length;e>g;g++)f[b[g]]=n.css(a,b[g],!1,d);return f}return void 0!==c?n.style(a,b,c):n.css(a,b)},a,b,arguments.length>1)},show:function(){return Ja(this,!0)},hide:function(){return Ja(this)},toggle:function(a){return"boolean"==typeof a?a?this.show():this.hide():this.each(function(){S(this)?n(this).show():n(this).hide()})}});function Ka(a,b,c,d,e){return new Ka.prototype.init(a,b,c,d,e)}n.Tween=Ka,Ka.prototype={constructor:Ka,init:function(a,b,c,d,e,f){this.elem=a,this.prop=c,this.easing=e||"swing",this.options=b,this.start=this.now=this.cur(),this.end=d,this.unit=f||(n.cssNumber[c]?"":"px")},cur:function(){var a=Ka.propHooks[this.prop];return a&&a.get?a.get(this):Ka.propHooks._default.get(this)},run:function(a){var b,c=Ka.propHooks[this.prop];return this.options.duration?this.pos=b=n.easing[this.easing](a,this.options.duration*a,0,1,this.options.duration):this.pos=b=a,this.now=(this.end-this.start)*b+this.start,this.options.step&&this.options.step.call(this.elem,this.now,this),c&&c.set?c.set(this):Ka.propHooks._default.set(this),this}},Ka.prototype.init.prototype=Ka.prototype,Ka.propHooks={_default:{get:function(a){var b;return null==a.elem[a.prop]||a.elem.style&&null!=a.elem.style[a.prop]?(b=n.css(a.elem,a.prop,""),b&&"auto"!==b?b:0):a.elem[a.prop]},set:function(a){n.fx.step[a.prop]?n.fx.step[a.prop](a):a.elem.style&&(null!=a.elem.style[n.cssProps[a.prop]]||n.cssHooks[a.prop])?n.style(a.elem,a.prop,a.now+a.unit):a.elem[a.prop]=a.now}}},Ka.propHooks.scrollTop=Ka.propHooks.scrollLeft={set:function(a){a.elem.nodeType&&a.elem.parentNode&&(a.elem[a.prop]=a.now)}},n.easing={linear:function(a){return a},swing:function(a){return.5-Math.cos(a*Math.PI)/2}},n.fx=Ka.prototype.init,n.fx.step={};var La,Ma,Na=/^(?:toggle|show|hide)$/,Oa=new RegExp("^(?:([+-])=|)("+Q+")([a-z%]*)$","i"),Pa=/queueHooks$/,Qa=[Va],Ra={"*":[function(a,b){var c=this.createTween(a,b),d=c.cur(),e=Oa.exec(b),f=e&&e[3]||(n.cssNumber[a]?"":"px"),g=(n.cssNumber[a]||"px"!==f&&+d)&&Oa.exec(n.css(c.elem,a)),h=1,i=20;if(g&&g[3]!==f){f=f||g[3],e=e||[],g=+d||1;do h=h||".5",g/=h,n.style(c.elem,a,g+f);while(h!==(h=c.cur()/d)&&1!==h&&--i)}return e&&(g=c.start=+g||+d||0,c.unit=f,c.end=e[1]?g+(e[1]+1)*e[2]:+e[2]),c}]};function Sa(){return setTimeout(function(){La=void 0}),La=n.now()}function Ta(a,b){var c,d=0,e={height:a};for(b=b?1:0;4>d;d+=2-b)c=R[d],e["margin"+c]=e["padding"+c]=a;return b&&(e.opacity=e.width=a),e}function Ua(a,b,c){for(var d,e=(Ra[b]||[]).concat(Ra["*"]),f=0,g=e.length;g>f;f++)if(d=e[f].call(c,b,a))return d}function Va(a,b,c){var d,e,f,g,h,i,j,k,l=this,m={},o=a.style,p=a.nodeType&&S(a),q=L.get(a,"fxshow");c.queue||(h=n._queueHooks(a,"fx"),null==h.unqueued&&(h.unqueued=0,i=h.empty.fire,h.empty.fire=function(){h.unqueued||i()}),h.unqueued++,l.always(function(){l.always(function(){h.unqueued--,n.queue(a,"fx").length||h.empty.fire()})})),1===a.nodeType&&("height"in b||"width"in b)&&(c.overflow=[o.overflow,o.overflowX,o.overflowY],j=n.css(a,"display"),k="none"===j?L.get(a,"olddisplay")||ta(a.nodeName):j,"inline"===k&&"none"===n.css(a,"float")&&(o.display="inline-block")),c.overflow&&(o.overflow="hidden",l.always(function(){o.overflow=c.overflow[0],o.overflowX=c.overflow[1],o.overflowY=c.overflow[2]}));for(d in b)if(e=b[d],Na.exec(e)){if(delete b[d],f=f||"toggle"===e,e===(p?"hide":"show")){if("show"!==e||!q||void 0===q[d])continue;p=!0}m[d]=q&&q[d]||n.style(a,d)}else j=void 0;if(n.isEmptyObject(m))"inline"===("none"===j?ta(a.nodeName):j)&&(o.display=j);else{q?"hidden"in q&&(p=q.hidden):q=L.access(a,"fxshow",{}),f&&(q.hidden=!p),p?n(a).show():l.done(function(){n(a).hide()}),l.done(function(){var b;L.remove(a,"fxshow");for(b in m)n.style(a,b,m[b])});for(d in m)g=Ua(p?q[d]:0,d,l),d in q||(q[d]=g.start,p&&(g.end=g.start,g.start="width"===d||"height"===d?1:0))}}function Wa(a,b){var c,d,e,f,g;for(c in a)if(d=n.camelCase(c),e=b[d],f=a[c],n.isArray(f)&&(e=f[1],f=a[c]=f[0]),c!==d&&(a[d]=f,delete a[c]),g=n.cssHooks[d],g&&"expand"in g){f=g.expand(f),delete a[d];for(c in f)c in a||(a[c]=f[c],b[c]=e)}else b[d]=e}function Xa(a,b,c){var d,e,f=0,g=Qa.length,h=n.Deferred().always(function(){delete i.elem}),i=function(){if(e)return!1;for(var b=La||Sa(),c=Math.max(0,j.startTime+j.duration-b),d=c/j.duration||0,f=1-d,g=0,i=j.tweens.length;i>g;g++)j.tweens[g].run(f);return h.notifyWith(a,[j,f,c]),1>f&&i?c:(h.resolveWith(a,[j]),!1)},j=h.promise({elem:a,props:n.extend({},b),opts:n.extend(!0,{specialEasing:{}},c),originalProperties:b,originalOptions:c,startTime:La||Sa(),duration:c.duration,tweens:[],createTween:function(b,c){var d=n.Tween(a,j.opts,b,c,j.opts.specialEasing[b]||j.opts.easing);return j.tweens.push(d),d},stop:function(b){var c=0,d=b?j.tweens.length:0;if(e)return this;for(e=!0;d>c;c++)j.tweens[c].run(1);return b?h.resolveWith(a,[j,b]):h.rejectWith(a,[j,b]),this}}),k=j.props;for(Wa(k,j.opts.specialEasing);g>f;f++)if(d=Qa[f].call(j,a,k,j.opts))return d;return n.map(k,Ua,j),n.isFunction(j.opts.start)&&j.opts.start.call(a,j),n.fx.timer(n.extend(i,{elem:a,anim:j,queue:j.opts.queue})),j.progress(j.opts.progress).done(j.opts.done,j.opts.complete).fail(j.opts.fail).always(j.opts.always)}n.Animation=n.extend(Xa,{tweener:function(a,b){n.isFunction(a)?(b=a,a=["*"]):a=a.split(" ");for(var c,d=0,e=a.length;e>d;d++)c=a[d],Ra[c]=Ra[c]||[],Ra[c].unshift(b)},prefilter:function(a,b){b?Qa.unshift(a):Qa.push(a)}}),n.speed=function(a,b,c){var d=a&&"object"==typeof a?n.extend({},a):{complete:c||!c&&b||n.isFunction(a)&&a,duration:a,easing:c&&b||b&&!n.isFunction(b)&&b};return d.duration=n.fx.off?0:"number"==typeof d.duration?d.duration:d.duration in n.fx.speeds?n.fx.speeds[d.duration]:n.fx.speeds._default,(null==d.queue||d.queue===!0)&&(d.queue="fx"),d.old=d.complete,d.complete=function(){n.isFunction(d.old)&&d.old.call(this),d.queue&&n.dequeue(this,d.queue)},d},n.fn.extend({fadeTo:function(a,b,c,d){return this.filter(S).css("opacity",0).show().end().animate({opacity:b},a,c,d)},animate:function(a,b,c,d){var e=n.isEmptyObject(a),f=n.speed(b,c,d),g=function(){var b=Xa(this,n.extend({},a),f);(e||L.get(this,"finish"))&&b.stop(!0)};return g.finish=g,e||f.queue===!1?this.each(g):this.queue(f.queue,g)},stop:function(a,b,c){var d=function(a){var b=a.stop;delete a.stop,b(c)};return"string"!=typeof a&&(c=b,b=a,a=void 0),b&&a!==!1&&this.queue(a||"fx",[]),this.each(function(){var b=!0,e=null!=a&&a+"queueHooks",f=n.timers,g=L.get(this);if(e)g[e]&&g[e].stop&&d(g[e]);else for(e in g)g[e]&&g[e].stop&&Pa.test(e)&&d(g[e]);for(e=f.length;e--;)f[e].elem!==this||null!=a&&f[e].queue!==a||(f[e].anim.stop(c),b=!1,f.splice(e,1));(b||!c)&&n.dequeue(this,a)})},finish:function(a){return a!==!1&&(a=a||"fx"),this.each(function(){var b,c=L.get(this),d=c[a+"queue"],e=c[a+"queueHooks"],f=n.timers,g=d?d.length:0;for(c.finish=!0,n.queue(this,a,[]),e&&e.stop&&e.stop.call(this,!0),b=f.length;b--;)f[b].elem===this&&f[b].queue===a&&(f[b].anim.stop(!0),f.splice(b,1));for(b=0;g>b;b++)d[b]&&d[b].finish&&d[b].finish.call(this);delete c.finish})}}),n.each(["toggle","show","hide"],function(a,b){var c=n.fn[b];n.fn[b]=function(a,d,e){return null==a||"boolean"==typeof a?c.apply(this,arguments):this.animate(Ta(b,!0),a,d,e)}}),n.each({slideDown:Ta("show"),slideUp:Ta("hide"),slideToggle:Ta("toggle"),fadeIn:{opacity:"show"},fadeOut:{opacity:"hide"},fadeToggle:{opacity:"toggle"}},function(a,b){n.fn[a]=function(a,c,d){return this.animate(b,a,c,d)}}),n.timers=[],n.fx.tick=function(){var a,b=0,c=n.timers;for(La=n.now();b<c.length;b++)a=c[b],a()||c[b]!==a||c.splice(b--,1);c.length||n.fx.stop(),La=void 0},n.fx.timer=function(a){n.timers.push(a),a()?n.fx.start():n.timers.pop()},n.fx.interval=13,n.fx.start=function(){Ma||(Ma=setInterval(n.fx.tick,n.fx.interval))},n.fx.stop=function(){clearInterval(Ma),Ma=null},n.fx.speeds={slow:600,fast:200,_default:400},n.fn.delay=function(a,b){return a=n.fx?n.fx.speeds[a]||a:a,b=b||"fx",this.queue(b,function(b,c){var d=setTimeout(b,a);c.stop=function(){clearTimeout(d)}})},function(){var a=l.createElement("input"),b=l.createElement("select"),c=b.appendChild(l.createElement("option"));a.type="checkbox",k.checkOn=""!==a.value,k.optSelected=c.selected,b.disabled=!0,k.optDisabled=!c.disabled,a=l.createElement("input"),a.value="t",a.type="radio",k.radioValue="t"===a.value}();var Ya,Za,$a=n.expr.attrHandle;n.fn.extend({attr:function(a,b){return J(this,n.attr,a,b,arguments.length>1)},removeAttr:function(a){return this.each(function(){n.removeAttr(this,a)})}}),n.extend({attr:function(a,b,c){var d,e,f=a.nodeType;if(a&&3!==f&&8!==f&&2!==f)return typeof a.getAttribute===U?n.prop(a,b,c):(1===f&&n.isXMLDoc(a)||(b=b.toLowerCase(),d=n.attrHooks[b]||(n.expr.match.bool.test(b)?Za:Ya)),
-void 0===c?d&&"get"in d&&null!==(e=d.get(a,b))?e:(e=n.find.attr(a,b),null==e?void 0:e):null!==c?d&&"set"in d&&void 0!==(e=d.set(a,c,b))?e:(a.setAttribute(b,c+""),c):void n.removeAttr(a,b))},removeAttr:function(a,b){var c,d,e=0,f=b&&b.match(E);if(f&&1===a.nodeType)while(c=f[e++])d=n.propFix[c]||c,n.expr.match.bool.test(c)&&(a[d]=!1),a.removeAttribute(c)},attrHooks:{type:{set:function(a,b){if(!k.radioValue&&"radio"===b&&n.nodeName(a,"input")){var c=a.value;return a.setAttribute("type",b),c&&(a.value=c),b}}}}}),Za={set:function(a,b,c){return b===!1?n.removeAttr(a,c):a.setAttribute(c,c),c}},n.each(n.expr.match.bool.source.match(/\w+/g),function(a,b){var c=$a[b]||n.find.attr;$a[b]=function(a,b,d){var e,f;return d||(f=$a[b],$a[b]=e,e=null!=c(a,b,d)?b.toLowerCase():null,$a[b]=f),e}});var _a=/^(?:input|select|textarea|button)$/i;n.fn.extend({prop:function(a,b){return J(this,n.prop,a,b,arguments.length>1)},removeProp:function(a){return this.each(function(){delete this[n.propFix[a]||a]})}}),n.extend({propFix:{"for":"htmlFor","class":"className"},prop:function(a,b,c){var d,e,f,g=a.nodeType;if(a&&3!==g&&8!==g&&2!==g)return f=1!==g||!n.isXMLDoc(a),f&&(b=n.propFix[b]||b,e=n.propHooks[b]),void 0!==c?e&&"set"in e&&void 0!==(d=e.set(a,c,b))?d:a[b]=c:e&&"get"in e&&null!==(d=e.get(a,b))?d:a[b]},propHooks:{tabIndex:{get:function(a){return a.hasAttribute("tabindex")||_a.test(a.nodeName)||a.href?a.tabIndex:-1}}}}),k.optSelected||(n.propHooks.selected={get:function(a){var b=a.parentNode;return b&&b.parentNode&&b.parentNode.selectedIndex,null}}),n.each(["tabIndex","readOnly","maxLength","cellSpacing","cellPadding","rowSpan","colSpan","useMap","frameBorder","contentEditable"],function(){n.propFix[this.toLowerCase()]=this});var ab=/[\t\r\n\f]/g;n.fn.extend({addClass:function(a){var b,c,d,e,f,g,h="string"==typeof a&&a,i=0,j=this.length;if(n.isFunction(a))return this.each(function(b){n(this).addClass(a.call(this,b,this.className))});if(h)for(b=(a||"").match(E)||[];j>i;i++)if(c=this[i],d=1===c.nodeType&&(c.className?(" "+c.className+" ").replace(ab," "):" ")){f=0;while(e=b[f++])d.indexOf(" "+e+" ")<0&&(d+=e+" ");g=n.trim(d),c.className!==g&&(c.className=g)}return this},removeClass:function(a){var b,c,d,e,f,g,h=0===arguments.length||"string"==typeof a&&a,i=0,j=this.length;if(n.isFunction(a))return this.each(function(b){n(this).removeClass(a.call(this,b,this.className))});if(h)for(b=(a||"").match(E)||[];j>i;i++)if(c=this[i],d=1===c.nodeType&&(c.className?(" "+c.className+" ").replace(ab," "):"")){f=0;while(e=b[f++])while(d.indexOf(" "+e+" ")>=0)d=d.replace(" "+e+" "," ");g=a?n.trim(d):"",c.className!==g&&(c.className=g)}return this},toggleClass:function(a,b){var c=typeof a;return"boolean"==typeof b&&"string"===c?b?this.addClass(a):this.removeClass(a):this.each(n.isFunction(a)?function(c){n(this).toggleClass(a.call(this,c,this.className,b),b)}:function(){if("string"===c){var b,d=0,e=n(this),f=a.match(E)||[];while(b=f[d++])e.hasClass(b)?e.removeClass(b):e.addClass(b)}else(c===U||"boolean"===c)&&(this.className&&L.set(this,"__className__",this.className),this.className=this.className||a===!1?"":L.get(this,"__className__")||"")})},hasClass:function(a){for(var b=" "+a+" ",c=0,d=this.length;d>c;c++)if(1===this[c].nodeType&&(" "+this[c].className+" ").replace(ab," ").indexOf(b)>=0)return!0;return!1}});var bb=/\r/g;n.fn.extend({val:function(a){var b,c,d,e=this[0];{if(arguments.length)return d=n.isFunction(a),this.each(function(c){var e;1===this.nodeType&&(e=d?a.call(this,c,n(this).val()):a,null==e?e="":"number"==typeof e?e+="":n.isArray(e)&&(e=n.map(e,function(a){return null==a?"":a+""})),b=n.valHooks[this.type]||n.valHooks[this.nodeName.toLowerCase()],b&&"set"in b&&void 0!==b.set(this,e,"value")||(this.value=e))});if(e)return b=n.valHooks[e.type]||n.valHooks[e.nodeName.toLowerCase()],b&&"get"in b&&void 0!==(c=b.get(e,"value"))?c:(c=e.value,"string"==typeof c?c.replace(bb,""):null==c?"":c)}}}),n.extend({valHooks:{option:{get:function(a){var b=n.find.attr(a,"value");return null!=b?b:n.trim(n.text(a))}},select:{get:function(a){for(var b,c,d=a.options,e=a.selectedIndex,f="select-one"===a.type||0>e,g=f?null:[],h=f?e+1:d.length,i=0>e?h:f?e:0;h>i;i++)if(c=d[i],!(!c.selected&&i!==e||(k.optDisabled?c.disabled:null!==c.getAttribute("disabled"))||c.parentNode.disabled&&n.nodeName(c.parentNode,"optgroup"))){if(b=n(c).val(),f)return b;g.push(b)}return g},set:function(a,b){var c,d,e=a.options,f=n.makeArray(b),g=e.length;while(g--)d=e[g],(d.selected=n.inArray(d.value,f)>=0)&&(c=!0);return c||(a.selectedIndex=-1),f}}}}),n.each(["radio","checkbox"],function(){n.valHooks[this]={set:function(a,b){return n.isArray(b)?a.checked=n.inArray(n(a).val(),b)>=0:void 0}},k.checkOn||(n.valHooks[this].get=function(a){return null===a.getAttribute("value")?"on":a.value})}),n.each("blur focus focusin focusout load resize scroll unload click dblclick mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave change select submit keydown keypress keyup error contextmenu".split(" "),function(a,b){n.fn[b]=function(a,c){return arguments.length>0?this.on(b,null,a,c):this.trigger(b)}}),n.fn.extend({hover:function(a,b){return this.mouseenter(a).mouseleave(b||a)},bind:function(a,b,c){return this.on(a,null,b,c)},unbind:function(a,b){return this.off(a,null,b)},delegate:function(a,b,c,d){return this.on(b,a,c,d)},undelegate:function(a,b,c){return 1===arguments.length?this.off(a,"**"):this.off(b,a||"**",c)}});var cb=n.now(),db=/\?/;n.parseJSON=function(a){return JSON.parse(a+"")},n.parseXML=function(a){var b,c;if(!a||"string"!=typeof a)return null;try{c=new DOMParser,b=c.parseFromString(a,"text/xml")}catch(d){b=void 0}return(!b||b.getElementsByTagName("parsererror").length)&&n.error("Invalid XML: "+a),b};var eb=/#.*$/,fb=/([?&])_=[^&]*/,gb=/^(.*?):[ \t]*([^\r\n]*)$/gm,hb=/^(?:about|app|app-storage|.+-extension|file|res|widget):$/,ib=/^(?:GET|HEAD)$/,jb=/^\/\//,kb=/^([\w.+-]+:)(?:\/\/(?:[^\/?#]*@|)([^\/?#:]*)(?::(\d+)|)|)/,lb={},mb={},nb="*/".concat("*"),ob=a.location.href,pb=kb.exec(ob.toLowerCase())||[];function qb(a){return function(b,c){"string"!=typeof b&&(c=b,b="*");var d,e=0,f=b.toLowerCase().match(E)||[];if(n.isFunction(c))while(d=f[e++])"+"===d[0]?(d=d.slice(1)||"*",(a[d]=a[d]||[]).unshift(c)):(a[d]=a[d]||[]).push(c)}}function rb(a,b,c,d){var e={},f=a===mb;function g(h){var i;return e[h]=!0,n.each(a[h]||[],function(a,h){var j=h(b,c,d);return"string"!=typeof j||f||e[j]?f?!(i=j):void 0:(b.dataTypes.unshift(j),g(j),!1)}),i}return g(b.dataTypes[0])||!e["*"]&&g("*")}function sb(a,b){var c,d,e=n.ajaxSettings.flatOptions||{};for(c in b)void 0!==b[c]&&((e[c]?a:d||(d={}))[c]=b[c]);return d&&n.extend(!0,a,d),a}function tb(a,b,c){var d,e,f,g,h=a.contents,i=a.dataTypes;while("*"===i[0])i.shift(),void 0===d&&(d=a.mimeType||b.getResponseHeader("Content-Type"));if(d)for(e in h)if(h[e]&&h[e].test(d)){i.unshift(e);break}if(i[0]in c)f=i[0];else{for(e in c){if(!i[0]||a.converters[e+" "+i[0]]){f=e;break}g||(g=e)}f=f||g}return f?(f!==i[0]&&i.unshift(f),c[f]):void 0}function ub(a,b,c,d){var e,f,g,h,i,j={},k=a.dataTypes.slice();if(k[1])for(g in a.converters)j[g.toLowerCase()]=a.converters[g];f=k.shift();while(f)if(a.responseFields[f]&&(c[a.responseFields[f]]=b),!i&&d&&a.dataFilter&&(b=a.dataFilter(b,a.dataType)),i=f,f=k.shift())if("*"===f)f=i;else if("*"!==i&&i!==f){if(g=j[i+" "+f]||j["* "+f],!g)for(e in j)if(h=e.split(" "),h[1]===f&&(g=j[i+" "+h[0]]||j["* "+h[0]])){g===!0?g=j[e]:j[e]!==!0&&(f=h[0],k.unshift(h[1]));break}if(g!==!0)if(g&&a["throws"])b=g(b);else try{b=g(b)}catch(l){return{state:"parsererror",error:g?l:"No conversion from "+i+" to "+f}}}return{state:"success",data:b}}n.extend({active:0,lastModified:{},etag:{},ajaxSettings:{url:ob,type:"GET",isLocal:hb.test(pb[1]),global:!0,processData:!0,async:!0,contentType:"application/x-www-form-urlencoded; charset=UTF-8",accepts:{"*":nb,text:"text/plain",html:"text/html",xml:"application/xml, text/xml",json:"application/json, text/javascript"},contents:{xml:/xml/,html:/html/,json:/json/},responseFields:{xml:"responseXML",text:"responseText",json:"responseJSON"},converters:{"* text":String,"text html":!0,"text json":n.parseJSON,"text xml":n.parseXML},flatOptions:{url:!0,context:!0}},ajaxSetup:function(a,b){return b?sb(sb(a,n.ajaxSettings),b):sb(n.ajaxSettings,a)},ajaxPrefilter:qb(lb),ajaxTransport:qb(mb),ajax:function(a,b){"object"==typeof a&&(b=a,a=void 0),b=b||{};var c,d,e,f,g,h,i,j,k=n.ajaxSetup({},b),l=k.context||k,m=k.context&&(l.nodeType||l.jquery)?n(l):n.event,o=n.Deferred(),p=n.Callbacks("once memory"),q=k.statusCode||{},r={},s={},t=0,u="canceled",v={readyState:0,getResponseHeader:function(a){var b;if(2===t){if(!f){f={};while(b=gb.exec(e))f[b[1].toLowerCase()]=b[2]}b=f[a.toLowerCase()]}return null==b?null:b},getAllResponseHeaders:function(){return 2===t?e:null},setRequestHeader:function(a,b){var c=a.toLowerCase();return t||(a=s[c]=s[c]||a,r[a]=b),this},overrideMimeType:function(a){return t||(k.mimeType=a),this},statusCode:function(a){var b;if(a)if(2>t)for(b in a)q[b]=[q[b],a[b]];else v.always(a[v.status]);return this},abort:function(a){var b=a||u;return c&&c.abort(b),x(0,b),this}};if(o.promise(v).complete=p.add,v.success=v.done,v.error=v.fail,k.url=((a||k.url||ob)+"").replace(eb,"").replace(jb,pb[1]+"//"),k.type=b.method||b.type||k.method||k.type,k.dataTypes=n.trim(k.dataType||"*").toLowerCase().match(E)||[""],null==k.crossDomain&&(h=kb.exec(k.url.toLowerCase()),k.crossDomain=!(!h||h[1]===pb[1]&&h[2]===pb[2]&&(h[3]||("http:"===h[1]?"80":"443"))===(pb[3]||("http:"===pb[1]?"80":"443")))),k.data&&k.processData&&"string"!=typeof k.data&&(k.data=n.param(k.data,k.traditional)),rb(lb,k,b,v),2===t)return v;i=n.event&&k.global,i&&0===n.active++&&n.event.trigger("ajaxStart"),k.type=k.type.toUpperCase(),k.hasContent=!ib.test(k.type),d=k.url,k.hasContent||(k.data&&(d=k.url+=(db.test(d)?"&":"?")+k.data,delete k.data),k.cache===!1&&(k.url=fb.test(d)?d.replace(fb,"$1_="+cb++):d+(db.test(d)?"&":"?")+"_="+cb++)),k.ifModified&&(n.lastModified[d]&&v.setRequestHeader("If-Modified-Since",n.lastModified[d]),n.etag[d]&&v.setRequestHeader("If-None-Match",n.etag[d])),(k.data&&k.hasContent&&k.contentType!==!1||b.contentType)&&v.setRequestHeader("Content-Type",k.contentType),v.setRequestHeader("Accept",k.dataTypes[0]&&k.accepts[k.dataTypes[0]]?k.accepts[k.dataTypes[0]]+("*"!==k.dataTypes[0]?", "+nb+"; q=0.01":""):k.accepts["*"]);for(j in k.headers)v.setRequestHeader(j,k.headers[j]);if(k.beforeSend&&(k.beforeSend.call(l,v,k)===!1||2===t))return v.abort();u="abort";for(j in{success:1,error:1,complete:1})v[j](k[j]);if(c=rb(mb,k,b,v)){v.readyState=1,i&&m.trigger("ajaxSend",[v,k]),k.async&&k.timeout>0&&(g=setTimeout(function(){v.abort("timeout")},k.timeout));try{t=1,c.send(r,x)}catch(w){if(!(2>t))throw w;x(-1,w)}}else x(-1,"No Transport");function x(a,b,f,h){var j,r,s,u,w,x=b;2!==t&&(t=2,g&&clearTimeout(g),c=void 0,e=h||"",v.readyState=a>0?4:0,j=a>=200&&300>a||304===a,f&&(u=tb(k,v,f)),u=ub(k,u,v,j),j?(k.ifModified&&(w=v.getResponseHeader("Last-Modified"),w&&(n.lastModified[d]=w),w=v.getResponseHeader("etag"),w&&(n.etag[d]=w)),204===a||"HEAD"===k.type?x="nocontent":304===a?x="notmodified":(x=u.state,r=u.data,s=u.error,j=!s)):(s=x,(a||!x)&&(x="error",0>a&&(a=0))),v.status=a,v.statusText=(b||x)+"",j?o.resolveWith(l,[r,x,v]):o.rejectWith(l,[v,x,s]),v.statusCode(q),q=void 0,i&&m.trigger(j?"ajaxSuccess":"ajaxError",[v,k,j?r:s]),p.fireWith(l,[v,x]),i&&(m.trigger("ajaxComplete",[v,k]),--n.active||n.event.trigger("ajaxStop")))}return v},getJSON:function(a,b,c){return n.get(a,b,c,"json")},getScript:function(a,b){return n.get(a,void 0,b,"script")}}),n.each(["get","post"],function(a,b){n[b]=function(a,c,d,e){return n.isFunction(c)&&(e=e||d,d=c,c=void 0),n.ajax({url:a,type:b,dataType:e,data:c,success:d})}}),n._evalUrl=function(a){return n.ajax({url:a,type:"GET",dataType:"script",async:!1,global:!1,"throws":!0})},n.fn.extend({wrapAll:function(a){var b;return n.isFunction(a)?this.each(function(b){n(this).wrapAll(a.call(this,b))}):(this[0]&&(b=n(a,this[0].ownerDocument).eq(0).clone(!0),this[0].parentNode&&b.insertBefore(this[0]),b.map(function(){var a=this;while(a.firstElementChild)a=a.firstElementChild;return a}).append(this)),this)},wrapInner:function(a){return this.each(n.isFunction(a)?function(b){n(this).wrapInner(a.call(this,b))}:function(){var b=n(this),c=b.contents();c.length?c.wrapAll(a):b.append(a)})},wrap:function(a){var b=n.isFunction(a);return this.each(function(c){n(this).wrapAll(b?a.call(this,c):a)})},unwrap:function(){return this.parent().each(function(){n.nodeName(this,"body")||n(this).replaceWith(this.childNodes)}).end()}}),n.expr.filters.hidden=function(a){return a.offsetWidth<=0&&a.offsetHeight<=0},n.expr.filters.visible=function(a){return!n.expr.filters.hidden(a)};var vb=/%20/g,wb=/\[\]$/,xb=/\r?\n/g,yb=/^(?:submit|button|image|reset|file)$/i,zb=/^(?:input|select|textarea|keygen)/i;function Ab(a,b,c,d){var e;if(n.isArray(b))n.each(b,function(b,e){c||wb.test(a)?d(a,e):Ab(a+"["+("object"==typeof e?b:"")+"]",e,c,d)});else if(c||"object"!==n.type(b))d(a,b);else for(e in b)Ab(a+"["+e+"]",b[e],c,d)}n.param=function(a,b){var c,d=[],e=function(a,b){b=n.isFunction(b)?b():null==b?"":b,d[d.length]=encodeURIComponent(a)+"="+encodeURIComponent(b)};if(void 0===b&&(b=n.ajaxSettings&&n.ajaxSettings.traditional),n.isArray(a)||a.jquery&&!n.isPlainObject(a))n.each(a,function(){e(this.name,this.value)});else for(c in a)Ab(c,a[c],b,e);return d.join("&").replace(vb,"+")},n.fn.extend({serialize:function(){return n.param(this.serializeArray())},serializeArray:function(){return this.map(function(){var a=n.prop(this,"elements");return a?n.makeArray(a):this}).filter(function(){var a=this.type;return this.name&&!n(this).is(":disabled")&&zb.test(this.nodeName)&&!yb.test(a)&&(this.checked||!T.test(a))}).map(function(a,b){var c=n(this).val();return null==c?null:n.isArray(c)?n.map(c,function(a){return{name:b.name,value:a.replace(xb,"\r\n")}}):{name:b.name,value:c.replace(xb,"\r\n")}}).get()}}),n.ajaxSettings.xhr=function(){try{return new XMLHttpRequest}catch(a){}};var Bb=0,Cb={},Db={0:200,1223:204},Eb=n.ajaxSettings.xhr();a.attachEvent&&a.attachEvent("onunload",function(){for(var a in Cb)Cb[a]()}),k.cors=!!Eb&&"withCredentials"in Eb,k.ajax=Eb=!!Eb,n.ajaxTransport(function(a){var b;return k.cors||Eb&&!a.crossDomain?{send:function(c,d){var e,f=a.xhr(),g=++Bb;if(f.open(a.type,a.url,a.async,a.username,a.password),a.xhrFields)for(e in a.xhrFields)f[e]=a.xhrFields[e];a.mimeType&&f.overrideMimeType&&f.overrideMimeType(a.mimeType),a.crossDomain||c["X-Requested-With"]||(c["X-Requested-With"]="XMLHttpRequest");for(e in c)f.setRequestHeader(e,c[e]);b=function(a){return function(){b&&(delete Cb[g],b=f.onload=f.onerror=null,"abort"===a?f.abort():"error"===a?d(f.status,f.statusText):d(Db[f.status]||f.status,f.statusText,"string"==typeof f.responseText?{text:f.responseText}:void 0,f.getAllResponseHeaders()))}},f.onload=b(),f.onerror=b("error"),b=Cb[g]=b("abort");try{f.send(a.hasContent&&a.data||null)}catch(h){if(b)throw h}},abort:function(){b&&b()}}:void 0}),n.ajaxSetup({accepts:{script:"text/javascript, application/javascript, application/ecmascript, application/x-ecmascript"},contents:{script:/(?:java|ecma)script/},converters:{"text script":function(a){return n.globalEval(a),a}}}),n.ajaxPrefilter("script",function(a){void 0===a.cache&&(a.cache=!1),a.crossDomain&&(a.type="GET")}),n.ajaxTransport("script",function(a){if(a.crossDomain){var b,c;return{send:function(d,e){b=n("<script>").prop({async:!0,charset:a.scriptCharset,src:a.url}).on("load error",c=function(a){b.remove(),c=null,a&&e("error"===a.type?404:200,a.type)}),l.head.appendChild(b[0])},abort:function(){c&&c()}}}});var Fb=[],Gb=/(=)\?(?=&|$)|\?\?/;n.ajaxSetup({jsonp:"callback",jsonpCallback:function(){var a=Fb.pop()||n.expando+"_"+cb++;return this[a]=!0,a}}),n.ajaxPrefilter("json jsonp",function(b,c,d){var e,f,g,h=b.jsonp!==!1&&(Gb.test(b.url)?"url":"string"==typeof b.data&&!(b.contentType||"").indexOf("application/x-www-form-urlencoded")&&Gb.test(b.data)&&"data");return h||"jsonp"===b.dataTypes[0]?(e=b.jsonpCallback=n.isFunction(b.jsonpCallback)?b.jsonpCallback():b.jsonpCallback,h?b[h]=b[h].replace(Gb,"$1"+e):b.jsonp!==!1&&(b.url+=(db.test(b.url)?"&":"?")+b.jsonp+"="+e),b.converters["script json"]=function(){return g||n.error(e+" was not called"),g[0]},b.dataTypes[0]="json",f=a[e],a[e]=function(){g=arguments},d.always(function(){a[e]=f,b[e]&&(b.jsonpCallback=c.jsonpCallback,Fb.push(e)),g&&n.isFunction(f)&&f(g[0]),g=f=void 0}),"script"):void 0}),n.parseHTML=function(a,b,c){if(!a||"string"!=typeof a)return null;"boolean"==typeof b&&(c=b,b=!1),b=b||l;var d=v.exec(a),e=!c&&[];return d?[b.createElement(d[1])]:(d=n.buildFragment([a],b,e),e&&e.length&&n(e).remove(),n.merge([],d.childNodes))};var Hb=n.fn.load;n.fn.load=function(a,b,c){if("string"!=typeof a&&Hb)return Hb.apply(this,arguments);var d,e,f,g=this,h=a.indexOf(" ");return h>=0&&(d=n.trim(a.slice(h)),a=a.slice(0,h)),n.isFunction(b)?(c=b,b=void 0):b&&"object"==typeof b&&(e="POST"),g.length>0&&n.ajax({url:a,type:e,dataType:"html",data:b}).done(function(a){f=arguments,g.html(d?n("<div>").append(n.parseHTML(a)).find(d):a)}).complete(c&&function(a,b){g.each(c,f||[a.responseText,b,a])}),this},n.each(["ajaxStart","ajaxStop","ajaxComplete","ajaxError","ajaxSuccess","ajaxSend"],function(a,b){n.fn[b]=function(a){return this.on(b,a)}}),n.expr.filters.animated=function(a){return n.grep(n.timers,function(b){return a===b.elem}).length};var Ib=a.document.documentElement;function Jb(a){return n.isWindow(a)?a:9===a.nodeType&&a.defaultView}n.offset={setOffset:function(a,b,c){var d,e,f,g,h,i,j,k=n.css(a,"position"),l=n(a),m={};"static"===k&&(a.style.position="relative"),h=l.offset(),f=n.css(a,"top"),i=n.css(a,"left"),j=("absolute"===k||"fixed"===k)&&(f+i).indexOf("auto")>-1,j?(d=l.position(),g=d.top,e=d.left):(g=parseFloat(f)||0,e=parseFloat(i)||0),n.isFunction(b)&&(b=b.call(a,c,h)),null!=b.top&&(m.top=b.top-h.top+g),null!=b.left&&(m.left=b.left-h.left+e),"using"in b?b.using.call(a,m):l.css(m)}},n.fn.extend({offset:function(a){if(arguments.length)return void 0===a?this:this.each(function(b){n.offset.setOffset(this,a,b)});var b,c,d=this[0],e={top:0,left:0},f=d&&d.ownerDocument;if(f)return b=f.documentElement,n.contains(b,d)?(typeof d.getBoundingClientRect!==U&&(e=d.getBoundingClientRect()),c=Jb(f),{top:e.top+c.pageYOffset-b.clientTop,left:e.left+c.pageXOffset-b.clientLeft}):e},position:function(){if(this[0]){var a,b,c=this[0],d={top:0,left:0};return"fixed"===n.css(c,"position")?b=c.getBoundingClientRect():(a=this.offsetParent(),b=this.offset(),n.nodeName(a[0],"html")||(d=a.offset()),d.top+=n.css(a[0],"borderTopWidth",!0),d.left+=n.css(a[0],"borderLeftWidth",!0)),{top:b.top-d.top-n.css(c,"marginTop",!0),left:b.left-d.left-n.css(c,"marginLeft",!0)}}},offsetParent:function(){return this.map(function(){var a=this.offsetParent||Ib;while(a&&!n.nodeName(a,"html")&&"static"===n.css(a,"position"))a=a.offsetParent;return a||Ib})}}),n.each({scrollLeft:"pageXOffset",scrollTop:"pageYOffset"},function(b,c){var d="pageYOffset"===c;n.fn[b]=function(e){return J(this,function(b,e,f){var g=Jb(b);return void 0===f?g?g[c]:b[e]:void(g?g.scrollTo(d?a.pageXOffset:f,d?f:a.pageYOffset):b[e]=f)},b,e,arguments.length,null)}}),n.each(["top","left"],function(a,b){n.cssHooks[b]=ya(k.pixelPosition,function(a,c){return c?(c=xa(a,b),va.test(c)?n(a).position()[b]+"px":c):void 0})}),n.each({Height:"height",Width:"width"},function(a,b){n.each({padding:"inner"+a,content:b,"":"outer"+a},function(c,d){n.fn[d]=function(d,e){var f=arguments.length&&(c||"boolean"!=typeof d),g=c||(d===!0||e===!0?"margin":"border");return J(this,function(b,c,d){var e;return n.isWindow(b)?b.document.documentElement["client"+a]:9===b.nodeType?(e=b.documentElement,Math.max(b.body["scroll"+a],e["scroll"+a],b.body["offset"+a],e["offset"+a],e["client"+a])):void 0===d?n.css(b,c,g):n.style(b,c,d,g)},b,f?d:void 0,f,null)}})}),n.fn.size=function(){return this.length},n.fn.andSelf=n.fn.addBack,"function"==typeof define&&define.amd&&define("jquery",[],function(){return n});var Kb=a.jQuery,Lb=a.$;return n.noConflict=function(b){return a.$===n&&(a.$=Lb),b&&a.jQuery===n&&(a.jQuery=Kb),n},typeof b===U&&(a.jQuery=a.$=n),n});
-
 /*! 
  * angular-loading-bar v0.8.0
  * https://chieffancypants.github.io/angular-loading-bar
@@ -35677,3 +28971,6708 @@ angular.module('cfp.loadingBar', [])
  * Copyright (c) 2015 Stein Magnus Jodal and contributors
  * Licensed under the Apache License, Version 2.0 */
 !function(a){if("object"==typeof exports)module.exports=a();else if("function"==typeof define&&define.amd)define(a);else{var b;"undefined"!=typeof window?b=window:"undefined"!=typeof global?b=global:"undefined"!=typeof self&&(b=self),b.Mopidy=a()}}(function(){var a;return function b(a,c,d){function e(g,h){if(!c[g]){if(!a[g]){var i="function"==typeof require&&require;if(!h&&i)return i(g,!0);if(f)return f(g,!0);throw new Error("Cannot find module '"+g+"'")}var j=c[g]={exports:{}};a[g][0].call(j.exports,function(b){var c=a[g][1][b];return e(c?c:b)},j,j.exports,b,a,c,d)}return c[g].exports}for(var f="function"==typeof require&&require,g=0;g<d.length;g++)e(d[g]);return e}({1:[function(a,b){b.exports={Client:window.WebSocket}},{}],2:[function(b,c){("function"==typeof a&&a.amd&&function(b){a("bane",b)}||"object"==typeof c&&function(a){c.exports=a()}||function(a){this.bane=a()})(function(){"use strict";function a(a,b,c){var d,e=c.length;if(e>0)for(d=0;e>d;++d)c[d](a,b);else setTimeout(function(){throw b.message=a+" listener threw error: "+b.message,b},0)}function b(a){if("function"!=typeof a)throw new TypeError("Listener is not function");return a}function c(a){return a.supervisors||(a.supervisors=[]),a.supervisors}function d(a,b){return a.listeners||(a.listeners={}),b&&!a.listeners[b]&&(a.listeners[b]=[]),b?a.listeners[b]:a.listeners}function e(a){return a.errbacks||(a.errbacks=[]),a.errbacks}function f(f){function h(b,c,d){try{c.listener.apply(c.thisp||f,d)}catch(g){a(b,g,e(f))}}return f=f||{},f.on=function(a,e,f){return"function"==typeof a?c(this).push({listener:a,thisp:e}):void d(this,a).push({listener:b(e),thisp:f})},f.off=function(a,b){var f,g,h,i;if(!a){f=c(this),f.splice(0,f.length),g=d(this);for(h in g)g.hasOwnProperty(h)&&(f=d(this,h),f.splice(0,f.length));return f=e(this),void f.splice(0,f.length)}if("function"==typeof a?(f=c(this),b=a):f=d(this,a),!b)return void f.splice(0,f.length);for(h=0,i=f.length;i>h;++h)if(f[h].listener===b)return void f.splice(h,1)},f.once=function(a,b,c){var d=function(){f.off(a,d),b.apply(this,arguments)};f.on(a,d,c)},f.bind=function(a,b){var c,d,e;if(b)for(d=0,e=b.length;e>d;++d){if("function"!=typeof a[b[d]])throw new Error("No such method "+b[d]);this.on(b[d],a[b[d]],a)}else for(c in a)"function"==typeof a[c]&&this.on(c,a[c],a);return a},f.emit=function(a){var b,e,f=c(this),i=g.call(arguments);for(b=0,e=f.length;e>b;++b)h(a,f[b],i);for(f=d(this,a).slice(),i=g.call(arguments,1),b=0,e=f.length;e>b;++b)h(a,f[b],i)},f.errback=function(a){this.errbacks||(this.errbacks=[]),this.errbacks.push(b(a))},f}var g=Array.prototype.slice;return{createEventEmitter:f,aggregate:function(a){var b=f();return a.forEach(function(a){a.on(function(a,c){b.emit(a,c)})}),b}}})},{}],3:[function(a,b){function c(){}var d=b.exports={};d.nextTick=function(){var a="undefined"!=typeof window&&window.setImmediate,b="undefined"!=typeof window&&window.postMessage&&window.addEventListener;if(a)return function(a){return window.setImmediate(a)};if(b){var c=[];return window.addEventListener("message",function(a){var b=a.source;if((b===window||null===b)&&"process-tick"===a.data&&(a.stopPropagation(),c.length>0)){var d=c.shift();d()}},!0),function(a){c.push(a),window.postMessage("process-tick","*")}}return function(a){setTimeout(a,0)}}(),d.title="browser",d.browser=!0,d.env={},d.argv=[],d.on=c,d.addListener=c,d.once=c,d.off=c,d.removeListener=c,d.removeAllListeners=c,d.emit=c,d.binding=function(){throw new Error("process.binding is not supported")},d.cwd=function(){return"/"},d.chdir=function(){throw new Error("process.chdir is not supported")}},{}],4:[function(b,c){!function(a){"use strict";a(function(a){var b=a("./makePromise"),c=a("./Scheduler"),d=a("./env").asap;return b({scheduler:new c(d)})})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"./Scheduler":5,"./env":17,"./makePromise":19}],5:[function(b,c){!function(a){"use strict";a(function(){function a(a){this._async=a,this._running=!1,this._queue=this,this._queueLen=0,this._afterQueue={},this._afterQueueLen=0;var b=this;this.drain=function(){b._drain()}}return a.prototype.enqueue=function(a){this._queue[this._queueLen++]=a,this.run()},a.prototype.afterQueue=function(a){this._afterQueue[this._afterQueueLen++]=a,this.run()},a.prototype.run=function(){this._running||(this._running=!0,this._async(this.drain))},a.prototype._drain=function(){for(var a=0;a<this._queueLen;++a)this._queue[a].run(),this._queue[a]=void 0;for(this._queueLen=0,this._running=!1,a=0;a<this._afterQueueLen;++a)this._afterQueue[a].run(),this._afterQueue[a]=void 0;this._afterQueueLen=0},a})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],6:[function(b,c){!function(a){"use strict";a(function(){function a(b){Error.call(this),this.message=b,this.name=a.name,"function"==typeof Error.captureStackTrace&&Error.captureStackTrace(this,a)}return a.prototype=Object.create(Error.prototype),a.prototype.constructor=a,a})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],7:[function(b,c){!function(a){"use strict";a(function(){function a(a,c){function d(b,d,f){var g=a._defer(),h=f.length,i=new Array(h);return e({f:b,thisArg:d,args:f,params:i,i:h-1,call:c},g._handler),g}function e(b,d){if(b.i<0)return c(b.f,b.thisArg,b.params,d);var e=a._handler(b.args[b.i]);e.fold(f,b,void 0,d)}function f(a,b,c){a.params[a.i]=b,a.i-=1,e(a,c)}return arguments.length<2&&(c=b),d}function b(a,b,c,d){try{d.resolve(a.apply(b,c))}catch(e){d.reject(e)}}return a.tryCatchResolve=b,a})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],8:[function(b,c){!function(a){"use strict";a(function(a){var b=a("../state"),c=a("../apply");return function(a){function d(b){function c(a){k=null,this.resolve(a)}function d(a){this.resolved||(k.push(a),0===--j&&this.reject(k))}for(var e,f,g=a._defer(),h=g._handler,i=b.length>>>0,j=i,k=[],l=0;i>l;++l)if(f=b[l],void 0!==f||l in b){if(e=a._handler(f),e.state()>0){h.become(e),a._visitRemaining(b,l,e);break}e.visit(h,c,d)}else--j;return 0===j&&h.reject(new RangeError("any(): array must not be empty")),g}function e(b,c){function d(a){this.resolved||(k.push(a),0===--n&&(l=null,this.resolve(k)))}function e(a){this.resolved||(l.push(a),0===--f&&(k=null,this.reject(l)))}var f,g,h,i=a._defer(),j=i._handler,k=[],l=[],m=b.length>>>0,n=0;for(h=0;m>h;++h)g=b[h],(void 0!==g||h in b)&&++n;for(c=Math.max(c,0),f=n-c+1,n=Math.min(c,n),c>n?j.reject(new RangeError("some(): array must contain at least "+c+" item(s), but had "+n)):0===n&&j.resolve(k),h=0;m>h;++h)g=b[h],(void 0!==g||h in b)&&a._handler(g).visit(j,d,e,j.notify);return i}function f(b,c){return a._traverse(c,b)}function g(b,c){var d=s.call(b);return a._traverse(c,d).then(function(a){return h(d,a)})}function h(b,c){for(var d=c.length,e=new Array(d),f=0,g=0;d>f;++f)c[f]&&(e[g++]=a._handler(b[f]).value);return e.length=g,e}function i(a){return p(a.map(j))}function j(c){var d=a._handler(c);return 0===d.state()?o(c).then(b.fulfilled,b.rejected):(d._unreport(),b.inspect(d))}function k(a,b){return arguments.length>2?q.call(a,m(b),arguments[2]):q.call(a,m(b))}function l(a,b){return arguments.length>2?r.call(a,m(b),arguments[2]):r.call(a,m(b))}function m(a){return function(b,c,d){return n(a,void 0,[b,c,d])}}var n=c(a),o=a.resolve,p=a.all,q=Array.prototype.reduce,r=Array.prototype.reduceRight,s=Array.prototype.slice;return a.any=d,a.some=e,a.settle=i,a.map=f,a.filter=g,a.reduce=k,a.reduceRight=l,a.prototype.spread=function(a){return this.then(p).then(function(b){return a.apply(this,b)})},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"../apply":7,"../state":20}],9:[function(b,c){!function(a){"use strict";a(function(){function a(){throw new TypeError("catch predicate must be a function")}function b(a,b){return c(b)?a instanceof b:b(a)}function c(a){return a===Error||null!=a&&a.prototype instanceof Error}function d(a){return("object"==typeof a||"function"==typeof a)&&null!==a}function e(a){return a}return function(c){function f(a,c){return function(d){return b(d,c)?a.call(this,d):j(d)}}function g(a,b,c,e){var f=a.call(b);return d(f)?h(f,c,e):c(e)}function h(a,b,c){return i(a).then(function(){return b(c)})}var i=c.resolve,j=c.reject,k=c.prototype["catch"];return c.prototype.done=function(a,b){this._handler.visit(this._handler.receiver,a,b)},c.prototype["catch"]=c.prototype.otherwise=function(b){return arguments.length<2?k.call(this,b):"function"!=typeof b?this.ensure(a):k.call(this,f(arguments[1],b))},c.prototype["finally"]=c.prototype.ensure=function(a){return"function"!=typeof a?this:this.then(function(b){return g(a,this,e,b)},function(b){return g(a,this,j,b)})},c.prototype["else"]=c.prototype.orElse=function(a){return this.then(void 0,function(){return a})},c.prototype["yield"]=function(a){return this.then(function(){return a})},c.prototype.tap=function(a){return this.then(a)["yield"](this)},c}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],10:[function(b,c){!function(a){"use strict";a(function(){return function(a){return a.prototype.fold=function(b,c){var d=this._beget();return this._handler.fold(function(c,d,e){a._handler(c).fold(function(a,c,d){d.resolve(b.call(this,c,a))},d,this,e)},c,d._handler.receiver,d._handler),d},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],11:[function(b,c){!function(a){"use strict";a(function(a){var b=a("../state").inspect;return function(a){return a.prototype.inspect=function(){return b(a._handler(this))},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"../state":20}],12:[function(b,c){!function(a){"use strict";a(function(){return function(a){function b(a,b,d,e){return c(function(b){return[b,a(b)]},b,d,e)}function c(a,b,e,f){function g(f,g){return d(e(f)).then(function(){return c(a,b,e,g)})}return d(f).then(function(c){return d(b(c)).then(function(b){return b?c:d(a(c)).spread(g)})})}var d=a.resolve;return a.iterate=b,a.unfold=c,a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],13:[function(b,c){!function(a){"use strict";a(function(){return function(a){return a.prototype.progress=function(a){return this.then(void 0,void 0,a)},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],14:[function(b,c){!function(a){"use strict";a(function(a){function b(a,b,d,e){return c.setTimer(function(){a(d,e,b)},b)}var c=a("../env"),d=a("../TimeoutError");return function(a){function e(a,c,d){b(f,a,c,d)}function f(a,b){b.resolve(a)}function g(a,b,c){var e="undefined"==typeof a?new d("timed out after "+c+"ms"):a;b.reject(e)}return a.prototype.delay=function(a){var b=this._beget();return this._handler.fold(e,a,void 0,b._handler),b},a.prototype.timeout=function(a,d){var e=this._beget(),f=e._handler,h=b(g,a,d,e._handler);return this._handler.visit(f,function(a){c.clearTimer(h),this.resolve(a)},function(a){c.clearTimer(h),this.reject(a)},f.notify),e},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"../TimeoutError":6,"../env":17}],15:[function(b,c){!function(a){"use strict";a(function(a){function b(a){throw a}function c(){}var d=a("../env").setTimer,e=a("../format");return function(a){function f(a){a.handled||(n.push(a),k("Potentially unhandled rejection ["+a.id+"] "+e.formatError(a.value)))}function g(a){var b=n.indexOf(a);b>=0&&(n.splice(b,1),l("Handled previous rejection ["+a.id+"] "+e.formatObject(a.value)))}function h(a,b){m.push(a,b),null===o&&(o=d(i,0))}function i(){for(o=null;m.length>0;)m.shift()(m.shift())}var j,k=c,l=c;"undefined"!=typeof console&&(j=console,k="undefined"!=typeof j.error?function(a){j.error(a)}:function(a){j.log(a)},l="undefined"!=typeof j.info?function(a){j.info(a)}:function(a){j.log(a)}),a.onPotentiallyUnhandledRejection=function(a){h(f,a)},a.onPotentiallyUnhandledRejectionHandled=function(a){h(g,a)},a.onFatalRejection=function(a){h(b,a.value)};var m=[],n=[],o=null;return a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"../env":17,"../format":18}],16:[function(b,c){!function(a){"use strict";a(function(){return function(a){return a.prototype["with"]=a.prototype.withThis=function(a){var b=this._beget(),c=b._handler;return c.receiver=a,this._handler.chain(c,a),b},a}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],17:[function(b,c){(function(d){!function(a){"use strict";a(function(a){function b(){return"undefined"!=typeof d&&null!==d&&"function"==typeof d.nextTick}function c(){return"function"==typeof MutationObserver&&MutationObserver||"function"==typeof WebKitMutationObserver&&WebKitMutationObserver}function e(a){function b(){var a=c;c=void 0,a()}var c,d=document.createTextNode(""),e=new a(b);e.observe(d,{characterData:!0});var f=0;return function(a){c=a,d.data=f^=1}}var f,g="undefined"!=typeof setTimeout&&setTimeout,h=function(a,b){return setTimeout(a,b)},i=function(a){return clearTimeout(a)},j=function(a){return g(a,0)};if(b())j=function(a){return d.nextTick(a)};else if(f=c())j=e(f);else if(!g){var k=a,l=k("vertx");h=function(a,b){return l.setTimer(b,a)},i=l.cancelTimer,j=l.runOnLoop||l.runOnContext}return{setTimer:h,clearTimer:i,asap:j}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})}).call(this,b("FWaASH"))},{FWaASH:3}],18:[function(b,c){!function(a){"use strict";a(function(){function a(a){var c="object"==typeof a&&null!==a&&a.stack?a.stack:b(a);return a instanceof Error?c:c+" (WARNING: non-Error used)"}function b(a){var b=String(a);return"[object Object]"===b&&"undefined"!=typeof JSON&&(b=c(a,b)),b}function c(a,b){try{return JSON.stringify(a)}catch(c){return b}}return{formatError:a,formatObject:b,tryStringify:c}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],19:[function(b,c){(function(b){!function(a){"use strict";a(function(){return function(a){function c(a,b){this._handler=a===u?b:d(a)}function d(a){function b(a){e.resolve(a)}function c(a){e.reject(a)}function d(a){e.notify(a)}var e=new w;try{a(b,c,d)}catch(f){c(f)}return e}function e(a){return J(a)?a:new c(u,new x(r(a)))}function f(a){return new c(u,new x(new A(a)))}function g(){return ab}function h(){return new c(u,new w)}function i(a,b){var c=new w(a.receiver,a.join().context);return new b(u,c)}function j(a){return l(T,null,a)}function k(a,b){return l(O,a,b)}function l(a,b,d){function e(c,e,g){g.resolved||m(d,f,c,a(b,e,c),g)}function f(a,b,c){k[a]=b,0===--j&&c.become(new z(k))}for(var g,h="function"==typeof b?e:f,i=new w,j=d.length>>>0,k=new Array(j),l=0;l<d.length&&!i.resolved;++l)g=d[l],void 0!==g||l in d?m(d,h,l,g,i):--j;return 0===j&&i.become(new z(k)),new c(u,i)}function m(a,b,c,d,e){if(K(d)){var f=s(d),g=f.state();0===g?f.fold(b,c,void 0,e):g>0?b(c,f.value,e):(e.become(f),n(a,c+1,f))}else b(c,d,e)}function n(a,b,c){for(var d=b;d<a.length;++d)o(r(a[d]),c)}function o(a,b){if(a!==b){var c=a.state();0===c?a.visit(a,void 0,a._unreport):0>c&&a._unreport()}}function p(a){return"object"!=typeof a||null===a?f(new TypeError("non-iterable passed to race()")):0===a.length?g():1===a.length?e(a[0]):q(a)}function q(a){var b,d,e,f=new w;for(b=0;b<a.length;++b)if(d=a[b],void 0!==d||b in a){if(e=r(d),0!==e.state()){f.become(e),n(a,b+1,e);break}e.visit(f,f.resolve,f.reject)}return new c(u,f)}function r(a){return J(a)?a._handler.join():K(a)?t(a):new z(a)}function s(a){return J(a)?a._handler.join():t(a)}function t(a){try{var b=a.then;return"function"==typeof b?new y(b,a):new z(a)}catch(c){return new A(c)}}function u(){}function v(){}function w(a,b){c.createContext(this,b),this.consumers=void 0,this.receiver=a,this.handler=void 0,this.resolved=!1}function x(a){this.handler=a}function y(a,b){w.call(this),W.enqueue(new G(a,b,this))}function z(a){c.createContext(this),this.value=a}function A(a){c.createContext(this),this.id=++$,this.value=a,this.handled=!1,this.reported=!1,this._report()}function B(a,b){this.rejection=a,this.context=b}function C(a){this.rejection=a}function D(){return new A(new TypeError("Promise cycle"))}function E(a,b){this.continuation=a,this.handler=b}function F(a,b){this.handler=b,this.value=a}function G(a,b,c){this._then=a,this.thenable=b,this.resolver=c}function H(a,b,c,d,e){try{a.call(b,c,d,e)}catch(f){d(f)}}function I(a,b,c,d){this.f=a,this.z=b,this.c=c,this.to=d,this.resolver=Z,this.receiver=this}function J(a){return a instanceof c}function K(a){return("object"==typeof a||"function"==typeof a)&&null!==a}function L(a,b,d,e){return"function"!=typeof a?e.become(b):(c.enterContext(b),P(a,b.value,d,e),void c.exitContext())}function M(a,b,d,e,f){return"function"!=typeof a?f.become(d):(c.enterContext(d),Q(a,b,d.value,e,f),void c.exitContext())}function N(a,b,d,e,f){return"function"!=typeof a?f.notify(b):(c.enterContext(d),R(a,b,e,f),void c.exitContext())}function O(a,b,c){try{return a(b,c)}catch(d){return f(d)}}function P(a,b,c,d){try{d.become(r(a.call(c,b)))}catch(e){d.become(new A(e))}}function Q(a,b,c,d,e){try{a.call(d,b,c,e)}catch(f){e.become(new A(f))}}function R(a,b,c,d){try{d.notify(a.call(c,b))}catch(e){d.notify(e)}}function S(a,b){b.prototype=Y(a.prototype),b.prototype.constructor=b}function T(a,b){return b}function U(){}function V(){return"undefined"!=typeof b&&null!==b&&"function"==typeof b.emit?function(a,c){return"unhandledRejection"===a?b.emit(a,c.value,c):b.emit(a,c)}:"undefined"!=typeof self&&"function"==typeof CustomEvent?function(a,b,c){var d=!1;try{var e=new c("unhandledRejection");d=e instanceof c}catch(f){}return d?function(a,d){var e=new c(a,{detail:{reason:d.value,key:d},bubbles:!1,cancelable:!0});return!b.dispatchEvent(e)}:a}(U,self,CustomEvent):U}var W=a.scheduler,X=V(),Y=Object.create||function(a){function b(){}return b.prototype=a,new b};c.resolve=e,c.reject=f,c.never=g,c._defer=h,c._handler=r,c.prototype.then=function(a,b,c){var d=this._handler,e=d.join().state();if("function"!=typeof a&&e>0||"function"!=typeof b&&0>e)return new this.constructor(u,d);var f=this._beget(),g=f._handler;return d.chain(g,d.receiver,a,b,c),f},c.prototype["catch"]=function(a){return this.then(void 0,a)},c.prototype._beget=function(){return i(this._handler,this.constructor)},c.all=j,c.race=p,c._traverse=k,c._visitRemaining=n,u.prototype.when=u.prototype.become=u.prototype.notify=u.prototype.fail=u.prototype._unreport=u.prototype._report=U,u.prototype._state=0,u.prototype.state=function(){return this._state},u.prototype.join=function(){for(var a=this;void 0!==a.handler;)a=a.handler;return a},u.prototype.chain=function(a,b,c,d,e){this.when({resolver:a,receiver:b,fulfilled:c,rejected:d,progress:e})},u.prototype.visit=function(a,b,c,d){this.chain(Z,a,b,c,d)},u.prototype.fold=function(a,b,c,d){this.when(new I(a,b,c,d))},S(u,v),v.prototype.become=function(a){a.fail()};var Z=new v;S(u,w),w.prototype._state=0,w.prototype.resolve=function(a){this.become(r(a))},w.prototype.reject=function(a){this.resolved||this.become(new A(a))},w.prototype.join=function(){if(!this.resolved)return this;for(var a=this;void 0!==a.handler;)if(a=a.handler,a===this)return this.handler=D();return a},w.prototype.run=function(){var a=this.consumers,b=this.handler;this.handler=this.handler.join(),this.consumers=void 0;for(var c=0;c<a.length;++c)b.when(a[c])},w.prototype.become=function(a){this.resolved||(this.resolved=!0,this.handler=a,void 0!==this.consumers&&W.enqueue(this),void 0!==this.context&&a._report(this.context))},w.prototype.when=function(a){this.resolved?W.enqueue(new E(a,this.handler)):void 0===this.consumers?this.consumers=[a]:this.consumers.push(a)},w.prototype.notify=function(a){this.resolved||W.enqueue(new F(a,this))},w.prototype.fail=function(a){var b="undefined"==typeof a?this.context:a;this.resolved&&this.handler.join().fail(b)},w.prototype._report=function(a){this.resolved&&this.handler.join()._report(a)},w.prototype._unreport=function(){this.resolved&&this.handler.join()._unreport()},S(u,x),x.prototype.when=function(a){W.enqueue(new E(a,this))},x.prototype._report=function(a){this.join()._report(a)},x.prototype._unreport=function(){this.join()._unreport()},S(w,y),S(u,z),z.prototype._state=1,z.prototype.fold=function(a,b,c,d){M(a,b,this,c,d)},z.prototype.when=function(a){L(a.fulfilled,this,a.receiver,a.resolver)};var $=0;S(u,A),A.prototype._state=-1,A.prototype.fold=function(a,b,c,d){d.become(this)},A.prototype.when=function(a){"function"==typeof a.rejected&&this._unreport(),L(a.rejected,this,a.receiver,a.resolver)},A.prototype._report=function(a){W.afterQueue(new B(this,a))},A.prototype._unreport=function(){this.handled||(this.handled=!0,W.afterQueue(new C(this)))},A.prototype.fail=function(a){this.reported=!0,X("unhandledRejection",this),c.onFatalRejection(this,void 0===a?this.context:a)},B.prototype.run=function(){this.rejection.handled||this.rejection.reported||(this.rejection.reported=!0,X("unhandledRejection",this.rejection)||c.onPotentiallyUnhandledRejection(this.rejection,this.context))},C.prototype.run=function(){this.rejection.reported&&(X("rejectionHandled",this.rejection)||c.onPotentiallyUnhandledRejectionHandled(this.rejection))},c.createContext=c.enterContext=c.exitContext=c.onPotentiallyUnhandledRejection=c.onPotentiallyUnhandledRejectionHandled=c.onFatalRejection=U;var _=new u,ab=new c(u,_);return E.prototype.run=function(){this.handler.join().when(this.continuation)},F.prototype.run=function(){var a=this.handler.consumers;if(void 0!==a)for(var b,c=0;c<a.length;++c)b=a[c],N(b.progress,this.value,this.handler,b.receiver,b.resolver)},G.prototype.run=function(){function a(a){d.resolve(a)}function b(a){d.reject(a)}function c(a){d.notify(a)}var d=this.resolver;H(this._then,this.thenable,a,b,c)},I.prototype.fulfilled=function(a){this.f.call(this.c,this.z,a,this.to)},I.prototype.rejected=function(a){this.to.reject(a)},I.prototype.progress=function(a){this.to.notify(a)},c}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})}).call(this,b("FWaASH"))},{FWaASH:3}],20:[function(b,c){!function(a){"use strict";a(function(){function a(){return{state:"pending"}}function b(a){return{state:"rejected",reason:a}}function c(a){return{state:"fulfilled",value:a}}function d(d){var e=d.state();return 0===e?a():e>0?c(d.value):b(d.value)}return{pending:a,fulfilled:c,rejected:b,inspect:d}})}("function"==typeof a&&a.amd?a:function(a){c.exports=a()})},{}],21:[function(b,c){!function(a){"use strict";a(function(a){function b(a,b,c,d){var e=x.resolve(a);return arguments.length<2?e:e.then(b,c,d)}function c(a){return new x(a)}function d(a){return function(){for(var b=0,c=arguments.length,d=new Array(c);c>b;++b)d[b]=arguments[b];return y(a,this,d)}}function e(a){for(var b=0,c=arguments.length-1,d=new Array(c);c>b;++b)d[b]=arguments[b+1];return y(a,this,d)}function f(){return new g}function g(){function a(a){d._handler.resolve(a)}function b(a){d._handler.reject(a)}function c(a){d._handler.notify(a)}var d=x._defer();this.promise=d,this.resolve=a,this.reject=b,this.notify=c,this.resolver={resolve:a,reject:b,notify:c}}function h(a){return a&&"function"==typeof a.then}function i(){return x.all(arguments)}function j(a){return b(a,x.all)}function k(a){return b(a,x.settle)}function l(a,c){return b(a,function(a){return x.map(a,c)})}function m(a,c){return b(a,function(a){return x.filter(a,c)})}var n=a("./lib/decorators/timed"),o=a("./lib/decorators/array"),p=a("./lib/decorators/flow"),q=a("./lib/decorators/fold"),r=a("./lib/decorators/inspect"),s=a("./lib/decorators/iterate"),t=a("./lib/decorators/progress"),u=a("./lib/decorators/with"),v=a("./lib/decorators/unhandledRejection"),w=a("./lib/TimeoutError"),x=[o,p,q,s,t,r,u,n,v].reduce(function(a,b){return b(a)},a("./lib/Promise")),y=a("./lib/apply")(x);return b.promise=c,b.resolve=x.resolve,b.reject=x.reject,b.lift=d,b["try"]=e,b.attempt=e,b.iterate=x.iterate,b.unfold=x.unfold,b.join=i,b.all=j,b.settle=k,b.any=d(x.any),b.some=d(x.some),b.race=d(x.race),b.map=l,b.filter=m,b.reduce=d(x.reduce),b.reduceRight=d(x.reduceRight),b.isPromiseLike=h,b.Promise=x,b.defer=f,b.TimeoutError=w,b})}("function"==typeof a&&a.amd?a:function(a){c.exports=a(b)})},{"./lib/Promise":4,"./lib/TimeoutError":6,"./lib/apply":7,"./lib/decorators/array":8,"./lib/decorators/flow":9,"./lib/decorators/fold":10,"./lib/decorators/inspect":11,"./lib/decorators/iterate":12,"./lib/decorators/progress":13,"./lib/decorators/timed":14,"./lib/decorators/unhandledRejection":15,"./lib/decorators/with":16}],22:[function(a,b){function c(a){return this instanceof c?(this._console=this._getConsole(a||{}),this._settings=this._configure(a||{}),this._backoffDelay=this._settings.backoffDelayMin,this._pendingRequests={},this._webSocket=null,d.createEventEmitter(this),this._delegateEvents(),void(this._settings.autoConnect&&this.connect())):new c(a)}var d=a("bane"),e=a("../lib/websocket/"),f=a("when");c.ConnectionError=function(a){this.name="ConnectionError",this.message=a},c.ConnectionError.prototype=Object.create(Error.prototype),c.ConnectionError.prototype.constructor=c.ConnectionError,c.ServerError=function(a){this.name="ServerError",this.message=a},c.ServerError.prototype=Object.create(Error.prototype),c.ServerError.prototype.constructor=c.ServerError,c.WebSocket=e.Client,c.when=f,c.prototype._getConsole=function(a){if("undefined"!=typeof a.console)return a.console;var b="undefined"!=typeof console&&console||{};return b.log=b.log||function(){},b.warn=b.warn||function(){},b.error=b.error||function(){},b},c.prototype._configure=function(a){var b="undefined"!=typeof document&&"https:"===document.location.protocol?"wss://":"ws://",c="undefined"!=typeof document&&document.location.host||"localhost";return a.webSocketUrl=a.webSocketUrl||b+c+"/mopidy/ws",a.autoConnect!==!1&&(a.autoConnect=!0),a.backoffDelayMin=a.backoffDelayMin||1e3,a.backoffDelayMax=a.backoffDelayMax||64e3,"undefined"==typeof a.callingConvention&&this._console.warn("Mopidy.js is using the default calling convention. The default will change in the future. You should explicitly specify which calling convention you use."),a.callingConvention=a.callingConvention||"by-position-only",a},c.prototype._delegateEvents=function(){this.off("websocket:close"),this.off("websocket:error"),this.off("websocket:incomingMessage"),this.off("websocket:open"),this.off("state:offline"),this.on("websocket:close",this._cleanup),this.on("websocket:error",this._handleWebSocketError),this.on("websocket:incomingMessage",this._handleMessage),this.on("websocket:open",this._resetBackoffDelay),this.on("websocket:open",this._getApiSpec),this.on("state:offline",this._reconnect)},c.prototype.connect=function(){if(this._webSocket){if(this._webSocket.readyState===c.WebSocket.OPEN)return;this._webSocket.close()}this._webSocket=this._settings.webSocket||new c.WebSocket(this._settings.webSocketUrl),this._webSocket.onclose=function(a){this.emit("websocket:close",a)}.bind(this),this._webSocket.onerror=function(a){this.emit("websocket:error",a)}.bind(this),this._webSocket.onopen=function(){this.emit("websocket:open")}.bind(this),this._webSocket.onmessage=function(a){this.emit("websocket:incomingMessage",a)}.bind(this)},c.prototype._cleanup=function(a){Object.keys(this._pendingRequests).forEach(function(b){var d=this._pendingRequests[b];delete this._pendingRequests[b];var e=new c.ConnectionError("WebSocket closed");e.closeEvent=a,d.reject(e)}.bind(this)),this.emit("state:offline")},c.prototype._reconnect=function(){this.emit("reconnectionPending",{timeToAttempt:this._backoffDelay}),setTimeout(function(){this.emit("reconnecting"),this.connect()}.bind(this),this._backoffDelay),this._backoffDelay=2*this._backoffDelay,this._backoffDelay>this._settings.backoffDelayMax&&(this._backoffDelay=this._settings.backoffDelayMax)},c.prototype._resetBackoffDelay=function(){this._backoffDelay=this._settings.backoffDelayMin},c.prototype.close=function(){this.off("state:offline",this._reconnect),this._webSocket.close()},c.prototype._handleWebSocketError=function(a){this._console.warn("WebSocket error:",a.stack||a)},c.prototype._send=function(a){switch(this._webSocket.readyState){case c.WebSocket.CONNECTING:return f.reject(new c.ConnectionError("WebSocket is still connecting"));case c.WebSocket.CLOSING:return f.reject(new c.ConnectionError("WebSocket is closing"));case c.WebSocket.CLOSED:return f.reject(new c.ConnectionError("WebSocket is closed"));default:var b=f.defer();return a.jsonrpc="2.0",a.id=this._nextRequestId(),this._pendingRequests[a.id]=b.resolver,this._webSocket.send(JSON.stringify(a)),this.emit("websocket:outgoingMessage",a),b.promise}},c.prototype._nextRequestId=function(){var a=-1;return function(){return a+=1}}(),c.prototype._handleMessage=function(a){try{var b=JSON.parse(a.data);b.hasOwnProperty("id")?this._handleResponse(b):b.hasOwnProperty("event")?this._handleEvent(b):this._console.warn("Unknown message type received. Message was: "+a.data)}catch(c){if(!(c instanceof SyntaxError))throw c;this._console.warn("WebSocket message parsing failed. Message was: "+a.data)}},c.prototype._handleResponse=function(a){if(!this._pendingRequests.hasOwnProperty(a.id))return void this._console.warn("Unexpected response received. Message was:",a);var b,d=this._pendingRequests[a.id];delete this._pendingRequests[a.id],a.hasOwnProperty("result")?d.resolve(a.result):a.hasOwnProperty("error")?(b=new c.ServerError(a.error.message),b.code=a.error.code,b.data=a.error.data,d.reject(b),this._console.warn("Server returned error:",a.error)):(b=new Error("Response without 'result' or 'error' received"),b.data={response:a},d.reject(b),this._console.warn("Response without 'result' or 'error' received. Message was:",a))},c.prototype._handleEvent=function(a){var b=a.event,c=a;delete c.event,this.emit("event:"+this._snakeToCamel(b),c)},c.prototype._getApiSpec=function(){return this._send({method:"core.describe"}).then(this._createApi.bind(this))["catch"](this._handleWebSocketError)},c.prototype._createApi=function(a){var b="by-position-or-by-name"===this._settings.callingConvention,c=function(a){return function(){var c={method:a};return 0===arguments.length?this._send(c):b?arguments.length>1?f.reject(new Error("Expected zero arguments, a single array, or a single object.")):Array.isArray(arguments[0])||arguments[0]===Object(arguments[0])?(c.params=arguments[0],this._send(c)):f.reject(new TypeError("Expected an array or an object.")):(c.params=Array.prototype.slice.call(arguments),this._send(c))}.bind(this)}.bind(this),d=function(a){var b=a.split(".");return b.length>=1&&"core"===b[0]&&(b=b.slice(1)),b},e=function(a){var b=this;return a.forEach(function(a){a=this._snakeToCamel(a),b[a]=b[a]||{},b=b[a]}.bind(this)),b}.bind(this),g=function(b){var f=d(b),g=this._snakeToCamel(f.slice(-1)[0]),h=e(f.slice(0,-1));h[g]=c(b),h[g].description=a[b].description,h[g].params=a[b].params}.bind(this);Object.keys(a).forEach(g),this.emit("state:online")},c.prototype._snakeToCamel=function(a){return a.replace(/(_[a-z])/g,function(a){return a.toUpperCase().replace("_","")})},b.exports=c},{"../lib/websocket/":1,bane:2,when:21}]},{},[22])(22)});
+
+
+/* =========================================================================== INIT =========== */
+/* ============================================================================================ */
+
+// create our application
+angular.module('spotmop', [
+	
+	'ngResource',
+	'ngStorage',
+	'ngTouch',
+	'ui.router',	
+	'angular-loading-bar',
+	'angular-google-analytics',
+	
+	'spotmop.directives',
+	'spotmop.common.contextmenu',
+	'spotmop.common.tracklist',
+    
+	'spotmop.services.notify',
+	'spotmop.services.settings',
+	'spotmop.services.player',
+	'spotmop.services.spotify',
+	'spotmop.services.mopidy',
+	'spotmop.services.echonest',
+	'spotmop.services.lastfm',
+	'spotmop.services.dialog',
+	'spotmop.services.pusher',
+	
+	'spotmop.player',
+	'spotmop.queue',
+	'spotmop.library',
+	'spotmop.search',
+	'spotmop.settings',	
+	'spotmop.discover',
+	
+	'spotmop.browse',
+	'spotmop.browse.artist',
+	'spotmop.browse.album',
+	'spotmop.browse.playlist',
+    'spotmop.browse.user',
+    'spotmop.browse.genre',
+	'spotmop.browse.featured',
+	'spotmop.browse.new'
+])
+
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider){
+
+	$urlRouterProvider.otherwise("queue");
+	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
+	
+	// initiate analytics
+	AnalyticsProvider.useAnalytics(true);
+	AnalyticsProvider.setAccount("UA-64701652-3");
+})
+
+
+.run( function($rootScope, SettingsService, Analytics){
+	// this code is run before any controllers
+})
+
+
+/* ==================================================================== APP CONTROLLER ======== */
+/* ============================================================================================ */
+
+/**
+ * Global controller
+ **/
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+
+	// track core started
+	Analytics.trackEvent('Spotmop', 'Started');
+		
+    $scope.isTouchDevice = function(){
+		if( SettingsService.getSetting('emulateTouchDevice',false) )
+			return true;
+		return !!('ontouchstart' in window);
+	}
+    $scope.isSameDomainAsMopidy = function(){
+		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
+		
+		// if set to localhost or not set at all (then using default of localhost)
+		if( !mopidyhost || mopidyhost == 'localhost' )
+			return true;
+		
+		// custom setting, and if it matches the domain spotmop is using, then we're in business
+		if( $location.host() == mopidyhost )
+			return true;
+		}
+	$scope.state = PlayerService.state;
+	$scope.currentTracklist = [];
+	$scope.spotifyUser = {};
+	$scope.menuCollapsable = false;
+	$scope.reloadApp = function(){
+		window.location.reload();
+	}
+    $scope.playlistsMenu = [];
+    $scope.myPlaylists = {};
+	$scope.popupVolumeControls = function(){
+        DialogService.create('volumeControls', $scope);
+	}
+    
+	// update the playlists menu
+	$scope.updatePlaylists = function(){
+		
+		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
+			.then(function( response ) {
+				
+				$scope.myPlaylists = response.items;				
+                var newPlaylistsMenu = [];
+            
+				// loop all of our playlists, and set up a menu item for each
+				$.each( response.items, function( key, playlist ){
+
+					// we only want to add playlists that this user owns
+					if( playlist.owner.id == $scope.spotifyUser.id ){
+                        var playlistObject = playlist;
+                        playlistObject.link = '/browse/playlist/'+playlist.uri;
+                        playlistObject.link = '/browse/playlist/'+playlist.uri;
+						newPlaylistsMenu.push(playlistObject);
+					}
+				});
+                
+                // now reset our current list with this new list
+                $scope.playlistsMenu = newPlaylistsMenu;
+			});
+	}
+		
+    
+	/**
+	 * Responsive
+	 **/
+	
+	$scope.windowWidth = $(document).width();
+	$scope.windowHeight = $(document).height();
+	$scope.mediumScreen = function(){
+		if( $scope.windowWidth <= 800 )
+			return true;
+		return false;
+	}
+	$scope.smallScreen = function(){
+		if( $scope.windowWidth <= 450 )
+			return true;
+		return false;
+	}
+	
+    angular.element(window).resize(function(){
+		
+		// detect if the width has changed 
+		// we only check width because soft keyboard reveal shouldn't hide/show the menu (ie search form)
+		if( $(document).width() != $scope.windowWidth ){
+			
+			// update stored value
+			$scope.windowWidth = $(document).width();
+			
+			// re-hide the sidebar and reset the body sliding
+			$(document).find('body').removeClass('menu-revealed');
+		}
+    });
+	
+	// when we navigate to a new state
+	$rootScope.$on('$stateChangeStart', function(event){ 
+		$scope.hideMenu();
+		Analytics.trackPage( $location.path() );
+	});
+	
+	$(document).on('click', '#body', function(event){
+		if( $(event.target).closest('.menu-reveal-trigger').length <= 0 )
+			$scope.hideMenu();
+	});
+	
+	// show menu (this is triggered by swipe event)
+	$scope.showMenu = function(){
+		$(document).find('body').addClass('menu-revealed');
+	}
+	
+	// hide menu (typically triggered by swipe event)
+	$scope.hideMenu = function(){
+		$(document).find('body').removeClass('menu-revealed');
+	}
+	
+	
+	/**
+	 * Search
+	 **/
+	$scope.searchSubmit = function( query ){
+
+		// track this navigation event
+		Analytics.trackEvent('Search', 'Performed search', query);
+		
+		// see if spotify recognises this query as a spotify uri
+		var uriType = SpotifyService.uriType( query );
+		
+		// no? just do a normal search
+		if( !uriType ){
+			$state.go( 'search', { query: query } );
+		
+		// yes? right. Let's send you straight to the asset, depending on it's type
+		}else{
+		
+			NotifyService.notify('You\'ve been redirected because that looked like a Spotify URI');
+		
+			if( uriType == 'artist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.artist.overview', {uri: query } );
+				
+			}else if( uriType == 'album' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.album', {uri: query } );
+				
+			}else if( uriType == 'playlist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.playlist', {uri: query } );
+			}
+		}
+	};
+    
+    
+	/**
+	 * Generate a template-friendly representation of whether this state is active or parent of active
+	 * @param states = array of strings
+	 * @return string
+	 **/
+	$scope.linkingMode = function( states ){
+		
+		var mode = '';
+		
+		// if we're not an array, make it an array (of one)
+		if( !$.isArray(states) )
+			states = [states];
+		
+		// loop our array
+		angular.forEach( states, function(state){
+			if( mode == '' ){
+				if( $state.is( state ) )
+					mode = 'active';
+				else if( $state.includes( state ) )
+					mode = 'section';
+			};
+		});
+		
+		return mode;
+	};
+    
+    
+    /**
+     * Mopidy music player is open for business
+     **/
+	$scope.$on('mopidy:state:online', function(){
+		Analytics.trackEvent('Mopidy', 'Online');
+		$rootScope.mopidyOnline = true;
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
+			$scope.currentTracklist = tlTracks;
+		});
+		MopidyService.getConsume().then( function( isConsume ){
+			SettingsService.setSetting('mopidyconsume',isConsume);
+		});
+	});
+	
+	$scope.$on('mopidy:state:offline', function(){
+		$rootScope.mopidyOnline = false;
+	});
+    
+	
+	/**
+	 * Spotify is online and authorized
+	 **/
+	$scope.$on('spotmop:spotify:online', function(){
+		$rootScope.spotifyOnline = true;
+		SpotifyService.getMe()
+			.then( function(response){
+				$scope.spotifyUser = response;
+				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
+				Analytics.trackEvent('Spotify', 'Online', response.id +'('+ response.display_name +')');
+				
+				// update my playlists
+				$scope.updatePlaylists();
+			});
+	});
+	
+	
+	/**
+	 * Pusher integration
+	 **/
+     
+	PusherService.start();
+	
+    $rootScope.$on('spotmop:pusher:online', function(event, data){
+        
+        // if we have no client name, then initiate initial setup
+		var client = SettingsService.getSetting('pushername', null);
+        if( typeof(client) === 'undefined' || !client || client == '' ){
+            DialogService.create('initialsetup', $scope);
+			Analytics.trackEvent('Core', 'Initial setup');
+		}
+    });
+    
+	$rootScope.$on('spotmop:pusher:received', function(event, data){
+		
+		var icon = '';
+		data.spotifyuser = JSON.parse(data.spotifyuser);
+		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
+			icon = data.spotifyuser.images[0].url;
+		
+		NotifyService.browserNotify( data.title, data.body, icon );
+		
+		Analytics.trackEvent('Pusher', 'Notification received', data.body);
+	});
+	
+	
+	// when playback finishes, log this to EchoNest (if enabled)
+	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
+	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
+		if( SettingsService.getSetting('echonestenabled',false) )
+			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
+	});
+    
+    
+
+    /**
+     * All systems go!
+     *
+     * Without this sucker, we have no operational services. This is the ignition sequence.
+     * We use $timeout to delay start until $digest is completed
+     **/
+	MopidyService.start();
+	SpotifyService.start();
+	if(SettingsService.getSetting('echonestenabled',false))
+		EchonestService.start();
+	
+	
+	/**
+	 * Keyboard shortcuts
+	 * We bind these to the app-level so they can be used in all directives and controllers
+	 **/
+
+	$rootScope.shiftKeyHeld = false;
+	$rootScope.ctrlKeyHeld = false;
+        
+    // key press start
+	$('body').bind('keydown',function( event ){
+            if( event.which === 16 ){
+                $rootScope.shiftKeyHeld = true;
+            }else if( event.which === 17 ){
+                $rootScope.ctrlKeyHeld = true;
+            }
+
+			// if we're about to fire a keyboard shortcut event, let's prevent default
+			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
+				if($.inArray(event.which, shortcutKeyCodes) > -1)
+					event.preventDefault();			
+			}
+        })
+    
+        // when we release the key press
+        .bind('keyup',function( event ){
+
+			// make sure we're not typing in an input area
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+				
+				// delete key
+				if( event.which === 46 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:delete');
+					
+				// spacebar
+				if( event.which === 32 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:space');
+					
+				// enter
+				if( event.which === 13 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:enter');
+
+				// navigation arrows
+				if( event.which === 37 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:left');
+				if( event.which === 38 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:up');
+				if( event.which === 39 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:right');
+				if( event.which === 40 )
+					$rootScope.$broadcast('spotmop:keyboardShortcut:down');
+
+				// esc key
+				if( event.which === 27 ){
+					$rootScope.$broadcast('spotmop:keyboardShortcut:esc');
+					if( dragging ){
+						dragging = false;
+						$(document).find('.drag-tracer').hide();
+					}
+				}
+            }
+			
+			// we'll also release the modifier key switches
+            if( event.which === 16 )
+                $rootScope.shiftKeyHeld = false;
+			if( event.which === 17 )
+                $rootScope.ctrlKeyHeld = false;
+        }
+    );
+	
+	
+	/**
+	 * When we click anywhere
+	 * This allows us to kill context menus, unselect tracks, etc
+	 **/
+	$(document).on('mouseup', 'body', function( event ){
+		
+		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
+		// clicking INSIDE the tracklist is handled by the track/tltrack directives
+		if( $(event.target).closest('.tracklist').length <= 0 ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		}
+	});
+    
+    /**
+     * Detect if we have a droppable target
+     * @var target = event.target object
+     * @return jQuery DOM object
+     **/
+    function getDroppableTarget( target ){
+        
+        var droppableTarget = null;
+        
+        if( $(target).hasClass('droppable') )
+            droppableTarget = $(target);
+        else if( $(target).closest('.droppable').length > 0 )
+            droppableTarget = $(target).closest('.droppable');   
+        
+        return droppableTarget;
+    }
+    
+    /**
+     * Detect if we have a track drop target
+     * @var target = event.target object
+     * @return jQuery DOM object
+     **/
+    function getTrackTarget( target ){
+        
+        var trackTarget = null;
+        
+		if( $(target).hasClass('track') )
+			trackTarget = $(target);				
+		else if( $(target).closest('.track').length > 0 )
+			trackTarget = $(target).closest('.track');
+        
+        return trackTarget;
+    }
+	
+	
+    /**
+     * Dragging of tracks
+     **/
+    var tracksBeingDragged = [];
+    var dragging = false;
+	var dragThreshold = 30;
+	
+	// when the mouse is pressed down on a track
+	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
+					
+		// get us our list of selected tracks
+		var tracklist = $(event.currentTarget).closest('.tracklist');
+		var tracks = tracklist.find('.track.selected');
+		
+		// create an object that gives us all the info we need
+		dragging = {
+					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
+					clientX: event.clientX,
+					clientY: event.clientY,
+					tracks: tracks
+				}
+	});
+	
+	// when we release the mouse, release dragging container
+	$(document).on('mouseup', function(event){
+		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
+			
+            $('body').removeClass('dragging');
+            $(document).find('.droppable').removeClass('dropping');
+            $(document).find('.drag-hovering').removeClass('drag-hovering');
+            
+			// identify the droppable target that we've released on (if it exists)
+			var target = getDroppableTarget( event.target );
+			var track = getTrackTarget( event.target );
+			
+			var isMenuItem = false;
+			if( target && target.closest('.main-menu').length > 0 )
+				isMenuItem = true;
+			
+			// if we have a target
+			if( target ){
+				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
+				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
+				
+				// get the uris
+				var uris = [];
+				$.each( dragging.tracks, function(key, value){
+					uris.push( $(value).attr('data-uri') );
+				});
+				
+				// dropping on queue
+				if( isMenuItem && target.attr('data-type') === 'queue' ){
+			
+					if( uris.length > 10 ){
+						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
+					}
+                    
+					MopidyService.addToTrackList( uris );
+					
+				// dropping on library
+				}else if( isMenuItem && target.attr('data-type') === 'library' ){
+					
+					// convert all our URIs to IDs
+					var trackids = new Array();
+					$.each( uris, function(key,value){
+						trackids.push( SpotifyService.getFromUri('trackid', value) );
+					});
+					
+					SpotifyService.addTracksToLibrary( trackids );
+					
+				// dropping on playlist
+				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
+					
+					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );	
+					
+				// dropping within tracklist
+				}else if( track ){
+                    
+                    var start = 1000;
+                    var end = 0;
+                    var to_position = $(track).parent().index();
+                    $.each(dragging.tracks, function(key, track){
+                        if( $(track).parent().index() < start )  
+                            start = $(track).parent().index();
+                        if( $(track).parent().index() > end )  
+                            end = $(track).parent().index();
+                    });
+                    
+                    // sorting queue tracklist
+                    if( track.closest('.tracklist').hasClass('queue-items') ){
+						
+						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
+						if( to_position >= end )
+							to_position = to_position - uris.length;
+						
+						// note: mopidy want's the first track AFTER our range, so we need to +1
+                        MopidyService.moveTlTracks( start, end + 1, to_position );
+                        
+                    // sorting playlist tracklist
+                    }else if( track.closest('.tracklist').hasClass('playlist-items') ){
+					
+                        var range_length = 1;
+                        if( end > start ){
+							range_length = end - start;
+							range_length++;
+						};
+						
+						// tell our playlist controller to update it's track order, and pass it on to Spotify too
+						$scope.$broadcast('spotmop:playlist:reorder', start, range_length, to_position);
+                    }
+				}
+				
+			// no target, no drop action required
+			}else{
+				$(document).find('.drag-tracer').fadeOut('medium');
+			}
+		}
+			
+		// unset dragging
+		dragging = false;
+	});
+	
+	// when we move the mouse, check if we're dragging
+	$(document).on('mousemove', function(event){
+		if( dragging ){
+			
+			var left = dragging.clientX - dragThreshold;
+			var right = dragging.clientX + dragThreshold;
+			var top = dragging.clientY - dragThreshold;
+			var bottom = dragging.clientY + dragThreshold;
+			
+			// check the threshold distance from mousedown and now
+			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+				
+                $('body').addClass('dragging');
+				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
+                var target = getDroppableTarget( event.target );
+				var track = getTrackTarget( event.target );
+                var dragTracer = $(document).find('.drag-tracer');
+				
+				if( track ){
+					track.addClass('drag-hovering');
+				}
+			
+				// turn the trigger safety of
+				dragging.safetyOff = true;
+				
+                // setup the tracer
+                dragTracer.show();
+					
+                $(document).find('.droppable').removeClass('dropping');
+                $(document).find('.dropping-within').removeClass('dropping-within');
+			
+				var isMenuItem = false;
+				if( target && target.closest('.main-menu').length > 0 )
+					isMenuItem = true;
+				
+                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
+                    target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
+                    target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
+                    target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
+                    target.addClass('dropping');
+                    target.closest('.menu-item.playlists').addClass('dropping-within');
+                }else{
+                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
+                }
+			}
+		}
+	});
+	
+});
+
+
+
+
+
+
+'use strict';
+
+angular.module('spotmop.browse.album', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse.album', {
+			url: "/album/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
+	
+	$scope.album = {};
+	$scope.tracklist = {type: 'track'};
+    $scope.convertedDate = function(){
+		if( $scope.mediumScreen() ){
+			return $filter('date')($scope.album.release_date, "yyyy");
+		}else{
+			if( $scope.album.release_date_precision == 'day' )
+				return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
+			if( $scope.album.release_date_precision == 'month' )
+				return $filter('date')($scope.album.release_date, "MMMM yyyy");
+			if( $scope.album.release_date_precision == 'year' )
+				return $scope.album.release_date;
+		}
+        return null;
+    }
+	
+    // figure out the total time for all tracks
+    $scope.totalTime = function(){
+        var totalTime = 0;
+        if( typeof($scope.tracklist.tracks) !== 'undefined' ){
+            angular.forEach( $scope.tracklist.tracks, function( track ){
+                totalTime += track.duration_ms;
+            });
+        }
+        return Math.round(totalTime / 100000);   
+    }
+    
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
+	 **/
+    $(document).find('.browse > .content').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
+	
+	// play the whole album
+	$scope.playAlbum = function(){
+		MopidyService.playStream( $scope.album.uri );
+	}
+	
+	// add album to library
+	$scope.addToLibrary = function(){
+		
+		var trackids = [];
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
+		});
+		
+		SpotifyService.addTracksToLibrary( trackids );
+	}
+	
+	// get the album
+	SpotifyService.getAlbum( $stateParams.uri )
+		.then(function( response ) {
+		
+			$scope.album = response;
+			$scope.tracklist = response.tracks;
+			$scope.tracklist.type = 'track';
+			$scope.tracklist.tracks = response.tracks.items;
+			
+			angular.forEach( $scope.tracklist.tracks, function(track){
+				track.album = $scope.album;
+			});
+			
+			var artisturis = [];
+			angular.forEach( response.artists, function( artist ){
+				artisturis.push( artist.uri );
+			});
+			
+			// now get the artist objects
+			SpotifyService.getArtists( artisturis )
+				.then( function( response ){
+					$scope.album.artists = response.artists;
+				});
+				
+			// if we're viewing from within an individual artist, get 'em
+			if( typeof($stateParams.artisturi) !== 'undefined' ){		
+				// get the artist from Spotify
+				SpotifyService.getArtist( $stateParams.artisturi )
+					.then( function( response ){
+						$scope.artist = response;
+					});
+			}
+			
+		});
+    
+	
+    /**
+     * Load more of the album's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreTracks = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreTracks( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreTracks = true;   
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.tracklist.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreTracks = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+            loadMoreTracks( $scope.tracklist.next );
+        }
+	});
+});
+'use strict';
+
+angular.module('spotmop.browse.artist', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+    
+	$stateProvider
+		.state('browse.artist', {
+			url: "/artist/:uri",
+            abstract: true,
+			templateUrl: "app/browse/artist/template.html",
+            controller: ['$scope', '$state', 
+                function( $scope, $state) {
+					// if we're at the index level, go to the overview sub-state by default
+					// this prevents re-routing on refresh even if the URL is a valid sub-state
+					if( $state.current.name === 'browse.artist' )
+                    	$state.go('browse.artist.overview');
+                }]
+		})
+		.state('browse.artist.overview', {
+			url: "",
+			templateUrl: "app/browse/artist/overview.template.html",
+			controller: 'ArtistOverviewController'
+		})
+		.state('browse.artist.related', {
+			url: "/related",
+			templateUrl: "app/browse/artist/related.template.html",
+			controller: 'RelatedArtistsController'
+		})
+		.state('browse.artist.biography', {
+			url: "/biography",
+			templateUrl: "app/browse/artist/biography.template.html",
+			controller: 'ArtistBiographyController'
+		})
+		.state('browse.artistalbum', {
+			url: "/artist/:artisturi/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
+		});
+})
+
+
+/**
+ * Main controller
+ **/
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
+	
+	$scope.artist = {};
+	$scope.tracklist = {type: 'track'};
+	$scope.albums = {};
+	$scope.relatedArtists = {};
+    $scope.followArtist = function(){
+        SpotifyService.followArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = true;
+            });
+    }
+    $scope.unfollowArtist = function(){
+        SpotifyService.unfollowArtist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = false;
+            });
+    }
+	$scope.playArtistRadio = function(){
+		NotifyService.error( 'This functionality has not yet been implemented' );
+		/*
+		EchonestService.startArtistRadio( $scope.artist.name )
+			.then( function( response ){
+				console.log( response.response );
+			});
+			*/
+	}
+    
+	// get the artist from Spotify
+	SpotifyService.getArtist( $stateParams.uri )
+		.then( function( response ){
+			$scope.artist = response;
+    
+			/*
+			// get the artist from LastFM
+			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
+			LastfmService.artistInfo( response.name )
+				.then( function( response ){
+					console.log( response );
+				});
+			*/
+		});
+
+	// figure out if we're following this playlist
+	SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+		.then( function( isFollowing ){
+			$scope.following = $.parseJSON(isFollowing);
+		});
+		
+	// get the artist's related artists
+	SpotifyService.getRelatedArtists( $stateParams.uri )
+		.then( function( response ){
+			$scope.relatedArtists = response.artists;
+		});
+})
+
+
+/**
+ * Artist overview controller
+ **/
+.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
+	
+	// get the artist's albums
+	SpotifyService.getAlbums( $stateParams.uri )
+		.then( function( response ){
+			$scope.$parent.albums = response;
+			
+			// get the artist's top tracks
+			SpotifyService.getTopTracks( $stateParams.uri )
+				.then( function( response ){
+					$scope.tracklist.tracks = response.tracks;
+				});
+		});	
+	
+	
+	
+	
+    /**
+     * Load more of the playlist's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreAlbums = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreAlbums( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreAlbums = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist (using our unified format of course)
+                $scope.albums.items = $scope.albums.items.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.albums.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreAlbums = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+            loadMoreAlbums( $scope.albums.next );
+        }
+	});
+})
+
+
+/**
+ * Related artists controller
+ **/
+.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){	
+})
+
+
+/**
+ * Biography controller
+ **/
+.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
+	
+	// check if we know the artist name yet. If not, go find the artist on Spotify first
+	if( typeof($scope.artist.name) === 'undefined' ){
+		
+		// get the artist from Spotify
+		SpotifyService.getArtist( $stateParams.uri )
+			.then( function( response ){
+				getBio( response.name );
+			});
+	}else{
+		getBio( $scope.artist.name );
+	}
+	
+	// go get the biography
+	function getBio( name ){
+		LastfmService.artistInfo( name )
+			.then( function( response ){
+				$scope.artist.biography = response.artist.bio;
+			});
+	}
+});
+
+
+
+
+'use strict';
+
+angular.module('spotmop.browse', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse', {
+			url: "/browse",
+			templateUrl: "app/browse/template.html"
+		});
+});
+angular.module('spotmop.browse.featured', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse.featured', {
+			url: "/featured",
+			templateUrl: "app/browse/featured/template.html",
+			controller: 'FeaturedController'
+		})
+		.state('browse.featuredplaylist', {
+			url: "/featured/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('FeaturedController', function FeaturedController( $scope, $rootScope, $filter, SpotifyService ){	
+	
+	// set the default items
+	$scope.playlists = [];
+	$scope.featured = function(){
+		return $scope.playlists[0];
+	}
+	
+	// figure out the most appropriate background image to show (based on current local time)
+	$scope.partofday = function(){
+	
+		// convert to decimal (remembering that minutes are base-6)
+		var hour = parseFloat($filter('date')(new Date(),'H.m'));
+		
+		if( hour >= 4 && hour < 9.3 )
+			return 'commute';
+		else if( hour >= 9.3 && hour < 11 )
+			return 'morning';
+		else if( hour >= 11 && hour < 13.5 )
+			return 'midday';
+		else if( hour >= 13.5 && hour < 17 )
+			return 'afternoon';
+		else if( hour >= 17 && hour < 19 )
+			return 'evening';
+		else if( hour >= 19 && hour < 21 )
+			return 'dinner';
+		else if( hour >= 21 && hour < 23 || hour >= 0 && hour < 4  )
+			return 'late';
+	};
+	
+	SpotifyService.featuredPlaylists()
+		.then(function( response ) {
+			$scope.message = response.message;
+			$scope.playlists = response.playlists.items;
+		});
+});
+'use strict';
+
+angular.module('spotmop.browse.genre', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider){
+	
+	$stateProvider
+		.state('browse.genre', {
+			url: "/genre",
+			templateUrl: "app/browse/genre/template.html",
+			controller: 'GenreController'
+		})
+		.state('browse.genrecategory', {
+			url: "/genre/:categoryid",
+			templateUrl: "app/browse/genre/category.template.html",
+			controller: 'GenreCategoryController'
+		})
+		.state('browse.categoryplaylist', {
+			url: "/genre/:categoryid/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService ){
+	
+	$scope.categories = [];    
+	
+	SpotifyService.discoverCategories()
+		.then(function( response ) {
+			$scope.categories = response.categories;
+		});
+    
+    
+    /**
+     * Load more of the category's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreCategories = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreCategories( $nextUrl ){
+		
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreCategories = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new categories to the main scope
+                $scope.categories.items = $scope.categories.items.concat( response.categories.items );
+                
+                // save the next set's url (if it exists)
+                $scope.categories.next = response.categories.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreCategories = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreCategories && typeof( $scope.categories.next ) !== 'undefined' && $scope.categories.next ){
+            loadMoreCategories( $scope.categories.next );
+        }
+	});
+	
+})
+	
+/**
+ * Category controller
+ **/
+.controller('GenreCategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $stateParams ){
+
+	$scope.category = {};
+	$scope.playlists = [];
+	
+	SpotifyService.getCategory( $stateParams.categoryid )
+		.then(function( response ) {
+			$scope.category = response;
+	
+            SpotifyService.getCategoryPlaylists( $stateParams.categoryid )
+                .then(function( response ) {
+                    $scope.playlists = response.playlists;
+                });
+		});
+    
+    
+    /**
+     * Load more of the category's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMorePlaylists = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMorePlaylists( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMorePlaylists = true;   
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
+                
+                // save the next set's url (if it exists)
+                $scope.playlists.next = response.playlists.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMorePlaylists = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMorePlaylists && typeof( $scope.playlists.next ) !== 'undefined' && $scope.playlists.next ){
+            loadMorePlaylists( $scope.playlists.next );
+        }
+	});
+	
+});
+angular.module('spotmop.browse.new', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse.new', {
+			url: "/new",
+			templateUrl: "app/browse/new/template.html",
+			controller: 'NewController'
+		})
+		.state('browse.newalbum', {
+			url: "/new/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService ){
+	
+	// set the default items
+	$scope.albums = [];
+	
+	SpotifyService.newReleases()
+		.then(function( response ) {
+			$scope.albums = response.albums;
+		});
+	
+	
+    /**
+     * Load more of the category's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreNewReleases = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreNewReleases( $nextUrl ){
+		
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreNewReleases = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.albums.items = $scope.albums.items.concat( response.albums.items );
+                
+                // save the next set's url (if it exists)
+                $scope.albums.next = response.albums.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreNewReleases = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreNewReleases && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+            loadMoreNewReleases( $scope.albums.next );
+        }
+	});
+	
+});
+'use strict';
+
+angular.module('spotmop.browse.playlist', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse.playlist', {
+			url: "/playlist/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
+	
+	// setup base variables
+	$scope.playlist = {images: []};
+	$scope.tracklist = { tracks: [], type: 'track' };
+	$scope.totalTime = 0;
+    $scope.following = false;
+    $scope.followPlaylist = function(){
+        SpotifyService.followPlaylist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = true;
+				NotifyService.notify( 'Following playlist' );
+				$scope.updatePlaylists();
+            });
+    }
+    $scope.unfollowPlaylist = function(){
+        SpotifyService.unfollowPlaylist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = false;
+				NotifyService.notify( 'Playlist removed' );
+				$scope.updatePlaylists();
+            });
+    }
+    $scope.recoverPlaylist = function(){
+        SpotifyService.followPlaylist( $stateParams.uri )
+            .then( function(response){
+                $scope.following = true;
+				NotifyService.notify( 'Playlist recovered' );
+				$scope.updatePlaylists();
+            });
+    }
+    $scope.editPlaylist = function(){
+        DialogService.create('editPlaylist', $scope);
+    }
+	
+	// play the whole playlist
+	$scope.playPlaylist = function(){
+		MopidyService.playStream( $scope.playlist.uri, $scope.tracklist.tracks.length );
+	}
+	
+    // figure out the total time for all tracks
+    $scope.totalTime = function(){
+        var totalTime = 0;
+        if( $scope.tracklist.tracks.length > 0 ){
+            angular.forEach( $scope.tracklist.tracks, function( track ){
+				if( typeof( track ) !== 'undefined' )
+					totalTime += track.duration_ms;
+            });
+        }
+        return Math.round(totalTime / 100000);   
+    }
+    
+	
+	/**
+	 * Lazy loading
+	 * When we scroll near the bottom of the page, broadcast it
+	 * so that our current controller knows when to load more content
+	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
+	 **/
+    $(document).find('.browse > .content').on('scroll', function(evt){
+        
+        // get our ducks in a row - these are all the numbers we need
+        var scrollPosition = $(this).scrollTop();
+        var frameHeight = $(this).outerHeight();
+        var contentHeight = $(this).children('.inner').outerHeight();
+        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+        
+		if( distanceFromBottom <= 100 )
+        	$scope.$broadcast('spotmop:loadMore');
+    });
+	
+	
+	/**
+	 * When the user changes the order of a playlist tracklist
+	 * @param start = int
+	 * @param range_length = int
+	 * @param to_position = int
+	 **/
+	$scope.$on('spotmop:playlist:reorder', function( event, start, range_length, to_position ){
+	
+		var playlisturi = $state.params.uri;		
+        
+		// get spotify to start moving
+		SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+		
+		var tracksToMove = [];
+		
+		// build an array of the tracks we need to move
+		for( var i = 0; i < range_length; i++ )
+			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
+		
+		// if we're dragging items down the line further, account for the tracks that we've just removed
+		if( start < to_position )
+			to_position = to_position - range_length;
+		
+		// reverse the order of our tracks to move (unexplained as to why we need this...)
+		tracksToMove.reverse();
+		
+		// we need to apply this straight to the template, so we wrap in $apply
+		$scope.$apply( function(){
+		
+			// remove our tracks to move (remembering to adjust Spotify's range_length value)
+			$scope.tracklist.tracks.splice( start, range_length );
+			
+			// and now we add our moved tracks, to their new position
+			angular.forEach( tracksToMove, function(trackToMove){
+				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+			});
+		});
+	});
+
+	// on load, fetch the playlist
+	SpotifyService.getPlaylist( $stateParams.uri )
+		.then(function( response ) {
+		
+			$scope.playlist = response;			
+			$scope.tracklist.next = response.tracks.next;
+			$scope.tracklist.previous = response.tracks.previous;
+			$scope.tracklist.offset = response.tracks.offset;
+			$scope.tracklist.total = response.tracks.total;
+			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
+		
+			// parse description string and make into real html (people often have links here)
+			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
+        
+            // figure out if we're following this playlist
+            SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+                .then( function( isFollowing ){
+                    $scope.following = $.parseJSON(isFollowing);
+                });
+    
+			// if we're viewing from within a genre category, get the category
+			if( typeof($stateParams.categoryid) !== 'undefined' ){				
+				SpotifyService.getCategory( $stateParams.categoryid )
+					.then(function( response ) {
+						$scope.category = response;
+					});
+			}
+		});
+		
+	
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		// make sure the current spotify user owns this playlist
+		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
+			NotifyService.error( 'Cannot delete from a playlist you don\'t own' );
+			
+		// we own it, proceed sir
+		}else{
+			$scope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
+		}
+	});
+		
+	/**
+	 * Reformat the track structure to the unified tracklist.track
+	 * Need to strip wrapping track object
+	 **/
+	function reformatTracks( tracks ){
+		
+		var reformattedTracks = [];
+		
+		// loop all the tracks to add
+		angular.forEach( tracks, function( track ){
+			var newTrack = track.track;
+			newTrack.added_at = track.added_at;
+			newTrack.added_by = track.added_by;
+			newTrack.is_local = track.is_local;
+			reformattedTracks.push( newTrack );
+		});
+		
+		return reformattedTracks;
+	}
+    
+    /**
+     * Load more of the playlist's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreTracks = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreTracks( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreTracks = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist (using our unified format of course)
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
+                
+                // save the next set's url (if it exists)
+                $scope.tracklist.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreTracks = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+            loadMoreTracks( $scope.tracklist.next );
+        }
+	});
+});
+'use strict';
+
+angular.module('spotmop.browse.user', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('browse.user', {
+			url: "/user/:uri",
+			templateUrl: "app/browse/user/template.html",
+			controller: 'UserController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $stateParams ){
+	
+	$scope.user = {};
+	$scope.playlists = [];
+	
+	// get the user
+	SpotifyService.getUser( $stateParams.uri )
+		.then(function( response ) {
+			$scope.user = response;
+        
+            // get their playlists
+            SpotifyService.getPlaylists( response.id )
+                .then(function( response ) {
+                    $scope.playlists = response.items;
+                    $scope.next = response.next;
+                    $scope.totalPlaylists = response.total;
+                });
+		});
+    
+    /**
+     * Load more of the user's playlists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMorePlaylists = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMorePlaylists( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMorePlaylists = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new playlists to our existing array
+                $scope.playlists = $scope.playlists.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMorePlaylists = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMorePlaylists && typeof( $scope.next ) !== 'undefined' && $scope.next ){
+            loadMorePlaylists( $scope.next );
+        }
+	});
+});
+'use strict';
+
+angular.module('spotmop.common.contextmenu', [
+])
+
+
+.directive('contextmenu', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/contextmenu/template.html',
+		link: function( $scope, element, attrs ){
+		},
+		controller: function( $scope, $rootScope, $element ){
+			
+			/**
+			 * Menu item functionality
+			 **/
+			$scope.play = function(){
+				$rootScope.$broadcast('spotmop:tracklist:playSelectedTracks');
+				$element.fadeOut('fast');
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+			}
+			
+			$scope.enqueue = function(){
+				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks');
+				$element.fadeOut('fast');
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+			}
+			
+			$scope.unqueue = function(){
+				$rootScope.$broadcast('spotmop:tracklist:unqueueSelectedTracks');
+				$element.fadeOut('fast');
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+			}
+			
+			$scope.playNext = function(){
+				$rootScope.$broadcast('spotmop:tracklist:enqueueSelectedTracks', true);
+				$element.fadeOut('fast');
+				
+				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
+				if( $scope.isTouchDevice() )
+					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+			}
+			
+			$scope.addToPlaylist = function(){
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylist');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.removeFromPlaylist = function(){
+				$rootScope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.addToLibrary = function(){
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToLibrary');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.selectAll = function(){
+				$rootScope.$broadcast('spotmop:tracklist:selectAll');
+			}
+			
+			$scope.unselectAll = function(){
+				$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+				$element.fadeOut('fast');
+			}
+			
+			/**
+			 * Show the standard context menu
+			 * This is typically triggered by a right-click on a track
+			 *
+			 * @param context = string (track|tltrack)
+			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
+			 **/
+			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context, reverse){
+				
+				var positionY = originalEvent.pageY - $(window).scrollTop();
+				var positionX = originalEvent.pageX - window.pageYOffset;
+				
+				if( typeof( reverse ) !== 'undefined' && reverse )
+					positionX -= $element.outerWidth();
+				
+				// position and reveal our element
+				$element
+					.css({
+						top: positionY,
+						left: positionX + 5
+					})
+					.show();
+				
+				// use the clicked element to define what kind of context menu to show
+				$scope.$apply( function(){
+					$scope.context = context;
+				});
+			});
+			
+			/**
+			 * Show the touch-device specific context menu
+			 * This is triggered when our tracklist has selected tracks
+			 *
+			 * @param context = string (track|tltrack)
+			 **/
+			$scope.$on('spotmop:touchContextMenu:show', function(event, context){
+				
+				// position and reveal our element
+				$element.show();
+				
+				// use the clicked element to define what kind of context menu to show
+				$scope.$apply( function(){
+					$scope.context = context;
+				});
+			});
+			
+			
+			/**
+			 * Hide the context menu
+			 **/
+			$scope.$on('spotmop:contextMenu:hide', function(event){
+				$element.fadeOut('fast');
+			});
+		}
+	}
+});
+
+
+// create our application
+angular.module('spotmop.directives', [])
+
+
+/* ============================================================ CONFIG FOR 3rd PARTIES ======== */
+/* ============================================================================================ */
+
+.config(['cfpLoadingBarProvider', function(cfpLoadingBarProvider){
+
+	// wait 250ms before showing loader
+	cfpLoadingBarProvider.latencyThreshold = 250;
+}])
+  
+  
+
+
+/* ======================================================================== DIRECTIVES ======== */
+/* ============================================================================================ */
+
+/**
+ * Smarter click
+ * Fixes issue with ngClick where on touch devices events were triggered twice
+ * Use exactly the same as ngClick but attribute is "singleclick" instead
+ **/
+.directive('singleclick', function() {
+    return function($scope, $element, $attrs) {
+       $element.bind('touchstart click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            $scope.$apply($attrs['singleclick']);
+        });
+    };
+})
+
+
+/** 
+ * Switch input field
+ * Provides toggles for values
+ **/
+.directive('switch', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			name: '@'
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+				
+			$scope.on = SettingsService.getSetting( $scope.name, false );
+			
+			// listen for click events
+			$element.bind('touchstart click', function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$scope.$apply( function(){
+					$scope.on = !$scope.on;
+					SettingsService.setSetting( $scope.name, $scope.on );
+					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
+				});
+			});
+		},
+		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
+	}
+})
+
+
+/** 
+ * Scrollable panels
+ * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
+ **/
+.directive('scrollingPanel', function() {
+	return {
+		restrict: 'C',
+		link: function($scope, $element, $attrs){
+		
+			$element.on('scroll', function( event ){
+				
+				// get our ducks in a row - these are all the numbers we need
+				var scrollPosition = $(this).scrollTop();
+				var frameHeight = $(this).outerHeight();
+				var contentHeight = $(this).children('.inner').outerHeight();
+				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
+				
+				if( distanceFromBottom <= 100 )
+					$scope.$broadcast('spotmop:loadMore');
+			});
+		}
+	}
+})
+		
+		
+		
+/** 
+ * Thumbnail image
+ * Figure out the best image to use for this set of image sizes
+ * @return image obj
+ **/
+.directive('thumbnail', function( $timeout, $http ){
+	return {
+		restrict: 'E',
+		scope: {
+			images: '=',
+			size: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+			
+			// fetch this instance's best thumbnail
+			$scope.image = getThumbnailImage( $scope.images );
+			
+			// now actually go get the image
+			if( $scope.image ){
+				$http({
+					method: 'GET',
+					url: $scope.image.url,
+					cache: true
+					}).success( function(){
+					
+						// inject to DOM once loaded
+						$element.css('background-image', 'url('+$scope.image.url+')' );
+					});
+			}
+			
+			/**
+			 * Get the most appropriate thumbnail image
+			 * @param images = array of image urls
+			 * @return string (image url)
+			 **/
+			function getThumbnailImage( images ){
+				
+				// what if there are no images? then nada
+				if( images.length <= 0 )
+					return false;
+
+				// loop all the images
+				for( var i = 0; i < images.length; i++){
+					var image = images[i];
+					
+					// small thumbnails (ie search results)
+					if( $scope.size == 'small' ){
+						
+						// this is our preferred size
+						if( image.height >= 100 && image.height <= 200 ){
+							return image;
+
+						// let's take it a notch up then
+						}else if( image.height > 200 && image.height <= 300 ){
+							return image;
+
+						// nope? let's take it the next notch up
+						}else if( image.height > 300 && image.height < 400 ){
+							return image;
+						}
+					
+					// standard thumbnails (ie playlists, full related artists, etc)
+					}else{
+						
+						// this is our preferred size
+						if( image.height >= 200 && image.height <= 300 ){
+							return image;
+
+						// let's take it a notch up then
+						}else if( image.height > 300 && image.height <= 500 ){
+							return image;
+
+						// nope? let's take it a notch down then
+						}else if( image.height >= 150 && image.height < 200 ){
+							return image;
+						}						
+					}
+				};
+
+				// no thumbnail that suits? just get the first (and highest res) one then        
+				return images[0];
+			}
+			
+		},
+		template: '<div class="image animate"></div>'
+	};
+})
+
+
+/**
+ * Confirmation button
+ * Allows buttons to require double-click, with a "Are you sure?" prompt
+ **/
+.directive('confirmationButton', function() {
+	return {
+		restrict: 'E',
+		controller: function($scope, $element){	
+			
+			$scope.text = 'Button text';
+			$scope.confirming = false;
+			$scope.text = $scope.defaultText;
+			
+			// bind to document-wide click events
+			$(document).on('click', function(event){
+				
+				// if we've left-clicked on THIS confirmation button
+				if( event.target == $element[0] && event.which == 1 ){
+					if( $scope.confirming ){
+					
+						// if the function exists, perform the on-confirmation function from the directive's template
+						if( typeof( $scope.$parent[ $scope.onConfirmation ]() ) === 'function' )
+							$scope.$parent[ $scope.onConfirmation ]();
+						
+					}else{
+						$scope.confirming = true;
+						$scope.text = $scope.confirmationText;
+						$scope.$apply();
+					}
+					
+				// clicked on some other element on the page
+				}else{
+					
+					// let's un-confirm the button
+					$scope.confirming = false;
+					$scope.text = $scope.defaultText;
+					$scope.$apply();
+				}
+			});
+		},
+		scope: {
+			text: '@',
+			extraClasses: '@',
+			confirmationText: '@',
+			defaultText: '@',
+			onConfirmation: '@'
+		},
+		replace: true, 		// Replace with the template below
+		transclude: true, 	// we want to insert custom content inside the directive
+		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
+	};
+})
+
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('textOverImage', function(){
+    return {
+        restrict: 'A',
+        link: function($scope, $element){
+            $scope.$on('spotmop:detectBackgroundColor', function(event){
+                BackgroundCheck.init({
+                    targets: $.merge( $($element).parent(), $(document).find('#utilities') ),
+                    images: $element.closest('.intro').find('.image')
+                });
+				BackgroundCheck.refresh();
+            });
+        }
+    };
+})
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ **/
+.directive('preloadedimage', function( $rootScope, $timeout ){
+    return {
+		restrict: 'E',
+		scope: {
+			url: '@',
+			useproxy: '@',
+			detectbackground: '@',
+			opacity: '@'
+		},
+        link: function($scope, $element, $attrs){
+			
+			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
+			if( $element.attr('watch') ){
+				$scope.$watch('url', function(newValue, oldValue) {
+					if (newValue)
+						loadImage();
+				}, true);
+			}
+			
+			// load image on init
+			loadImage();
+			
+			// run the preloader
+			function loadImage(){
+				
+				var fullUrl = '';
+				/*
+				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
+				if( $scope.useproxy )
+					fullUrl += '/vendor/resource-proxy.php?url=';
+				*/
+				fullUrl += $scope.url;
+			
+				var image = $('<img src="'+fullUrl+'" />');		
+				image.load(function(){
+				
+					$element.attr('style', 'background-image: url("'+fullUrl+'");');
+					var destinationOpacity = 1;
+					
+					if( typeof($scope.opacity) !== 'undefined' )
+						destinationOpacity = $scope.opacity;
+						
+					$element.animate(
+						{
+							opacity: destinationOpacity
+						},
+						200
+					);
+				});
+			}
+        },
+		template: ''
+    };
+})
+
+
+/**
+ **/
+.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http ){
+    return {
+		restrict: 'E',
+        terminal: true,
+		scope: {
+			image: '@',				// object
+			useproxy: '@',
+			detectbackground: '@',
+			opacity: '@'
+		},
+        link: function($scope, $element, $attrs){
+			
+			// when we're destroyed, make sure we drop our animation interval
+			// otherwise we get huge memory leaks for old instances of this directive
+			$scope.$on(
+				"$destroy",
+				function handleDestroyEvent() {
+					$interval.cancel(animateInterval);
+				}
+			);
+				
+			// setup initial variables
+			var	scrollTop = 0;
+			var canvasDOM = document.getElementById('backgroundparallax');
+			var context = canvasDOM.getContext('2d');
+			
+			// load our image data from the json string attribute
+			var image = $.parseJSON($scope.image);
+		
+			/*
+			REBUILD THIS TO USE TORNADO
+			if( $scope.useproxy )
+				image.url = '/vendor/resource-proxy.php?url='+image.url;
+			*/
+			// create our new image object (to be plugged into canvas)
+			image.asObject = new Image();
+			image.asObject.src = image.url;
+			image.asObject.onload = function(){
+				
+				// load destination opacity from attribute (if specified)
+				var destinationOpacity = 1;				
+				if( typeof($scope.opacity) !== 'undefined' )
+					destinationOpacity = $scope.opacity;
+				
+				// plug our image into the canvas
+				positionArtistBackground( image );
+				
+				// fade the whole directive in, now that we're positioned and loaded
+				$element.animate({ opacity: destinationOpacity }, 500 );
+			}
+			
+			/**
+			 * Process the image object, and plug it in to our canvas, in the appropriate place
+			 * Also resizes the canvas to fill the parent element
+			 * @param image = custom image object
+			 **/
+			function positionArtistBackground( image ){
+				
+				// set our canvas dimensions (if necessary)
+				var canvasWidth = $element.outerWidth();
+				var canvasHeight = $element.outerHeight();
+				if( context.canvas.width != canvasWidth || context.canvas.height != canvasHeight ){
+					context.canvas.width = canvasWidth;
+					context.canvas.height = canvasHeight;
+				}
+				
+				// zoom image to fill canvas, widthwise
+				if( image.width < canvasWidth || image.width > canvasWidth ){
+					var scale = canvasWidth / image.width;
+					image.width = image.width * scale;
+					image.height = image.height * scale;
+				}
+				
+				// now check for fill heightwise, and zoom in if necessary
+				if( image.height < canvasHeight ){
+					var scale = canvasHeight / image.height;
+					image.width = image.width * scale;
+					image.height = image.height * scale;
+				}
+				
+				// figure out where we want the image to be, based on scroll position
+				var percent = Math.round( scrollTop / canvasHeight * 100 );
+				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
+				
+				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
+				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
+				
+				// actually draw the image on the canvas
+				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+			}
+			
+			// poll for scroll changes
+			var animateInterval = $interval(
+				function(){	
+					window.requestAnimationFrame(function( event ){
+					
+						// if we've scrolled
+						if( scrollTop != $('.scrolling-panel').scrollTop() ){
+							scrollTop = $('.scrolling-panel').scrollTop();
+							
+							var bannerHeight = $(document).find('.artist-intro').outerHeight();
+
+							// and if we're within the bounds of our document
+							// this helps prevent us animating when the objects in question are off-screen
+							if( scrollTop < bannerHeight ){								
+								positionArtistBackground( image );
+							}
+						}
+					});
+				},
+				10
+			);
+			
+        },
+		template: '<canvas id="backgroundparallax"></canvas>'
+    };
+})
+
+
+
+/* ======================================================================== FILTERS =========== */
+/* ============================================================================================ */
+
+
+// facilitates a filter for null/undefined/false values
+.filter('nullOrUndefined', [function () {
+    return function( items, property ){
+        var arrayToReturn = [];
+        for (var i = 0; i < items.length; i++){			
+			if( typeof(items[i][property]) === 'undefined' || items[i][property] == false )
+				arrayToReturn.push(items[i]);
+        }
+        return arrayToReturn;
+    };
+}])
+
+
+// setup a filter to convert MS to MM:SS
+.filter('formatMilliseconds', function() {
+	return function(ms) {
+		var seconds = Math.floor((ms / 1000) % 60);
+		if( seconds <= 9 )
+			seconds = '0'+seconds;
+		var minutes = Math.floor((ms / (60 * 1000)) % 60);
+		return minutes + ":" + seconds;
+	}
+})
+
+
+// get the appropriate sized image
+.filter('thumbnailImage', function(){
+	return function( images ){
+        
+        // what if there are no images? then nada
+        if( images.length <= 0 )
+            return false;
+        
+        // loop all the images
+        for( var i = 0; i < images.length; i++){
+            var image = images[i];
+            
+            // this is our preferred size
+            if( image.height >= 200 && image.height <= 300 ){
+                return image.url;
+            
+            // let's take it a notch up then
+            }else if( image.height > 300 && image.height <= 500 ){
+                return image.url;
+            
+            // nope? let's take it a notch down then
+            }else if( image.height >= 150 && image.height < 200 ){
+                return image.url;
+            }
+        };
+        
+        // no thumbnail that suits? just get the first (and highest res) one then        
+		return images[0].url;
+	}
+});
+
+
+
+
+
+
+
+
+
+
+
+'use strict';
+
+angular.module('spotmop.common.tracklist', [
+	'spotmop.services.mopidy'
+])
+
+
+.directive('track', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/tracklist/track.template.html',
+		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
+			
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mouseup( function( event ){
+				
+				// left click
+				if( event.which === 1 ){
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'track');
+				}
+			});
+			
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+				
+				// what position track am I in the tracklist
+				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
+				var trackUrisToAdd = [];
+				
+				// loop me, and all my following tracks, fetching their uris
+				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
+					var track = $scope.tracklist.tracks[i];					
+					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
+						trackUrisToAdd.push( track.uri );
+				}
+				
+				// play me (the double-clicked track) immediately
+				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+					
+					if( trackUrisToAdd.length > 0 ){
+					
+						// notify user that this could take some time			
+						var message = 'Adding '+trackUrisToAdd.length+' tracks';
+						if( trackUrisToAdd.length > 10 )
+							message += '... this could take some time';
+						NotifyService.notify( message );
+
+						// add the following tracks to the tracklist
+						MopidyService.addToTrackList( trackUrisToAdd );
+					}
+				});
+			});
+		}
+	}
+})
+
+
+.directive('tltrack', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/tracklist/tltrack.template.html',
+		link: function( $scope, element, attrs ){			
+		},
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
+			
+			$scope.state = PlayerService.state;
+			
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mouseup( function( event ){
+				
+				// left click
+				if( event.which === 1 ){
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
+				}
+			});		
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+		
+				// get the queue's tracks
+				// we need to re-get the queue because at this point some tracks may not have tlids
+				// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligable
+				MopidyService.getCurrentTlTracks().then( function( tracklist ){
+					
+					// find our double-clicked track in the tracklist
+					$.each( tracklist, function(key, track){
+						if( track.tlid == $scope.track.tlid ){
+
+							// then play our track
+							return MopidyService.playTlTrack({ tl_track: track });
+						}	
+					});
+				});
+			});
+		}
+	}
+})
+
+
+.directive('localtrack', function() {
+	return {
+		restrict: 'E',
+		templateUrl: 'app/common/tracklist/localtrack.template.html',
+		link: function( $scope, element, attrs ){		
+		},
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
+			
+			$scope.state = PlayerService.state;
+			
+			/**
+			 * Single click
+			 * Click of any mouse button. Figure out which button, and behave accordingly
+			 **/
+			$element.mouseup( function( event ){
+				
+				// left click
+				if( event.which === 1 ){
+				
+					if( !$scope.isTouchDevice() )
+						$scope.$emit('spotmop:contextMenu:hide');
+					
+					// make sure we haven't clicked on a sub-link
+					if( !$(event.target).is('a') )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+				// right click (only when selected)
+				}else if( $scope.track.selected && event.which === 3 ){
+					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
+				}
+			});		
+			
+			
+			
+			/**
+			 * Double click
+			 **/
+			$element.dblclick( function( event ){
+				
+				// what position track am I in the tracklist
+				var myIndex = $scope.tracklist.tracks.indexOf( $scope.track );
+				var trackUrisToAdd = [];
+				
+				// loop me, and all my following tracks, fetching their uris
+				for( var i = myIndex+1; i < $scope.tracklist.tracks.length; i++ ){
+					var track = $scope.tracklist.tracks[i];					
+					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
+						trackUrisToAdd.push( track.uri );
+				}
+				
+				// play me (the double-clicked track) immediately
+				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
+					
+					if( trackUrisToAdd.length > 0 ){
+					
+						// notify user that this could take some time			
+						var message = 'Adding '+trackUrisToAdd.length+' tracks';
+						if( trackUrisToAdd.length > 10 )
+							message += '... this could take some time';
+						NotifyService.notify( message );
+
+						// add the following tracks to the tracklist
+						MopidyService.addToTrackList( trackUrisToAdd );
+					}
+				});
+			});
+		}
+	}
+})
+
+
+/**
+ * Tracklist controller
+ * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
+ **/
+.controller('TracklistController', function TracklistController( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
+
+	// prevent right-click menus
+	$(document).contextmenu( function(evt){
+		
+		// only if clicking in a tracklist
+		if( $(evt.target).closest('.tracklist').length > 0 )
+			return false;
+	});
+
+	
+	
+	/**
+	 * Dragging a track
+	 * This event is detected and $emitted from the track/tltrack directive
+	 **/
+	$scope.$on('spotmop:track:dragging', function( event ){
+		
+	});
+	
+	
+	/**
+	 * Click on a single track
+	 * This event is detected and $emitted from the track/tltrack directive
+	 **/
+	$scope.$on('spotmop:track:clicked', function( event, $track ){
+		
+		// if ctrl key held down
+		if( $rootScope.ctrlKeyHeld || $scope.isTouchDevice() ){
+			
+			// toggle selection for this track
+			if( $track.track.selected ){
+				$track.$apply( function(){ $track.track.selected = false; });
+			}else{
+				$track.$apply( function(){ $track.track.selected = true; });
+			}
+			
+		// if ctrl key not held down
+		}else if( !$rootScope.ctrlKeyHeld ){
+			
+			// unselect all tracks
+			angular.forEach( $scope.tracklist.tracks, function(track){
+				track.selected = false;
+			});
+			
+			// and select only me
+			$track.$apply( function(){ $track.track.selected = true; });
+		}
+		
+		// if shift key held down, select all tracks between this track, and the last clicked one
+		if( $rootScope.shiftKeyHeld ){
+			
+			// figure out the limits of our selection (use the array's index)
+			// assume last track clicked is the lower index value, to start with
+			var firstTrackIndex = ( typeof($scope.lastSelectedTrack) !== 'undefined' ) ? $scope.lastSelectedTrack.$index : 0;
+			var lastTrackIndex = $track.$index;
+			
+			// if we've selected a lower-indexed track, let's swap our limits accordingly
+			if( $track.$index < firstTrackIndex ){
+				firstTrackIndex = $track.$index;
+				lastTrackIndex = $scope.lastSelectedTrack.$index;
+			}
+			
+			// now loop through our subset limits, and make them all selected!
+			for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
+				$scope.tracklist.tracks[i].selected = true;
+			};
+			
+			// tell our templates to re-read the arrays
+			$scope.$apply();
+		}
+		
+		// save this item to our last-clicked (used for shift-click)
+		$scope.lastSelectedTrack = $track;
+		
+		/**
+		 * Hide/show mobile version of the context menu
+		 **/
+		if( $scope.isTouchDevice() ){
+			if( $filter('filter')($scope.tracklist.tracks, {selected: true}).length > 0 )
+				$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.tracklist.type );
+			else
+				$rootScope.$broadcast('spotmop:contextMenu:hide' );
+		}
+	});
+	
+	
+	
+	/**
+	 * Selected Tracks >> Add to queue
+	 **/
+	$scope.$on('spotmop:tracklist:enqueueSelectedTracks', function(event, playNext){
+		
+		var atPosition = null;
+			
+		// if we're adding these tracks to play next
+		if( typeof( playNext ) !== 'undefined' && playNext == true ){
+		
+			atPosition = 0;
+			
+			// fetch the currently playing track
+			var currentTrack = $scope.state().currentTlTrack;
+			
+			// make sure we have a current track
+			if( currentTrack ){
+				var currentTrackObject = $filter('filter')($scope.currentTracklist, {tlid: currentTrack.tlid});
+			
+				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
+				if( currentTrackObject.length > 0 )				
+					atPosition = $scope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
+			}
+		}
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function( track ){
+			selectedTracksUris.push( track.uri );
+		});
+			
+		var message = 'Adding '+selectedTracks.length+' tracks to queue';
+		if( selectedTracks.length > 10 )
+			message += '... this could take some time';
+			
+		NotifyService.notify( message );
+				
+		MopidyService.addToTrackList( selectedTracksUris, atPosition );
+	});
+	
+	
+	
+	/**
+	 * Selected Tracks >> Play
+	 **/
+	 
+	// listeners
+	$scope.$on('spotmop:tracklist:playSelectedTracks', function(){ playSelectedTracks() });
+	$scope.$on('spotmop:keyboardShortcut:enter', function(){ playSelectedTracks() });
+	
+	// the actual behavior
+	function playSelectedTracks(){
+	
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var firstSelectedTrack = selectedTracks[0];
+		
+		// depending on context, make the selected track(s) play
+		// queue
+		if( $scope.tracklist.type == 'tltrack'){
+			
+			// get the queue's tracks
+			// we need to re-get the queue because at this point some tracks may not have tlids
+			// TODO: simplify this and get the tracklist with a filter applied, by tlid. This will remove the need for fetching the whole tracklist, but I suspect the performance gain from this will be negligible
+			MopidyService.getCurrentTlTracks().then( function( tracklist ){
+				
+				// find our double-clicked track in the tracklist
+				$.each( tracklist, function(key, track){
+					if( track.tlid == firstSelectedTrack.tlid ){
+
+						// then play our track
+						return MopidyService.playTlTrack({ tl_track: track });
+					}	
+				});
+			});
+			
+		// generic tracklist (playlist, top-tracks, album, etc)
+		}else{
+		
+			// build an array of track uris (and subtract the first one, as we play him immediately)
+			var selectedTracksUris = [];
+			for( var i = 1; i < selectedTracks.length; i++ ){
+				selectedTracksUris.push( selectedTracks[i].uri );
+			};
+			
+			var message = 'Adding '+selectedTracks.length+' tracks to queue';
+			if( selectedTracks.length > 10 )
+				message += '... this could take some time';
+				
+			NotifyService.notify( message );
+			
+			// play the first track immediately
+			MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
+				
+				// more tracks to add
+				if( selectedTracksUris.length > 0 ){
+					// add the following tracks to the tracklist
+					MopidyService.addToTrackList( selectedTracksUris );
+				}
+			});
+		}
+	}
+	
+	
+	
+	/**
+	 * Selected Tracks >> Delete from queue (aka unqueue)
+	 **/
+	$scope.$on('spotmop:tracklist:unqueueSelectedTracks', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksTlids = [];
+		
+		angular.forEach( selectedTracks, function( track ){
+			selectedTracksTlids.push( track.tlid );
+		});
+		
+		MopidyService.removeFromTrackList( selectedTracksTlids );
+	});
+	
+	
+	
+	/**
+	 * Selected Tracks >> Delete
+	 **/
+	$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var trackPositionsToDelete = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			selectedTrack.transitioning = true;
+		});
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
+			.then( function(response){
+			
+					// rejected
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error( response.error.message );
+					
+						// un-transition and restore the tracks we couldn't delete
+						angular.forEach( selectedTracks, function( selectedTrack, index ){
+							selectedTrack.transitioning = false;
+						});
+					// successful
+					}else{						
+						// remove tracks from DOM
+						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+						
+						// update our snapshot so Spotify knows which version of the playlist our positions refer to
+						$scope.playlist.snapshot_id = response.snapshot_id;
+					}
+				});
+	});
+	
+	
+	/**
+	 * Selected Tracks >> Add to playlist
+	 **/
+	$scope.$on('spotmop:tracklist:addSelectedTracksToPlaylist', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			
+			// if we have a nested track object (ie TlTrack objects)
+			if( typeof(track.track) !== 'undefined' )
+				selectedTracksUris.push( track.track.uri );
+			
+			// nope, so let's use a non-nested version
+			else
+				selectedTracksUris.push( track.uri );
+		});
+		
+        DialogService.create('addToPlaylist', $scope);
+	});
+	
+	
+	/**
+	 * Selected Tracks >> Add to library
+	 **/
+	$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, {selected: true} );
+		var selectedTracksUris = [];
+		
+		angular.forEach( selectedTracks, function(track){
+			
+			// if we have a nested track object (ie TlTrack objects)
+			if( typeof(track.track) !== 'undefined' )
+				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.track.uri) );
+			
+			// nope, so let's use a non-nested version
+			else
+				selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.uri) );
+		});
+		
+		// tell spotify to go'on get
+		SpotifyService.addTracksToLibrary( selectedTracksUris );
+	});
+	
+	
+	/**
+	 * Manipulate selected tracks
+	 **/
+	$scope.$on('spotmop:tracklist:selectAll', function(event){
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			track.selected = true;
+		});
+	});
+	$scope.$on('spotmop:tracklist:unselectAll', function(event){
+		angular.forEach( $scope.tracklist.tracks, function( track ){
+			track.selected = false;
+		});
+	});
+	
+});
+
+
+
+
+'use strict';
+
+angular.module('spotmop.common.tracklist.service', [])
+
+.factory("TracklistService", function( $rootScope ){
+	
+	return {
+		getSelectedTracks: function(){
+			console.log('triggered getSelectedTracks');
+		}
+	}	
+});
+
+
+
+
+'use strict';
+
+angular.module('spotmop.discover', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider){
+	
+	$stateProvider
+		.state('discover', {
+			url: "/discover",
+			templateUrl: "app/discover/template.html",
+			controller: 'DiscoverController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
+	
+	$scope.artists = [];
+	$scope.playlists = [];
+	$scope.albums = [];
+	$scope.recommendations = {
+		currentArtist: {
+			artists: [],
+			recommendations: []
+		},
+		suggestions: []
+	};
+	
+	// get our recommended artists
+	if( SettingsService.getSetting('echonestenabled', false) ){
+		
+		
+		// ================= CATALOG RADIO ==== //
+		
+		/*
+		EchonestService.favoriteArtists()
+			.then(function( response ){
+			
+				// convert our echonest list into an array to get from spotify
+				var echonestSongs = response.response.songs;
+				var artisturis = [];
+				
+				// make sure we got some artists
+				if( echonestSongs.length <= 0 ){
+				
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
+					
+				}else{
+				
+					$rootScope.requestsLoading++;
+					
+					angular.forEach( echonestSongs, function( echonestSong ){
+						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
+					});
+					
+					SpotifyService.getArtists( artisturis )
+						.success( function( response ){
+							$rootScope.requestsLoading--;
+							$scope.artists = response.artists;
+						})
+						.error(function( error ){
+							$rootScope.requestsLoading--;
+							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
+						});
+				}
+			});
+			*/
+			
+		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
+		
+		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
+			var artists = [];
+			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
+				artists.push(
+					{
+						'name': artist.name,
+						'name_encoded': encodeURIComponent(artist.name),
+						'uri': artist.uri
+					}
+				);
+			});
+			$scope.recommendations.currentArtist.artists = artists;
+		
+			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
+				.then(function( response ){
+				
+					// convert our echonest list into an array to get from spotify
+					var echonestArtists = response.response.artists;
+					var artisturis = [];
+					
+					// make sure we got some artists
+					if( echonestArtists.length <= 0 ){
+					
+						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
+						
+					}else{
+						
+						angular.forEach( echonestArtists, function( echonestArtist ){
+							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
+								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
+						});
+						
+						SpotifyService.getArtists( artisturis )
+							.then( function( response ){
+								$scope.recommendations.currentArtist.recommendations = response.artists;
+							});
+					}
+				});
+		}
+			
+			
+			
+		// ================= GENERAL RECOMMENDED ARTISTS ==== //
+		
+		EchonestService.recommendedArtists()
+			.then(function( response ){
+			
+				// convert our echonest list into an array to get from spotify
+				var echonestArtists = [];
+				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
+					response.response.artists;
+					
+				var artisturis = [];
+				
+				// make sure we got some artists
+				if( echonestArtists.length <= 0 ){
+				
+					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
+					
+				}else{
+					
+					angular.forEach( echonestArtists, function( echonestArtist ){
+						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
+					});
+					
+					SpotifyService.getArtists( artisturis )
+						.then( function( response ){
+							$scope.recommendations.suggestions = response.artists;
+						});
+				}
+			});
+	}
+	
+});
+
+
+
+
+
+angular.module('spotmop.library', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('library', {
+			url: "/library",
+			templateUrl: "app/library/template.html"
+		})
+		.state('library.playlists', {
+			url: "/playlists",
+			templateUrl: "app/library/playlists.template.html",
+			controller: 'LibraryPlaylistsController'
+		})
+		.state('library.playlist', {
+			url: "/playlist/:uri",
+			templateUrl: "app/browse/playlist/template.html",
+			controller: 'PlaylistController'
+		})
+		.state('library.tracks', {
+			url: "/tracks",
+			templateUrl: "app/library/tracks.template.html",
+			controller: 'LibraryTracksController'
+		})
+		.state('library.artists', {
+			url: "/artists",
+			templateUrl: "app/library/artists.template.html",
+			controller: 'LibraryArtistsController'
+		})
+		/*
+		 MORE COMPLEX THAN THE ALIAS TO PLAYLISTS (NESTED STATES). MAY NEED TO RECONSIDER APPROACH
+		.state('library.artist', {
+			url: "/artist/:uri",
+			templateUrl: "app/browse/artist/template.html",
+			controller: 'PlaylistController'
+		})
+		*/
+		.state('library.albums', {
+			url: "/albums",
+			templateUrl: "app/library/albums.template.html",
+			controller: 'LibraryAlbumsController'
+		})
+		.state('library.files', {
+			url: "/files/:folder",
+			templateUrl: "app/library/files.template.html",
+			controller: 'LibraryFilesController'
+		});
+})
+	
+/**
+ * Library tracks
+ **/
+.controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	  
+	$scope.tracklist = {tracks: []};
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getMyTracks( userid )
+		.then( function( response ){ // successful
+				$scope.tracklist = response;
+				$scope.tracklist.tracks = reformatTracks( response.items );
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+		
+		
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var tracksToDelete = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			tracksToDelete.push( SpotifyService.getFromUri( 'trackid', selectedTrack.uri ) );
+		});
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromLibrary( tracksToDelete )
+			.then(function( response ){
+				
+				// filter the playlist tracks to exclude all selected tracks (because we've just deleted them)
+				// we could fetch a new version of the tracklist from Spotify, but that isn't really necessary
+				$scope.tracklist.tracks = $filter('filter')($scope.tracklist.tracks, { selected: false });
+			});
+	});
+	
+		
+	/**
+	 * Reformat the track structure to the unified tracklist.track
+	 * Need to strip wrapping track object
+	 **/
+	function reformatTracks( tracks ){
+		
+		var reformattedTracks = [];
+		
+		// loop all the tracks to add
+		angular.forEach( tracks, function( track ){
+			var newTrack = track.track;
+			newTrack.added_at = track.added_at;
+			reformattedTracks.push( newTrack );
+		});
+		
+		return reformattedTracks;
+	}
+    
+	
+    /**
+     * Load more of the album's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreTracks = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreTracks( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreTracks = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.tracklist.tracks = $scope.tracklist.tracks.concat( reformatTracks( response.items ) );
+                
+                // save the next set's url (if it exists)
+                $scope.tracklist.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreTracks = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+            loadMoreTracks( $scope.tracklist.next );
+        }
+	});
+	
+})
+	
+/**
+ * Local files
+ **/
+.controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
+	
+	$scope.folders = [];
+	$scope.tracklist = {tracks: [], type: 'local'};
+	
+	var folder, parentFolder;
+	
+	if( $stateParams.folder ){
+	
+		folder = $stateParams.folder;
+		var parentFolders = folder.split('|');
+		parentFolder = '';
+		for( var i = 0; i < parentFolders.length-1; i++ ){
+			showParentFolderLink = true;
+			parentFolder += parentFolders[i];
+			if( i < parentFolders.length-2 )
+				parentFolder += '|';
+		}
+		
+		if( parentFolder == '' )
+			parentFolder = 'local:directory';
+		
+		folder = folder.replace('|','/');
+	}
+	
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	
+	// go get em
+	function getItems(){
+			
+		MopidyService.getLibraryItems( folder )
+			.then( function( response ){
+					
+					// load tracks
+					var tracks = $filter('filter')(response, {type: 'track'});	
+/*					
+					if( tracks.length > 0 ){
+						
+						for( var i = 0; i < tracks.length; i++ ){
+							MopidyService.getTrack( tracks[i].uri )
+								.then( function(response){
+									console.log( i );
+									tracks[i] = response;
+									console.log( response );
+								});
+						}
+						
+					}*/
+					
+					$scope.tracklist.tracks = tracks;
+					
+					// fetch the folders
+					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
+
+					if( $stateParams.folder != 'local:directory' )
+						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
+					
+					$scope.folders = folders;
+				});
+	}
+	
+	
+	/**
+	 * Format our folders into the desired format
+	 * @param items = array
+	 * @return array
+	 **/
+	function formatFolders( items ){
+		
+		// sanitize uris
+		for( var i = 0; i < items.length; i++ ){
+			var item = items[i];
+			
+			// replace slashes (even urlencoded ones) to ":"
+			item.uri = item.uri.replace('%2F', '|');
+			item.uri = item.uri.replace('/', '|');
+			
+			items[i] = item;
+		}
+		
+		return items;
+	}
+		
+})
+	
+/**
+ * Library artists
+ **/
+.controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	
+	$scope.artists = [];
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    
+	SpotifyService.getMyArtists( userid )
+		.then( function( response ){ // successful
+				$scope.artists = response.artists;
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+		
+})
+
+/**
+ * Library playlist
+ **/
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+	
+	// note: we use the existing playlist list to show playlists on this page	
+	$scope.createPlaylist = function(){
+        DialogService.create('createPlaylist', $scope);
+	}
+	
+	$scope.playlists = { items: [] };
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+    
+	SpotifyService.getPlaylists( userid )
+		.then( function( response ){ // successful
+				$scope.playlists = response;
+				
+				// if it was 401, refresh token
+				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					Spotify.refreshToken();
+			});
+    
+	
+    /**
+     * Load more of the album's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMorePlaylists = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMorePlaylists( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMorePlaylists = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.playlists.items = $scope.playlists.items.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.playlists.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMorePlaylists = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMorePlaylists && typeof( $scope.playlists.next ) !== 'undefined' && $scope.playlists.next ){
+            loadMorePlaylists( $scope.playlists.next );
+        }
+	});
+});
+
+
+
+
+'use strict';
+
+angular.module('spotmop.player', [
+	'spotmop.services.player',
+	'spotmop.services.spotify',
+	'spotmop.services.mopidy'
+])
+
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, EchonestService, SettingsService ){
+	
+	$scope.state = PlayerService.state;
+	    
+	
+	/**
+	 * Core player controls
+	 **/
+	
+	$scope.playPause = function(){
+		PlayerService.playPause();
+	}
+    $scope.stop = function(){
+		PlayerService.stop();
+    },
+	$scope.next = function(){
+		PlayerService.next();
+	}
+	$scope.previous = function(){
+		PlayerService.previous();
+	}
+	$scope.seek = function( event ){
+		var slider, offset, position, percent, time;
+		if( $(event.target).hasClass('slider') )
+			slider = $(event.target);
+		else
+			slider = $(event.target).closest('.slider');
+		
+		// calculate the actual destination seek time
+		offset = slider.offset();
+		position = event.pageX - offset.left;
+		percent = position / slider.innerWidth();
+		time = Math.round(percent * $scope.state().currentTlTrack.track.length);
+		
+		PlayerService.seek( time );
+	}	
+	$scope.setVolume = function( event ){
+		var slider, offset, position, percent;
+		if( $(event.target).hasClass('slider') )
+			slider = $(event.target);
+		else
+			slider = $(event.target).closest('.slider');
+		
+		// calculate the actual destination seek time
+		offset = slider.offset();
+		position = event.pageX - offset.left;
+		percent = position / slider.innerWidth() * 100;
+		percent = parseInt(percent);
+		
+		PlayerService.setVolume( percent );
+	};
+	
+	
+	/**
+	 * Play order toggle switches
+	 **/
+	
+    $scope.toggleRepeat = function(){
+		PlayerService.toggleRepeat();
+    };
+    $scope.toggleRandom = function(){
+		PlayerService.toggleRandom();
+    };
+    $scope.toggleMute = function(){
+		PlayerService.toggleMute();
+    };
+	
+    
+	/**
+	 * Shortcut keys
+	 **/
+	
+	$scope.$on('mopidy:event:tracklistChanged', function( event ){
+		MopidyService.getCurrentTlTracks().then( function(tlTracks){
+			$scope.$parent.currentTracklist = tlTracks;
+		});
+	});
+	
+	/*
+	
+	// listen for tracklist changes, and then rewrite the broadcast to include the tracks themselves
+	// TODO: Move this into the MopidyService for sanity
+	$scope.$on('mopidy:event:tracklistChanged', function( newTracklist ){
+		MopidyService.getCurrentTrackListTracks()
+			.then(
+				function( tracklist ){
+					$rootScope.$broadcast('spotmop:tracklistUpdated', tracklist);
+				}
+			);
+	});
+	*/
+	
+});
+/**
+ * Create a Player service
+ *
+ * This holds all of the calls for the player interface and data
+ **/
+ 
+angular.module('spotmop.services.player', [])
+
+.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
+	
+	// setup initial states
+	var state = {
+		playing: false,
+		isRepeat: false,
+		isRandom: false,
+		isMute: false,
+		volume: 100,
+		playPosition: 0,
+		currentTlTrack: false,
+		playPositionPercent: function(){
+			if( state.currentTlTrack ){
+				return ( state.playPosition / state.currentTlTrack.track.length * 100 ).toFixed(2);
+			}else{
+				return 0;
+			}
+		}
+	}
+	
+	// when mopidy connection detected, fetch real states
+	$rootScope.$on('mopidy:state:online', function(){
+		updateToggles();
+		
+		updateCurrentTrack();
+		updatePlayerState();
+		updateVolume();
+		
+		// figure out if we're playing already
+		MopidyService.getState().then( function( newState ){
+			if( newState == 'playing' )
+				state.playing = true;
+			else
+				state.playing = false;
+		});
+	});
+	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		updateToggles();
+	});
+	
+	$rootScope.$on('mopidy:event:playbackStateChanged', function( event, state ){
+		updatePlayerState( state.new_state );
+	});
+	
+	$rootScope.$on('mopidy:event:seeked', function( event, position ){
+		updatePlayPosition( position.time_position );
+	});
+	
+	$rootScope.$on('mopidy:event:volumeChanged', function( event, volume ){
+		if( volume.volume != state.volume )
+			updateVolume( volume.volume );
+	});
+	
+	
+	// update our toggle states from the mopidy server
+	function updateToggles(){	
+        MopidyService.getRepeat().then( function(isRepeat){
+            state.isRepeat = isRepeat;
+        });
+        MopidyService.getRandom().then( function(isRandom){
+            state.isRandom = isRandom;
+        });
+        MopidyService.getMute().then( function(isMute){
+            state.isMute = isMute;
+        });
+	}
+	
+	// listen for current track changes
+	// TODO: Move this into the MopidyService for sanity
+	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
+		
+		// only if our new tlTrack differs from our current one
+		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
+			state.currentTlTrack = tlTrack.tl_track;		
+			updateCurrentTrack( tlTrack.tl_track );
+			updatePlayerState();		
+		}
+	});
+	
+	
+	/**
+	 * Set the new play position and, if required, figure it out first
+	 * @param newPosition = integer (optional)
+	 **/
+	function updatePlayPosition( newPosition ){
+	
+		// if we haven't been provided with a specific new position
+		if( typeof( newPosition ) === 'undefined' ){
+		
+			// go get the time position
+			MopidyService.getTimePosition().then( function(position){
+				state.playPosition = position;
+			});
+		
+		// we've been parsed the time position, so just use that
+		}else{
+			state.playPosition = newPosition;
+		}
+	}
+	
+	
+	/**
+	 * Update volume
+	 * Fetches (if required) the volume from mopidy and sets to state
+	 * @param volume = int (optional)
+	 **/
+	function updateVolume( newVolume ){
+	
+		// if we've been told what the new volume is, let's just use that
+		if( typeof( newVolume ) !== 'undefined' ){
+			state.volume = newVolume;
+			
+		// not told what new vol is, so let's fetch and set
+		}else{
+			MopidyService.getVolume().then(function( volume ){
+				state.volume = volume;
+			});
+		}
+	}
+	
+	
+	/**
+	 * Update the state of the player
+	 * @param newState = string (optional)
+	 **/
+	function updatePlayerState( newState ){
+		
+		// if we've been told what the new state is, let's just use that
+		if( typeof( newState ) !== 'undefined' ){
+			if( newState == 'playing' )
+				state.playing = true;
+			else
+				state.playing = false;
+			
+			updateWindowTitle();
+				
+		// not sure of new state, so let's find out first
+		}else{
+			MopidyService.getState().then( function( newState ){
+				if( newState == 'playing' )
+					state.playing = true;
+				else
+					state.playing = false;
+				
+				updateWindowTitle();
+			});
+		}
+		
+		// commented out due to strange behavior in Mopidy 1.1.1 where on pause, the play position was erratic
+		// so let's just rely on our latest play position as factual. When we resume it'll re-fetch anyway.
+		// updatePlayPosition();		
+	};
+	
+	
+	/**
+	 * Update the current track
+	 * This updates all instances of the track with new artwork, seek bar, window title, etc.
+	 * @param tlTrack = the new track object (optional)
+	 **/
+	function updateCurrentTrack( tlTrack ){
+		
+		// update all ui uses of the track (window title, player bar, etc)
+		var setCurrentTrack = function( tlTrack ){
+		
+			// save the current tltrack for global usage
+			state.currentTlTrack = tlTrack;
+			
+			// if this is a Spotify track, get the track image from Spotify
+			if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
+				// now we have track info, let's get the spotify artwork	
+				SpotifyService.getTrack( tlTrack.track.uri )
+					.then(function( response ){
+						if( typeof(response.album) !== 'undefined' ){
+							state.currentTlTrack.track.image = response.album.images[0].url;
+						}
+					});
+			
+			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+			}else{
+				
+				var artist = encodeURIComponent( tlTrack.track.artists[0].name );
+				var album = encodeURIComponent( tlTrack.track.album.name );
+				
+				if( artist && album )
+					LastfmService.albumInfo( artist, album )
+						.then( function(response){
+							
+								// remove the existing image
+								state.currentTlTrack.track.image = false;
+								
+								// if we got an album match, plug in the 'extralarge' image to our state()
+								if( typeof(response.album) !== 'undefined' ){
+									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
+									if( largest )
+										state.currentTlTrack.track.image = largest['#text'];
+								}
+							});
+			}
+			
+			// update ui
+			updatePlayPosition();
+			updateWindowTitle();
+		}
+		
+		// track provided, update pronto garcong!
+		if( typeof( tlTrack ) !== 'undefined' ){
+			setCurrentTrack( tlTrack );
+			
+		// no track provided, so go fetch it first, then proceed
+		}else{
+			
+			MopidyService.getCurrentTlTrack().then( function( tlTrack ){
+				if(tlTrack !== null && tlTrack !== undefined){
+					if(tlTrack.track.name.indexOf("[loading]") > -1){
+						MopidyService.lookup(tlTrack.track.uri).then(function(result){
+							setCurrentTrack(result[0]);
+						});
+					}else{
+						setCurrentTrack(tlTrack);
+					}
+				}
+			});
+		}
+	};	
+		
+
+	/**
+	 * Update browser title
+	 **/
+	function updateWindowTitle(){
+	
+		var track = state.currentTlTrack.track;
+        var newTitle = 'No track playing';
+		
+        if( track ){
+            var documentIcon = '\u25A0 ';
+            var artistString = '';
+            
+            $.each(track.artists, function(key,value){
+                if( artistString != '' )
+                    artistString += ', ';
+                artistString += value.name;
+            });
+
+            if( state.playing )
+                documentIcon = '\u25B6 ';
+
+            newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
+        };
+        
+		document.title = newTitle;
+	}
+	
+	
+	
+	/**
+	 * Update play progress position slider
+	 **/
+	$interval( 
+		function(){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+				state.playPosition += 1000;
+			}
+		},
+		1000
+	);
+	
+    
+	/**
+	 * Shortcut keys
+	 **/
+	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
+		if( state.playing ) var icon = 'pause'; else var icon = 'play';
+		service.playPause();
+		NotifyService.shortcut( icon );
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:right', function( event ){		
+		if( $rootScope.ctrlKeyHeld ){
+			service.next();
+			NotifyService.shortcut( 'forward' );
+		}
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:left', function( event ){    
+		if( $rootScope.ctrlKeyHeld ){
+			service.previous();
+			NotifyService.shortcut( 'backward' );
+		}
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:up', function( event ){
+		if( $rootScope.ctrlKeyHeld ){
+			state.volume += 10;
+			
+			// don't let the volume exceed maximum possible, 100%
+			if( state.volume >= 100 )
+				state.volume = 100;
+			service.setVolume( state.volume );
+			NotifyService.shortcut( 'volume-up' );
+		}
+    });
+	$rootScope.$on('spotmop:keyboardShortcut:down', function( event ){
+		if( $rootScope.ctrlKeyHeld ){
+			state.volume -= 10;
+			
+			// don't let the volume below minimum possible, 0%
+			if( state.volume < 0 )
+				state.volume = 0;
+			service.setVolume( state.volume );
+			NotifyService.shortcut( 'volume-down' );
+		}
+    });	
+	
+	
+	/**
+	 * Setup response object
+	 * This is the object that is available to all controllers
+	 **/
+	var service = {
+		
+		state: function(){
+			return state;
+		},
+		
+		playPause: function(){
+			if( state.playing ){
+				MopidyService.pause();
+				state.playing = false;
+			}else{
+				MopidyService.play();
+				state.playing = true;
+			}
+		},
+		
+		stop: function(){
+			MopidyService.stopPlayback();
+			state.playing = false;
+		},
+		
+		next: function(){
+		
+			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
+			if( SettingsService.getSetting('echonestenabled',false) )
+				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
+		
+			MopidyService.play();
+			MopidyService.next();
+		},
+		
+		previous: function(){
+			MopidyService.previous();
+		},
+		
+		seek: function( time ){
+			state.playPosition = time;
+			MopidyService.seek( time );
+		},
+		
+		setVolume: function( percent ){
+			state.volume = percent;
+			MopidyService.setVolume( percent );
+		},
+		
+		/**
+		 * Playback behavior toggles
+		 **/		
+		toggleRepeat: function(){
+			if( state.isRepeat )
+				MopidyService.setRepeat( false ).then( function(response){ state.isRepeat = false; } );
+			else
+				MopidyService.setRepeat( true ).then( function(response){ state.isRepeat = true; } );
+			console.log( state );
+		},		
+		toggleRandom: function(){
+			if( state.isRandom )
+				MopidyService.setRandom( false ).then( function(response){ state.isRandom = false; } );
+			else
+				MopidyService.setRandom( true ).then( function(response){ state.isRandom = true; } );
+		},		
+		toggleMute: function(){
+			if( state.isMute )
+				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
+			else
+				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
+		}
+		
+	};
+	 
+	return service;
+	
+}]);
+
+
+
+
+
+
+angular.module('spotmop.queue', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('queue', {
+			url: "/queue",
+			templateUrl: "app/queue/template.html",
+			controller: 'QueueController'
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
+	
+	$scope.totalTime = 0;
+	$scope.tracklist = { type: 'tltrack', tracks: $scope.$parent.currentTracklist };
+
+    /**
+     * Watch the current tracklist
+     * And update our totalTime when the tracklist changes
+     **/
+    $scope.$watch(
+        function( $scope ){
+            return $scope.$parent.currentTracklist;
+        },
+        function(newTracklist, oldTracklist){
+			$scope.tracklist.tracks = newTracklist;
+			calculateTotalTime( newTracklist );
+        }
+    );
+	
+    
+	/**
+	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
+	 **/
+	function calculateTotalTime( tracklist ){
+		
+		// figure out the total time for all tracks
+		var totalTime = 0;
+		$.each( tracklist, function( key, track ){
+			totalTime += track.track.length;
+		});	
+		$scope.totalTime = Math.round(totalTime / 100000);
+	};
+	
+	
+	/**
+	 * When the delete key is broadcast, delete the selected tracks
+	 **/
+	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var tracksToDelete = [];
+		
+		// build an array of tlids to remove
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			tracksToDelete.push( selectedTrack.tlid );
+		});
+		
+		// remove tracks from DOM (for snappier UX)
+		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
+		$scope.$apply( function(){
+			$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
+		});
+		
+		MopidyService.removeFromTrackList( tracksToDelete );
+	});
+	
+});
+angular.module('spotmop.search', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+	$stateProvider
+		.state('search', {
+			url: "/search/:query/:type",
+			templateUrl: "app/search/template.html",
+			controller: 'SearchController',
+			
+			// this specifies default values if there are none defined in the URL
+			params: {
+				type: { squash: true, value: 'all' },
+				query: { squash: true, value: null }
+			}
+		});
+})
+	
+/**
+ * Main controller
+ **/
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, SpotifyService ){
+	
+	$scope.tracklist = {tracks: [], type: 'track'};
+	$scope.albums = [];
+	$scope.artists = [];
+	$scope.playlists = [];
+	$scope.type = $stateParams.type;
+	$scope.query = $stateParams.query;
+	$scope.loading = false;
+	var searchDelayer;
+	
+	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
+	if( !$scope.isTouchDevice() )
+		$(document).find('.search-form input.query').focus();
+	
+	// if we've just loaded this page, and we have params, let's perform a search
+	if( $scope.query )
+		performSearch( $scope.type, $scope.query );
+	
+	/**
+	 * Watch our query string for changes
+	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
+    var tempQuery = '', queryTimeout;
+    $scope.$watch('query', function(newValue, oldValue){
+		
+		if( newValue != oldValue && newValue && newValue != '' ){
+			$scope.loading = true;
+			$scope.tracklist = {tracks: [], type: 'track'};
+			$scope.albums = [];
+			$scope.artists = [];
+			$scope.playlists = [];
+			
+			if (queryTimeout)
+				$timeout.cancel(queryTimeout);
+
+			tempQuery = newValue;
+			queryTimeout = $timeout(function() {
+				$scope.query = tempQuery;
+				performSearch( $scope.type, $scope.query );	
+			}, 1000);
+		}
+    })
+	 **/
+	
+	
+	/**
+	 * Fetch the search results
+	 * This defines the type of search requests we'll perform, and thus the page layout
+	 * @param type = string (type of search results, all/artist/playlist/album/etc)
+	 * @param query = string
+	 **/
+	function performSearch( type, query ){
+	
+		if( typeof(type) === 'undefined' )
+			var type = $scope.type;
+		
+		switch( type ){
+			
+			case 'track' :
+				SpotifyService.getSearchResults( 'track', query, 50 )
+					.then( function(response){
+						$scope.tracklist = response.tracks;
+						$scope.tracklist.tracks = response.tracks.items;
+						$scope.tracklist.type = 'track';
+						$scope.next = response.tracks.next;
+					});
+				break;
+			
+			case 'album' :
+				SpotifyService.getSearchResults( 'album', query, 50 )
+					.then( function(response){		
+						$scope.albums = response.albums;
+						$scope.next = response.albums.next;
+					});
+				break;
+					
+			case 'artist' :
+				SpotifyService.getSearchResults( 'artist', query, 50 )
+					.then( function(response){		
+						$scope.artists = response.artists;
+						$scope.next = response.artists.next;
+					});
+				break;
+					
+			case 'playlist' :
+				SpotifyService.getSearchResults( 'playlist', query, 50 )
+					.then( function(response){		
+						$scope.playlists = response.playlists;
+						$scope.next = response.playlists.next;
+					});
+				break;
+			
+			default :
+				SpotifyService.getSearchResults( 'track', query, 50 )
+					.then( function(response){
+						$scope.tracklist = response.tracks;
+						$scope.tracklist.type = 'track';
+						$scope.tracklist.tracks = response.tracks.items;
+					});	
+					
+				SpotifyService.getSearchResults( 'album', query, 50 )
+					.then( function(response){		
+						$scope.albums = response.albums;
+					});
+					
+				SpotifyService.getSearchResults( 'artist', query, 50 )
+					.then( function(response){		
+						$scope.artists = response.artists;
+					});
+					
+				SpotifyService.getSearchResults( 'playlist', query, 50 )
+					.then( function(response){		
+						$scope.playlists = response.playlists;
+							
+					});
+				break;
+		}
+	}
+	
+	
+    /**
+     * Load more results
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreResults = false;
+	
+    function loadMoreResults( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreResults = true; 
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new playlists to our existing array
+				switch( $scope.type ){
+					case 'artist':
+						$scope.artists.items = $scope.artists.items.concat( response.artists.items );
+						$scope.next = response.artists.next;
+						break;
+					case 'album':
+						$scope.albums.items = $scope.albums.items.concat( response.albums.items );
+						$scope.next = response.albums.next;
+						break;
+					case 'track':
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
+						$scope.next = response.tracks.next;
+						break;
+					case 'playlist':
+						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
+						$scope.next = response.playlists.next;
+						break;
+				}
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreResults = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreResults && typeof( $scope.next ) !== 'undefined' && $scope.next ){
+            loadMoreResults( $scope.next );
+        }
+	});
+});
+/**
+ * Create a Dialog service 
+ *
+ * This provides the framework for fullscreen popup dialogs. We have a pre-set selection
+ * of the key types of dialog.
+ **/
+ 
+angular.module('spotmop.services.dialog', [])
+
+
+/**
+ * Service to facilitate the creation and management of dialogs globally
+ **/
+.factory("DialogService", ['$rootScope', '$compile', '$interval', '$timeout', function( $rootScope, $compile, $interval, $timeout ){
+    
+	// setup response object
+    return {
+		create: function( dialogType, parentScope ){
+			
+			// prevent undefined errors
+			if( typeof(parentScope) === 'undefined' )
+				parentScope = false;
+			
+			if( $('body').children('.dialog').length > 0 ){
+				console.log('A dialog already exists...');
+				// TODO: handle what to do in this case
+			}
+			$('body').append($compile('<dialog type="'+dialogType+'" />')( parentScope ));
+		},
+		remove: function(){
+			$('body').children('.dialog').fadeOut( 200, function(){ $(this).remove() } );
+		}
+	};
+}])
+
+
+/**
+ * Directive to handle wrapping functionality
+ **/
+.directive('dialog', function( $compile ){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		scope: {
+			type: '@'
+		},
+		templateUrl: 'app/services/dialog/template.html',
+		link: function( $scope, $element ){
+			$element.find('.content').html( $compile('<'+$scope.type+'dialog />')( $scope ) );
+		},
+		controller: function( $scope, $element, DialogService ){
+			
+			$scope.closeDisabled = false;
+			if( $scope.type == 'initialsetup' )
+				$scope.closeDisabled = true;
+			
+            $scope.closeDialog = function(){
+                DialogService.remove();
+            }
+            
+			// listen for <esc> keypress
+			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
+				if( !$scope.closeDisabled )
+					DialogService.remove();
+			});
+		}
+	};
+})
+
+
+/**
+ * Dialog: Create playlist
+ * Allows user to create a playlist
+ **/
+
+.directive('createplaylistdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/createplaylist.template.html',
+		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+            $scope.saving = false;
+			$scope.playlistPublic = 'true';
+            $scope.savePlaylist = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistPublic == 'true' )
+					$scope.playlistPublic = true;
+				else
+					$scope.playlistPublic = false;
+                
+                // perform the creation
+                SpotifyService.createPlaylist(
+						$scope.$parent.spotifyUser.id,
+						{ name: $scope.playlistName, public: $scope.playlistPublic } 
+					)
+                    .then( function(response){
+                    
+                        // save new playlist to our playlist array
+                        $scope.$parent.playlists.items.push( response );
+						
+                        // fetch the new playlists (for sidebar)
+                        $scope.$parent.updatePlaylists();
+                    
+                        // and finally remove this dialog
+                        DialogService.remove();
+    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+                    });
+            }
+		}
+	};
+})
+
+
+/**
+ * Dialog: Edit playlist
+ * Allows user to rename and change public state for a playlist
+ **/
+
+.directive('editplaylistdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/editplaylist.template.html',
+		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
+            $scope.playlistNewName = $scope.$parent.playlist.name;
+            $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
+            $scope.saving = false;
+            $scope.savePlaylist = function(){
+                
+                // set state to saving (this swaps save button for spinner)
+                $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistNewPublic == 'true' )
+					$scope.playlistNewPublic = true;
+				else
+					$scope.playlistNewPublic = false;
+                
+                // actually perform the rename
+                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
+                    .then( function(response){
+                    
+                        // update the playlist's name
+                        $scope.$parent.playlist.name = $scope.playlistNewName;
+                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
+                    
+                        // fetch the new playlists (for sidebar)
+                        $scope.$parent.updatePlaylists();
+                    
+                        // and finally remove this dialog
+                        DialogService.remove();
+    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+                    });
+            }
+		}
+	};
+})
+
+
+/**
+ * Dialog: Add tracks to playlist
+ * Accepts a list of tracks, and provides a list of playlists that we can add to
+ **/
+
+.directive('addtoplaylistdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
+            
+			$scope.playlists = [];
+			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
+			
+			SpotifyService.getPlaylists( spotifyUserID, 50 )
+				.then(function( response ) {
+					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
+				});
+			
+			/**
+			 * When we select the playlist for these tracks
+			 **/
+			$scope.playlistSelected = function( playlist ){
+			
+				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );				
+				var selectedTracksUris = [];
+				
+				// construct a flat array of track uris
+				angular.forEach( selectedTracks, function( track ){
+					
+					// accommodate TlTrack objects, with their nested track objects
+					if( typeof( track.track ) !== 'undefined' )
+						selectedTracksUris.push( track.track.uri );
+					
+					// not TlTrack, so not nested
+					else
+						selectedTracksUris.push( track.uri );					
+				});
+				
+				// get Spotify involved...
+				SpotifyService.addTracksToPlaylist( playlist.uri, selectedTracksUris )
+					.then( function(response){
+					
+						// remove this dialog, and initiate standard notification
+						DialogService.remove();
+						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
+						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
+					});
+			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Control volume of Mopidy
+ * Facilitates more fiddly controls, useful for touch devices
+ **/
+
+.directive('volumecontrolsdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/volumecontrols.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
+			$scope.state = function(){
+				return PlayerService.state();
+			}
+			$scope.setVolume = function( event ){
+				var slider, offset, position, percent;
+				if( $(event.target).hasClass('slider') )
+					slider = $(event.target);
+				else
+					slider = $(event.target).closest('.slider');
+				
+				// calculate the actual destination seek time
+				offset = slider.offset();
+				position = event.pageX - offset.left;
+				percent = position / slider.innerWidth() * 100;
+				percent = parseInt(percent);
+				
+				PlayerService.setVolume( percent );
+			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Setup new user
+ * Initial setup
+ **/
+
+.directive('initialsetupdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/initialsetup.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
+            $scope.saving = false;
+            $scope.save = function(){                
+				if( $scope.name && $scope.name != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// perform the creation
+					SettingsService.setSetting('pushername', $scope.name);
+					DialogService.remove();
+				}else{
+					$scope.error = true;
+				}
+            }
+		}
+	};
+});
+
+
+
+
+
+
+
+
+
+/**
+ * Create an Echonest service
+ *
+ * This holds all of the Echonest API calls, and returns the response (or promise)
+ * back to the caller.
+ * @return dataFactory array
+ **/
+ 
+angular.module('spotmop.services.echonest', [])
+
+.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$cacheFactory', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $cacheFactory, $q, SettingsService ){
+    
+    var baseURL = 'http://developer.echonest.com/api/v4/';
+    var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
+	
+	// setup response object
+    return {
+        
+        isOnline: false,
+        
+        start: function(){
+            
+            SettingsService.setSetting('echonestenabled',true);
+            
+            // if we don't have a taste profile, make one
+            if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
+                this.createTasteProfile()
+                    .success( function(response){ 
+                        SettingsService.setSetting('echonesttasteprofileid', response.response.id);
+                        this.isOnline = true;
+                        $rootScope.echonestOnline = true;
+                    })
+                    .error( function(error){
+                        this.isOnline = false;
+                        $rootScope.echonestOnline = false;
+                    });
+            }else{
+                this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
+                    .success( function(response){
+                        this.isOnline = true;
+                        $rootScope.echonestOnline = true;
+                        $localStorage.echonesttasteprofile = response.response.catalog;
+                    })
+                    .error( function(error){
+                        this.isOnline = false;
+                        $rootScope.echonestOnline = false;
+                    });
+            }
+        },
+        
+        stop: function(){            
+            SettingsService.setSetting('echonestenabled',false);            
+            $rootScope.echonestOnline = false;
+        },
+		
+        /**
+         * Taste Profile
+         **/
+		createTasteProfile: function(){
+            return $.ajax({
+                url: baseURL+'catalog/create',
+                method: "POST",
+                data: {
+                        api_key: apiKey,
+                        format: 'json',
+                        type: 'general',
+                        name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
+                    }
+            });
+        },
+        
+		getTasteProfile: function(){
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+            return $.ajax({
+                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
+                method: "GET"
+            });
+        },
+        
+		
+		/**
+		 * Add a number of trackids to the taste profile
+		 * NOTE: This hasn't been upgraded to return a deferred.promise because of CORS issue when using $http instead of $ajax ... need to investigate
+		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
+		 * @param trackid = string|array spotify uri
+		 * @param favorite = boolean (optional) add these track(s) as favorites
+		 * @return ajax request
+		 **/
+		addToTasteProfile: function( action, trackid ){
+			
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var requestData = [];
+			var trackids = [];
+			
+			// if we've been given a single string, wrap it in an array
+			if( typeof( trackid ) === 'string' ){
+				trackids = [trackid];
+			}else{
+				trackids = trackid;
+			}
+			
+			// loop all the trackids (even if a single one, wrapped in an array)
+			angular.forEach( trackids, function( trackid ){
+			
+				// add each to our request payload
+				requestData.push( {
+								action: action,
+								item: {
+									track_id: trackid
+								}
+							} );
+			});
+		
+            return $.ajax({
+                url: baseURL+'tasteprofile/update',
+                method: "POST",
+				data: {
+						api_key: apiKey,
+						format: 'json',
+						data_type: 'json',
+						id: profileID,
+						data: JSON.stringify( requestData )
+					}
+            });
+        },
+        
+        
+        /**
+         * Get artist
+         **/
+		getArtistBiography: function( artistid ){
+		
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+        },
+		
+        
+        /**
+         * Recommended content
+		 * We disable caching on these calls because a single track play will alter the recommendations returned
+         **/
+		 
+		/**
+		 * Recommend artists based on another artist (or on our taste profile)
+		 * @param artistname = array of artist objects (optional)
+		 * @return promise
+		 **/
+		recommendedArtists: function( artists ){
+		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			
+			// no artist provided, so seed based on our taste profile
+			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
+				var seed = '&seed_catalog='+profileID;
+				
+			// the artist name
+			}else{
+				var seed = '';				
+				angular.forEach( artists, function(artist){
+					seed += '&name='+artist.name_encoded;
+				});
+			}
+			
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		favoriteArtists: function(){		
+		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		catalogRadio: function(){		
+		
+			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+            var deferred = $q.defer();
+
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
+                    deferred.reject("Failed to get albums");
+                });
+				
+            return deferred.promise;
+        },
+		
+		startArtistRadio: function( artistname ){
+		
+            var deferred = $q.defer();
+			
+            $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
+                    deferred.reject("Failed to create artist radio");
+                });
+				
+            return deferred.promise;
+        }
+	};
+}]);
+
+
+
+
+
+
+/**
+ * Create a LastFM service 
+ *
+ * This holds all of the LastFM API calls, and returns the response (or promise)
+ * back to the caller.
+ * @return dataFactory array
+ **/
+ 
+angular.module('spotmop.services.lastfm', [])
+
+.factory("LastfmService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, NotifyService ){
+	
+	// setup response object
+    var service = {
+		
+		/**
+		 * Perform an API lookup
+		 * @param params = string (url params)
+		 * @return promise
+		 **/
+		sendRequest: function( params ){
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'?format=json&api_key='+apiKey+'&'+params
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+
+		trackInfo: function( artist, track ){
+			return this.sendRequest('method=track.getInfo&track='+track+'&artist='+artist);
+		},
+
+		albumInfo: function( artist, album ){
+			return this.sendRequest('method=album.getInfo&album='+album+'&artist='+artist);
+		},
+
+		artistInfo: function( artist ){
+			return this.sendRequest('method=artist.getInfo&artist='+artist);
+		}
+	};
+	
+	// specify the base URL for the API endpoints
+    var urlBase = 'http://ws.audioscrobbler.com/2.0';
+	var apiKey = SettingsService.getSetting("lastfmkey", '4320a3ef51c9b3d69de552ac083c55e3');
+	
+	// and finally, give us our service!
+	return service;
+}]);
+
+
+
+
+
+
+
+
+
+
+/*
+ * Inspired and mostly coming from MartijnBoland's MopidyService.js
+ * https://github.com/martijnboland/moped/blob/master/src/app/services/mopidyservice.js
+ */
+'use strict';
+
+angular.module('spotmop.services.mopidy', [
+    //"spotmop.services.settings",
+    //'llNotifier'
+])
+
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
+	
+	// Create consolelog object for Mopidy to log it's logs on
+    var consoleLog = function () {};
+    var consoleError = console.error.bind(console);
+
+    /*
+     * Wrap calls to the Mopidy API and convert the promise to Angular $q's promise.
+     * 
+     * @param String functionNameToWrap
+     * @param Object thisObj
+     */
+	function wrapMopidyFunc(functionNameToWrap, thisObj) {
+		return function() {
+			var deferred = $q.defer();
+			var args = Array.prototype.slice.call(arguments);
+			var self = thisObj || this;
+            
+			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
+
+			if (self.isConnected) {
+				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
+					deferred.resolve(data);
+					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
+				}, function(err) {
+					deferred.reject(err);
+					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
+				});
+			}else{
+				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
+					deferred.resolve(data);
+					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
+				}, function(err) {
+					deferred.reject(err);
+					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
+				});
+			}
+			return deferred.promise;
+		};
+	}
+
+	/*
+     * Execute the given function
+     * 
+     * @param String functionName
+     * @param Object thisObj
+	 * @param Array args
+     */
+	function executeFunctionByName(functionName, context, args){
+		
+		var namespaces = functionName.split(".");
+		var func = namespaces.pop();
+        
+		for(var i = 0; i < namespaces.length; i++){
+			context = context[namespaces[i]];
+		}
+
+		return context[func].apply(context, args);
+	}
+
+	return {
+		mopidy: {},
+		isConnected: false,
+		
+		testMethod: function( uri ){
+			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uri });
+		},
+		
+		/*
+		 * Method to start the Mopidy conneciton
+		 */
+		start: function(){
+            var self = this;
+
+			// Emit message that we're starting the Mopidy service
+			$rootScope.$broadcast("spotmop:startingmopidy");
+
+            // Get mopidy ip and port from settigns
+            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
+            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+			
+			// Initialize mopidy
+            try{
+    			this.mopidy = new Mopidy({
+    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
+    				callingConvention: 'by-position-or-by-name'
+    			});
+		
+				// this gives us a handy list of all functions available via mopidy
+				// console.log( this.mopidy );
+            }
+			catch(e){
+                // need to re-initiate notifier
+				console.log( "Connecting with Mopidy failed with the following error message: " + e);
+                // Try to connect without a given url
+                this.mopidy = new Mopidy({
+                    callingConvention: 'by-position-or-by-name'
+                });
+            }
+			
+			this.mopidy.on(consoleLog);
+			
+			// Convert Mopidy events to Angular events
+			this.mopidy.on(function(ev, args) {
+				$rootScope.$broadcast('mopidy:' + ev, args);
+				if (ev === 'state:online') {
+					self.isConnected = true;
+				}
+				if (ev === 'state:offline') {
+					self.isConnected = false;
+				}
+			});
+
+			$rootScope.$broadcast('spotmop:mopidystarted', this);
+		},
+		stop: function() {
+			$rootScope.$broadcast('spotmop:mopidystopping');
+			this.mopidy.close();
+			this.mopidy.off();
+			this.mopidy = null;
+			$rootScope.$broadcast('spotmop:mopidystopped');
+		},
+		restart: function() {
+			this.stop();
+			this.start();
+		},
+		getPlaylists: function() {
+			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
+		},
+		getPlaylist: function(uri) {
+			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		},
+		getLibrary: function() {
+			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
+		},
+		getLibraryItems: function(uri) {
+			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: uri });
+		},
+		refresh: function(uri) {
+			return wrapMopidyFunc("mopidy.library.refresh", this)({ uri: uri });
+		},
+		getDirectory: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		},
+		getTrack: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		},
+		getTracks: function(uris) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uris: uris });
+		},
+		getAlbum: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		},
+		getArtist: function(uri) {
+			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
+		},
+		search: function(query) {
+			return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
+		},
+		getCurrentTrack: function() {
+			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
+		},
+		getCurrentTlTrack: function() {
+			return wrapMopidyFunc("mopidy.playback.getCurrentTlTrack", this)();
+		},
+		moveTlTracks: function( start, end, to_position ) {
+			return wrapMopidyFunc("mopidy.tracklist.move", this)({ start: start, end: end, to_position: to_position });
+		},
+		getTimePosition: function() {
+			return wrapMopidyFunc("mopidy.playback.getTimePosition", this)();
+		},
+		seek: function(timePosition) {
+			return wrapMopidyFunc("mopidy.playback.seek", this)({ time_position: timePosition });
+		},
+		getVolume: function() {
+			return wrapMopidyFunc("mopidy.playback.getVolume", this)();
+		},
+		setVolume: function(volume) {
+			return wrapMopidyFunc("mopidy.playback.setVolume", this)({ volume: volume });
+		},
+		getMute: function(){
+			return wrapMopidyFunc("mopidy.playback.getMute", this)();
+		},
+		setMute: function( isMute ){
+			return wrapMopidyFunc("mopidy.playback.setMute", this)([ isMute ]);
+		},
+		getState: function() {
+			return wrapMopidyFunc("mopidy.playback.getState", this)();
+		},
+		playTrack: function(newTracklistUris, trackToPlayIndex) {
+			var self = this;
+
+			// stop playback
+			return self.mopidy.playback.stop()
+				.then(function() {
+
+					// clear the current tracklist
+					return self.mopidy.tracklist.clear();
+
+				}, consoleError)
+				.then(function() {
+
+					// add the surrounding tracks (ie the whole tracklist in focus)
+					return self.mopidy.tracklist.add({ uris: newTracklistUris });
+
+				}, consoleError)
+				.then(function() {
+
+					// get the new tracklist
+					return self.mopidy.tracklist.getTlTracks()
+						.then(function(tlTracks) {
+
+							// save tracklist for later
+							self.currentTlTracks = tlTracks;
+
+							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
+				}, consoleError);
+			}, consoleError);
+		},
+		playTlTrack: function( tlTrack ){
+		
+			// add to taste profile
+			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
+			
+            return this.mopidy.playback.play( tlTrack );
+		},
+		playStream: function( streamUri, expectedTrackCount ){
+			
+			var self = this;
+			
+			// pre-fetch our playlist tracks
+			self.mopidy.library.lookup({ uri: streamUri })
+				.then( function(tracks){
+					
+					// if we haven't got as many tracks as expected
+					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
+					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
+						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 2 seconds for server to pre-load playlist...');
+						$timeout( function(){
+							playStream();
+						}, 2000 );
+						
+					// we have the expected track count already (already loaded/cached), go-go-gadget!
+					}else{
+						playStream();
+					}
+				}, consoleError );
+			
+			// play the stream
+			function playStream(){
+				self.stopPlayback(true)
+					.then(function() {
+						self.mopidy.tracklist.clear();
+					}, consoleError)
+					.then(function() {
+						self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
+					}, consoleError)
+					.then(function() {
+						self.mopidy.playback.play();
+					}, consoleError);			
+			}
+		},
+		play: function(){
+			return wrapMopidyFunc("mopidy.playback.play", this)();
+		},
+		pause: function() {
+			return wrapMopidyFunc("mopidy.playback.pause", this)();
+		},
+		stopPlayback: function(clearCurrentTrack) {
+			return wrapMopidyFunc("mopidy.playback.stop", this)();
+		},
+		previous: function() {
+			return wrapMopidyFunc("mopidy.playback.previous", this)();
+		},
+		next: function() {		
+			var name = SettingsService.getSetting('pushername', 'User');      
+			var ip = SettingsService.getSetting('pusherip', null);      
+            PusherService.send({
+                title: 'Track skipped',
+                body: name +' vetoed this track!',
+                clientip: ip,
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+            });
+			return wrapMopidyFunc("mopidy.playback.next", this)();
+		},
+		getRepeat: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getRepeat", this)();
+		},
+		setRepeat: function( isRepeat ){
+			return wrapMopidyFunc("mopidy.tracklist.setRepeat", this)([ isRepeat ]);
+		},
+		getRandom: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getRandom", this)();
+		},
+		setRandom: function( isRandom ) {
+			return wrapMopidyFunc("mopidy.tracklist.setRandom", this)([ isRandom ]);
+		},
+		getConsume: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getConsume", this)();
+		},
+		setConsume: function( isConsume ) {
+			return wrapMopidyFunc("mopidy.tracklist.setConsume", this)([ isConsume ]);
+		},
+		getCurrentTrackList: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+		},
+		getCurrentTlTracks: function () {
+			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
+		},
+		addToTrackList: function( uris, atPosition ){
+			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
+			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
+		},
+		removeFromTrackList: function( tlids ){
+			var self = this;
+			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
+				return true;
+			});
+		}
+
+	};
+});
+
+/**
+ * Notifications service
+ *
+ * Provides framework of simple user-oriented notification messages.
+ * Also includes HTML5 browser notifications.
+ **/
+ 
+angular.module('spotmop.services.notify', [])
+
+
+/**
+ * Service to facilitate the creation and management of dialogs globally
+ **/
+.factory("NotifyService", ['$rootScope', '$compile', '$interval', '$timeout', 'SettingsService', function( $rootScope, $compile, $interval, $timeout, SettingsService ){
+    
+	// setup response object
+    return {
+	
+		/**
+		 * Create a new notification item
+		 * @param message = string (body of message)
+		 * @param duration = int (how long to hold message) optional
+		 **/
+		notify: function( message, duration ){
+		
+			if( typeof(duration) === 'undefined' )
+				var duration = 2500;
+			
+			var notification = $('<notification class="notification default">'+message+'</notification>');
+			$('#notifications').append( notification );
+			
+			// hide in when we meet our duration
+			// remember that we can disable hide by parsing duration=false
+			if( duration )
+				$timeout(
+					function(){
+						notification.fadeOut(200, function(){ notification.remove() } );
+					},
+					duration
+				);
+		},
+	
+		/**
+		 * Error message
+		 * @param icon = string (icon type to use)
+		 * @param duration = int (how long to hold message) optional
+		 **/
+		error: function( message, duration ){
+		
+			if( typeof(duration) === 'undefined' )
+				var duration = 2500;
+			
+			var notification = $('<notification class="notification error">'+message+'</notification>');
+			$('#notifications').append( notification );
+			
+			// hide in when we meet our duration
+			// remember that we can disable hide by parsing duration=false
+			if( duration )
+				$timeout(
+					function(){
+						notification.fadeOut(200, function(){ notification.remove() } );
+					},
+					duration
+				);
+		},
+	
+		/**
+		 * When a shortcut is triggered, notify, growl styles
+		 * @param icon = string (icon type to use)
+		 **/
+		shortcut: function( icon ){
+			
+			$('#notifications').find('notification.keyboard-shortcut').remove();
+			
+			var notification = $('<notification class="notification keyboard-shortcut"><i class="fa fa-'+icon+'"></i></notification>');
+			$('#notifications').append( notification );
+			
+			$timeout(
+				function(){
+					notification.fadeOut(200, function(){ notification.remove() } );
+				},
+				1500
+			);
+		},
+		
+		/**
+		 * HTML5 browser notifications
+		 * @param title = string
+		 * @param body = string
+		 * @param icon = string (optional)
+		 **/
+		browserNotify: function( title, body, icon ){
+				
+			// disabled by user
+			if( SettingsService.getSetting('notificationsDisabled', false) )
+				return false;
+	
+			// Determine the correct object to use
+			var notification = window.Notification || window.mozNotification || window.webkitNotification;
+		
+			// not supported
+			if ('undefined' === typeof notification)
+				return false;
+
+			// The user needs to allow this
+			if ('undefined' !== typeof notification)
+				notification.requestPermission(function(permission){});
+				
+			if( typeof(icon) === 'undefined' )
+				var icon = '';
+			
+			var trackNotification = new notification(
+				title,
+				{
+					body: body,
+					dir: 'auto',
+					lang: 'EN',
+					tag: 'spotmopNotification', 
+					icon: icon
+				}
+			);
+			
+			return true;
+		}
+	};
+}])
+
+
+/**
+ * Behavior for the notification itself
+ **/
+.directive("notification", function(){
+	
+	return {		
+		restrict: 'AE',
+		link: function($scope, $element, $attrs){
+			console.log( $element );
+		}
+	}
+});
+
+
+
+
+
+
+
+
+
+'use strict';
+
+angular.module('spotmop.services.pusher', [
+])
+
+.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, SettingsService, NotifyService){
+
+	// make sure we have a local storage container
+	if( typeof( $localStorage.pusher ) === 'undefined' )
+		$localStorage.pusher = {};
+		
+	// build the endpoint string
+	var urlBase = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+	urlBase += ':'+ SettingsService.getSetting('mopidyport', '6680');
+	urlBase += '/spotmop/';
+    
+	var service = {
+		pusher: {},
+		
+		isConnected: false,
+		
+		start: function(){
+            var self = this;
+
+            // Get mopidy ip and port from settigns
+            var pusherhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
+            var pusherport = SettingsService.getSetting("pusherport", "6681");
+			
+            try{
+				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
+				var pusher = new WebSocket(host);
+
+				pusher.onopen = function(){
+					$rootScope.$broadcast('spotmop:pusher:online');
+					this.isConnected = true;
+				}
+
+				pusher.onmessage = function( response ){
+                    
+					var data = JSON.parse(response.data);
+					
+					// if this is a pusher message (because Mopidy uses websockets too!)
+					if( data.pusher ){
+					
+                        // if it's an initial connection status message, just parse it through quietly
+                        if( data.startup ){
+                            console.info('Pusher connected as '+data.details.id);
+                            SettingsService.setSetting('pusherid', data.details.id);
+                            SettingsService.setSetting('pusherip', data.details.ip);
+                            
+                            // detect if the core has been updated
+                            if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
+                                NotifyService.notify('New version detected, clearing caches...');      
+                                $cacheFactory.get('$http').removeAll();                        
+                                SettingsService.setSetting('spotmopversion', data.version);
+                            }
+							
+                            // notify server of our actual username
+                            var name = SettingsService.getSetting('pushername', null)
+                            if( name )
+                                service.setMe( name );
+                        
+                        // standard notification, fire it out!
+                        }else{
+                            // make sure we're not notifying ourselves
+                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
+                                $rootScope.$broadcast('spotmop:pusher:received', data);
+                        }
+					}
+				}
+
+				pusher.onclose = function(){
+					$rootScope.$broadcast('spotmop:pusher:offline');
+					service.isConnected = false;
+                    setTimeout(function(){ service.start() }, 5000);
+				}
+				
+				service.pusher = pusher;
+            }catch(e){
+                // need to re-initiate notifier
+				console.log( "Connecting with Pusher failed with the following error message: " + e);
+            }
+		},
+		
+		stop: function() {
+			this.pusher = null;
+			this.isConnected = false;
+		},
+		
+		send: function( data ){
+			data.pusher = true;
+			data.id = SettingsService.getSetting('pusherid',null);
+			service.pusher.send( JSON.stringify(data) );
+		},
+        
+        /**
+         * Notify the Pusher service of our name
+         * @param name (string)
+         * @return deferred promise
+         **/
+        setMe: function( name ){
+            var id = SettingsService.getSetting('pusherid', null);
+            $.ajax({
+                method: 'GET',
+                cache: false,
+                url: urlBase+'pusher/me?id='+id+'&name='+name
+            });
+        },
+        
+        /**
+         * Get a list of all active connections
+         **/
+        getConnections: function(){
+            var deferred = $q.defer();
+            $http({
+                    method: 'GET',
+                    cache: false,
+                    url: urlBase+'pusher/connections'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+        }
+	};
+    
+    return service;
+});
+
+/**
+ * Create a Spotify service 
+ *
+ * This holds all of the Spotify API calls, and returns the response (or promise)
+ * back to the caller.
+ * @return dataFactory array
+ **/
+ 
+angular.module('spotmop.services.spotify', [])
+
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, NotifyService ){
+	
+	// setup response object
+    var service = {
+		
+		start: function(){
+	
+			// inject our authorization frame, on the placeholder action
+			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
+			$(body).append(frame);
+			
+			// set container for spotify storage
+			if( typeof($localStorage.spotify) === 'undefined' )
+				$localStorage.spotify = {};
+				
+			if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
+				$localStorage.spotify.AccessToken = null;
+				
+			if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
+				$localStorage.spotify.RefreshToken = null;
+				
+			if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
+				$localStorage.spotify.AuthorizationCode = null;
+				
+			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
+				$localStorage.spotify.AccessTokenExpiry = null;
+			
+			// listen for incoming messages from the authorization iframe
+			window.addEventListener('message', function(event){
+				
+				// only allow incoming data from our authorized authenticator proxy
+				if( event.origin !== "http://jamesbarnsley.co.nz" )
+					return false;
+				
+				// convert to json
+				var data = JSON.parse(event.data);
+				
+				console.info('Spotify authorization successful');
+				
+				// take our returned data, and save it to our localStorage
+				$localStorage.spotify.AuthorizationCode = data.authorization_code;
+				$localStorage.spotify.AccessToken = data.access_token;
+				$localStorage.spotify.RefreshToken = data.refresh_token;
+				$rootScope.spotifyOnline = true;
+				$rootScope.$broadcast('spotmop:spotify:online');
+			}, false);
+			
+			
+			/**
+			 * The real starter
+			 **/
+			if( this.isAuthorized() ){
+				$rootScope.$broadcast('spotmop:spotify:online');
+			}else{
+				this.authorize();
+			}
+		},
+		
+		logout: function(){
+			$localStorage.spotify = {};
+			$rootScope.spotifyOnline = false;
+		},
+		
+		/**
+		 * Authorize this Spotmop instance with a Spotify account
+		 * This is only needed once (in theory) for this account on this device. It is used to acquire access tokens (which expire)
+		 **/
+		authorize: function(){
+			var frame = $(document).find('#authorization-frame');
+			frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
+		},
+		
+		isAuthorized: function(){
+			if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken )
+				return true;
+			return false;
+		},
+		
+		/**
+		 * Refresh our existing credentials, by parsing our Authorization refresh_token
+		 **/
+        refreshToken: function(){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
+					dataType: "json",
+					async: false,
+					timeout: 10000
+				})
+                .success(function( response ){
+					
+					// check for error response
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error('Spotify authorization error: '+response.error_description);
+						$rootScope.spotifyOnline = false;
+						deferred.reject( response.error.message );
+					}else{
+						$localStorage.spotify.AccessToken = response.access_token;
+						$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
+						$rootScope.spotifyOnline = true;					
+						deferred.resolve( response );
+					}
+                });
+				
+            return deferred.promise;
+        },
+        
+		/**
+		 * Get an element from a URI
+		 * @param element = string, the element we wish to extract
+		 * @param uri = string
+		 **/
+		getFromUri: function( element, uri ){
+			var exploded = uri.split(':');			
+			if( element == 'userid' && exploded[1] == 'user' )
+				return exploded[2];				
+			if( element == 'playlistid' && exploded[3] == 'playlist' )
+				return exploded[4];
+			if( element == 'artistid' && exploded[1] == 'artist' )
+				return exploded[2];				
+			if( element == 'albumid' && exploded[1] == 'album' )
+				return exploded[2];				
+			if( element == 'trackid' && exploded[1] == 'track' )
+				return exploded[2];				
+			return null;
+		},
+        
+		/**
+		 * Identify what kind of asset a URI is (playlist, album, etc)
+		 * @param uri = string
+		 * @return string
+		 **/
+		uriType: function( uri ){
+			var exploded = uri.split(':');
+			if( exploded[0] == 'spotify' && exploded[1] == 'artist' )
+				return 'artist';		
+			if( exploded[0] == 'spotify' && exploded[1] == 'album' )
+				return 'album';		
+			if( exploded[0] == 'spotify' && exploded[1] == 'user' && exploded[3] == 'playlist' )
+				return 'playlist';		
+			return null;
+		},
+        
+        /**
+         * Generic calls
+         */
+        getUrl: function( $url ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: $url,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error(response.error.message);
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+        },
+        
+        /**
+         * Users
+         **/
+        
+        getMe: function(){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+        },
+        
+        getUser: function( useruri ){
+		
+			var userid = this.getFromUri( 'userid', useruri );
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'users/'+userid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+        },
+		
+		isFollowing: function( type, uri ){
+			
+			var id = this.getFromUri( type+'id', uri );
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/following/contains?type='+type+'&ids='+id,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+        
+        
+        /**
+         * Track based requests
+         **/
+	
+		getTrack: function( trackuri ){
+			
+			var trackid = this.getFromUri('trackid', trackuri);
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'tracks/'+trackid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+        
+	
+		/**
+		 * Library requests
+		 * These are mostly /me related
+		 **/   
+		
+		getMyTracks: function( userid ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/tracks/',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		}, 
+		
+		addTracksToLibrary: function( trackids ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'me/tracks',
+					dataType: "json",
+					data: JSON.stringify( { ids: trackids } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		deleteTracksFromLibrary: function( trackids ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					url: urlBase+'me/tracks',
+					dataType: "json",
+					data: JSON.stringify( { ids: trackids } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getMyArtists: function( userid ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/following?type=artist',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		isFollowingArtist: function( artisturi, userid ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		followArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		unfollowArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					cache: false,
+					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+	
+		/**
+		 * Playlist-oriented requests
+		 **/     
+		
+		getPlaylists: function( userid, limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+				
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getPlaylist: function( playlisturi ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+				
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		isFollowingPlaylist: function( playlisturi, ids ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		followPlaylist: function( playlisturi ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		unfollowPlaylist: function( playlisturi ){
+			
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'DELETE',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		featuredPlaylists: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
+			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
+			var country = SettingsService.getSetting('countrycode','NZ');
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		addTracksToPlaylist: function( playlisturi, tracks ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'POST',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					//url: urlBase+'users/'+$localStorage.spotify.userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify( { uris: tracks } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
+            
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+            if( userid != SettingsService.getSetting('spotifyuserid',null) )
+                return false;
+			
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify({
+						range_start: range_start,
+						range_length: range_length,
+						insert_before: insert_before
+					}),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		deleteTracksFromPlaylist: function( playlisturi, snapshotid, positions ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+            var deferred = $q.defer();
+			
+            $http({
+					method: 'DELETE',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/tracks',
+					dataType: "json",
+					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		// create a new playlist
+		// @param userid id of the user to own this playlist (usually self)
+		// @param data json array {name: "Name", public: boolean}
+		createPlaylist: function( userid, data ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'POST',
+					url: urlBase+'users/'+userid+'/playlists/',
+					dataType: "json",
+					data: data,
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		// update a playlist's details
+		// @param playlisturi
+		// @param data json array {name: "Name", public: boolean}
+		updatePlaylist: function( playlisturi, data ){
+			
+			// get the user and playlist ids from the uri
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'PUT',
+					url: urlBase+'users/'+userid+'/playlists/'+playlistid,
+					dataType: "json",
+					data: data,
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		/**
+		 * Discover
+		 **/
+		newReleases: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		discoverCategories: function( limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getCategory: function( categoryid ){
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories/'+categoryid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getCategoryPlaylists: function( categoryid, limit ){
+			
+			if( typeof( limit ) === 'undefined' )
+				limit = 40;
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		/**
+		 * Artist
+		 **/
+		 
+		getArtist: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		 
+		getArtists: function( artisturis ){
+			
+			var self = this;
+			var artistids = '';
+			angular.forEach( artisturis, function( artisturi ){
+				if( artistids != '' ) artistids += ',';
+				artistids += self.getFromUri( 'artistid', artisturi );
+			});
+			
+            var deferred = $q.defer();
+
+            $http({
+					method: 'GET',
+					url: urlBase+'artists/?ids='+artistids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getAlbums: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getAlbum: function( albumuri ){
+						
+            var deferred = $q.defer();			
+			var albumid = this.getFromUri( 'albumid', albumuri );
+
+            $http({
+					method: 'GET',
+					url: urlBase+'albums/'+albumid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getTopTracks: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getRelatedArtists: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/related-artists',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		/**
+		 * Search results
+		 * @param type = string (album|artist|track|playlist)
+		 * @param query = string (search term)
+		 * @param limit = int (optional)
+		 **/
+		getSearchResults: function( type, query, limit ){
+		
+			if( typeof( limit ) === 'undefined' ) limit = 10;
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		}
+	};
+	
+	// specify the base URL for the API endpoints
+    var urlBase = 'https://api.spotify.com/v1/';
+	var country = SettingsService.getSetting("spotifycountry", 'NZ');
+	var locale = SettingsService.getSetting("spotifylocale", "en_NZ");
+	
+	// and finally, give us our service!
+	return service;
+}])
+
+
+
+/**
+ * Authentication Intercepter which checks spotify's requests results for a 401 error
+ * SOURCE: https://github.com/dirkgroenen
+ **/
+.factory('SpotifyServiceIntercepter', function SpotifyServiceIntercepter($q, $rootScope, $injector, $localStorage){ 
+
+    "use strict";
+	var retryCount = 0;
+	
+	/**
+	 * Retry an originating request
+	 * Used when re-authentication has occured, and we're ready to try with new details
+	 **/
+	function retryHttpRequest(config, deferred, newAccessToken){
+		function successCallback(response){
+			deferred.resolve(response);
+		}
+		function errorCallback(response){
+			deferred.reject(response);
+		}
+		var $http = $injector.get('$http');
+		
+		// replace the access token with our new one
+		config.headers = { Authorization: 'Bearer '+ newAccessToken };
+		
+		// run the original request, which will then return the original callbacks
+		$http(config).then(successCallback, errorCallback);
+	}
+	
+	
+	/**
+	 * Response interceptor object
+	 **/
+    var interceptor = {	
+		responseError: function( response ){
+			
+			// check that it is a spotify request, and not a failed token request
+			// also limit to 3 retries
+			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
+					
+				retryCount++;
+				var deferred = $q.defer();				
+				
+				// if we're already authorized, we just need to force a token refresh
+				if( $injector.get('SpotifyService').isAuthorized() ){
+				
+					// refresh the token
+					$injector.get('SpotifyService').refreshToken()
+						.then( function(refreshResponse){
+							
+							// make sure our refresh request didn't error, otherwise we'll create an infinite loop
+							if( typeof(refreshResponse.error) !== 'undefined' )
+								return response;
+								
+							retryCount--;
+							
+							// now retry the original request
+							retryHttpRequest( response.config, deferred, refreshResponse.access_token );
+						});
+					
+					return deferred.promise;
+		
+				// not yet authorized, so authorize!
+				// this requires user interaction, so let's just allow the original request to fail
+				}else{
+					
+					// remove our current authorization, just to clear the decks
+					$localStorage.spotify = {};
+					$rootScope.spotifyOnline = false;
+					
+					// and re-authorize
+					$injector.get('SpotifyService').authorize();	
+					retryCount--;
+					return response;
+				}
+			}
+			
+			return response;
+		}
+    };
+
+    return interceptor;
+});
+
+
+
+
+
+
+
+
+
+
+'use strict';
+
+angular.module('spotmop.settings', [])
+
+/**
+ * Routing 
+ **/
+.config(function($stateProvider) {
+		
+	$stateProvider
+		.state('settings', {
+			url: "/settings",
+			templateUrl: "app/settings/template.html"
+		});
+})
+	
+/**
+ * Main controller
+ **/	
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
+	
+	// load our current settings into the template
+	$scope.version;
+	$scope.settings = SettingsService.getSettings();
+	$scope.currentSubpage = 'mopidy';
+	$scope.subpageNavigate = function( subpage ){
+		$scope.currentSubpage = subpage;
+	};
+    $scope.refreshSpotifyToken = function(){
+		NotifyService.notify( 'Refreshing token' );
+        SpotifyService.refreshToken().then( function(){});
+    };
+    $scope.spotifyLogout = function(){
+        SpotifyService.logout();
+    };
+	$scope.upgrade = function(){
+		NotifyService.notify( 'Upgrade started' );
+		SettingsService.upgrade()
+			.then( function(response){				
+				if( response.status == 'error' )
+					NotifyService.error( response.message );
+				else
+					NotifyService.notify( response.message );
+			});
+	}
+	
+	// some settings need extra behavior attached when changed
+	$rootScope.$on('spotmop:settings:changed', function( event, data ){
+		switch( data.name ){
+			case 'mopidyconsume':
+				MopidyService.setConsume( data.value );
+				break;
+			case 'echonestenabled':
+				if( data.value )
+					EchonestService.start();
+				else
+					EchonestService.stop();
+				break;
+		}				
+	});
+	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		MopidyService.getConsume().then( function( isConsume ){
+			SettingsService.setSetting('mopidyconsume',isConsume);
+		});
+	});
+	
+	$scope.deleteEchonestTasteProfile = function( confirmed ){
+		if( confirmed ){
+			NotifyService.notify( 'Profile deleted and Echonest disabled' );
+			SettingsService.setSetting('echonesttasteprofileid',null);
+            EchonestService.stop();			
+		}
+	};
+	$scope.resetSettings = function(){
+		NotifyService.notify( 'All settings reset... reloading' );		
+		localStorage.clear();		
+		location.reload();
+	};
+	
+	SettingsService.getVersion()
+		.then( function(response){
+			$scope.version = response;
+		});
+	
+	// save the fields to the localStorage
+	// this is fired when an input field is blurred
+	$scope.saveField = function( event ){
+		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
+	};	
+	$scope.savePusherName = function( name ){
+		PusherService.setMe( name );
+		SettingsService.setSetting( 'pushername', name );
+	};	
+    
+    PusherService.getConnections()
+        .then( function(connections){
+            $scope.clientConnections = connections;
+        });
+});
+
+/**
+ * Create a Settings service
+ *
+ * This holds all of the calls for system settings, local storage included
+ **/
+ 
+angular.module('spotmop.services.settings', [])
+
+.factory("SettingsService", ['$rootScope', '$localStorage', '$interval', '$http', '$q', function( $rootScope, $localStorage, $interval, $http, $q ){
+	
+	// make sure we have a settings container
+	if( typeof( $localStorage.settings ) === 'undefined' )
+		$localStorage.settings = {};
+    
+	// setup response object
+	service = {
+		
+		setSetting: function( setting, value ){
+			// unsetting?
+			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
+				delete $localStorage.settings[setting];			
+			// setting
+            else
+				$localStorage.settings[setting] = value;
+		},
+		
+		getSetting: function( setting, defaultValue ){
+			if( typeof($localStorage.settings[setting]) !== 'undefined' )
+				return $localStorage.settings[setting];
+			return defaultValue;
+		},
+		
+		getSettings: function(){
+			return $localStorage.settings;
+		},
+		
+		
+		/**
+		 * Client identification details
+         * TODO: CORS issue, so have to use $.ajax
+		 **/	
+		getClient: function(){
+            return service.getSetting('client', {ip: null, name: 'User'});
+		},
+		setClient: function( parameter, value ){
+            // make sure we have a settings container
+            if( typeof( $localStorage.settings.client ) === 'undefined' )
+                $localStorage.settings.client = {};
+            $localStorage.settings.client[parameter] = value;
+		},
+        
+		getUser: function( username ){            
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: urlBase+'users'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+            return deferred.promise;
+		},
+        
+		setUser: function( username ){		
+            return $.ajax({
+                url: urlBase+'users',
+                method: "POST",
+                data: '{"name":"'+ username +'"}'
+            });
+		},
+		
+		
+		/**
+		 * Identify the client, by IP address
+		 **/
+		identifyClient: function(){
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: urlBase+'pusher/me'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
+		
+		/**
+		 * Perform a Spotmop upgrade
+		 **/
+		upgrade: function(){			
+            var deferred = $q.defer();
+            $http({
+					method: 'POST',
+					url: urlBase+'upgrade'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
+		
+		/**
+		 * Identify our current Spotmop version
+		 **/
+		getVersion: function(){
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: urlBase+'upgrade'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		}
+	};
+		
+	// build the endpoint string
+	var urlBase = 'http://'+ service.getSetting('mopidyhost', window.location.hostname);
+	urlBase += ':'+ service.getSetting('mopidyport', '6680');
+	urlBase += '/spotmop/';
+	
+	return service;	
+}]);
+
+
+
+
+

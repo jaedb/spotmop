@@ -1,0 +1,57 @@
+<div id="player" class="player">
+
+	<div class="track-info">
+		<div class="track" ng-bind="state().currentTlTrack.track.name"></div>
+		<div class="artist">
+			<span ng-repeat="artist in state().currentTlTrack.track.artists">
+				<a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-show="!$last">, </span>
+			</span>
+		</div>
+	</div>
+	
+	<div class="volume">
+		<div class="controls">
+			<span class="button mute" ng-click="toggleMute()" ng-class="{active: state().isMute}">
+				<i class="fa fa-volume-off fa-fw" ng-show="state().isMute"></i>
+				<i class="fa fa-volume-down fa-fw" ng-show="!state().isMute"></i>
+			</span>
+			<div class="slider" ng-click="setVolume($event)">
+				<div class="track">
+					<div class="fill" style="width: {{ state().volume }}%"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="volume touch-friendly">
+		<div class="controls">
+			<span class="button" ng-click="popupVolumeControls()">
+				<i class="fa fa-volume-down fa-fw"></i>
+			</span>
+		</div>
+	</div>
+
+	<div class="playback">
+		<div class="controls">
+			<span class="button previous mobile-hide" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
+			<span class="button play-pause" ng-click="playPause()">
+				<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
+				<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
+			</span>
+			<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+		</div>
+	</div>
+	
+	<div class="clear-both"></div>
+	
+	<div class="progress slider" ng-click="seek($event)">
+		<div class="track animate">
+			<div class="fill animate" style="width: {{ state().playPositionPercent() }}%"></div>
+		</div>
+	</div>
+	
+	<div class="background-image" ng-repeat="image in state().currentTlTrack.track.album.images | limitTo:1">
+		<preloadedimage class="image blur" url="{{ image.url }}"></preloadedimage>
+	</div>
+
+</div>

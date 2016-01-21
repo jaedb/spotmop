@@ -1,0 +1,68 @@
+<div class="page discover-page scrolling-panel">
+	<div class="inner">
+
+		<div class="discover">
+			
+			<div class="page-header mobile-show">
+				<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+				<h1>Discover</h1>
+			</div>
+
+			<div class="page-notification red-background white-text" ng-show="!echonestOnline">
+				<i class="fa fa-exclamation-triangle white-text"></i>
+				&nbsp;
+				<span>You need to enable EchoNest to discover new music</span>
+			</div>
+			
+			<div class="page-header mobile-hide">
+				<h1>Discover</h1>
+			</div>
+			
+			<div class="discover-section current-artist" ng-if="recommendations.suggestions.length > 0">
+
+				<h4 class="section-title">Recommended for you</h4>
+
+				<div class="album-items square-panels smaller">
+					<div class="item-container" ng-repeat="artist in recommendations.suggestions | limitTo: 7 track by $index">
+						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
+							<div class="image-container">
+								<thumbnail images="artist.images"></thumbnail>
+							</div>
+							<div class="info smaller animate">
+								<div class="name" ng-bind="artist.name"></div>
+							</div>
+						</a>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+
+			</div>
+			
+			<div class="discover-section current-artist" ng-if="recommendations.currentArtist.recommendations.length > 0">
+
+				<h4 class="section-title">
+					Because you're listening to
+					<span ng-repeat="artist in recommendations.currentArtist.artists">
+						<span ng-if="!$last && !$first">, </span><span ng-if="$last && !$first"> and </span><a ng-bind="artist.name" href="/browse/artist/{{ artist.uri }}"></a>
+					</span>
+				</h4>
+
+				<div class="album-items square-panels smaller">
+					<div class="item-container" ng-repeat="artist in recommendations.currentArtist.recommendations | limitTo: 7  track by $index">
+						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
+							<div class="image-container">
+								<thumbnail images="artist.images"></thumbnail>
+							</div>
+							<div class="info smaller animate">
+								<div class="name" ng-bind="artist.name"></div>
+							</div>
+						</a>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+			</div>
+		</div>
+		
+	</div>
+</div>

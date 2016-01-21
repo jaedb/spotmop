@@ -5,12 +5,12 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         concat: {
             js: {
-                src: 'src/**/*.js',
+                src: ['src/vendor/angular.js','src/vendor/jquery.min.js','src/vendor/*.js','src/app/app.js','src/app/**/*.js'],
                 dest: 'mopidy_spotmop/static/app.js'
             },
             css: {
                 src: 'src/assets/css/*.css',
-                dest: 'mopidy_spotmop/static/assets/style.css'
+                dest: 'mopidy_spotmop/static/app.css'
             }
         },
         uglify: {
@@ -21,14 +21,26 @@ module.exports = function(grunt) {
                 src: 'mopidy_spotmop/static/app.js',
                 dest: 'mopidy_spotmop/static/app.min.js'
             }
+        },
+        cssmin: {
+            options: {
+                shorthandCompacting: false,
+                roundingPrecision: -1
+            },
+            target: {
+                files: {
+                    'mopidy_spotmop/static/app.min.css': ['mopidy_spotmop/static/app.css']
+                }
+            }
         }
     });
 
     // Load the plugin that provides the "uglify" task.
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
     // Default task(s).
-    grunt.registerTask('default', ['concat', 'uglify']);
+    grunt.registerTask('default', ['concat', 'uglify', 'cssmin']);
 
 };

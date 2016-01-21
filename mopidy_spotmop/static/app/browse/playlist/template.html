@@ -1,0 +1,103 @@
+<div class="browse playlist-page">
+	
+	<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+	
+	<div class="asset-sidebar">
+	
+		<div class="thumbnail playlist" ng-if="playlist.images.length > 0" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+		<div class="thumbnail playlist placeholder" ng-if=" !playlist.images || playlist.images.length <= 0"></div>
+				
+		<div class="buttons">
+		
+			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
+			
+			<span class="follow-unfollow" ng-show="playlist.owner.id != spotifyUser.id" ng-class="{ 'following': following }">
+				<a class="button unfollow"
+					  ng-class="{destructive: hovering}"
+					  ng-click="unfollowPlaylist()"
+					  ng-mouseover="hovering = true"
+					  ng-mouseleave="hovering = false">
+					<span ng-show="hovering">Unfollow</span>
+					<span ng-show="!hovering">Following</span>
+				</a>
+				<a class="button follow"
+					  ng-click="followPlaylist()">
+					<span>Follow</span>
+				</a>
+			</span>
+			
+			<span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
+				<span ng-show="following">
+					<a class="button"
+						  ng-click="editPlaylist( $scope )">
+						Edit
+					</a>
+					<confirmation-button
+						default-text="Delete"
+						confirmation-text="Are you sure?"
+						on-confirmation="unfollowPlaylist">
+					</confirmation-button>
+				</span>
+				<span ng-show="!following">
+					<a class="button"
+						  ng-click="recoverPlaylist()">
+						<i class="fa fa-undo"></i> Recover
+					</a>					
+				</span>
+			</span>
+		</div>
+	
+		<div class="info">
+			<div class="info-item capitalize">
+				<span ng-bind="tracklist.total">0</span> tracks<span ng-show="tracks.next">+</span>, <span ng-bind="totalTime()">0</span> minutes
+			</div>
+			<div class="info-item capitalize">
+				<span ng-bind="playlist.followers.total | number:0"></span> followers
+			</div>
+			<div class="info-item capitalize">
+				Created by: <a ng-bind="playlist.owner.id" ui-sref="browse.user({ uri: playlist.owner.uri })"></a>
+			</div>
+			<div class="info-item capitalize" ng-hide="playlist.public">
+				<i class="fa fa-lock" ></i> Private playlist
+			</div>
+		</div>
+		
+	</div>
+	<div class="content scrolling-panel">
+		<div class="inner">
+			
+			<div class="intro">	
+				<div class="breadcrumbs">
+					<span ng-if="linkingMode('browse.featuredplaylist')">
+						<a class="item" ui-sref="browse.featured">Featured playlists</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span ng-if="linkingMode('library.playlist')">
+						<a class="item" ui-sref="playlists.my">My playlists</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span ng-if="linkingMode('browse.categoryplaylist')">
+						<a class="item" ui-sref="browse.genre">Genre / Mood</a>
+						<i class="fa fa-angle-right divider"></i>
+						<a class="item" ui-sref="browse.genrecategory({ categoryid: category.id })" ng-bind="category.name"></a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span class="item">Playlist</span>
+				</div>
+				<h1 ng-bind="playlist.name"></h1>
+				<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
+			</div>
+			
+			<div class="playlist-items tracklist droppable" ng-controller="TracklistController">
+			
+				<track ng-repeat="track in tracklist.tracks track by $index"></track>
+
+				<div ng-hide="tracklist.tracks.length" class="no-items">
+					No items
+				</div>	
+				
+			</div>
+			
+		</div>
+	</div>
+</div>
