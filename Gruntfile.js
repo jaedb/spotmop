@@ -10,7 +10,7 @@ module.exports = function(grunt) {
             },
             css: {
                 src: 'src/assets/css/*.css',
-                dest: 'mopidy_spotmop/static/app.css'
+                dest: 'mopidy_spotmop/static/assets/style.css'
             }
         },
         uglify: {
@@ -24,12 +24,13 @@ module.exports = function(grunt) {
         },
         cssmin: {
             options: {
+                processImport: false,
                 shorthandCompacting: false,
                 roundingPrecision: -1
             },
             target: {
                 files: {
-                    'mopidy_spotmop/static/app.min.css': ['mopidy_spotmop/static/app.css']
+                    'mopidy_spotmop/static/assets/style.min.css': ['mopidy_spotmop/static/assets/style.css']
                 }
             }
         }
