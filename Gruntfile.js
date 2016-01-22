@@ -5,12 +5,12 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
         concat: {
             js: {
-                src: ['src/vendor/angular.js','src/vendor/jquery.min.js','src/vendor/*.js','src/app/app.js','src/app/**/*.js'],
-                dest: 'mopidy_spotmop/static/app.js'
+                src: ['src/vendor/jquery.min.js','src/vendor/angular.js','src/vendor/*.js','src/app/app.js','src/app/**/*.js'],
+                dest: 'build/app.js'
             },
             css: {
                 src: 'src/assets/css/*.css',
-                dest: 'mopidy_spotmop/static/assets/style.css'
+                dest: 'build/assets/css/style.css'
             }
         },
         uglify: {
@@ -18,8 +18,8 @@ module.exports = function(grunt) {
                 banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n'
             },
             build: {
-                src: 'mopidy_spotmop/static/app.js',
-                dest: 'mopidy_spotmop/static/app.min.js'
+                src: 'build/app.js',
+                dest: 'build/app.min.js'
             }
         },
         cssmin: {
@@ -30,9 +30,27 @@ module.exports = function(grunt) {
             },
             target: {
                 files: {
-                    'mopidy_spotmop/static/assets/style.min.css': ['mopidy_spotmop/static/assets/style.css']
+                    'build/assets/css/style.min.css': ['build/assets/css/style.css']
                 }
             }
+        },
+        ngAnnotate: {
+            options: {
+                singleQuotes: true
+            },
+            app: {
+                files: {
+                    'build/app.js': ['build/app.js']
+                }
+            }
+        },
+        copy: {
+            files: {
+                cwd: 'src',
+                src: ['**/*', '!**/*.css', '!**/*.js'],
+                dest: 'build',
+                expand: true
+            },
         }
     });
 
@@ -40,8 +58,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-ng-annotate');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
     // Default task(s).
-    grunt.registerTask('default', ['concat', 'uglify', 'cssmin']);
+    grunt.registerTask('default', ['copy', 'concat', 'ngAnnotate', 'uglify', 'cssmin']);
 
 };

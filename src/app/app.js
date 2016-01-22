@@ -144,7 +144,7 @@ angular.module('spotmop', [
 		return false;
 	}
 	
-    angular.element(window).resize(function(){
+    $(window).resize(function(){
 		
 		// detect if the width has changed 
 		// we only check width because soft keyboard reveal shouldn't hide/show the menu (ie search form)

@@ -1,6 +1,8 @@
 /Concepts/
 /dist/
 /mopidy_spotmop/static/
+/node_modules/
+/build/
 *.orig
 @eaDir
 Thumbs.db
