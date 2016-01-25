@@ -28,7 +28,7 @@ module.exports = function(grunt) {
                 shorthandCompacting: false,
                 roundingPrecision: -1
             },
-            target: {
+            build: {
                 files: {
                     'mopidy_spotmop/static/assets/css/style.min.css': ['mopidy_spotmop/static/assets/css/style.css']
                 }
@@ -38,19 +38,29 @@ module.exports = function(grunt) {
             options: {
                 singleQuotes: true
             },
-            app: {
+            build: {
                 files: {
                     'mopidy_spotmop/static/app.js': ['mopidy_spotmop/static/app.js']
                 }
             }
         },
         copy: {
-            files: {
+            build: {
                 cwd: 'src',
                 src: ['**/*', '!**/*.css', '!**/*.js', '!index.html', '!vendor'],
                 dest: 'mopidy_spotmop/static',
                 expand: true
             },
+        },
+        processhtml: {
+            options: {
+                // Task-specific options go here. 
+            },
+            build: {
+                files: {
+                    'mopidy_spotmop/static/index.html': ['src/index.html']
+                }
+            }
         }
     });
 
@@ -60,8 +70,9 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-ng-annotate');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-processhtml');
 
     // Default task(s).
-    grunt.registerTask('default', ['copy', 'concat', 'ngAnnotate', 'uglify', 'cssmin']);
+    grunt.registerTask('default', ['copy', 'concat', 'ngAnnotate', 'uglify', 'cssmin', 'processhtml']);
 
 };
