@@ -6,11 +6,11 @@ module.exports = function(grunt) {
         concat: {
             js: {
                 src: ['src/vendor/jquery.min.js','src/vendor/angular.js','src/vendor/*.js','src/app/app.js','src/app/**/*.js'],
-                dest: 'build/app.js'
+                dest: 'mopidy_spotmop/static/app.js'
             },
             css: {
                 src: 'src/assets/css/*.css',
-                dest: 'build/assets/css/style.css'
+                dest: 'mopidy_spotmop/static/assets/css/style.css'
             }
         },
         uglify: {
@@ -18,8 +18,8 @@ module.exports = function(grunt) {
                 banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n'
             },
             build: {
-                src: 'build/app.js',
-                dest: 'build/app.min.js'
+                src: 'mopidy_spotmop/static/app.js',
+                dest: 'mopidy_spotmop/static/app.min.js'
             }
         },
         cssmin: {
@@ -30,7 +30,7 @@ module.exports = function(grunt) {
             },
             target: {
                 files: {
-                    'build/assets/css/style.min.css': ['build/assets/css/style.css']
+                    'mopidy_spotmop/static/assets/css/style.min.css': ['mopidy_spotmop/static/assets/css/style.css']
                 }
             }
         },
@@ -40,15 +40,15 @@ module.exports = function(grunt) {
             },
             app: {
                 files: {
-                    'build/app.js': ['build/app.js']
+                    'mopidy_spotmop/static/app.js': ['mopidy_spotmop/static/app.js']
                 }
             }
         },
         copy: {
             files: {
                 cwd: 'src',
-                src: ['**/*', '!**/*.css', '!**/*.js', '!index.html'],
-                dest: 'build',
+                src: ['**/*', '!**/*.css', '!**/*.js', '!index.html', '!vendor'],
+                dest: 'mopidy_spotmop/static',
                 expand: true
             },
         }
