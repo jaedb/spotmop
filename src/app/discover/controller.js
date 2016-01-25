@@ -123,7 +123,7 @@ angular.module('spotmop.discover', [])
 				// convert our echonest list into an array to get from spotify
 				var echonestArtists = [];
 				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
-					response.response.artists;
+					echonestArtists = response.response.artists;
 					
 				var artisturis = [];
 				
@@ -139,8 +139,8 @@ angular.module('spotmop.discover', [])
 					});
 					
 					SpotifyService.getArtists( artisturis )
-						.then( function( response ){
-							$scope.recommendations.suggestions = response.artists;
+						.then( function( spotifyArtists ){
+							$scope.recommendations.suggestions = spotifyArtists.artists;
 						});
 				}
 			});

@@ -115,7 +115,7 @@ body {
 	z-index: 2;
 	top: 0;
 	left: 0;
-	bottom: 120px;
+	bottom: 0;
 	right: 0;
 	position: absolute;
 	overflow-y: auto;
@@ -205,6 +205,14 @@ body {
 	text-transform: uppercase;
 }
 
+.main-menu .divider.spacer {
+    padding-top: 10px;
+}
+
+.main-menu .menu-item:last-child {
+    padding-bottom: 20px;
+}
+
 .main-menu .menu-item > a {
 	display: block;
 	padding: 8px 0 8px 10px;
@@ -242,12 +250,23 @@ body {
 
 .main-menu .menu-item.active > a {
 	background-color: rgba(0,0,0,0.15);
-	/*background-position: 100% 50%;*/
 	border-color: #08d58f;
 }
 
 .main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
+}
+
+.main-menu .playlists-submenu-trigger {
+    float: right;
+    display: block;
+    opacity: 0.5;
+    margin-top: -7px;
+    padding: 10px 15px;
+}
+
+.main-menu .playlists-submenu-trigger i {
+    font-size: 12px;
 }
 	
 .menu-reveal-trigger {
@@ -323,6 +342,7 @@ body {
 	padding: 10px 0 10px 20px;
 }
 
+.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
 .dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
 }

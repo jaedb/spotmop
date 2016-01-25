@@ -25,7 +25,9 @@ Features
 
 * Full web-based interface controls for Mopidy
 * Uses Spotify API to deliver high-quality audio and music information
-* Spotmop can be run completely independently of your Mopidy machine, just set your URL in the settings tab
+* Browse and manage your playlists, along with top tracks, new releases and genre browser
+* Spotmop can be run completely independently of your Mopidy machine (ie on a remote server), just set your URL in the settings tab
+* Push notifications (beta) between users (requires port 6681, but this can be customised to suit your environment)
 
 Screenshots
 -----------
