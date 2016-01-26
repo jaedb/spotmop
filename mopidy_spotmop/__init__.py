@@ -10,7 +10,7 @@ from services.upgrade import upgrade
 from services.pusher import pusher
 from mopidy import config, ext
 
-__version__ = '2.5.8'
+__version__ = '2.5.9'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
