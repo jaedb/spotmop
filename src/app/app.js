@@ -198,7 +198,7 @@ angular.module('spotmop', [
 	 * Search
 	 **/
 	$scope.searchSubmit = function( query ){
-
+        
 		// track this navigation event
 		Analytics.trackEvent('Search', 'Performed search', query);
 		

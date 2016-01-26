@@ -21,14 +21,14 @@ angular.module('spotmop.search', [])
 /**
  * Main controller
  **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, SpotifyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService ){
 	
 	$scope.tracklist = {tracks: [], type: 'track'};
 	$scope.albums = [];
 	$scope.artists = [];
 	$scope.playlists = [];
 	$scope.type = $stateParams.type;
-	$scope.query = $stateParams.query;
+	$scope.query = $filter('stripAccents')( $stateParams.query );
 	$scope.loading = false;
 	var searchDelayer;
 	
