@@ -24,7 +24,7 @@ angular.module('spotmop.browse.new', [])
 	
 	// set the default items
 	$scope.albums = [];
-	
+		
 	SpotifyService.newReleases()
 		.then(function( response ) {
 			$scope.albums = response.albums;

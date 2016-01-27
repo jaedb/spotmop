@@ -9,8 +9,8 @@
 		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
 			<i class="fa fa-exclamation-triangle white-text"></i>
 			&nbsp;
-			<span ng-show="!mopidyOnline">Mopidy is currently offline - check your settings</span>
-			<span ng-show="!spotifyOnline">Spotify is currently offline - make sure your browser allows popups</span>
+			<span ng-show="!mopidyOnline">Mopidy is offline - check your settings or restart Mopidy server</span>
+			<span ng-show="!spotifyOnline">Spotify is offline - please authenticate (make sure your browser allows popups)</span>
 		</div>
 			
 		<div class="page-header mobile-hide">
@@ -116,36 +116,54 @@
 					<span class="state-label green-background white-text" ng-if="spotifyOnline">Connected</span>
 					<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
 				</h4>
+                
+                <div ng-if="spotifyOnline">
+                
+                    <div class="field">
+                        <div class="label">Country code</div>
+                        <div class="input">
+                            <input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
+                            <i class="fa fa-check autosave-success"></i>
+                        </div>
+                    </div>
 
-				<div class="field">
-					<div class="label">Country code</div>
-					<div class="input">
-						<input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
-						<i class="fa fa-check autosave-success"></i>
-					</div>
+                    <div class="field">
+                        <div class="label">Locale</div>
+                        <div class="input">
+                            <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+                            <i class="fa fa-check autosave-success"></i>
+                        </div>
+                    </div>
+
+                    <div class="field current-user">
+                        <div class="label">Current user</div>
+                        <div class="input">
+                            <span class="my-profile">
+                                <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+                                    <div class="image animate" style="background-image: url({{ image.url }});"></div>
+                                </span>
+                                <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+                                &nbsp;&nbsp;
+                                <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+                            </span>
+                        </div>
+                    </div>
+                
+                </div>
+                
+                <div class="field" ng-if="!spotifyOnline">
+                    <div class="label">Connect to Spotify</div>
+                    <div class="input">
+                        <a class="button primary" ng-click="authorizeSpotify()"><i class="fa fa-tick"></i>&nbsp; Login to Spotify</a>
+                    </div>
 				</div>
 
-				<div class="field">
-					<div class="label">Locale</div>
-					<div class="input">
-						<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
-						<i class="fa fa-check autosave-success"></i>
-					</div>
-				</div>
-
-				<div class="field current-user">
-					<div class="label">Current user</div>
-					<div class="input">
-						<span class="my-profile">
-							<span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
-								<div class="image animate" style="background-image: url({{ image.url }});"></div>
-							</span>
-							<span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
-							&nbsp;&nbsp;
-							<a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-						</span>
-					</div>
-				</div>
+                <div class="field" ng-if="settings.advancedMode && spotifyOnline">
+                    <div class="label">Spotify authentication</div>
+                    <div class="input">
+                        <a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+                    </div>
+                </div>
 
 				<div class="clear-both"></div>
 			
@@ -177,6 +195,18 @@
 					</div>
 				</div>
 
+                <div class="field" ng-if="settings.advancedMode">
+                    <div class="label">Echonest taste profile</div>
+                    <div class="input">
+                        <confirmation-button
+                            extra-classes="destructive"
+                            default-text="Delete taste profile"
+                            confirmation-text="Are you sure?"
+                            on-confirmation="deleteEchonestTasteProfile()">
+                        </confirmation-button>
+                    </div>
+                </div>
+
 				<div class="clear-both"></div>
 			</div>
 			
@@ -199,26 +229,6 @@
 						<div class="label">Emulate touch device</div>
 						<div class="input">		
 							<switch class="switch-button" name="emulateTouchDevice"></switch>
-						</div>
-					</div>
-
-					<div class="field">
-						<div class="label">Spotify authentication</div>
-						<div class="input">
-							<a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
-							<a class="button destructive" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-						</div>
-					</div>
-
-					<div class="field">
-						<div class="label">Echonest taste profile</div>
-						<div class="input">
-							<confirmation-button
-								extra-classes="destructive"
-								default-text="Delete taste profile"
-								confirmation-text="Are you sure?"
-								on-confirmation="deleteEchonestTasteProfile()">
-							</confirmation-button>
 						</div>
 					</div>
 

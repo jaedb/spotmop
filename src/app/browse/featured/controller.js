@@ -20,7 +20,7 @@ angular.module('spotmop.browse.featured', [])
 /**
  * Main controller
  **/
-.controller('FeaturedController', function FeaturedController( $scope, $rootScope, $filter, SpotifyService ){	
+.controller('FeaturedController', function FeaturedController( $scope, $rootScope, $filter, SpotifyService, NotifyService ){	
 	
 	// set the default items
 	$scope.playlists = [];
