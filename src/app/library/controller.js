@@ -270,7 +270,7 @@ angular.module('spotmop.library', [])
 /**
  * Library playlist
  **/
-.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -281,6 +281,17 @@ angular.module('spotmop.library', [])
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+	
+	if( !$rootScope.spotifyAuthorized ){		
+		$scope.$on('mopidy:state:online', function(){
+		
+			MopidyService.getPlaylists()
+				.then( function( response ){
+					console.log( response );
+					// now fetch the artwork etc from spotify
+				});
+			});
+	}
     
 	SpotifyService.getPlaylists( userid )
 		.then( function( response ){ // successful

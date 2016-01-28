@@ -30,18 +30,6 @@ angular.module('spotmop.browse.new', [])
 			$scope.albums = response.albums;
 		});
 	
-	if( !SpotifyService.isAuthorized() ){
-		console.log('Spotify offline');
-		
-		$scope.$on('mopidy:state:online', function(){
-			console.log('Mopidy online');
-			MopidyService.testMethod( "mopidy.library.browse", { uri: 'spotify:top:albums:everywhere' } )
-				.then( function( response ){
-					console.log( response );
-				});
-			});
-	}
-	
 	
     /**
      * Load more of the category's playlists

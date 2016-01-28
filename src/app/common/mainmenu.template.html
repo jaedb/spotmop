@@ -42,14 +42,14 @@
 	<li class="divider">
 		My music
 	</li>
-	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
+	<li class="menu-item top-level {{ linkingMode('library.tracks') }}" ng-class="{ unavailable: !spotifyAuthorized }">
 		<a ui-sref="library.tracks" class="droppable" data-type="library">
 			<i class="fa fa-music"></i>
 			Tracks
 			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
-	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
+	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}" ng-class="{ unavailable: !spotifyAuthorized }">
 		<a ui-sref="library.artists" class="droppable" data-type="library">
 			<i class="fa fa-user"></i>
 			Artists
@@ -60,9 +60,9 @@
 		<a ui-sref="library.playlists" class="droppable" data-type="playlists">
 			<i class="fa fa-tags"></i>
 			Playlists
-            <span class="playlists-submenu-trigger white-text" ng-if="!isTouchDevice()"><i class="fa fa-caret-right"></i></span>
+            <span class="playlists-submenu-trigger white-text" ng-if="!isTouchDevice() && spotifyAuthorized"><i class="fa fa-caret-right"></i></span>
 		</a>
-		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }">
+		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }" ng-if="spotifyAuthorized">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
 				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
 					<span ng-bind="playlist.name"></span>
