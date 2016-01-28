@@ -13,6 +13,8 @@ angular.module('spotmop.services.spotify', [])
 	// setup response object
     var service = {
 		
+		authenticationMethod: 'server',
+		
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
@@ -52,7 +54,15 @@ angular.module('spotmop.services.spotify', [])
 				$localStorage.spotify.AccessToken = data.access_token;
 				$localStorage.spotify.RefreshToken = data.refresh_token;
 				$rootScope.spotifyOnline = true;
-				$rootScope.$broadcast('spotmop:spotify:online');
+				this.authenticationMethod = 'client';
+				
+				// get my details and store 'em
+				this.getMe()
+					.then( function(response){
+						SettingsService.setSetting('spotifyuser', response);
+					});
+				
+				$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
 			}, false);
 			
 			
@@ -61,15 +71,20 @@ angular.module('spotmop.services.spotify', [])
 			 **/
 			if( this.isAuthorized() ){
 				$rootScope.spotifyAuthorized = true;
-				$rootScope.$broadcast('spotmop:spotify:online');
+				this.authenticationMethod = 'client';
 			}else{
+				SettingsService.setSetting('spotifyuser', false);
 				$rootScope.spotifyAuthorized = false;
+				this.authenticationMethod = 'server';
 			}
+			
+			$rootScope.$broadcast('spotmop:spotify:online');
 		},
 		
 		logout: function(){
 			$localStorage.spotify = {};
-			$rootScope.spotifyOnline = false;
+			this.authenticationMethod = 'server';
+			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
 		},
 		
 		/**
@@ -88,15 +103,35 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		/**
-		 * Refresh our existing credentials, by parsing our Authorization refresh_token
+		 * Refresh our access_token. There are two ways we can achieve this:
+		 *		1. Client has authorized Spotmop by "Connecting to Spotify" for maximum features
+		 *		2. Use config of backend to generate access_tokens for basic authentication
 		 **/
         refreshToken: function(){
 			
             var deferred = $q.defer();
-
+			var url = '';
+			
+			// sweet, client has authorized interface!
+			if( this.authenticationMethod == 'client' ){
+			
+				url = 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
+			
+			// client hasn't authorized spotmop with spotify, so let's just use the backend
+			}else if( this.authenticationMethod == 'server' ){
+			
+				var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
+				var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+				url = 'http://'+mopidyhost+':'+mopidyport+'/spotmop/auth';
+			
+			// no authentication method, so cannot refresh token!
+			}else{
+				return false;
+			}
+			
             $http({
 					method: 'GET',
-					url: 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken,
+					url: url,
 					dataType: "json",
 					async: false,
 					timeout: 10000
@@ -161,12 +196,6 @@ angular.module('spotmop.services.spotify', [])
         getUrl: function( $url ){
 			
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					method: 'GET',
@@ -535,12 +564,6 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 				
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: false,
@@ -567,12 +590,6 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -692,12 +709,6 @@ angular.module('spotmop.services.spotify', [])
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
 			var country = SettingsService.getSetting('countrycode','NZ');						
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -904,12 +915,6 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -936,12 +941,6 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -965,12 +964,6 @@ angular.module('spotmop.services.spotify', [])
 		getCategory: function( categoryid ){
 			
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -997,12 +990,6 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -1168,12 +1155,6 @@ angular.module('spotmop.services.spotify', [])
 		
 			if( typeof( limit ) === 'undefined' ) limit = 10;
             var deferred = $q.defer();
-			
-			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
-                deferred.reject();
-				return deferred.promise;
-			}
 
             $http({
 					cache: true,
@@ -1247,39 +1228,23 @@ angular.module('spotmop.services.spotify', [])
 			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
 					
 				retryCount++;
-				var deferred = $q.defer();				
+				var deferred = $q.defer();
 				
-				// if we're already authorized, we just need to force a token refresh
-				if( $injector.get('SpotifyService').isAuthorized() ){
+				// refresh the token
+				$injector.get('SpotifyService').refreshToken()
+					.then( function(refreshResponse){
+						
+						// make sure our refresh request didn't error, otherwise we'll create an infinite loop
+						if( typeof(refreshResponse.error) !== 'undefined' )
+							return response;
+							
+						retryCount--;
+						
+						// now retry the original request
+						retryHttpRequest( response.config, deferred, refreshResponse.access_token );
+					});
 				
-					// refresh the token
-					$injector.get('SpotifyService').refreshToken()
-						.then( function(refreshResponse){
-							
-							// make sure our refresh request didn't error, otherwise we'll create an infinite loop
-							if( typeof(refreshResponse.error) !== 'undefined' )
-								return response;
-								
-							retryCount--;
-							
-							// now retry the original request
-							retryHttpRequest( response.config, deferred, refreshResponse.access_token );
-						});
-					
-					return deferred.promise;
-		
-				// not yet authorized, so authorize!
-				// this requires user interaction, so let's just allow the original request to fail
-				}else{
-					
-					// remove our current authorization, just to clear the decks
-					$localStorage.spotify = {};
-					$rootScope.spotifyOnline = false;
-					
-					// and re-authorize
-					$injector.get('NotifyService').error('Please authenticate with Spotify first');	
-					retryCount--;
-				}
+				return deferred.promise;
 			}
 			
 			return response;

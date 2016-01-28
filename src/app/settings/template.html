@@ -117,41 +117,37 @@
 					<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
 				</h4>
                 
-                <div ng-if="spotifyOnline">
-                
-                    <div class="field">
-                        <div class="label">Country code</div>
-                        <div class="input">
-                            <input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
-                            <i class="fa fa-check autosave-success"></i>
-                        </div>
+                <div class="field">
+                    <div class="label">Country code</div>
+                    <div class="input">
+                        <input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
+                        <i class="fa fa-check autosave-success"></i>
                     </div>
-
-                    <div class="field">
-                        <div class="label">Locale</div>
-                        <div class="input">
-                            <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
-                            <i class="fa fa-check autosave-success"></i>
-                        </div>
-                    </div>
-
-                    <div class="field current-user">
-                        <div class="label">Current user</div>
-                        <div class="input">
-                            <span class="my-profile">
-                                <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
-                                    <div class="image animate" style="background-image: url({{ image.url }});"></div>
-                                </span>
-                                <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
-                                &nbsp;&nbsp;
-                                <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-                            </span>
-                        </div>
-                    </div>
-                
                 </div>
-                
-                <div class="field" ng-if="!spotifyOnline">
+
+                <div class="field">
+                    <div class="label">Locale</div>
+                    <div class="input">
+                        <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+                        <i class="fa fa-check autosave-success"></i>
+                    </div>
+                </div>
+
+                <div class="field current-user" ng-if="spotifyAuthorized">
+                    <div class="label">Current user</div>
+                    <div class="input">
+                        <span class="my-profile">
+                            <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+                                <div class="image animate" style="background-image: url({{ image.url }});"></div>
+                            </span>
+                            <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+                            &nbsp;&nbsp;
+                            <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="field" ng-if="!spotifyAuthorized">
                     <div class="label">Connect to Spotify</div>
                     <div class="input">
                         <a class="button primary" ng-click="authorizeSpotify()"><i class="fa fa-tick"></i>&nbsp; Login to Spotify</a>

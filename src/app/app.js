@@ -279,17 +279,25 @@ angular.module('spotmop', [
 	/**
 	 * Spotify is online and authorized
 	 **/
+	$rootScope.spotifyAuthorized = false;
+	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
+		if( newMethod == 'client' ){
+			$rootScope.spotifyAuthorized = true;
+			$scope.updatePlaylists();
+			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
+			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+		}else{
+			$rootScope.spotifyAuthorized = false;
+		}
+	});
+	
 	$scope.$on('spotmop:spotify:online', function(){
 		$rootScope.spotifyOnline = true;
-		SpotifyService.getMe()
-			.then( function(response){
-				$scope.spotifyUser = response;
-				SettingsService.setSetting('spotifyuser', $scope.spotifyUser);
-				Analytics.trackEvent('Spotify', 'Online', response.id +'('+ response.display_name +')');
-				
-				// update my playlists
-				$scope.updatePlaylists();
-			});
+	});
+	
+	$scope.$on('spotmop:spotify:offline', function(){
+		$scope.playlistsMenu = [];
+		$rootScope.spotifyOnline = false;
 	});
 	
 	

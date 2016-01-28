@@ -20,7 +20,7 @@ angular.module('spotmop.browse.new', [])
 /**
  * Main controller
  **/
-.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService ){
+.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService, MopidyService ){
 	
 	// set the default items
 	$scope.albums = [];
@@ -29,6 +29,18 @@ angular.module('spotmop.browse.new', [])
 		.then(function( response ) {
 			$scope.albums = response.albums;
 		});
+	
+	if( !SpotifyService.isAuthorized() ){
+		console.log('Spotify offline');
+		
+		$scope.$on('mopidy:state:online', function(){
+			console.log('Mopidy online');
+			MopidyService.testMethod( "mopidy.library.browse", { uri: 'spotify:top:albums:everywhere' } )
+				.then( function( response ){
+					console.log( response );
+				});
+			});
+	}
 	
 	
     /**

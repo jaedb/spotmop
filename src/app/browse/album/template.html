@@ -19,7 +19,7 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-			<a class="button" ng-click="addToLibrary()">Add to library</a>
+			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized">Add to library</a>
 		</div>
 		
 		<div class="clear-left"></div>

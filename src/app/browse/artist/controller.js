@@ -90,7 +90,7 @@ angular.module('spotmop.browse.artist', [])
 		});
 
 	// figure out if we're following this playlist
-	if( SpotifyService.isAuthorized() ){
+	if( $rootScope.spotifyAuthorized ){
 		SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
 			.then( function( isFollowing ){
 				$scope.following = $.parseJSON(isFollowing);

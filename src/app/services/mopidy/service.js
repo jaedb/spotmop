@@ -73,8 +73,8 @@ angular.module('spotmop.services.mopidy', [
 		mopidy: {},
 		isConnected: false,
 		
-		testMethod: function( uri ){
-			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uri });
+		testMethod: function( method, payload ){
+			return wrapMopidyFunc(method, this)( payload );
 		},
 		
 		/*
