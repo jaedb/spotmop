@@ -57,7 +57,7 @@ angular.module('spotmop.services.spotify', [])
 				this.authenticationMethod = 'client';
 				
 				// get my details and store 'em
-				this.getMe()
+				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
 					});
@@ -84,6 +84,7 @@ angular.module('spotmop.services.spotify', [])
 		logout: function(){
 			$localStorage.spotify = {};
 			this.authenticationMethod = 'server';
+			this.refreshToken();
 			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
 		},
 		
@@ -226,7 +227,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -279,7 +279,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -342,7 +341,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -372,7 +370,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -405,7 +402,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -438,7 +434,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -469,7 +464,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -499,7 +493,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -529,7 +522,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -617,7 +609,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -648,7 +639,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -678,7 +668,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -738,7 +727,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -774,7 +762,6 @@ angular.module('spotmop.services.spotify', [])
                 return false;
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}			
@@ -842,7 +829,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}
@@ -880,7 +866,6 @@ angular.module('spotmop.services.spotify', [])
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
-				NotifyService.spotifyAuthenticationError();
                 deferred.reject();
 				return deferred.promise;
 			}

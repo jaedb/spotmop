@@ -132,15 +132,15 @@
                         <i class="fa fa-check autosave-success"></i>
                     </div>
                 </div>
-
+                
                 <div class="field current-user" ng-if="spotifyAuthorized">
                     <div class="label">Current user</div>
                     <div class="input">
                         <span class="my-profile">
-                            <span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
+                            <span class="image-container" ng-repeat="image in settings.spotifyuser.images  | limitTo:1">
                                 <div class="image animate" style="background-image: url({{ image.url }});"></div>
                             </span>
-                            <span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
+                            <span ng-bind="settings.spotifyuser.display_name"></span> (<a ng-bind="settings.spotifyuser.id" href="/browse/user/{{ settings.spotifyuser.uri }}"></a>)
                             &nbsp;&nbsp;
                             <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
                         </span>

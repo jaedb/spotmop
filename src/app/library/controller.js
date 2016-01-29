@@ -282,26 +282,40 @@ angular.module('spotmop.library', [])
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
 	
-	if( !$rootScope.spotifyAuthorized ){		
-		$scope.$on('mopidy:state:online', function(){
-		
+	// if we have full spotify authorization
+	if( $rootScope.spotifyAuthorized ){	
+    
+		SpotifyService.getPlaylists( userid )
+			.then( function( response ){ // successful
+					$scope.playlists = response;
+					
+					// if it was 401, refresh token
+					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+						Spotify.refreshToken();
+				});
+	
+	// not authorized, so have to fetch via backend first
+	}else{	
+			
+		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
 				.then( function( response ){
-					console.log( response );
-					// now fetch the artwork etc from spotify
+					// fetch more detail from each playlist (individually, d'oh!)
+					angular.forEach( response, function(value, key){
+						SpotifyService.getPlaylist( value.uri )
+							.then( function( playlist ){
+								$scope.playlists.items.push( playlist );
+							});
+					});
 				});
-			});
-	}
-    
-	SpotifyService.getPlaylists( userid )
-		.then( function( response ){ // successful
-				$scope.playlists = response;
-				
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
-			});
-    
+		}
+		
+		// on load of this page (whether first pageload or just a new navigation)
+		if( $rootScope.mopidyOnline )
+			fetchPlaylists();
+		else
+			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
+    }
 	
     /**
      * Load more of the album's tracks

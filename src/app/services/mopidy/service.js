@@ -77,6 +77,10 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc(method, this)( payload );
 		},
 		
+		getImages: function( uri ){
+			return wrapMopidyFunc('mopidy.library.getImages', this)( uri );
+		},
+		
 		/*
 		 * Method to start the Mopidy conneciton
 		 */

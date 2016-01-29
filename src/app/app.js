@@ -114,9 +114,9 @@ angular.module('spotmop', [
     });
     
 	// update the playlists menu
-	$scope.updatePlaylists = function(){
-		
-		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
+	$scope.updatePlaylists = function( userid ){
+	
+		SpotifyService.getPlaylists( userid, 50 )
 			.then(function( response ) {
 				
 				$scope.myPlaylists = response.items;				
@@ -283,16 +283,21 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
 		if( newMethod == 'client' ){
 			$rootScope.spotifyAuthorized = true;
-			$scope.updatePlaylists();
 			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
+			$scope.updatePlaylists( $scope.spotifyUser.id );
 			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
 		}else{
 			$rootScope.spotifyAuthorized = false;
+			$scope.playlistsMenu = [];
 		}
 	});
 	
 	$scope.$on('spotmop:spotify:online', function(){
 		$rootScope.spotifyOnline = true;
+		if( $rootScope.spotifyAuthorized ){
+			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
+			$scope.updatePlaylists( $scope.spotifyUser.id );
+		}
 	});
 	
 	$scope.$on('spotmop:spotify:offline', function(){
