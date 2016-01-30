@@ -270,7 +270,7 @@ angular.module('spotmop.library', [])
 /**
  * Library playlist
  **/
-.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -281,16 +281,43 @@ angular.module('spotmop.library', [])
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+	
+	// if we have full spotify authorization
+	if( $rootScope.spotifyAuthorized ){	
     
-	SpotifyService.getPlaylists( userid )
-		.then( function( response ){ // successful
-				$scope.playlists = response;
-				
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
-			});
-    
+		SpotifyService.getPlaylists( userid )
+			.then( function( response ){ // successful
+					$scope.playlists = response;
+					
+					// if it was 401, refresh token
+					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+						Spotify.refreshToken();
+				});
+	
+	// not authorized, so have to fetch via backend first
+	}else{	
+        
+        NotifyService.notify('Fetching from Mopidy as you haven\'t authorized Spotify. This will take a while!');
+        
+		function fetchPlaylists(){		
+			MopidyService.getPlaylists()
+				.then( function( response ){
+					// fetch more detail from each playlist (individually, d'oh!)
+					angular.forEach( response, function(value, key){
+						SpotifyService.getPlaylist( value.uri )
+							.then( function( playlist ){
+								$scope.playlists.items.push( playlist );
+							});
+					});
+				});
+		}
+		
+		// on load of this page (whether first pageload or just a new navigation)
+		if( $rootScope.mopidyOnline )
+			fetchPlaylists();
+		else
+			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
+    }
 	
     /**
      * Load more of the album's tracks

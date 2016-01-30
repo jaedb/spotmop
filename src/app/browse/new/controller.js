@@ -20,11 +20,11 @@ angular.module('spotmop.browse.new', [])
 /**
  * Main controller
  **/
-.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService ){
+.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService, MopidyService ){
 	
 	// set the default items
 	$scope.albums = [];
-	
+		
 	SpotifyService.newReleases()
 		.then(function( response ) {
 			$scope.albums = response.albums;

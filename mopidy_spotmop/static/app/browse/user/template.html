@@ -1,0 +1,50 @@
+<div class="page user-page scrolling-panel">
+	<div class="inner">
+		
+		<div class="page-header mobile-show">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>User</h1>
+		</div>
+	
+		<div class="user-intro">
+			<div class="image-container" ng-repeat="image in user.images  | limitTo:1">
+				<div class="image animate" style="background-image: url({{ image.url }});"></div>
+			</div>
+			<div class="info">
+				<h1><span ng-bind="user.display_name"></span><span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span></h1>
+				<div class="info-text">
+					<span ng-bind="user.id"></span>
+					 &nbsp;|&nbsp; <span ng-bind="totalPlaylists"></span> Playlists
+					 &nbsp;|&nbsp; {{ user.followers.total | number:0 }} Followers
+				</div>
+			</div>
+			<div class="clear-both"></div>
+		</div>
+		
+		
+		<h4 class="section-title">Playlists</h4>
+		
+		<div class="playlist-items square-panels">
+			
+			<div class="item-container" ng-repeat="playlist in playlists track by $index">
+				<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist">
+					<div class="image-container">
+						<thumbnail images="playlist.images"></thumbnail>
+					</div>
+					<div class="info animate">
+						<div class="name" ng-bind="playlist.name"></div>
+						<div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
+					</div>
+				</a>
+			</div>
+		
+			<div ng-hide="playlists.length" class="no-items">
+				No items
+			</div>
+			
+			<div class="clear-both"></div>
+		
+		</div>
+		
+	</div>
+</div>

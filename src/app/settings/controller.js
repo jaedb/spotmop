@@ -26,6 +26,9 @@ angular.module('spotmop.settings', [])
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};
+	$scope.authorizeSpotify = function(){
+		SpotifyService.authorize();
+	};
     $scope.refreshSpotifyToken = function(){
 		NotifyService.notify( 'Refreshing token' );
         SpotifyService.refreshToken().then( function(){});

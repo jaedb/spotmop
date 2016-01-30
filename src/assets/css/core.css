@@ -213,6 +213,10 @@ body {
     padding-bottom: 20px;
 }
 
+.main-menu .menu-item.unavailable {
+	opacity: 0.5;
+}
+
 .main-menu .menu-item > a {
 	display: block;
 	padding: 8px 0 8px 10px;

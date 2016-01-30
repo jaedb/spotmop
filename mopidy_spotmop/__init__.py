@@ -8,6 +8,7 @@ import json
 
 from services.upgrade import upgrade
 from services.pusher import pusher
+from services.auth import auth
 from mopidy import config, ext
 
 __version__ = '2.5.9'
@@ -65,6 +66,11 @@ def spotmop_client_factory(config, core):
 				'version': __version__ 
 			}),
 		('/pusher/([^/]+)', pusher.PusherRequestHandler, {
+				'core': core,
+				'config': config,
+				'version': __version__
+			}),
+		('/auth', auth.AuthRequestHandler, {
 				'core': core,
 				'config': config,
 				'version': __version__

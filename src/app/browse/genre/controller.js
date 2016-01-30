@@ -28,9 +28,9 @@ angular.module('spotmop.browse.genre', [])
 /**
  * Main controller
  **/
-.controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService ){
+.controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService, NotifyService ){
 	
-	$scope.categories = [];    
+	$scope.categories = [];
 	
 	SpotifyService.discoverCategories()
 		.then(function( response ) {

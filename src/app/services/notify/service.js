@@ -63,6 +63,13 @@ angular.module('spotmop.services.notify', [])
 					duration
 				);
 		},
+		
+		/**
+		 * When we want to notify the user that they need to pull finger and authenticate with Spotify
+		 **/
+		spotifyAuthenticationError: function(){
+			this.error( 'Please authenticate with Spotify - you can find this under settings' );
+		},
 	
 		/**
 		 * When a shortcut is triggered, notify, growl styles
