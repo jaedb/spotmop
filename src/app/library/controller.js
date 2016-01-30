@@ -270,7 +270,7 @@ angular.module('spotmop.library', [])
 /**
  * Library playlist
  **/
-.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -296,7 +296,9 @@ angular.module('spotmop.library', [])
 	
 	// not authorized, so have to fetch via backend first
 	}else{	
-			
+        
+        NotifyService.notify('Fetching from Mopidy as you haven\'t authorized Spotify. This will take a while!');
+        
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
 				.then( function( response ){
