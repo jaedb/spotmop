@@ -1,0 +1,37 @@
+<div class="initial-setup-dialog">
+	
+	<h4 class="section-title dialog-title">Initial Setup</h4>
+
+	<form>
+		
+		<div class="field text large">
+			<input name="username" placeholder="Your name" ng-model="name" />
+			<span class="note"><span class="red-text" ng-if="error">Please enter your name &nbsp;</span>This can be changed later in Settings</span>
+		</div>
+
+		<div class="field switch">
+			<div class="input">
+				<switch class="switch-button" name="pusherdisabled"></switch>
+			</div>
+			<div class="label">Disable browser notifications</div>
+		</div>
+
+		<div class="field switch shortcut-keys">
+			<div class="input">
+				<switch class="switch-button" name="keyboardShortcutsEnabled"></switch>
+			</div>
+			<div class="label">Keyboard shortcuts</div>
+		</div>
+
+		<div class="actions">
+			<span class="button save primary" ng-click="save()" ng-hide="saving">
+				<i class="fa fa-check"></i>&nbsp; Save
+			</span>			
+			<span ng-show="saving" class="saving">
+				<img src="assets/svg/spinner.svg" class="working" />
+			</span>
+		</div>
+		
+	</form>
+	
+</div>

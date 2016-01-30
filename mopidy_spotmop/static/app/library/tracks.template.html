@@ -1,0 +1,25 @@
+<div class="page library-tracks-page scrolling-panel">
+	<div class="inner">
+		
+		<div class="page-header mobile-show">
+			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+			<h1>Tracks</h1>
+		</div>
+		
+		<div class="page-notification red-background white-text" ng-show="!spotifyAuthorized">
+			<i class="fa fa-exclamation-triangle white-text"></i>
+			&nbsp;
+			Please authorize Spotify (under Settings) to browse Your Tracks
+		</div>
+		
+		<h1 class="mobile-hide">Tracks</h1>
+		
+		<div class="library-tracks tracklist droppable"  ng-controller="TracklistController">
+			<track ng-repeat="track in tracklist.tracks track by $index"></track>
+			<div ng-hide="tracklist.tracks.length" class="no-items">
+				No items
+			</div>				
+		</div>
+		
+	</div>
+</div>

@@ -1,0 +1,15 @@
+<div class="biography">
+
+	<h4 class="section-title">Biography</h4>	
+	<div class="content" ng-bind="artist.biography.content"></div>
+
+	<div class="details">
+		<p>
+			Origin: <a href="{{ artist.biography.links.link.href }}" target="_blank" ng-bind="artist.biography.links.link.href" class="italic-text"></a>
+		</p>
+		<p>
+			Published: <span ng-bind="artist.biography.published" class="italic-text"></span>
+		</p>
+	</div>
+	
+</div>
