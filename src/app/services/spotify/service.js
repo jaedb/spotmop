@@ -60,9 +60,9 @@ angular.module('spotmop.services.spotify', [])
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
 					});
 				
-				$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
 			}, false);
 			
 			
