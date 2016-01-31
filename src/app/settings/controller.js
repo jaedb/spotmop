@@ -17,7 +17,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -25,6 +25,9 @@ angular.module('spotmop.settings', [])
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
+	};
+	$scope.authorizeSpotify = function(){
+		SpotifyService.authorize();
 	};
     $scope.refreshSpotifyToken = function(){
 		NotifyService.notify( 'Refreshing token' );
@@ -43,33 +46,21 @@ angular.module('spotmop.settings', [])
 					NotifyService.notify( response.message );
 			});
 	}
-	$scope.toggleSetting = function( setting ){
-    	if( SettingsService.getSetting(setting, false) ){
-            SettingsService.setSetting(setting, false);
-			
-			// handle server switches
-			switch( setting ){
-				case 'mopidyconsume':
-					MopidyService.setConsume( false );
-					break;
-				case 'echonestenabled':
-					EchonestService.stop();
-					break;
-			}
-        }else{
-            SettingsService.setSetting(setting, true);
-			
-			// handle server switches
-			switch( setting ){
-				case 'mopidyconsume':
-					MopidyService.setConsume( true );
-					break;
-				case 'echonestenabled':
+	
+	// some settings need extra behavior attached when changed
+	$rootScope.$on('spotmop:settings:changed', function( event, data ){
+		switch( data.name ){
+			case 'mopidyconsume':
+				MopidyService.setConsume( data.value );
+				break;
+			case 'echonestenabled':
+				if( data.value )
 					EchonestService.start();
-					break;
-			}
-        }
-	};
+				else
+					EchonestService.stop();
+				break;
+		}				
+	});
 	
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
@@ -88,7 +79,7 @@ angular.module('spotmop.settings', [])
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
 		localStorage.clear();		
-		window.location = window.location;
+		location.reload();
 	};
 	
 	SettingsService.getVersion()
@@ -100,6 +91,14 @@ angular.module('spotmop.settings', [])
 	// this is fired when an input field is blurred
 	$scope.saveField = function( event ){
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
-	};
-	
+	};	
+	$scope.savePusherName = function( name ){
+		PusherService.setMe( name );
+		SettingsService.setSetting( 'pushername', name );
+	};	
+    
+    PusherService.getConnections()
+        .then( function(connections){
+            $scope.clientConnections = connections;
+        });
 });

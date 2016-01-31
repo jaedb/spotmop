@@ -11,39 +11,43 @@
 		
 			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
 			
-			<span class="follow-unfollow" ng-show="playlist.owner.id !== spotifyUser.id" ng-class="{ 'following': following }">
-				<a class="button unfollow"
-					  ng-class="{destructive: hovering}"
-					  ng-click="unfollowPlaylist()"
-					  ng-mouseover="hovering = true"
-					  ng-mouseleave="hovering = false">
-					<span ng-show="hovering">Unfollow</span>
-					<span ng-show="!hovering">Following</span>
-				</a>
-				<a class="button follow"
-					  ng-click="followPlaylist()">
-					<span>Follow</span>
-				</a>
-			</span>
-			
-			<span class="owner-actions" ng-show="playlist.owner.id === spotifyUser.id">
-				<span ng-show="following">
-					<a class="button"
-						  ng-click="editPlaylist( $scope )">
-						Edit
-					</a>
-					<confirmation-button
-						default-text="Delete"
-						confirmation-text="Are you sure?"
-						on-confirmation="unfollowPlaylist">
-					</confirmation-button>
-				</span>
-				<span ng-show="!following">
-					<a class="button"
-						  ng-click="recoverPlaylist()">
-						<i class="fa fa-undo"></i> Recover
-					</a>					
-				</span>
+            <span ng-if="spotifyAuthorized">
+            
+                <span class="follow-unfollow" ng-show="playlist.owner.id != spotifyUser.id" ng-class="{ 'following': following }">
+                    <a class="button unfollow"
+                          ng-class="{destructive: hovering}"
+                          ng-click="unfollowPlaylist()"
+                          ng-mouseover="hovering = true"
+                          ng-mouseleave="hovering = false">
+                        <span ng-show="hovering">Unfollow</span>
+                        <span ng-show="!hovering">Following</span>
+                    </a>
+                    <a class="button follow"
+                          ng-click="followPlaylist()">
+                        <span>Follow</span>
+                    </a>
+                </span>
+                
+                <span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
+                    <span ng-show="following">
+                        <a class="button"
+                              ng-click="editPlaylist( $scope )">
+                            Edit
+                        </a>
+                        <confirmation-button
+                            default-text="Delete"
+                            confirmation-text="Are you sure?"
+                            on-confirmation="unfollowPlaylist">
+                        </confirmation-button>
+                    </span>
+                    <span ng-show="!following">
+                        <a class="button"
+                              ng-click="recoverPlaylist()">
+                            <i class="fa fa-undo"></i> Recover
+                        </a>					
+                    </span>
+                </span>
+            
 			</span>
 		</div>
 	
@@ -68,23 +72,18 @@
 			
 			<div class="intro">	
 				<div class="breadcrumbs">
-					<span ng-if="linkingMode(['browse.featured'])">
+					<span ng-if="linkingMode('browse.featuredplaylist')">
 						<a class="item" ui-sref="browse.featured">Featured playlists</a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
-					<span ng-if="linkingMode(['playlists.my','playlists.myplaylist'])">
+					<span ng-if="linkingMode('library.playlist')">
 						<a class="item" ui-sref="playlists.my">My playlists</a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
-					<span ng-if="linkingMode(['playlists.following','playlists.followingplaylist'])">
-						<a class="item" ui-sref="playlists.following">Following playlists</a>
-						<i class="fa fa-angle-right divider"></i>
-					</span>
-					<span ng-if="linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist'])">
+					<span ng-if="linkingMode('browse.categoryplaylist')">
 						<a class="item" ui-sref="browse.genre">Genre / Mood</a>
 						<i class="fa fa-angle-right divider"></i>
-						{{ parent.category.name }}
-						<a class="item" ui-sref="browse.genrecategory" ng-bind="category.name"></a>
+						<a class="item" ui-sref="browse.genrecategory({ categoryid: category.id })" ng-bind="category.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
 					<span class="item">Playlist</span>

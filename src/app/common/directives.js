@@ -18,6 +18,53 @@ angular.module('spotmop.directives', [])
 /* ======================================================================== DIRECTIVES ======== */
 /* ============================================================================================ */
 
+/**
+ * Smarter click
+ * Fixes issue with ngClick where on touch devices events were triggered twice
+ * Use exactly the same as ngClick but attribute is "singleclick" instead
+ **/
+.directive('singleclick', function() {
+    return function($scope, $element, $attrs) {
+       $element.bind('touchstart click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            $scope.$apply($attrs['singleclick']);
+        });
+    };
+})
+
+
+/** 
+ * Switch input field
+ * Provides toggles for values
+ **/
+.directive('switch', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			name: '@'
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+				
+			$scope.on = SettingsService.getSetting( $scope.name, false );
+			
+			// listen for click events
+			$element.bind('touchstart click', function(event) {
+				event.preventDefault();
+				event.stopPropagation();
+				$scope.$apply( function(){
+					$scope.on = !$scope.on;
+					SettingsService.setSetting( $scope.name, $scope.on );
+					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
+				});
+			});
+		},
+		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
+	}
+})
+
 
 /** 
  * Scrollable panels
@@ -397,6 +444,20 @@ angular.module('spotmop.directives', [])
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
 
+
+// facilitates a filter for null/undefined/false values
+.filter('nullOrUndefined', [function () {
+    return function( items, property ){
+        var arrayToReturn = [];
+        for (var i = 0; i < items.length; i++){			
+			if( typeof(items[i][property]) === 'undefined' || items[i][property] == false )
+				arrayToReturn.push(items[i]);
+        }
+        return arrayToReturn;
+    };
+}])
+
+
 // setup a filter to convert MS to MM:SS
 .filter('formatMilliseconds', function() {
 	return function(ms) {
@@ -406,6 +467,30 @@ angular.module('spotmop.directives', [])
 		var minutes = Math.floor((ms / (60 * 1000)) % 60);
 		return minutes + ":" + seconds;
 	}
+})
+
+
+// replace accented characters with their un-accented counterparts
+// Credit: https://gist.github.com/monkeymonk/ccf698e7b71ba22f098a
+.filter('stripAccents', function(){
+    return function (source) {
+        var accent = [
+            /[\300-\306]/g, /[\340-\346]/g, // A, a
+            /[\310-\313]/g, /[\350-\353]/g, // E, e
+            /[\314-\317]/g, /[\354-\357]/g, // I, i
+            /[\322-\330]/g, /[\362-\370]/g, // O, o
+            /[\331-\334]/g, /[\371-\374]/g, // U, u
+            /[\321]/g, /[\361]/g, // N, n
+            /[\307]/g, /[\347]/g, // C, c
+        ],
+        noaccent = ['A','a','E','e','I','i','O','o','U','u','N','n','C','c'];
+
+        for (var i = 0; i < accent.length; i++){
+            source = source.replace(accent[i], noaccent[i]);
+        }
+
+        return source;
+    };
 })
 
 // get the appropriate sized image

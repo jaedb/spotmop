@@ -1,16 +1,20 @@
 <div class="page discover-page scrolling-panel">
 	<div class="inner">
 
-		<div class="page-notification red-background white-text" ng-show="!echonestOnline">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			<span>You need to enable EchoNest to discover new music</span>
-		</div>
-
 		<div class="discover">
 			
-			<div class="page-header">
+			<div class="page-header mobile-show">
 				<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+				<h1>Discover</h1>
+			</div>
+
+			<div class="page-notification red-background white-text" ng-show="!echonestOnline">
+				<i class="fa fa-exclamation-triangle white-text"></i>
+				&nbsp;
+				<span>You need to enable EchoNest to discover new music</span>
+			</div>
+			
+			<div class="page-header mobile-hide">
 				<h1>Discover</h1>
 			</div>
 			

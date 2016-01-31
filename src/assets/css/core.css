@@ -4,9 +4,6 @@
  * Spotmop
  **/
 
-@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
-@import url(https://fonts.googleapis.com/css?family=Archivo+Narrow:400,400italic,700,700italic);
-
 body,
 html {
 	background: ##FFFFFF;
@@ -32,7 +29,15 @@ body.dragging *,
     user-select: none;
 }
 
+body.dragging,
+body.dragging *,
+body.dragging .body,
+body.dragging .body * {
+	cursor: -webkit-grabbing !important;
+	cursor: -moz-grabbing !important;
+}
 
+	
 /**
  * Hardware accelaration
  **/
@@ -110,7 +115,7 @@ body {
 	z-index: 2;
 	top: 0;
 	left: 0;
-	bottom: 120px;
+	bottom: 0;
 	right: 0;
 	position: absolute;
 	overflow-y: auto;
@@ -178,6 +183,11 @@ body {
 .col.w95{	width: 95%; }
 .col.w100{	width: 100%; }
 
+.min-width {			display: inline-block; }
+.min-width.w50 {		min-width: 50px; }
+.min-width.w100 {		min-width: 100px; }
+.min-width.w150 {		min-width: 150px; }
+.min-width.w200 {		min-width: 200px; }
 
 .pull-left {		float: left; }
 .pull-right {		float: right; }
@@ -193,6 +203,18 @@ body {
 	color: #FFFFFF;
 	opacity: 0.4;
 	text-transform: uppercase;
+}
+
+.main-menu .divider.spacer {
+    padding-top: 10px;
+}
+
+.main-menu .menu-item:last-child {
+    padding-bottom: 20px;
+}
+
+.main-menu .menu-item.unavailable {
+	opacity: 0.5;
 }
 
 .main-menu .menu-item > a {
@@ -232,12 +254,23 @@ body {
 
 .main-menu .menu-item.active > a {
 	background-color: rgba(0,0,0,0.15);
-	/*background-position: 100% 50%;*/
 	border-color: #08d58f;
 }
 
 .main-menu .menu-item:not(.active) > a:hover {
 	background-color: rgba(255,255,255,0.05);
+}
+
+.main-menu .playlists-submenu-trigger {
+    float: right;
+    display: block;
+    opacity: 0.5;
+    margin-top: -7px;
+    padding: 10px 15px;
+}
+
+.main-menu .playlists-submenu-trigger i {
+    font-size: 12px;
 }
 	
 .menu-reveal-trigger {
@@ -252,6 +285,20 @@ body {
 	z-index: 9;
 }
 
+
+.main-menu .dragging-note {
+	display: none;
+	float: right;
+	color: #333333;
+	font-size: 12px;
+	padding-right: 7px;
+	padding-top: 2px;
+}
+
+.dragging .main-menu *.dropping > .dragging-note,
+.dragging .main-menu *:hover > .dragging-note {
+	display: block;
+}
 
 
 /**
@@ -299,6 +346,7 @@ body {
 	padding: 10px 0 10px 20px;
 }
 
+.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
 .dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
 	left: 20%;
 }
@@ -418,7 +466,8 @@ body {
 .button,
 button,
 .main-menu a,
-input[type='submit'] {
+input[type='submit'],
+.opacity-hover {
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
 	-o-transition: all 0.2s ease-in-out;
@@ -430,7 +479,8 @@ input[type='submit'] {
 .loading .button,
 .loading button,
 .loading .main-menu a,
-.loading input[type='submit'] {
+.loading input[type='submit'],
+.loading .opacity-hover {
 	-webkit-transition: none !important;
 	-moz-transition: none !important;
 	-o-transition: none !important;
@@ -456,6 +506,20 @@ input[type='submit'] {
 }
 
 
+/**
+ * Hover opacity elements
+ * Fade in on hover
+ **/
+ 
+.opacity-hover {
+	opacity: 0.5;
+}
+
+.opacity-hover:hover {
+	opacity: 1;
+}
+
+
 
 /**
  * Image effects
@@ -476,17 +540,14 @@ input[type='submit'] {
 
 .drag-tracer {
 	position: fixed;
-	padding: 5px 10px;
+    padding: 10px 18px;
     border-radius: 100px;
-    font-size: 11px;
-	background: rgba(100,100,100,0.6);
+    background: rgba(0,0,0,0.9);
 	color: #FFFFFF;
 	z-index: 9;
 	display: none;
-}
-
-.drag-tracer.good {
-    background-color: rgba(53,204,53,1);
+	bottom: 10px;
+	right: 15px;
 }
     
 
@@ -640,6 +701,7 @@ h4.section-title {
 
 .white-text {						color: #FFFFFF; }
 .black-text {						color: #000000; }
+.grey-text {						color: #AAAAAA; }
 .red-text {							color: rgb(214,47,47); }
 .green-text {						color: rgb(53,204,53); }
 .primary-colour-text {				color: #08d58f; }
@@ -742,7 +804,8 @@ h1 .flag {
  * These are all within the .body element (ie the main app frame)
  **/
 
-.body .button {
+.body .button,
+.dialog .button.primary {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -769,8 +832,10 @@ h1 .flag {
 
 /* variations */
 
-.body .button.primary {					background: #08d58f; }
-.body .button.primary:hover {			background: #03c784; }
+.body .button.primary,
+.dialog .button.primary {				background: #08d58f; }
+.body .button.primary:hover,
+.dialog .button.primary:hover {			background: #03c784; }
 
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
@@ -797,44 +862,6 @@ h1 .flag {
 	display: none;
 }
 
-
-/**
- * Switch buttons
- **/
-
-.switch-button {
-    margin-top: 6px;
-    width: 30px;
-    height: 14px;
-    background: rgba(0,0,0,0.3);
-    padding: 3px;
-    border-radius: 20px;
-    position: relative;
-    cursor: pointer;
-    display: inline-block;
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
-}
-
-.switch-button > .switch {
-    width: 14px;
-    height: 14px;
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    background: #DDDDDD;
-    border-radius: 14px;
-}
-
-.switch-button.on {
-    background: rgba(0,0,0,0.8);
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
-}
-
-.switch-button.on > .switch {
-    left: auto;
-    right: 3px;
-    background: #08d58f;
-}
 
 
 
@@ -1158,11 +1185,8 @@ body.dragging .tracklist .track.selected {
 }
 
 .tracklist .track.drag-hovering {
-	border-top: 38px solid #DDDDDD;
-}
-
-.tracklist .track.drag-hovering:first-child {
-	margin-top: -1px;
+	border-top: 3px solid #08d58f;
+	margin-top: -3px;
 }
 
 
@@ -1701,6 +1725,10 @@ body.dragging .tracklist .track.selected {
 	padding-right: 20px;
 }
 
+#player .volume.touch-friendly {
+	display: none;
+}
+
 #player .volume .slider {
 	display: inline-block;
 	width: 40px;
@@ -1791,10 +1819,6 @@ body.dragging .tracklist .track.selected {
 	background-size: cover;
 	background-position: 50% 50%;
 }
-
-#full-player .volume {
-	display: none;
-}
  
 #full-player .track-info {
 	color: #000000;
@@ -1843,6 +1867,10 @@ body.dragging .tracklist .track.selected {
 #full-player .slider .track {
 	background: #DDDDDD;
 	height: 4px;
+}
+	
+#full-player .volume {
+	display: none;
 }
 
 

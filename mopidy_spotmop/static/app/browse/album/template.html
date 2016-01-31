@@ -19,7 +19,7 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-			<a class="button" ng-click="addToLibrary()">Add to library</a>
+			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized">Add to library</a>
 		</div>
 		
 		<div class="clear-left"></div>
@@ -49,8 +49,12 @@
 		
 			<div class="intro">
 				<div class="breadcrumbs">
-					<span ng-repeat="breadcrumb in breadcrumbs">
-						<a class="item" href="{{ breadcrumb.link }}" ng-bind="breadcrumb.name"></a>
+					<span ng-if="linkingMode('browse.newalbum')">
+						<a class="item" ui-sref="browse.new">New releases</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span ng-if="linkingMode('browse.artistalbum')">
+						<a class="item" ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
 					<span class="item">Album</span>
@@ -58,7 +62,7 @@
 				<h1 ng-bind="album.name"></h1>
 				<h2 class="description">
 					<span ng-repeat="artist in album.artists">
-						<a ui-sref="browse.artist({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+						<a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
 					</span>
 				</h2>	
 			</div>

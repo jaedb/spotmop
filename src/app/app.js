@@ -9,9 +9,10 @@ angular.module('spotmop', [
 	'ngResource',
 	'ngStorage',
 	'ngTouch',
-	'ui.router',
-	
+	'ui.router',	
 	'angular-loading-bar',
+	'angular-google-analytics',
+	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',
 	'spotmop.common.tracklist',
@@ -24,17 +25,17 @@ angular.module('spotmop', [
 	'spotmop.services.echonest',
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
+	'spotmop.services.pusher',
 	
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
 	'spotmop.search',
-	'spotmop.settings',
-	
+	'spotmop.settings',	
 	'spotmop.discover',
 	
 	'spotmop.browse',
-	'spotmop.browse.artist.overview({',
+	'spotmop.browse.artist',
 	'spotmop.browse.album',
 	'spotmop.browse.playlist',
     'spotmop.browse.user',
@@ -43,14 +44,18 @@ angular.module('spotmop', [
 	'spotmop.browse.new'
 ])
 
-.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider){
-	//$locationProvider.html5Mode(true);
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider){
+
 	$urlRouterProvider.otherwise("queue");
 	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
+	
+	// initiate analytics
+	AnalyticsProvider.useAnalytics(true);
+	AnalyticsProvider.setAccount("UA-64701652-3");
 })
 
 
-.run( function($rootScope, SettingsService){
+.run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })
 
@@ -61,7 +66,10 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService ){		
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+
+	// track core started
+	Analytics.trackEvent('Spotmop', 'Started');
 		
     $scope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
@@ -88,11 +96,27 @@ angular.module('spotmop', [
 	}
     $scope.playlistsMenu = [];
     $scope.myPlaylists = {};
+	$scope.popupVolumeControls = function(){
+        DialogService.create('volumeControls', $scope);
+	}
+    
+    /**
+     * Playlists submenu
+     **/
+     
+    // handle manual show
+    $(document).on('mouseenter', '.playlists-submenu-trigger', function( event ){
+        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
+    });
+    
+    $(document).on('mouseleave', '.menu-item.top-level.playlists', function( event ){
+        $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
+    });
     
 	// update the playlists menu
-	$scope.updatePlaylists = function(){
-		
-		SpotifyService.getPlaylists( $scope.spotifyUser.id, 50 )
+	$scope.updatePlaylists = function( userid ){
+	
+		SpotifyService.getPlaylists( userid, 50 )
 			.then(function( response ) {
 				
 				$scope.myPlaylists = response.items;				
@@ -114,6 +138,7 @@ angular.module('spotmop', [
                 $scope.playlistsMenu = newPlaylistsMenu;
 			});
 	}
+    
 		
     
 	/**
@@ -133,7 +158,7 @@ angular.module('spotmop', [
 		return false;
 	}
 	
-    angular.element(window).resize(function(){
+    $(window).resize(function(){
 		
 		// detect if the width has changed 
 		// we only check width because soft keyboard reveal shouldn't hide/show the menu (ie search form)
@@ -147,9 +172,10 @@ angular.module('spotmop', [
 		}
     });
 	
-	$rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){ 
+	// when we navigate to a new state
+	$rootScope.$on('$stateChangeStart', function(event){ 
 		$scope.hideMenu();
-		BackgroundCheck.refresh();
+		Analytics.trackPage( $location.path() );
 	});
 	
 	$(document).on('click', '#body', function(event){
@@ -172,7 +198,35 @@ angular.module('spotmop', [
 	 * Search
 	 **/
 	$scope.searchSubmit = function( query ){
-		$state.go( 'search', { query: query } );
+        
+		// track this navigation event
+		Analytics.trackEvent('Search', 'Performed search', query);
+		
+		// see if spotify recognises this query as a spotify uri
+		var uriType = SpotifyService.uriType( query );
+		
+		// no? just do a normal search
+		if( !uriType ){
+			$state.go( 'search', { query: query } );
+		
+		// yes? right. Let's send you straight to the asset, depending on it's type
+		}else{
+		
+			NotifyService.notify('You\'ve been redirected because that looked like a Spotify URI');
+		
+			if( uriType == 'artist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.artist.overview', {uri: query } );
+				
+			}else if( uriType == 'album' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.album', {uri: query } );
+				
+			}else if( uriType == 'playlist' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.playlist', {uri: query } );
+			}
+		}
 	};
     
     
@@ -201,17 +255,18 @@ angular.module('spotmop', [
 		
 		return mode;
 	};
-
+    
     
     /**
      * Mopidy music player is open for business
      **/
 	$scope.$on('mopidy:state:online', function(){
+		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$scope.currentTracklist = tlTracks;
 		});
-		MopidyService.getConsume().then( function( isConsume ){			
+		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
 	});
@@ -219,20 +274,64 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
-		
     
+	
 	/**
 	 * Spotify is online and authorized
 	 **/
+	$rootScope.spotifyAuthorized = false;
+	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
+		if( newMethod == 'client' ){
+			$rootScope.spotifyAuthorized = true;
+			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
+			$scope.updatePlaylists( $scope.spotifyUser.id );
+			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+		}else{
+			$rootScope.spotifyAuthorized = false;
+			$scope.playlistsMenu = [];
+		}
+	});
+	
 	$scope.$on('spotmop:spotify:online', function(){
-		SpotifyService.getMe()
-			.then( function(response){
-				$scope.spotifyUser = response;
-				SettingsService.setSetting('spotifyuserid', $scope.spotifyUser.id);
-				
-				// update my playlists
-				$scope.updatePlaylists();
-			});
+		$rootScope.spotifyOnline = true;
+		if( $rootScope.spotifyAuthorized ){
+			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
+			$scope.updatePlaylists( $scope.spotifyUser.id );
+		}
+	});
+	
+	$scope.$on('spotmop:spotify:offline', function(){
+		$scope.playlistsMenu = [];
+		$rootScope.spotifyOnline = false;
+	});
+	
+	
+	/**
+	 * Pusher integration
+	 **/
+     
+	PusherService.start();
+	
+    $rootScope.$on('spotmop:pusher:online', function(event, data){
+        
+        // if we have no client name, then initiate initial setup
+		var client = SettingsService.getSetting('pushername', null);
+        if( typeof(client) === 'undefined' || !client || client == '' ){
+            DialogService.create('initialsetup', $scope);
+			Analytics.trackEvent('Core', 'Initial setup');
+		}
+    });
+    
+	$rootScope.$on('spotmop:pusher:received', function(event, data){
+		
+		var icon = '';
+		data.spotifyuser = JSON.parse(data.spotifyuser);
+		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
+			icon = data.spotifyuser.images[0].url;
+		
+		NotifyService.browserNotify( data.title, data.body, icon );
+		
+		Analytics.trackEvent('Pusher', 'Notification received', data.body);
 	});
 	
 	
@@ -523,15 +622,10 @@ angular.module('spotmop', [
 			
 				// turn the trigger safety of
 				dragging.safetyOff = true;
-
-                // setup the tracer, and make him sticky
-                dragTracer
-                    .show()
-                    .css({
-                        top: event.clientY-10,
-                        left: event.clientX+10
-                    });
-                
+				
+                // setup the tracer
+                dragTracer.show();
+					
                 $(document).find('.droppable').removeClass('dropping');
                 $(document).find('.dropping-within').removeClass('dropping-within');
 			
@@ -540,21 +634,17 @@ angular.module('spotmop', [
 					isMenuItem = true;
 				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    dragTracer.addClass('good').html('Add to queue');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    dragTracer.addClass('good').html('Add to library');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
-                    dragTracer.addClass('good').html('Add to playlist');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
-                    dragTracer.addClass('good').html('Add to playlist');
                     target.addClass('dropping');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                 }else{
-                    dragTracer.removeClass('good').html('Dragging '+dragging.tracks.length+' track(s)');
+                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
                 }
 			}
 		}

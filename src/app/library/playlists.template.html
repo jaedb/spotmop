@@ -3,12 +3,16 @@
 		
 		<div class="page-header mobile-show">
 			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Playlists</h1>
+			<a class="create-playlist button pull-right"
+				  ng-click="createPlaylist()">
+				<i class="fa fa-plus"></i>
+			</a>
+			<h1>Playlists</h1>		
 		</div>
 		
-		<a class="button create-playlist float-right primary"
+		<a class="button create-playlist float-right primary mobile-hide"
 			  ng-click="createPlaylist()">
-			<span>New</span>
+			<i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
 		</a>
 		
 		<h1 class="mobile-hide">Playlists</h1>

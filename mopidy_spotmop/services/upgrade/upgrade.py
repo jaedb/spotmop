@@ -20,7 +20,7 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
 	
 	# check if we're able to upgrade, and what our current version is
     def get(self):
-		self.write(json_encode({'root': self.isroot, 'currentVersion': self.version, 'latestVersion': '2.5.7'}))
+		self.write(json_encode({'root': self.isroot, 'currentVersion': self.version}))
 
     def post(self):
         if not self.isroot:
@@ -28,7 +28,7 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
 			message = 'Mopidy needs to run as root user to perform upgrades'
         else:
             try:
-				subprocess.check_call(["pip", "install", "--upgrade", "mopidy-spotmop"])
+				subprocess.check_call(["pip", "install", "--upgrade", "Mopidy-Spotmop"])
 				status = 'success'
 				message = 'Upgrade succesful'
             except subprocess.CalledProcessError:

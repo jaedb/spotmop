@@ -45,7 +45,98 @@
 	}
 }
 
-@media( max-width: 800px ){
+
+/**
+ * Narrow OR shallow screens need the skinny player
+ **/
+@media ( max-width: 800px ), ( max-height: 640px ){
+	
+	#sidebar > .inner {
+		bottom: 54px;
+	}
+	
+	
+	/**
+	 * Player
+	 **/	
+	 
+	#body {
+		bottom: 50px;
+	}
+	
+	#player {
+		position: fixed;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		width: auto;
+		height: 40px;
+		padding: 12px 0 2px;
+		background-color: #222222;
+		overflow: hidden;
+		line-height: 1.2em;
+	}
+	
+	.player .button {
+		margin: 0 3px;
+	}
+	
+	#player .button.previous,
+	#player .volume{
+		display: none !important;
+	}
+	
+	#player .track-info {
+		float: right;
+		width: 80%;
+		padding: 0;
+		font-size: 13px;
+	}
+	
+	#player .playback {
+		position: absolute;
+		padding-left: 10px;
+		top: 16px;
+	}
+	
+	#player > .background-image {
+		display: block;
+		position: absolute;
+		top: -20px;
+		right: -20px;
+		bottom: -20px;
+		left: -20px;
+		z-index: -1;
+		opacity: 0.3;
+	}
+
+	#player > .background-image .image {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-position: 0 50%;
+		background-size: cover;
+	}
+	
+	#player .slider.progress {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: auto;
+		padding: 0;
+	}
+	
+	#player .slider.progress .track,
+	#player .slider.progress:hover .track {
+		height: 2px;
+	}
+
+}
+
+@media ( max-width: 800px ){
 
 	.mobile-show {
 		display: block !important;
@@ -128,6 +219,13 @@
 		margin: 0;
 		font-size: 18px;
 		text-align: center;
+	}
+	
+	.page-header .button,
+	.page-header .button:hover {
+		margin: -5px -10px 0 0;
+		padding: 8px;
+		background: transparent;
 	}
 	
 	
@@ -258,8 +356,8 @@
 	 * Dialogs and popups
 	 **/
 	
-	.dialog input.large {
-		width: 89%;
+	.dialog .field.large input {
+		width: 100%;
 	}
 	 
 	.dialog .content {
@@ -269,85 +367,6 @@
 	
 	.add-to-playlist-dialog .playlist {
 		width: 21%;
-	}
-	
-	
-	/**
-	 * Player
-	 **/	
-	 
-	#body {
-		bottom: 50px;
-	}
-	
-	#player {
-		position: fixed;
-		bottom: 0;
-		right: 0;
-		left: 0;
-		width: auto;
-		height: 40px;
-		padding: 12px 0 2px;
-		background-color: #222222;
-		overflow: hidden;
-		line-height: 1.2em;
-	}
-	
-	.player .button {
-		margin: 0 3px;
-	}
-	
-	#player .button.previous,
-	#player .volume {
-		display: none;
-	}
-	
-	#player .track-info {
-		float: right;
-		width: 80%;
-		padding: 0;
-		font-size: 13px;
-	}
-	
-	#player .playback {
-		position: absolute;
-		padding-left: 10px;
-		top: 16px;
-	}
-	
-	#player > .background-image {
-		display: block;
-		position: absolute;
-		top: -20px;
-		right: -20px;
-		bottom: -20px;
-		left: -20px;
-		z-index: -1;
-		opacity: 0.3;
-	}
-
-	#player > .background-image .image {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		background-position: 0 50%;
-		background-size: cover;
-	}
-	
-	#player .slider.progress {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: auto;
-		padding: 0;
-	}
-	
-	#player .slider.progress .track,
-	#player .slider.progress:hover .track {
-		height: 2px;
 	}
 	
 	
@@ -366,13 +385,6 @@
 	
 	#full-player .volume {
 		display: inline-block;
-	}
-	
-	#full-player .volume .slider {
-		width: 50px;
-		display: inline-block;
-		vertical-align: bottom;
-		margin-bottom: 10px;
 	}
 	
 	
@@ -493,7 +505,6 @@
 	}
 	
 	.edit-playlist-dialog .actions {
-		display: block;
 		padding-left: 0;
 	}
 	
@@ -506,6 +517,7 @@
 	 * Buttons and interactive panels
 	 **/
 	.actions {
+		display: block;
 		padding-left: 0;
 	}
 	

@@ -11,7 +11,7 @@
 		<div class="album-items square-panels">
 			
 			<div class="item-container" ng-repeat="album in albums.items track by $index">
-				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+				<a ui-sref="browse.newalbum({ uri: album.uri })" class="square-panel album">
 					<div class="image-container">
 						<thumbnail images="album.images"></thumbnail>
 					</div>

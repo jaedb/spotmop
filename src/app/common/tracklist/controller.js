@@ -440,9 +440,9 @@ angular.module('spotmop.common.tracklist', [
 							selectedTrack.transitioning = false;
 						});
 					// successful
-					}else{
+					}else{						
 						// remove tracks from DOM
-						$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
+						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
 						
 						// update our snapshot so Spotify knows which version of the playlist our positions refer to
 						$scope.playlist.snapshot_id = response.snapshot_id;

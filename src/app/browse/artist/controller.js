@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('spotmop.browse.artist.overview({', [])
+angular.module('spotmop.browse.artist', [])
 
 /**
  * Routing 
@@ -34,6 +34,11 @@ angular.module('spotmop.browse.artist.overview({', [])
 			url: "/biography",
 			templateUrl: "app/browse/artist/biography.template.html",
 			controller: 'ArtistBiographyController'
+		})
+		.state('browse.artistalbum', {
+			url: "/artist/:artisturi/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
 		});
 })
 
@@ -41,7 +46,7 @@ angular.module('spotmop.browse.artist.overview({', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -69,18 +74,29 @@ angular.module('spotmop.browse.artist.overview({', [])
 			*/
 	}
     
-	// get the artist
+	// get the artist from Spotify
 	SpotifyService.getArtist( $stateParams.uri )
 		.then( function( response ){
 			$scope.artist = response;
+    
+			/*
+			// get the artist from LastFM
+			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
+			LastfmService.artistInfo( response.name )
+				.then( function( response ){
+					console.log( response );
+				});
+			*/
 		});
 
 	// figure out if we're following this playlist
-	SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-		.then( function( isFollowing ){
-			$scope.following = $.parseJSON(isFollowing);
-		});
-		
+	if( $rootScope.spotifyAuthorized ){
+		SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+			.then( function( isFollowing ){
+				$scope.following = $.parseJSON(isFollowing);
+			});
+	}
+	
 	// get the artist's related artists
 	SpotifyService.getRelatedArtists( $stateParams.uri )
 		.then( function( response ){
@@ -159,12 +175,28 @@ angular.module('spotmop.browse.artist.overview({', [])
 /**
  * Biography controller
  **/
-.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, EchonestService ){
+.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
 	
-	// get the biography
-	EchonestService.getArtistBiography( $stateParams.uri )
-		.then( function( response ){
-			$scope.artist.biography = response.response.biographies[0];
-		});
+	// check if we know the artist name yet. If not, go find the artist on Spotify first
+	if( typeof($scope.artist.name) === 'undefined' ){
+		
+		// get the artist from Spotify
+		SpotifyService.getArtist( $stateParams.uri )
+			.then( function( response ){
+				getBio( response.name );
+			});
+	}else{
+		getBio( $scope.artist.name );
+	}
 	
+	// go get the biography
+	function getBio( name ){
+		LastfmService.artistInfo( name )
+			.then( function( response ){
+				$scope.artist.biography = response.artist.bio;
+			});
+	}
 });
+
+
+

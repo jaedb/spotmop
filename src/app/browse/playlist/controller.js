@@ -69,7 +69,6 @@ angular.module('spotmop.browse.playlist', [])
         return Math.round(totalTime / 100000);   
     }
     
-    
 	
 	/**
 	 * Lazy loading
@@ -144,10 +143,20 @@ angular.module('spotmop.browse.playlist', [])
 			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
         
             // figure out if we're following this playlist
-            SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-                .then( function( isFollowing ){
-                    $scope.following = $.parseJSON(isFollowing);
-                });
+			if( $rootScope.spotifyAuthorized ){
+				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+					.then( function( isFollowing ){
+						$scope.following = $.parseJSON(isFollowing);
+					});
+			}
+    
+			// if we're viewing from within a genre category, get the category
+			if( typeof($stateParams.categoryid) !== 'undefined' ){				
+				SpotifyService.getCategory( $stateParams.categoryid )
+					.then(function( response ) {
+						$scope.category = response;
+					});
+			}
 		});
 		
 	

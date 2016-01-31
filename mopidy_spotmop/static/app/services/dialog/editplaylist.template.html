@@ -3,23 +3,31 @@
 	<h4 class="section-title dialog-title">Edit playlist</h4>
 
 	<form>
+		
+		<div class="field text large">
+			<input name="name" placeholder="Playlist name" ng-model="playlistNewName" />
+		</div>
+		
+		<div class="field radio">
+			<label>
+				<input type="radio" name="public" value="true" ng-model="playlistNewPublic" />
+				<span class="label">Public</span>
+			</label>
+			<label>
+				<input type="radio" name="public" value="false" ng-model="playlistNewPublic" />
+				<span class="label">Private</span>
+			</label>
+			<div class="clear"></div>
+		</div>
 
-		<input class="large" name="name" placeholder="Playlist name" ng-model="playlistNewName" />
-
-		<span class="actions">
-
-			<span class="button toggle-public" ng-click="togglePublic()">
-				<i class="fa fa-lock fa-fw" ng-show="!playlistNewPublic"></i>
-				<i class="fa fa-unlock fa-fw" ng-show="playlistNewPublic"></i>
-			</span>
-
-			<span class="button save productive" ng-click="savePlaylist()" ng-hide="saving">
-				<i class="fa fa-check"></i>
-			</span>
-			
+		<div class="actions">
+			<span class="button save primary" ng-click="savePlaylist()" ng-hide="saving">
+				<i class="fa fa-check"></i>&nbsp; Save
+			</span>			
 			<span ng-show="saving" class="saving">
-				<img src="/assets/svg/spinner.svg" class="working" />
+				<img src="assets/svg/spinner.svg" class="working" />
 			</span>
+		</div>
 		
 	</form>
 	

@@ -1,19 +1,77 @@
 <div ng-controller="SettingsController" class="page settings-page scrolling-panel">
 	<div class="inner">
-		
-		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			<span ng-show="!mopidyOnline">Mopidy is currently offline - check your settings</span>
-			<span ng-show="!spotifyOnline">Spotify is currently offline - make sure your browser allows popups</span>
-		</div>
 			
-		<div class="page-header">
+		<div class="page-header mobile-show">
 			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 			<h1>Settings</h1>
 		</div>
 		
+		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
+			<i class="fa fa-exclamation-triangle white-text"></i>
+			&nbsp;
+			<span ng-show="!mopidyOnline">Mopidy is offline - check your settings or restart Mopidy server</span>
+			<span ng-show="!spotifyOnline">Spotify is offline - please authenticate (make sure your browser allows popups)</span>
+		</div>
+			
+		<div class="page-header mobile-hide">
+			<h1>Settings</h1>
+		</div>
+		
 		<div class="settings">
+			
+			<div class="section info">
+			
+				<h4 class="section-title underline">Spotmop</h4>
+
+				<div class="field">
+					<div class="label">Username</div>
+					<div class="input">
+						<input type="text" name="pushername" placeholder="New user" class="autosave" ng-model="settings.pushername" ng-blur="savePusherName( settings.pushername )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Notifications port</div>
+					<div class="input">
+						<input type="text" name="pusherport" placeholder="6681" class="autosave" ng-model="settings.pusherport" ng-blur="saveField( $event )" />
+						<i class="fa fa-check autosave-success"></i>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="label">Disable browser notifications</div>
+					<div class="input">
+						<switch class="switch-button" name="pusherdisabled"></switch>
+					</div>
+				</div>
+
+				<div class="field shortcut-keys">
+					<div class="label">Keyboard shortcuts</div>
+					<div class="input">
+						<switch class="switch-button" name="keyboardShortcutsEnabled"></switch>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+
+				<div class="field">
+					<div class="label">Current version</div>
+					<div class="input readonly">
+						<span class="spotmop-version" ng-bind="version.currentVersion"></span>						
+						&nbsp;<a ng-click="upgrade()" ng-show="version.root">Check for upgrade</a>
+						<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
+					</div>
+					<div class="clear-both"></div>
+				</div>
+				
+				<div class="field">
+					<div class="label">Author</div>
+					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
+					<div class="clear-both"></div>
+				</div>
+			</div>
+			
+			<!-- SECTION -->
 			
 			<div class="section mopidy">
 			
@@ -42,7 +100,7 @@
 				<div class="field">
 					<div class="label">Consume mode</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.mopidyconsume}" ng-click="toggleSetting('mopidyconsume')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="mopidyconsume"></switch>
 					</div>
 				</div>
 
@@ -58,36 +116,50 @@
 					<span class="state-label green-background white-text" ng-if="spotifyOnline">Connected</span>
 					<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
 				</h4>
+                
+                <div class="field">
+                    <div class="label">Country code</div>
+                    <div class="input">
+                        <input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="settings.countrycode" ng-blur="SaveFields( $event )" />
+                        <i class="fa fa-check autosave-success"></i>
+                    </div>
+                </div>
 
-				<div class="field">
-					<div class="label">Country code</div>
-					<div class="input">
-						<input type="text" name="spotifycountry" placeholder="NZ" class="autosave" ng-model="settings.spotifycountry" ng-blur="SaveFields( $event )" />
-						<i class="fa fa-check autosave-success"></i>
-					</div>
+                <div class="field">
+                    <div class="label">Locale</div>
+                    <div class="input">
+                        <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
+                        <i class="fa fa-check autosave-success"></i>
+                    </div>
+                </div>
+                
+                <div class="field current-user" ng-if="spotifyAuthorized">
+                    <div class="label">Current user</div>
+                    <div class="input">
+                        <span class="my-profile">
+                            <span class="image-container" ng-repeat="image in settings.spotifyuser.images  | limitTo:1">
+                                <div class="image animate" style="background-image: url({{ image.url }});"></div>
+                            </span>
+                            <span ng-bind="settings.spotifyuser.display_name"></span> (<a ng-bind="settings.spotifyuser.id" href="/browse/user/{{ settings.spotifyuser.uri }}"></a>)
+                            &nbsp;&nbsp;
+                            <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="field" ng-if="!spotifyAuthorized">
+                    <div class="label">Connect to Spotify</div>
+                    <div class="input">
+                        <a class="button primary" ng-click="authorizeSpotify()"><i class="fa fa-tick"></i>&nbsp; Login to Spotify</a>
+                    </div>
 				</div>
 
-				<div class="field">
-					<div class="label">Locale</div>
-					<div class="input">
-						<input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="settings.spotifylocale" ng-blur="SaveFields( $event )" />
-						<i class="fa fa-check autosave-success"></i>
-					</div>
-				</div>
-
-				<div class="field current-user">
-					<div class="label">Current user</div>
-					<div class="input">
-						<span class="my-profile">
-							<span class="image-container" ng-repeat="image in spotifyUser.images  | limitTo:1">
-								<div class="image animate" style="background-image: url({{ image.url }});"></div>
-							</span>
-							<span ng-bind="spotifyUser.display_name"></span> (<a ng-bind="spotifyUser.id" href="/browse/user/{{ spotifyUser.uri }}"></a>)
-							&nbsp;&nbsp;
-							<a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-						</span>
-					</div>
-				</div>
+                <div class="field" ng-if="settings.advancedMode && spotifyOnline">
+                    <div class="label">Spotify authentication</div>
+                    <div class="input">
+                        <a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
+                    </div>
+                </div>
 
 				<div class="clear-both"></div>
 			
@@ -107,7 +179,7 @@
 				<div class="field">
 					<div class="label">Enabled</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.echonestenabled}" ng-click="toggleSetting('echonestenabled')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="echonestenabled"></switch>
 					</div>
 				</div>
 
@@ -119,79 +191,19 @@
 					</div>
 				</div>
 
+                <div class="field" ng-if="settings.advancedMode">
+                    <div class="label">Echonest taste profile</div>
+                    <div class="input">
+                        <confirmation-button
+                            extra-classes="destructive"
+                            default-text="Delete taste profile"
+                            confirmation-text="Are you sure?"
+                            on-confirmation="deleteEchonestTasteProfile()">
+                        </confirmation-button>
+                    </div>
+                </div>
+
 				<div class="clear-both"></div>
-			</div>
-			
-			<!-- SECTION -->
-			
-			<div class="section info">
-			
-				<h4 class="section-title underline">Spotmop</h4>
-				
-				<div class="field">
-					<div class="label">Author</div>
-					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
-					<div class="clear-both"></div>
-				</div>
-
-				<div class="field">
-					<div class="label">Current version</div>
-					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="version.currentVersion"></span>
-						<span ng-show="version.currentVersion < version.latestVersion">
-							&nbsp;<a ng-click="upgrade()" ng-show="version.root">Upgrade</a>
-							<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
-						</span>
-					</div>
-					<div class="clear-both"></div>
-				</div>
-
-				<div class="field shortcut-keys">
-					<div class="label">Keyboard shortcuts</div>
-					<div class="input">
-					
-						<span class="switch-button" ng-class="{on: settings.keyboardShortcutsEnabled}" ng-click="toggleSetting('keyboardShortcutsEnabled')"><span class="switch animate"></span></span>
-						
-						<div class="shortcuts" ng-show="settings.keyboardShortcutsEnabled">
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-minus"></i> Spacebar</span></div>
-								<div class="col w80">Play/pause</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-level-down fa-rotate-90"></i>&nbsp; Enter</span></div>
-								<div class="col w80">Play selected tracks</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey"><i class="fa fa-close"></i> Delete</span></div>
-								<div class="col w80">Delete selected tracks</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-up"></i> Up arrow</span></div>
-								<div class="col w80">Volume up by 10%</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-down"></i> Down arrow</span></div>
-								<div class="col w80">Volume down by 10%</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-left"></i> Left arrow</span></div>
-								<div class="col w80">Previous track</div>
-								<div class="clear-both"></div>
-							</div>
-							<div class="row collapse-for-mobile">
-								<div class="col w20"><span class="flag grey">CTRL + <i class="fa fa-arrow-right"></i> Right arrow</span></div>
-								<div class="col w80">Next track</div>
-								<div class="clear-both"></div>
-							</div>
-						</div>
-					</div>
-					<div class="clear-both"></div>
-				</div>
 			</div>
 			
 			<!-- SECTION -->
@@ -203,7 +215,7 @@
 				<div class="field">
 					<div class="label">Enable advanced settings</div>
 					<div class="input">
-						<span class="switch-button" ng-class="{on: settings.advancedMode}" ng-click="toggleSetting('advancedMode')"><span class="switch animate"></span></span>
+						<switch class="switch-button" name="advancedMode"></switch>
 					</div>
 				</div>
 				
@@ -212,27 +224,7 @@
 					<div class="field">
 						<div class="label">Emulate touch device</div>
 						<div class="input">		
-							<span class="switch-button" ng-class="{on: settings.emulateTouchDevice}" ng-click="toggleSetting('emulateTouchDevice')"><span class="switch animate"></span></span>
-						</div>
-					</div>
-
-					<div class="field">
-						<div class="label">Spotify authentication</div>
-						<div class="input">
-							<a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
-							<a class="button destructive" ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
-						</div>
-					</div>
-
-					<div class="field">
-						<div class="label">Echonest taste profile</div>
-						<div class="input">
-							<confirmation-button
-								extra-classes="destructive"
-								default-text="Delete taste profile"
-								confirmation-text="Are you sure?"
-								on-confirmation="deleteEchonestTasteProfile()">
-							</confirmation-button>
+							<switch class="switch-button" name="emulateTouchDevice"></switch>
 						</div>
 					</div>
 
@@ -246,6 +238,24 @@
 							on-confirmation="resetSettings">
 						</confirmation-button>
 						</div>
+					</div>
+
+					<div class="field">
+						<div class="label">Current connection</div>
+						<div class="input readonly">
+							<span ng-bind="::settings.pusherip"></span> <span class="grey-text">(<span ng-bind="::settings.pusherid"></span>)</span>
+						</div>
+					</div>
+
+					<div class="field current-connections">
+						<div class="label">Users connected</div>
+						<div class="input readonly">
+                            <div ng-repeat="client in clientConnections">
+                                <span class="min-width w100 ip" ng-bind="client.ip"></span>
+                                <span class="min-width w100 name" ng-bind="client.name"></span>
+                            </div>
+						</div>
+						<div class="clear-both"></div>
 					</div>
 				
 				</div>

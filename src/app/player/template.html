@@ -22,6 +22,14 @@
 			</div>
 		</div>
 	</div>
+	
+	<div class="volume touch-friendly">
+		<div class="controls">
+			<span class="button" ng-click="popupVolumeControls()">
+				<i class="fa fa-volume-down fa-fw"></i>
+			</span>
+		</div>
+	</div>
 
 	<div class="playback">
 		<div class="controls">
@@ -30,7 +38,7 @@
 				<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
 				<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
 			</span>
-			<span class="button next mobile-hide" ng-click="next()"><i class="fa fa-step-forward"></i></span>
+			<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 		</div>
 	</div>
 	

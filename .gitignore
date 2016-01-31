@@ -1,5 +1,7 @@
 /Concepts/
 /dist/
+/node_modules/
+/build/
 *.orig
 @eaDir
 Thumbs.db

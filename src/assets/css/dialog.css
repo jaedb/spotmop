@@ -44,6 +44,11 @@
     cursor: pointer;
     z-index: 13;
     color: #FFFFFF;
+	width: 30px;
+}
+
+.dialog .button.close-dialog img {
+	max-width: 100%;
 }
 
 .dialog .button.destructive:hover {		color: rgb(214,47,47); }
@@ -55,7 +60,11 @@
 /* ================================================================================================= */
 
 
-.dialog input {
+.dialog .field .label {	
+	font-size: 16px;
+}
+
+.dialog .field.text input {
 	padding: 5px 0;
 	background: transparent;
 	font-family: "Roboto",Helvetica,Arial,sans-serif;
@@ -66,14 +75,48 @@
 	border-bottom: 2px solid #FFFFFF;
 }
 
-.dialog input:focus {
+.dialog .field.text input:focus {
 	border-color: #1cf4c4;
 }
 
-.dialog input.large {
+.dialog .field.large input {
 	padding: 10px 0;
 	font-size: 30px;
-	width: 50%;
+	width: 70%;
+}
+
+.dialog .field.switch .label {
+	padding-top: 6px;
+}
+
+.dialog .field.radio input {
+	display: none;
+}
+
+.dialog .field.radio .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.dialog .field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+    border-radius: 50%;
+	border: 2px solid #FFFFFF;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.dialog .field.radio input:checked + .label:before {
+    background: #FFFFFF;
+    box-shadow: inset 0px 0px 0px 5px #111111;
 }
 
 .dialog .switch-button {
@@ -83,12 +126,6 @@
 .dialog .actions {
 	padding-left: 0;
 	padding-top: 30px;
-}
-
-.dialog .actions .button {
-	display: inline-block;
-	font-size: 30px;
-	cursor: pointer;
 }
 
 .dialog .actions .working {
@@ -102,32 +139,6 @@
 
 /* ========================================================================= DIALOG-SPECIFIC ======= */
 /* ================================================================================================= */
-
-
-/**
- * Edit a playlist
- **/
- 
-.edit-playlist-dialog .actions {
-    display: inline-block;
-    vertical-align: top;
-    margin-top: -12px;
-    padding-left: 10px;
-}
-
-.edit-playlist-dialog .actions .saving {
-	float: right;
-	margin-top: -4px;
-}
-
-.edit-playlist-dialog .actions .toggle-public {
-	margin-left: -50px;
-	margin-right: 10px;
-}
-
-.edit-playlist-dialog .actions .toggle-public .fa-unlock {
-	color: #444444;
-}
 
 
 /**
@@ -148,6 +159,22 @@
 .add-to-playlist-dialog .square-panel .info {
 	height: 30px;
 }
+
+
+/**
+ * Volume controls
+ **/
+
+.volume-controls-dialog .volume {
+	padding-top: 50px;
+}
+
+.volume-controls-dialog .slider .track {
+	height: 30px;
+}
+
+
+
 
 
 

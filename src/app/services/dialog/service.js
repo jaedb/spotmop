@@ -52,13 +52,18 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: function( $scope, $element, DialogService ){
 			
+			$scope.closeDisabled = false;
+			if( $scope.type == 'initialsetup' )
+				$scope.closeDisabled = true;
+			
             $scope.closeDialog = function(){
                 DialogService.remove();
             }
             
 			// listen for <esc> keypress
 			$scope.$on('spotmop:keyboardShortcut:esc', function(event){
-				DialogService.remove();
+				if( !$scope.closeDisabled )
+					DialogService.remove();
 			});
 		}
 	};
@@ -79,16 +84,17 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
             $scope.saving = false;
-			$scope.togglePublic = function(){
-				if( $scope.playlistPublic )
-					$scope.playlistPublic = false;
-				else
-					$scope.playlistPublic = true;
-			}
+			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
                 $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistPublic == 'true' )
+					$scope.playlistPublic = true;
+				else
+					$scope.playlistPublic = false;
                 
                 // perform the creation
                 SpotifyService.createPlaylist(
@@ -98,8 +104,8 @@ angular.module('spotmop.services.dialog', [])
                     .then( function(response){
                     
                         // save new playlist to our playlist array
-                        $scope.$parent.playlists.unshift( response );
-                    
+                        $scope.$parent.playlists.items.push( response );
+						
                         // fetch the new playlists (for sidebar)
                         $scope.$parent.updatePlaylists();
                     
@@ -127,18 +133,18 @@ angular.module('spotmop.services.dialog', [])
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
             $scope.playlistNewName = $scope.$parent.playlist.name;
-            $scope.playlistNewPublic = $scope.$parent.playlist.public;
+            $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
             $scope.saving = false;
-			$scope.togglePublic = function(){
-				if( $scope.playlistNewPublic )
-					$scope.playlistNewPublic = false;
-				else
-					$scope.playlistNewPublic = true;
-			}
             $scope.savePlaylist = function(){
                 
                 // set state to saving (this swaps save button for spinner)
                 $scope.saving = true;
+				
+				// convert public to boolean (radio buttons use strings...)
+				if( $scope.playlistNewPublic == 'true' )
+					$scope.playlistNewPublic = true;
+				else
+					$scope.playlistNewPublic = false;
                 
                 // actually perform the rename
                 SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
@@ -176,7 +182,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
             
 			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuserid');
+			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
 			
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
 				.then(function( response ) {
@@ -213,6 +219,74 @@ angular.module('spotmop.services.dialog', [])
 						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
 					});
 			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Control volume of Mopidy
+ * Facilitates more fiddly controls, useful for touch devices
+ **/
+
+.directive('volumecontrolsdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/volumecontrols.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
+			$scope.state = function(){
+				return PlayerService.state();
+			}
+			$scope.setVolume = function( event ){
+				var slider, offset, position, percent;
+				if( $(event.target).hasClass('slider') )
+					slider = $(event.target);
+				else
+					slider = $(event.target).closest('.slider');
+				
+				// calculate the actual destination seek time
+				offset = slider.offset();
+				position = event.pageX - offset.left;
+				percent = position / slider.innerWidth() * 100;
+				percent = parseInt(percent);
+				
+				PlayerService.setVolume( percent );
+			};
+		}
+	};
+})
+
+
+/**
+ * Dialog: Setup new user
+ * Initial setup
+ **/
+
+.directive('initialsetupdialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/initialsetup.template.html',
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
+            $scope.saving = false;
+            $scope.save = function(){                
+				if( $scope.name && $scope.name != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// perform the creation
+					SettingsService.setSetting('pushername', $scope.name);
+					DialogService.remove();
+				}else{
+					$scope.error = true;
+				}
+            }
 		}
 	};
 });
