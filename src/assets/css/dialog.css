@@ -175,6 +175,13 @@
 
 
 
+/**
+ * Initial setup
+ **/
+
+.dialog .initial-setup-dialog .dialog-title {
+	padding-bottom: 0;
+}
 
 
 

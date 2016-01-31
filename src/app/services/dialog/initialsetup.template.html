@@ -1,12 +1,13 @@
 <div class="initial-setup-dialog">
 	
 	<h4 class="section-title dialog-title">Initial Setup</h4>
-
+    <div class="form-note note">These options can be changed later in Settings</div>
+    
 	<form>
 		
 		<div class="field text large">
 			<input name="username" placeholder="Your name" ng-model="name" />
-			<span class="note"><span class="red-text" ng-if="error">Please enter your name &nbsp;</span>This can be changed later in Settings</span>
+			<span class="note red-text" ng-if="error">Please enter your name
 		</div>
 
 		<div class="field switch">
