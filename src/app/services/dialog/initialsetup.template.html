@@ -23,10 +23,17 @@
 			<div class="label">Keyboard shortcuts</div>
 		</div>
 
+		<div class="field switch start-spotify-authorization">
+			<div class="input">
+				<switch class="switch-button" name="attemptSpotifyAuthorization"></switch>
+			</div>
+			<div class="label">Connect with Spotify</div>
+		</div>
+
 		<div class="actions">
 			<span class="button save primary" ng-click="save()" ng-hide="saving">
 				<i class="fa fa-check"></i>&nbsp; Save
-			</span>			
+			</span>
 			<span ng-show="saving" class="saving">
 				<img src="assets/svg/spinner.svg" class="working" />
 			</span>

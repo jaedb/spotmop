@@ -272,13 +272,22 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService ){
+		
+			// default to on
+			SettingsService.setSetting('attemptSpotifyAuthorization',true);
+		
             $scope.saving = false;
-            $scope.save = function(){                
+            $scope.save = function(){          
 				if( $scope.name && $scope.name != '' ){
 					
 					// set state to saving (this swaps save button for spinner)
 					$scope.saving = true;
+					
+					// unless the user has unchecked spotify authorization, authorize
+					if( SettingsService.getSetting('attemptSpotifyAuthorization',false) ){
+						SpotifyService.authorize();
+					}
 					
 					// perform the creation
 					SettingsService.setSetting('pushername', $scope.name);

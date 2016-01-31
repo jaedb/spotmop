@@ -805,7 +805,8 @@ h1 .flag {
  **/
 
 .body .button,
-.dialog .button.primary {
+.dialog .button.primary,
+.dialog .button.secondary {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -815,8 +816,10 @@ h1 .flag {
 	border: 0;
 }
 
-.body .button { 						background: #9b9b9b; }
-.body .button:hover { 					background: #8B8B8B; }
+.body .button,
+.dialog .button.secondary { 						background: #9b9b9b; }
+.body .button:hover,
+.dialog .button.secondary:hover { 					background: #8B8B8B; }
 
 .body .button .fa {
 	margin-top: 2px;
