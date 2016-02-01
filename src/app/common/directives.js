@@ -416,12 +416,16 @@ angular.module('spotmop.directives', [])
 			var animateInterval = $interval(
 				function(){	
 					window.requestAnimationFrame(function( event ){
-					
+						
+						var scrollingPanel = $('.scrolling-panel');
+						var bannerPanel = scrollingPanel.find('.intro');
+						
 						// if we've scrolled
-						if( scrollTop != $('.scrolling-panel').scrollTop() ){
-							scrollTop = $('.scrolling-panel').scrollTop();
+						if( scrollTop != scrollingPanel.scrollTop() ){
+							scrollTop = scrollingPanel.scrollTop();
 							
-							var bannerHeight = $(document).find('.artist-intro').outerHeight();
+							var bannerHeight = bannerPanel.outerHeight();
+							console.log( bannerHeight );
 
 							// and if we're within the bounds of our document
 							// this helps prevent us animating when the objects in question are off-screen

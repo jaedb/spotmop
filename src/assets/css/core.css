@@ -1499,15 +1499,20 @@ body.dragging .tracklist .track.selected {
 	padding-top: 13vh;
 }
 
-.featured-playlists-intro > .background-image {
+.featured-playlists-intro > .image-container {
 	position: absolute;
 	top: 0px;
 	left: 0px;
 	right: 0px;
 	bottom: 0px;
-	opacity: 0.6;
-	background-position: 50% 0;
-	background-size: cover;
+}
+
+.featured-playlists-intro > .image-container > .image {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
 }
  
     
