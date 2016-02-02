@@ -425,7 +425,6 @@ angular.module('spotmop.directives', [])
 							scrollTop = scrollingPanel.scrollTop();
 							
 							var bannerHeight = bannerPanel.outerHeight();
-							console.log( bannerHeight );
 
 							// and if we're within the bounds of our document
 							// this helps prevent us animating when the objects in question are off-screen
