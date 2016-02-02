@@ -28,16 +28,20 @@ angular.module('spotmop.services.settings', [])
 			
 			// unsetting?
 			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' ){
-				if( property )
+				if( property ){
 					delete $localStorage.settings[setting][property];
-				else
-					delete $localStorage.settings[setting];			
+				}else{
+					delete $localStorage.settings[setting];	
+				}
 			// setting
             }else{
-				if( property )
+				if( property ){
+					if( typeof($localStorage.settings[setting] === 'undefined' ) )
+						$localStorage.settings[setting] = {};
 					$localStorage.settings[setting][property] = value;
-				else
+				}else{
 					$localStorage.settings[setting] = value;
+				}
 			}
 		},
 		
