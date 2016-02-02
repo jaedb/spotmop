@@ -15,18 +15,53 @@ angular.module('spotmop.services.settings', [])
 	// setup response object
 	service = {
 		
-		setSetting: function( setting, value ){
+		/**
+		 * Set a setting
+		 * @param setting = string (the setting to change)
+		 * @param value = the setting's new value
+		 * @param property = string (optional sub-property)
+		 **/
+		setSetting: function( setting, value, property ){
+			
+			if( typeof(property) === 'undefined')
+				property = false;
+			
 			// unsetting?
-			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
-				delete $localStorage.settings[setting];			
+			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' ){
+				if( property )
+					delete $localStorage.settings[setting][property];
+				else
+					delete $localStorage.settings[setting];			
 			// setting
-            else
-				$localStorage.settings[setting] = value;
+            }else{
+				if( property )
+					$localStorage.settings[setting][property] = value;
+				else
+					$localStorage.settings[setting] = value;
+			}
 		},
 		
-		getSetting: function( setting, defaultValue ){
-			if( typeof($localStorage.settings[setting]) !== 'undefined' )
-				return $localStorage.settings[setting];
+		
+		/**
+		 * Get a setting
+		 * @param setting = string (the setting to fetch)
+		 * @param value = the settings default value (if the setting is undefined)
+		 * @param property = string (optional sub-property)
+		 **/
+		getSetting: function( setting, defaultValue, property ){
+			
+			if( typeof(property) === 'undefined')
+				property = false;
+			
+			if( property ){
+				if( typeof($localStorage.settings[setting][property]) !== 'undefined' ){
+					return $localStorage.settings[setting][property];
+				}
+			}else{
+				if( typeof($localStorage.settings[setting]) !== 'undefined' ){
+					return $localStorage.settings[setting];
+				}
+			}
 			return defaultValue;
 		},
 		
@@ -95,8 +130,25 @@ angular.module('spotmop.services.settings', [])
 		
 		
 		/**
-		 * Perform a Spotmop upgrade
+		 * Spotmop extension upgrade
 		 **/
+		upgradeCheck: function(){			
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
+				})
+                .success(function( response ){					
+                    //deferred.resolve( response.info.version );
+                    deferred.resolve( '2.5.12' );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
 		upgrade: function(){			
             var deferred = $q.defer();
             $http({
