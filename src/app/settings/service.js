@@ -143,8 +143,7 @@ angular.module('spotmop.services.settings', [])
 					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
 				})
                 .success(function( response ){					
-                    //deferred.resolve( response.info.version );
-                    deferred.resolve( '2.5.12' );
+                    deferred.resolve( response.info.version );
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
