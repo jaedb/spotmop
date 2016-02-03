@@ -191,6 +191,9 @@ angular.module('spotmop.browse.artist', [])
 	
 	// go get the biography
 	function getBio( name ){
+	
+		name = name.replace('&','and');
+		
 		LastfmService.artistInfo( name )
 			.then( function( response ){
 				$scope.artist.biography = response.artist.bio;

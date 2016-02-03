@@ -3,11 +3,15 @@
 	
 		<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 		
-		<div class="featured-playlists-intro">
+		<div class="intro featured-playlists-intro">
 			<div class="inner">
 				<h1 ng-bind="message"></h1>
 			</div>
-			<div class="background-image" style="background-image: url('assets/backgrounds/{{ partofday() }}.jpg');"></div>
+		
+			<div class="image-container">
+				<backgroundparallax class="image" image='{"url":"assets/backgrounds/{{ partofday() }}.jpg","width":"1200","height":"600"}' useproxy="true" detectbackground="false" opacity="0.5"></backgroundparallax>
+			</div>
+            
 		</div>
 		
 		<div class="playlist-items square-panels">

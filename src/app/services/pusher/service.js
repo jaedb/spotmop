@@ -47,13 +47,13 @@ angular.module('spotmop.services.pusher', [
                             console.info('Pusher connected as '+data.details.id);
                             SettingsService.setSetting('pusherid', data.details.id);
                             SettingsService.setSetting('pusherip', data.details.ip);
-                            
+								
                             // detect if the core has been updated
-                            if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
+                            if( SettingsService.getSetting('version', 0, 'installed') != data.version ){
                                 NotifyService.notify('New version detected, clearing caches...');      
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
-                                SettingsService.setSetting('spotmopversion', data.version);
+                                SettingsService.setSetting('version', data.version, 'installed');
                             }
 							
                             // notify server of our actual username

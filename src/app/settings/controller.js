@@ -36,6 +36,18 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
+	$scope.upgradeCheck = function(){
+		NotifyService.notify( 'Checking for updates' );
+		SettingsService.upgradeCheck()
+			.then( function(response){				
+				SettingsService.setSetting('version', response, 'latest');
+				if( SettingsService.getSetting('version', 0, 'installed') < response ){
+					SettingsService.setSetting('version',true,'upgradeAvailable');
+				}else{
+					SettingsService.setSetting('version',false,'upgradeAvailable');
+				}
+			});
+	}
 	$scope.upgrade = function(){
 		NotifyService.notify( 'Upgrade started' );
 		SettingsService.upgrade()
@@ -84,7 +96,10 @@ angular.module('spotmop.settings', [])
 	
 	SettingsService.getVersion()
 		.then( function(response){
-			$scope.version = response;
+			if( response.status != 'error' ){
+				SettingsService.setSetting('version',response.currentVersion,'installed');
+				SettingsService.setSetting('version',response.root,'root');
+			}
 		});
 	
 	// save the fields to the localStorage

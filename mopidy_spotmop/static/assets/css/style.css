@@ -885,7 +885,8 @@ h1 .flag {
  **/
 
 .body .button,
-.dialog .button.primary {
+.dialog .button.primary,
+.dialog .button.secondary {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -895,8 +896,10 @@ h1 .flag {
 	border: 0;
 }
 
-.body .button { 						background: #9b9b9b; }
-.body .button:hover { 					background: #8B8B8B; }
+.body .button,
+.dialog .button.secondary { 						background: #9b9b9b; }
+.body .button:hover,
+.dialog .button.secondary:hover { 					background: #8B8B8B; }
 
 .body .button .fa {
 	margin-top: 2px;
@@ -2079,7 +2082,8 @@ body.dragging .tracklist .track.selected {
     box-shadow: inset 0px 0px 0px 5px #111111;
 }
 
-.dialog .switch-button {
+.dialog .switch-button,
+.dialog .switch-button.on {
 	background: rgba(255,255,255,0.2);
 }
 
@@ -2135,6 +2139,13 @@ body.dragging .tracklist .track.selected {
 
 
 
+/**
+ * Initial setup
+ **/
+
+.dialog .initial-setup-dialog .dialog-title {
+	padding-bottom: 0;
+}
 
 
 
@@ -2163,7 +2174,7 @@ body.dragging .tracklist .track.selected {
 	padding-right: 2%;
 }
 
-.field .note {
+.note {
 	display: block;
 	padding: 4px 0 5px 0;
 	font-family: "Roboto";

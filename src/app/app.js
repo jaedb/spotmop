@@ -374,7 +374,7 @@ angular.module('spotmop', [
 
 			// if we're about to fire a keyboard shortcut event, let's prevent default
 			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
 				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
 				if($.inArray(event.which, shortcutKeyCodes) > -1)
 					event.preventDefault();			
@@ -385,7 +385,7 @@ angular.module('spotmop', [
         .bind('keyup',function( event ){
 
 			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
 				
 				// delete key
 				if( event.which === 46 )
