@@ -36,7 +36,7 @@ angular.module('spotmop.services.settings', [])
 			// setting
             }else{
 				if( property ){
-					if( typeof($localStorage.settings[setting] === 'undefined' ) )
+					if( typeof($localStorage.settings[setting]) === 'undefined' )
 						$localStorage.settings[setting] = {};
 					$localStorage.settings[setting][property] = value;
 				}else{

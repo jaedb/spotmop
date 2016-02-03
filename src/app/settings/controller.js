@@ -41,7 +41,7 @@ angular.module('spotmop.settings', [])
 		SettingsService.upgradeCheck()
 			.then( function(response){				
 				SettingsService.setSetting('version', response, 'latest');
-				if( SettingsService.getSetting('version', 0, 'current') < response ){
+				if( SettingsService.getSetting('version', 0, 'installed') < response ){
 					SettingsService.setSetting('version',true,'upgradeAvailable');
 				}else{
 					SettingsService.setSetting('version',false,'upgradeAvailable');
@@ -97,7 +97,7 @@ angular.module('spotmop.settings', [])
 	SettingsService.getVersion()
 		.then( function(response){
 			if( response.status != 'error' ){
-				SettingsService.setSetting('version',response.currentVersion,'current');
+				SettingsService.setSetting('version',response.currentVersion,'installed');
 				SettingsService.setSetting('version',response.root,'root');
 			}
 		});

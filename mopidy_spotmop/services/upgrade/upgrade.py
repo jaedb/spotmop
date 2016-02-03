@@ -30,7 +30,7 @@ class UpgradeRequestHandler(tornado.web.RequestHandler):
             try:
 				subprocess.check_call(["pip", "install", "--upgrade", "Mopidy-Spotmop"])
 				status = 'success'
-				message = 'Upgrade succesful'
+				message = 'Upgrade succesful - please restart Mopidy'
             except subprocess.CalledProcessError:
 				status = 'error'
 				message = "The upgrade failed"
