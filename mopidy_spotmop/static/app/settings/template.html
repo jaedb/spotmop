@@ -57,9 +57,18 @@
 				<div class="field">
 					<div class="label">Current version</div>
 					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="version.currentVersion"></span>						
-						&nbsp;<a ng-click="upgrade()" ng-show="version.root">Check for upgrade</a>
-						<span ng-show="!version.root">Mopidy must be running as root to upgrade</span>
+						<span class="spotmop-version" ng-bind="settings.version.installed"></span>						
+						&nbsp;
+                        <span class="upgrading" ng-show="settings.version.root">
+                        
+                            <a ng-click="upgradeCheck()" ng-show="!settings.version.upgradeAvailable">Check for upgrade</a>
+                            
+                            <span ng-show="settings.version.upgradeAvailable">
+                                <a ng-click="upgrade()">Upgrade to <span ng-bind="settings.version.latest"></span></a>
+                            </span>
+                            
+                        </span>
+                        <span class="upgrading" ng-show="!settings.version.root">Mopidy must be running as root to upgrade</span>
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -69,6 +78,7 @@
 					<div class="input readonly">Built and maintained by James Barnsley (GitHub: <a href="https://github.com/jaedb" target="_blank">jaedb</a>)</div>
 					<div class="clear-both"></div>
 				</div>
+                
 			</div>
 			
 			<!-- SECTION -->

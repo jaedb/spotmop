@@ -29340,7 +29340,7 @@ angular.module('spotmop', [
 
 			// if we're about to fire a keyboard shortcut event, let's prevent default
 			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
 				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
 				if($.inArray(event.which, shortcutKeyCodes) > -1)
 					event.preventDefault();			
@@ -29351,7 +29351,7 @@ angular.module('spotmop', [
         .bind('keyup',function( event ){
 
 			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',true) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
 				
 				// delete key
 				if( event.which === 46 )
@@ -29974,6 +29974,9 @@ angular.module('spotmop.browse.artist', [])
 	
 	// go get the biography
 	function getBio( name ){
+	
+		name = name.replace('&','and');
+		
 		LastfmService.artistInfo( name )
 			.then( function( response ){
 				$scope.artist.biography = response.artist.bio;
@@ -31129,12 +31132,15 @@ angular.module('spotmop.directives', [])
 			var animateInterval = $interval(
 				function(){	
 					window.requestAnimationFrame(function( event ){
-					
+						
+						var scrollingPanel = $('.scrolling-panel');
+						var bannerPanel = scrollingPanel.find('.intro');
+						
 						// if we've scrolled
-						if( scrollTop != $('.scrolling-panel').scrollTop() ){
-							scrollTop = $('.scrolling-panel').scrollTop();
+						if( scrollTop != scrollingPanel.scrollTop() ){
+							scrollTop = scrollingPanel.scrollTop();
 							
-							var bannerHeight = $(document).find('.artist-intro').outerHeight();
+							var bannerHeight = bannerPanel.outerHeight();
 
 							// and if we're within the bounds of our document
 							// this helps prevent us animating when the objects in question are off-screen
@@ -34243,13 +34249,13 @@ angular.module('spotmop.services.pusher', [
                             console.info('Pusher connected as '+data.details.id);
                             SettingsService.setSetting('pusherid', data.details.id);
                             SettingsService.setSetting('pusherip', data.details.ip);
-                            
+								
                             // detect if the core has been updated
-                            if( SettingsService.getSetting('spotmopversion', 0) != data.version ){
+                            if( SettingsService.getSetting('version', 0, 'installed') != data.version ){
                                 NotifyService.notify('New version detected, clearing caches...');      
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
-                                SettingsService.setSetting('spotmopversion', data.version);
+                                SettingsService.setSetting('version', data.version, 'installed');
                             }
 							
                             // notify server of our actual username
@@ -35616,6 +35622,18 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
+	$scope.upgradeCheck = function(){
+		NotifyService.notify( 'Checking for updates' );
+		SettingsService.upgradeCheck()
+			.then( function(response){				
+				SettingsService.setSetting('version', response, 'latest');
+				if( SettingsService.getSetting('version', 0, 'installed') < response ){
+					SettingsService.setSetting('version',true,'upgradeAvailable');
+				}else{
+					SettingsService.setSetting('version',false,'upgradeAvailable');
+				}
+			});
+	}
 	$scope.upgrade = function(){
 		NotifyService.notify( 'Upgrade started' );
 		SettingsService.upgrade()
@@ -35664,7 +35682,10 @@ angular.module('spotmop.settings', [])
 	
 	SettingsService.getVersion()
 		.then( function(response){
-			$scope.version = response;
+			if( response.status != 'error' ){
+				SettingsService.setSetting('version',response.currentVersion,'installed');
+				SettingsService.setSetting('version',response.root,'root');
+			}
 		});
 	
 	// save the fields to the localStorage
@@ -35700,18 +35721,57 @@ angular.module('spotmop.services.settings', [])
 	// setup response object
 	service = {
 		
-		setSetting: function( setting, value ){
+		/**
+		 * Set a setting
+		 * @param setting = string (the setting to change)
+		 * @param value = the setting's new value
+		 * @param property = string (optional sub-property)
+		 **/
+		setSetting: function( setting, value, property ){
+			
+			if( typeof(property) === 'undefined')
+				property = false;
+			
 			// unsetting?
-			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' )
-				delete $localStorage.settings[setting];			
+			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' ){
+				if( property ){
+					delete $localStorage.settings[setting][property];
+				}else{
+					delete $localStorage.settings[setting];	
+				}
 			// setting
-            else
-				$localStorage.settings[setting] = value;
+            }else{
+				if( property ){
+					if( typeof($localStorage.settings[setting]) === 'undefined' )
+						$localStorage.settings[setting] = {};
+					$localStorage.settings[setting][property] = value;
+				}else{
+					$localStorage.settings[setting] = value;
+				}
+			}
 		},
 		
-		getSetting: function( setting, defaultValue ){
-			if( typeof($localStorage.settings[setting]) !== 'undefined' )
-				return $localStorage.settings[setting];
+		
+		/**
+		 * Get a setting
+		 * @param setting = string (the setting to fetch)
+		 * @param value = the settings default value (if the setting is undefined)
+		 * @param property = string (optional sub-property)
+		 **/
+		getSetting: function( setting, defaultValue, property ){
+			
+			if( typeof(property) === 'undefined')
+				property = false;
+			
+			if( property ){
+				if( typeof($localStorage.settings[setting][property]) !== 'undefined' ){
+					return $localStorage.settings[setting][property];
+				}
+			}else{
+				if( typeof($localStorage.settings[setting]) !== 'undefined' ){
+					return $localStorage.settings[setting];
+				}
+			}
 			return defaultValue;
 		},
 		
@@ -35780,8 +35840,24 @@ angular.module('spotmop.services.settings', [])
 		
 		
 		/**
-		 * Perform a Spotmop upgrade
+		 * Spotmop extension upgrade
 		 **/
+		upgradeCheck: function(){			
+            var deferred = $q.defer();
+            $http({
+					method: 'GET',
+					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
+				})
+                .success(function( response ){					
+                    deferred.resolve( response.info.version );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });				
+            return deferred.promise;
+		},
+		
 		upgrade: function(){			
             var deferred = $q.defer();
             $http({
