@@ -28,10 +28,13 @@ angular.module('spotmop.search', [])
 	$scope.artists = [];
 	$scope.playlists = [];
 	$scope.type = $stateParams.type;
-	$scope.query = $filter('stripAccents')( $stateParams.query );
+	$scope.query = '';
+    if( $stateParams.query )
+        $scope.query = $filter('stripAccents')( $stateParams.query );
+        
 	$scope.loading = false;
 	var searchDelayer;
-	
+
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchDevice() )
 		$(document).find('.search-form input.query').focus();
@@ -39,31 +42,6 @@ angular.module('spotmop.search', [])
 	// if we've just loaded this page, and we have params, let's perform a search
 	if( $scope.query )
 		performSearch( $scope.type, $scope.query );
-	
-	/**
-	 * Watch our query string for changes
-	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
-    var tempQuery = '', queryTimeout;
-    $scope.$watch('query', function(newValue, oldValue){
-		
-		if( newValue != oldValue && newValue && newValue != '' ){
-			$scope.loading = true;
-			$scope.tracklist = {tracks: [], type: 'track'};
-			$scope.albums = [];
-			$scope.artists = [];
-			$scope.playlists = [];
-			
-			if (queryTimeout)
-				$timeout.cancel(queryTimeout);
-
-			tempQuery = newValue;
-			queryTimeout = $timeout(function() {
-				$scope.query = tempQuery;
-				performSearch( $scope.type, $scope.query );	
-			}, 1000);
-		}
-    })
-	 **/
 	
 	
 	/**

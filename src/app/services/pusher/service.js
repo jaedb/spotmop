@@ -57,14 +57,14 @@ angular.module('spotmop.services.pusher', [
                             }
 							
                             // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', null)
+                            var name = SettingsService.getSetting('pushername', '')
                             if( name )
                                 service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
+                            if( data.id != SettingsService.getSetting('pusherid', '') && !SettingsService.getSetting('pusherdisabled', false) )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}

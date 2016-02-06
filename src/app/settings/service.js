@@ -53,12 +53,15 @@ angular.module('spotmop.services.settings', [])
 		 * @param property = string (optional sub-property)
 		 **/
 		getSetting: function( setting, defaultValue, property ){
-			
+            
 			if( typeof(property) === 'undefined')
 				property = false;
 			
+            // if we're getting a sub-property
 			if( property ){
-				if( typeof($localStorage.settings[setting][property]) !== 'undefined' ){
+                
+                // make sure our parent property, and sub-property exist
+				if( typeof($localStorage.settings[setting]) !== 'undefined' && typeof($localStorage.settings[setting][property]) !== 'undefined' ){
 					return $localStorage.settings[setting][property];
 				}
 			}else{
