@@ -32915,10 +32915,13 @@ angular.module('spotmop.search', [])
 	$scope.artists = [];
 	$scope.playlists = [];
 	$scope.type = $stateParams.type;
-	$scope.query = $filter('stripAccents')( $stateParams.query );
+	$scope.query = '';
+    if( $stateParams.query )
+        $scope.query = $filter('stripAccents')( $stateParams.query );
+        
 	$scope.loading = false;
 	var searchDelayer;
-	
+
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchDevice() )
 		$(document).find('.search-form input.query').focus();
@@ -32926,31 +32929,6 @@ angular.module('spotmop.search', [])
 	// if we've just loaded this page, and we have params, let's perform a search
 	if( $scope.query )
 		performSearch( $scope.type, $scope.query );
-	
-	/**
-	 * Watch our query string for changes
-	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
-    var tempQuery = '', queryTimeout;
-    $scope.$watch('query', function(newValue, oldValue){
-		
-		if( newValue != oldValue && newValue && newValue != '' ){
-			$scope.loading = true;
-			$scope.tracklist = {tracks: [], type: 'track'};
-			$scope.albums = [];
-			$scope.artists = [];
-			$scope.playlists = [];
-			
-			if (queryTimeout)
-				$timeout.cancel(queryTimeout);
-
-			tempQuery = newValue;
-			queryTimeout = $timeout(function() {
-				$scope.query = tempQuery;
-				performSearch( $scope.type, $scope.query );	
-			}, 1000);
-		}
-    })
-	 **/
 	
 	
 	/**
@@ -34259,14 +34237,14 @@ angular.module('spotmop.services.pusher', [
                             }
 							
                             // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', null)
+                            var name = SettingsService.getSetting('pushername', '')
                             if( name )
                                 service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
+                            if( data.id != SettingsService.getSetting('pusherid', '') && !SettingsService.getSetting('pusherdisabled', false) )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
@@ -35759,12 +35737,15 @@ angular.module('spotmop.services.settings', [])
 		 * @param property = string (optional sub-property)
 		 **/
 		getSetting: function( setting, defaultValue, property ){
-			
+            
 			if( typeof(property) === 'undefined')
 				property = false;
 			
+            // if we're getting a sub-property
 			if( property ){
-				if( typeof($localStorage.settings[setting][property]) !== 'undefined' ){
+                
+                // make sure our parent property, and sub-property exist
+				if( typeof($localStorage.settings[setting]) !== 'undefined' && typeof($localStorage.settings[setting][property]) !== 'undefined' ){
 					return $localStorage.settings[setting][property];
 				}
 			}else{
