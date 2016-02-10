@@ -301,7 +301,7 @@ angular.module('spotmop.library', [])
         
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
-				.then( function( response ){
+				.then( function( response ){				
 					// fetch more detail from each playlist (individually, d'oh!)
 					angular.forEach( response, function(value, key){
 						SpotifyService.getPlaylist( value.uri )
