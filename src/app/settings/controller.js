@@ -62,10 +62,10 @@ angular.module('spotmop.settings', [])
 	// some settings need extra behavior attached when changed
 	$rootScope.$on('spotmop:settings:changed', function( event, data ){
 		switch( data.name ){
-			case 'mopidyconsume':
+			case 'mopidy.consume':
 				MopidyService.setConsume( data.value );
 				break;
-			case 'echonestenabled':
+			case 'echonest.enabled':
 				if( data.value )
 					EchonestService.start();
 				else

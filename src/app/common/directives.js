@@ -47,8 +47,14 @@ angular.module('spotmop.directives', [])
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
 		link: function($scope, $element, $attrs){
-				
-			$scope.on = SettingsService.getSetting( $scope.name, false );
+			
+			var settingElements = $scope.name.split('.');
+			var setting = settingElements[0];
+			var subsetting = false;
+			if( settingElements.length > 1 )
+				subsetting = settingElements[1];
+			
+			$scope.on = SettingsService.getSetting( setting, false, subsetting );
 			
 			// listen for click events
 			$element.bind('touchstart click', function(event) {
@@ -56,7 +62,7 @@ angular.module('spotmop.directives', [])
 				event.stopPropagation();
 				$scope.$apply( function(){
 					$scope.on = !$scope.on;
-					SettingsService.setSetting( $scope.name, $scope.on );
+					SettingsService.setSetting( setting, $scope.on, subsetting );
 					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
 				});
 			});

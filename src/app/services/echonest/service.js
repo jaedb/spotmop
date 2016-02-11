@@ -20,13 +20,13 @@ angular.module('spotmop.services.echonest', [])
         
         start: function(){
             
-            SettingsService.setSetting('echonestenabled',true);
+            SettingsService.setSetting('echonest',true,'enabled');
             
             // if we don't have a taste profile, make one
-            if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
+            if( !SettingsService.getSetting('echonest',false,'tasteprofileid') ){
                 this.createTasteProfile()
                     .success( function(response){ 
-                        SettingsService.setSetting('echonesttasteprofileid', response.response.id);
+                        SettingsService.setSetting('echonest', response.response.id, 'tasteprofileid');
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
                     })
@@ -35,11 +35,13 @@ angular.module('spotmop.services.echonest', [])
                         $rootScope.echonestOnline = false;
                     });
             }else{
-                this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
+                this.getTasteProfile( SettingsService.getSetting('echonest',false,'tasteprofileid') )
                     .success( function(response){
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
-                        $localStorage.echonesttasteprofile = response.response.catalog;
+						if( typeof($localStorage.echonest) === 'undefined' )
+							$localStorage.echonest = {};
+                        $localStorage.echonest.tasteprofile = response.response.catalog;
                     })
                     .error( function(error){
                         this.isOnline = false;
@@ -49,7 +51,7 @@ angular.module('spotmop.services.echonest', [])
         },
         
         stop: function(){            
-            SettingsService.setSetting('echonestenabled',false);            
+            SettingsService.setSetting('echonest',false,'enabled');            
             $rootScope.echonestOnline = false;
         },
 		
@@ -70,7 +72,7 @@ angular.module('spotmop.services.echonest', [])
         },
         
 		getTasteProfile: function(){
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             return $.ajax({
                 url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
                 method: "GET"
@@ -88,7 +90,7 @@ angular.module('spotmop.services.echonest', [])
 		 **/
 		addToTasteProfile: function( action, trackid ){
 			
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
 			var requestData = [];
 			var trackids = [];
 			
@@ -161,7 +163,7 @@ angular.module('spotmop.services.echonest', [])
 		 **/
 		recommendedArtists: function( artists ){
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
 			
 			// no artist provided, so seed based on our taste profile
 			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
@@ -191,7 +193,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		favoriteArtists: function(){		
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
@@ -208,7 +210,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		catalogRadio: function(){		
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')

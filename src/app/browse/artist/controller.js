@@ -46,7 +46,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, EchonestService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -65,13 +65,18 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
-		NotifyService.error( 'This functionality has not yet been implemented' );
-		/*
-		EchonestService.startArtistRadio( $scope.artist.name )
+		
+		NotifyService.notify('Playing all top tracks');
+		
+		// get the artist's top tracks
+		SpotifyService.getTopTracks( $stateParams.uri )
 			.then( function( response ){
-				console.log( response.response );
+				var uris = [];
+				for( var i = 0; i < response.tracks.length; i++ ){
+					uris.push( response.tracks[i].uri );
+				}
+				MopidyService.playTrack( uris, 0 );
 			});
-			*/
 	}
     
 	// get the artist from Spotify
@@ -114,14 +119,13 @@ angular.module('spotmop.browse.artist', [])
 	SpotifyService.getAlbums( $stateParams.uri )
 		.then( function( response ){
 			$scope.$parent.albums = response;
-			
-			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
-				.then( function( response ){
-					$scope.tracklist.tracks = response.tracks;
-				});
 		});	
 	
+	// get the artist's top tracks
+	SpotifyService.getTopTracks( $stateParams.uri )
+		.then( function( response ){
+			$scope.tracklist.tracks = response.tracks;
+		});
 	
 	
 	

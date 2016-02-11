@@ -338,7 +338,7 @@ angular.module('spotmop', [
 	// when playback finishes, log this to EchoNest (if enabled)
 	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
 	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonestenabled',false) )
+		if( SettingsService.getSetting('echonest',false,'enabled') )
 			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
     
