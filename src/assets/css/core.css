@@ -213,7 +213,7 @@ body {
     padding-bottom: 20px;
 }
 
-.main-menu .menu-item.unavailable {
+.main-menu a.unavailable {
 	opacity: 0.5;
 }
 

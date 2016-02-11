@@ -450,10 +450,10 @@ angular.module('spotmop', [
         
         var droppableTarget = null;
         
-        if( $(target).hasClass('droppable') )
+        if( $(target).hasClass('droppable') && !$(target).hasClass('unavailable') )
             droppableTarget = $(target);
         else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable');   
+            droppableTarget = $(target).closest('.droppable:not(.unavailable)');   
         
         return droppableTarget;
     }
