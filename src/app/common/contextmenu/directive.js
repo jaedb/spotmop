@@ -10,7 +10,7 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $scope, $rootScope, $element ){
+		controller: function( $scope, $rootScope, $element, $timeout ){
 			
 			/**
 			 * Menu item functionality
@@ -82,25 +82,39 @@ angular.module('spotmop.common.contextmenu', [
 			 * @param context = string (track|tltrack)
 			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
 			 **/
-			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context, reverse){
-				
-				var positionY = originalEvent.pageY - $(window).scrollTop();
-				var positionX = originalEvent.pageX - window.pageYOffset;
-				
-				if( typeof( reverse ) !== 'undefined' && reverse )
-					positionX -= $element.outerWidth();
-				
-				// position and reveal our element
-				$element
-					.css({
-						top: positionY,
-						left: positionX + 5
-					})
-					.show();
+			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){
+				
+					// apply our context, which ultimately defines what options are available
 					$scope.context = context;
+					
+					// wait for angular to render the dom, then we position the menu
+					$timeout(function(){
+					
+						var positionY = originalEvent.pageY - $(window).scrollTop();
+						var positionX = originalEvent.pageX - window.pageYOffset;
+						var menuWidth = $element.outerWidth();
+						var menuHeight = $element.outerHeight();
+					
+						// too far right
+						if( positionX + menuWidth > $(window).width() )
+							positionX -= menuWidth - 10;
+						
+						// too far to the bottom (yes, document.height() because we're using fixed positions!)
+						if( positionY + menuHeight > $(document).height() )
+							positionY -= menuHeight;
+						
+						// now we can accurately reveal and position it
+						$element
+							.css({
+								top: positionY,
+								left: positionX + 5
+							})
+							.show();
+						
+					});
 				});
 			});
 			
