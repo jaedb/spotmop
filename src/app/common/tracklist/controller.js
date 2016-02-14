@@ -27,8 +27,12 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
 			});
@@ -98,7 +102,12 @@ angular.module('spotmop.common.tracklist', [
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
+					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
 				}
 			});		
@@ -154,8 +163,12 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
 			});		
