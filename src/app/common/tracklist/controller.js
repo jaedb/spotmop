@@ -31,7 +31,8 @@ angular.module('spotmop.common.tracklist', [
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
@@ -105,7 +106,8 @@ angular.module('spotmop.common.tracklist', [
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
 					
 					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
@@ -167,7 +169,8 @@ angular.module('spotmop.common.tracklist', [
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
