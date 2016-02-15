@@ -29304,7 +29304,7 @@ angular.module('spotmop', [
 	// when playback finishes, log this to EchoNest (if enabled)
 	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
 	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonestenabled',false) )
+		if( SettingsService.getSetting('echonest',false,'enabled') )
 			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
     
@@ -29416,10 +29416,10 @@ angular.module('spotmop', [
         
         var droppableTarget = null;
         
-        if( $(target).hasClass('droppable') )
+        if( $(target).hasClass('droppable') && !$(target).hasClass('unavailable') )
             droppableTarget = $(target);
         else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable');   
+            droppableTarget = $(target).closest('.droppable:not(.unavailable)');   
         
         return droppableTarget;
     }
@@ -29829,7 +29829,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', 'SpotifyService', 'SettingsService', 'EchonestService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
+.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', 'SpotifyService', 'SettingsService', 'MopidyService', 'EchonestService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, EchonestService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -29848,13 +29848,18 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
-		NotifyService.error( 'This functionality has not yet been implemented' );
-		/*
-		EchonestService.startArtistRadio( $scope.artist.name )
+		
+		NotifyService.notify('Playing all top tracks');
+		
+		// get the artist's top tracks
+		SpotifyService.getTopTracks( $stateParams.uri )
 			.then( function( response ){
-				console.log( response.response );
+				var uris = [];
+				for( var i = 0; i < response.tracks.length; i++ ){
+					uris.push( response.tracks[i].uri );
+				}
+				MopidyService.playTrack( uris, 0 );
 			});
-			*/
 	}
     
 	// get the artist from Spotify
@@ -29897,14 +29902,13 @@ angular.module('spotmop.browse.artist', [])
 	SpotifyService.getAlbums( $stateParams.uri )
 		.then( function( response ){
 			$scope.$parent.albums = response;
-			
-			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
-				.then( function( response ){
-					$scope.tracklist.tracks = response.tracks;
-				});
 		});	
 	
+	// get the artist's top tracks
+	SpotifyService.getTopTracks( $stateParams.uri )
+		.then( function( response ){
+			$scope.tracklist.tracks = response.tracks;
+		});
 	
 	
 	
@@ -30592,7 +30596,7 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: ['$scope', '$rootScope', '$element', function( $scope, $rootScope, $element ){
+		controller: ['$scope', '$rootScope', '$element', '$timeout', function( $scope, $rootScope, $element, $timeout ){
 			
 			/**
 			 * Menu item functionality
@@ -30664,25 +30668,39 @@ angular.module('spotmop.common.contextmenu', [
 			 * @param context = string (track|tltrack)
 			 * @param reverse = boolean (optional) to reverse position of context menu, ie when you're on the right-boundary of the page
 			 **/
-			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context, reverse){
-				
-				var positionY = originalEvent.pageY - $(window).scrollTop();
-				var positionX = originalEvent.pageX - window.pageYOffset;
-				
-				if( typeof( reverse ) !== 'undefined' && reverse )
-					positionX -= $element.outerWidth();
-				
-				// position and reveal our element
-				$element
-					.css({
-						top: positionY,
-						left: positionX + 5
-					})
-					.show();
+			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){
+				
+					// apply our context, which ultimately defines what options are available
 					$scope.context = context;
+					
+					// wait for angular to render the dom, then we position the menu
+					$timeout(function(){
+					
+						var positionY = originalEvent.pageY - $(window).scrollTop();
+						var positionX = originalEvent.pageX - window.pageYOffset;
+						var menuWidth = $element.outerWidth();
+						var menuHeight = $element.outerHeight();
+					
+						// too far right
+						if( positionX + menuWidth > $(window).width() )
+							positionX -= menuWidth - 10;
+						
+						// too far to the bottom (yes, document.height() because we're using fixed positions!)
+						if( positionY + menuHeight > $(document).height() )
+							positionY -= menuHeight;
+						
+						// now we can accurately reveal and position it
+						$element
+							.css({
+								top: positionY,
+								left: positionX + 5
+							})
+							.show();
+						
+					});
 				});
 			});
 			
@@ -30763,8 +30781,14 @@ angular.module('spotmop.directives', [])
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
 		link: function($scope, $element, $attrs){
-				
-			$scope.on = SettingsService.getSetting( $scope.name, false );
+			
+			var settingElements = $scope.name.split('.');
+			var setting = settingElements[0];
+			var subsetting = false;
+			if( settingElements.length > 1 )
+				subsetting = settingElements[1];
+			
+			$scope.on = SettingsService.getSetting( setting, false, subsetting );
 			
 			// listen for click events
 			$element.bind('touchstart click', function(event) {
@@ -30772,7 +30796,7 @@ angular.module('spotmop.directives', [])
 				event.stopPropagation();
 				$scope.$apply( function(){
 					$scope.on = !$scope.on;
-					SettingsService.setSetting( $scope.name, $scope.on );
+					SettingsService.setSetting( setting, $scope.on, subsetting );
 					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
 				});
 			});
@@ -31282,8 +31306,13 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
 			});
@@ -31353,7 +31382,13 @@ angular.module('spotmop.common.tracklist', [
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
 				}
 			});		
@@ -31409,8 +31444,13 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
 			});		
@@ -32245,7 +32285,7 @@ angular.module('spotmop.library', [])
         
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
-				.then( function( response ){
+				.then( function( response ){				
 					// fetch more detail from each playlist (individually, d'oh!)
 					angular.forEach( response, function(value, key){
 						SpotifyService.getPlaylist( value.uri )
@@ -32756,7 +32796,7 @@ angular.module('spotmop.services.player', [])
 		next: function(){
 		
 			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonestenabled',false) )
+			if( SettingsService.getSetting('echonest',false,'enabled') )
 				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
 		
 			MopidyService.play();
@@ -32915,10 +32955,13 @@ angular.module('spotmop.search', [])
 	$scope.artists = [];
 	$scope.playlists = [];
 	$scope.type = $stateParams.type;
-	$scope.query = $filter('stripAccents')( $stateParams.query );
+	$scope.query = '';
+    if( $stateParams.query )
+        $scope.query = $filter('stripAccents')( $stateParams.query );
+        
 	$scope.loading = false;
 	var searchDelayer;
-	
+
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchDevice() )
 		$(document).find('.search-form input.query').focus();
@@ -32926,31 +32969,6 @@ angular.module('spotmop.search', [])
 	// if we've just loaded this page, and we have params, let's perform a search
 	if( $scope.query )
 		performSearch( $scope.type, $scope.query );
-	
-	/**
-	 * Watch our query string for changes
-	 * When changed, clear all results, wait for 0.5 seconds for next key, then fire off the search
-    var tempQuery = '', queryTimeout;
-    $scope.$watch('query', function(newValue, oldValue){
-		
-		if( newValue != oldValue && newValue && newValue != '' ){
-			$scope.loading = true;
-			$scope.tracklist = {tracks: [], type: 'track'};
-			$scope.albums = [];
-			$scope.artists = [];
-			$scope.playlists = [];
-			
-			if (queryTimeout)
-				$timeout.cancel(queryTimeout);
-
-			tempQuery = newValue;
-			queryTimeout = $timeout(function() {
-				$scope.query = tempQuery;
-				performSearch( $scope.type, $scope.query );	
-			}, 1000);
-		}
-    })
-	 **/
 	
 	
 	/**
@@ -33411,13 +33429,13 @@ angular.module('spotmop.services.echonest', [])
         
         start: function(){
             
-            SettingsService.setSetting('echonestenabled',true);
+            SettingsService.setSetting('echonest',true,'enabled');
             
             // if we don't have a taste profile, make one
-            if( !SettingsService.getSetting('echonesttasteprofileid',false) ){
+            if( !SettingsService.getSetting('echonest',false,'tasteprofileid') ){
                 this.createTasteProfile()
                     .success( function(response){ 
-                        SettingsService.setSetting('echonesttasteprofileid', response.response.id);
+                        SettingsService.setSetting('echonest', response.response.id, 'tasteprofileid');
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
                     })
@@ -33426,11 +33444,13 @@ angular.module('spotmop.services.echonest', [])
                         $rootScope.echonestOnline = false;
                     });
             }else{
-                this.getTasteProfile( SettingsService.getSetting('echonesttasteprofileid',false) )
+                this.getTasteProfile( SettingsService.getSetting('echonest',false,'tasteprofileid') )
                     .success( function(response){
                         this.isOnline = true;
                         $rootScope.echonestOnline = true;
-                        $localStorage.echonesttasteprofile = response.response.catalog;
+						if( typeof($localStorage.echonest) === 'undefined' )
+							$localStorage.echonest = {};
+                        $localStorage.echonest.tasteprofile = response.response.catalog;
                     })
                     .error( function(error){
                         this.isOnline = false;
@@ -33440,7 +33460,7 @@ angular.module('spotmop.services.echonest', [])
         },
         
         stop: function(){            
-            SettingsService.setSetting('echonestenabled',false);            
+            SettingsService.setSetting('echonest',false,'enabled');            
             $rootScope.echonestOnline = false;
         },
 		
@@ -33461,7 +33481,7 @@ angular.module('spotmop.services.echonest', [])
         },
         
 		getTasteProfile: function(){
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             return $.ajax({
                 url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
                 method: "GET"
@@ -33479,7 +33499,7 @@ angular.module('spotmop.services.echonest', [])
 		 **/
 		addToTasteProfile: function( action, trackid ){
 			
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
 			var requestData = [];
 			var trackids = [];
 			
@@ -33552,7 +33572,7 @@ angular.module('spotmop.services.echonest', [])
 		 **/
 		recommendedArtists: function( artists ){
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
 			
 			// no artist provided, so seed based on our taste profile
 			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
@@ -33582,7 +33602,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		favoriteArtists: function(){		
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
@@ -33599,7 +33619,7 @@ angular.module('spotmop.services.echonest', [])
 		
 		catalogRadio: function(){		
 		
-			var profileID = SettingsService.getSetting('echonesttasteprofileid',false);
+			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
             $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
@@ -33848,7 +33868,7 @@ angular.module('spotmop.services.mopidy', [
 			this.start();
 		},
 		getPlaylists: function() {
-			return wrapMopidyFunc("mopidy.playlists.getPlaylists", this)();
+			return wrapMopidyFunc("mopidy.playlists.asList", this)();
 		},
 		getPlaylist: function(uri) {
 			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
@@ -34259,14 +34279,14 @@ angular.module('spotmop.services.pusher', [
                             }
 							
                             // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', null)
+                            var name = SettingsService.getSetting('pushername', '')
                             if( name )
                                 service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', null) && !SettingsService.getSetting('pusherdisabled', false) )
+                            if( data.id != SettingsService.getSetting('pusherid', '') && !SettingsService.getSetting('pusherdisabled', false) )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
@@ -35648,10 +35668,10 @@ angular.module('spotmop.settings', [])
 	// some settings need extra behavior attached when changed
 	$rootScope.$on('spotmop:settings:changed', function( event, data ){
 		switch( data.name ){
-			case 'mopidyconsume':
+			case 'mopidy.consume':
 				MopidyService.setConsume( data.value );
 				break;
-			case 'echonestenabled':
+			case 'echonest.enabled':
 				if( data.value )
 					EchonestService.start();
 				else
@@ -35759,12 +35779,15 @@ angular.module('spotmop.services.settings', [])
 		 * @param property = string (optional sub-property)
 		 **/
 		getSetting: function( setting, defaultValue, property ){
-			
+            
 			if( typeof(property) === 'undefined')
 				property = false;
 			
+            // if we're getting a sub-property
 			if( property ){
-				if( typeof($localStorage.settings[setting][property]) !== 'undefined' ){
+                
+                // make sure our parent property, and sub-property exist
+				if( typeof($localStorage.settings[setting]) !== 'undefined' && typeof($localStorage.settings[setting][property]) !== 'undefined' ){
 					return $localStorage.settings[setting][property];
 				}
 			}else{

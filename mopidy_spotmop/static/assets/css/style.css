@@ -23,7 +23,7 @@ contextmenu {
 
 contextmenu .menu-item {
 	display: block;
-	padding: 10px 12px;
+	padding: 8px 12px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -31,6 +31,18 @@ contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
 }
+
+
+
+/**
+ * Non-touch device only
+ **/
+
+#app:not(.touchDevice) contextmenu .menu-item i {
+	font-size: 10px;
+	padding-right: 8px;
+}
+
 
 
 /**
@@ -293,7 +305,7 @@ body {
     padding-bottom: 20px;
 }
 
-.main-menu .menu-item.unavailable {
+.main-menu a.unavailable {
 	opacity: 0.5;
 }
 

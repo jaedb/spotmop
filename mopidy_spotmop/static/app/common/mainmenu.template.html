@@ -42,15 +42,15 @@
 	<li class="divider">
 		My music
 	</li>
-	<li class="menu-item top-level {{ linkingMode('library.tracks') }}" ng-class="{ unavailable: !spotifyAuthorized }">
-		<a ui-sref="library.tracks" class="droppable" data-type="library">
+	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
+		<a ui-sref="library.tracks" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
 			<i class="fa fa-music"></i>
 			Tracks
 			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
-	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}" ng-class="{ unavailable: !spotifyAuthorized }">
-		<a ui-sref="library.artists" class="droppable" data-type="library">
+	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
+		<a ui-sref="library.artists" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
 			<i class="fa fa-user"></i>
 			Artists
 			<span class="dragging-note">Add to library</span>
