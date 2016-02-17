@@ -17,7 +17,7 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {type: 'track'};

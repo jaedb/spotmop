@@ -7,13 +7,21 @@
 
 	<div class="col w30 title"><span ng-bind="track.track.name"></span><span class="flag grey" ng-if="!track.track.album.uri">Local</span></div>
 	
-	<div class="col w30 artist">
+	<div class="col w30 artist" ng-if="!local">
 		<span ng-repeat="artist in track.track.artists">
 			<a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-if="!artist.uri" ng-bind="artist.name"></span><span ng-if="!$last">, </span>
 		</span>
 	</div>
 	
-	<div class="col w35 album"><a ui-sref="browse.album({ uri: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
+	<div class="col w30 artist" ng-if="local">
+		<span ng-repeat="artist in track.track.artists">
+			<a ui-sref="library.files({ folder: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-if="!artist.uri" ng-bind="artist.name"></span><span ng-if="!$last">, </span>
+		</span>
+	</div>
+	
+	<div class="col w35 album" ng-if="!local"><a ui-sref="browse.album({ uri: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
+    
+	<div class="col w35 album" ng-if="local"><a ui-sref="library.files({ folder: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
 	
 	<div class="col w5 duration">	
 		<span ng-show="track.track.length">{{ track.track.length | formatMilliseconds }}</span>
