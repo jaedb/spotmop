@@ -116,7 +116,7 @@ angular.module('spotmop.browse.artist', [])
 .controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
 	// get the artist's albums
-	SpotifyService.getAlbums( $stateParams.uri )
+	SpotifyService.getArtistAlbums( $stateParams.uri )
 		.then( function( response ){
 			$scope.$parent.albums = response;
 		});	

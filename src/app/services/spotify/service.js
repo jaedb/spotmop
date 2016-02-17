@@ -1047,15 +1047,14 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getAlbums: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
+		getAlbum: function( albumuri ){
+						
+            var deferred = $q.defer();			
+			var albumid = this.getFromUri( 'albumid', albumuri );
 
             $http({
-					cache: true,
 					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country
+					url: urlBase+'albums/'+albumid
 				})
                 .success(function( response ){					
                     deferred.resolve( response );
@@ -1068,14 +1067,41 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getAlbum: function( albumuri ){
-						
-            var deferred = $q.defer();			
-			var albumid = this.getFromUri( 'albumid', albumuri );
+		getAlbums: function( albumids ){
+			
+            var deferred = $q.defer();
+			var albumids_string = '';
+			for( var i = 0; i < albumids.length; i++ ){
+				if( i > 0 )
+					albumids_string += ','
+				albumids_string += albumids[i];
+			}
 
             $http({
+					cache: true,
 					method: 'GET',
-					url: urlBase+'albums/'+albumid
+					url: urlBase+'albums?ids='+albumids_string+'&market='+country
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getArtistAlbums: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country
 				})
                 .success(function( response ){					
                     deferred.resolve( response );
@@ -1136,21 +1162,54 @@ angular.module('spotmop.services.spotify', [])
 		 * @param query = string (search term)
 		 * @param limit = int (optional)
 		 **/
-		getSearchResults: function( type, query, limit ){
+		getSearchResults: function( type, query, limit, offset ){
 		
 			if( typeof( limit ) === 'undefined' ) limit = 10;
+			if( typeof( offset ) === 'undefined' ) offset = 0;
             var deferred = $q.defer();
 
             $http({
 					cache: true,
 					method: 'GET',
-					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
+					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit+'&offset='+offset,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
-                    deferred.resolve( response );
+                .success(function( response ){		
+					
+					if( type == 'album' ){
+					
+						var readyToResolve = false;
+						var completeAlbums = [];
+						var batchesRequired = Math.ceil( response.albums.items.length / 20 );
+						
+						// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+						for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+							
+							var batch = response.albums.items.splice(0,20);
+							var albumids = [];
+							
+							// loop all our albums to build a list of all the album ids we need
+							for( var i = 0; i < 20; i++ ){
+								albumids.push( batch[i].id );
+							};
+							
+							// go get the albums
+							service.getAlbums( albumids )
+								.then( function(albums){
+									completeAlbums = completeAlbums.concat( albums.albums );									
+									if( batchCounter >= batchesRequired ){
+										response.albums.items = completeAlbums;
+										deferred.resolve( response );
+									}
+								});
+						}
+						
+					}else{
+						deferred.resolve( response );
+					}
+					
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
