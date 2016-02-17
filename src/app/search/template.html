@@ -28,12 +28,7 @@
 		</div>
 		
 		<div ng-if="query">
-			<div ng-if="type == 'artist'">
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
-				
+			<div ng-if="type == 'artist'">				
 				<div class="artist-items square-panels">
 					<div class="item-container" ng-repeat="artist in artists.items track by $index">
 						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist">
@@ -52,12 +47,7 @@
 				<div class="clear-both"></div>
 			</div>
 			
-			<div ng-if="type == 'album'">		
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
-                
+			<div ng-if="type == 'album'">
 				<div class="album-items square-panels">
 					<div class="item-container" ng-repeat="album in albums.items track by $index">
 						<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
@@ -81,12 +71,7 @@
 				<div class="clear-both"></div>
 			</div>
 			
-			<div ng-if="type == 'playlist'">		
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
-				
+			<div ng-if="type == 'playlist'">
 				<div class="playlist-items square-panels">
 					<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
 						<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist">
@@ -107,11 +92,6 @@
 			</div>
 			
 			<div ng-if="type == 'track'">
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
-				
 				<div class="search-items tracklist"  ng-controller="TracklistController">
 					<track ng-repeat="track in tracklist.tracks"></track>	
 				</div>
