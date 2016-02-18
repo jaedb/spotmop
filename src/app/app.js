@@ -426,20 +426,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-	
-	
-	/**
-	 * When we click anywhere
-	 * This allows us to kill context menus, unselect tracks, etc
-	 **/
-	$(document).on('mouseup', 'body', function( event ){
-		
-		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
-		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:contextMenu:hide');
-		}
-	});
     
     /**
      * Detect if we have a droppable target
