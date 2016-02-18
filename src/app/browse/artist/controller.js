@@ -46,7 +46,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, EchonestService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, EchonestService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -65,13 +65,18 @@ angular.module('spotmop.browse.artist', [])
             });
     }
 	$scope.playArtistRadio = function(){
-		NotifyService.error( 'This functionality has not yet been implemented' );
-		/*
-		EchonestService.startArtistRadio( $scope.artist.name )
+		
+		NotifyService.notify('Playing all top tracks');
+		
+		// get the artist's top tracks
+		SpotifyService.getTopTracks( $stateParams.uri )
 			.then( function( response ){
-				console.log( response.response );
+				var uris = [];
+				for( var i = 0; i < response.tracks.length; i++ ){
+					uris.push( response.tracks[i].uri );
+				}
+				MopidyService.playTrack( uris, 0 );
 			});
-			*/
 	}
     
 	// get the artist from Spotify
@@ -111,17 +116,16 @@ angular.module('spotmop.browse.artist', [])
 .controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
 	// get the artist's albums
-	SpotifyService.getAlbums( $stateParams.uri )
+	SpotifyService.getArtistAlbums( $stateParams.uri )
 		.then( function( response ){
 			$scope.$parent.albums = response;
-			
-			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
-				.then( function( response ){
-					$scope.tracklist.tracks = response.tracks;
-				});
 		});	
 	
+	// get the artist's top tracks
+	SpotifyService.getTopTracks( $stateParams.uri )
+		.then( function( response ){
+			$scope.tracklist.tracks = response.tracks;
+		});
 	
 	
 	
@@ -196,7 +200,8 @@ angular.module('spotmop.browse.artist', [])
 		
 		LastfmService.artistInfo( name )
 			.then( function( response ){
-				$scope.artist.biography = response.artist.bio;
+				if( typeof(response.artist) !== 'undefined' && typeof(response.artist.bio) !== 'undefined' )
+					$scope.artist.biography = response.artist.bio;
 			});
 	}
 });

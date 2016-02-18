@@ -27,8 +27,13 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
 			});
@@ -81,6 +86,11 @@ angular.module('spotmop.common.tracklist', [
 			
 			$scope.state = PlayerService.state;
 			
+			// detect if a local file (to change the links for artists, etc)
+			$scope.local = false;
+			if( $scope.track.track.uri.substring(0,6) == 'local:' )
+				$scope.local = true;
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -98,7 +108,13 @@ angular.module('spotmop.common.tracklist', [
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
 				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
+					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
 				}
 			});		
@@ -154,8 +170,13 @@ angular.module('spotmop.common.tracklist', [
 					if( !$(event.target).is('a') )
 						$scope.$emit('spotmop:track:clicked', $scope);
 					
-				// right click (only when selected)
-				}else if( $scope.track.selected && event.which === 3 ){
+				// right click
+				}else if( event.which === 3 ){
+					
+					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
+					if( !$scope.track.selected )
+						$scope.$emit('spotmop:track:clicked', $scope);
+					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
 			});		
@@ -211,6 +232,24 @@ angular.module('spotmop.common.tracklist', [
 		// only if clicking in a tracklist
 		if( $(evt.target).closest('.tracklist').length > 0 )
 			return false;
+	});
+	
+	
+	// collapse menus and deselect tracks when we click outside of a tracklist
+	$(document).on('mouseup', 'body', function( event ){
+		if( $(event.target).closest('.tracklist').length <= 0 ){
+			
+			// if we've just dropped some tracks somewhere, don't unselect them
+			// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
+			if( !$('body').hasClass('dragging') ){
+				$scope.$apply(
+					unselectAllTracks(),
+					1
+				);
+			}
+			
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		}
 	});
 
 	
@@ -501,16 +540,25 @@ angular.module('spotmop.common.tracklist', [
 	/**
 	 * Manipulate selected tracks
 	 **/
+	 
 	$scope.$on('spotmop:tracklist:selectAll', function(event){
+		unselectAllTracks();
+	});
+	function unselectAllTracks(){	
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			track.selected = true;
 		});
-	});
+	}
+	
+	
 	$scope.$on('spotmop:tracklist:unselectAll', function(event){
+		unselectAllTracks();
+	});
+	function unselectAllTracks(){	
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			track.selected = false;
 		});
-	});
+	}
 	
 });
 

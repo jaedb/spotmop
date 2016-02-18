@@ -338,7 +338,7 @@ angular.module('spotmop', [
 	// when playback finishes, log this to EchoNest (if enabled)
 	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
 	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonestenabled',false) )
+		if( SettingsService.getSetting('echonest',false,'enabled') )
 			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
 	});
     
@@ -426,20 +426,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-	
-	
-	/**
-	 * When we click anywhere
-	 * This allows us to kill context menus, unselect tracks, etc
-	 **/
-	$(document).on('mouseup', 'body', function( event ){
-		
-		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
-		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:contextMenu:hide');
-		}
-	});
     
     /**
      * Detect if we have a droppable target
@@ -450,10 +436,10 @@ angular.module('spotmop', [
         
         var droppableTarget = null;
         
-        if( $(target).hasClass('droppable') )
+        if( $(target).hasClass('droppable') && !$(target).hasClass('unavailable') )
             droppableTarget = $(target);
         else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable');   
+            droppableTarget = $(target).closest('.droppable:not(.unavailable)');   
         
         return droppableTarget;
     }

@@ -23,7 +23,7 @@ contextmenu {
 
 contextmenu .menu-item {
 	display: block;
-	padding: 10px 12px;
+	padding: 8px 12px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -31,6 +31,18 @@ contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
 }
+
+
+
+/**
+ * Non-touch device only
+ **/
+
+#app:not(.touchDevice) contextmenu .menu-item i {
+	font-size: 10px;
+	padding-right: 8px;
+}
+
 
 
 /**
@@ -293,7 +305,7 @@ body {
     padding-bottom: 20px;
 }
 
-.main-menu .menu-item.unavailable {
+.main-menu a.unavailable {
 	opacity: 0.5;
 }
 
@@ -461,6 +473,10 @@ body {
 .sub-page-navigation .menu-item:hover {
 	border-color: rgba(255,255,255,0.5);
 	cursor: pointer;
+}
+
+.search-page .sub-page-navigation .menu-item:hover {
+	border-color: #AAAAAA;
 }
 
 .sub-page-navigation .menu-item.active {
@@ -1647,21 +1663,20 @@ body.dragging .tracklist .track.selected {
 .search-results-section.artists,
 .search-results-section.albums,
 .search-results-section.playlists {
-	width: 32%;
+	width: 30.6667%;
 	float: left;
 }
 .search-results-section.artists,
 .search-results-section.albums {
-	padding-right: 2%;
+	padding-right: 4%;
 }
 
 .search-results-section .square-panel {
 	width: 46%;
 }
 
-.search-results-section.playlists .square-panel .info > .name {
-	white-space: nowrap;
-	overflow: hidden;
+.search-results-section .square-panel .info {
+	height: 60px;
 }
 
 .search-results-section.tracks {

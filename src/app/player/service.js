@@ -348,7 +348,7 @@ angular.module('spotmop.services.player', [])
 		next: function(){
 		
 			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonestenabled',false) )
+			if( SettingsService.getSetting('echonest',false,'enabled') )
 				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
 		
 			MopidyService.play();

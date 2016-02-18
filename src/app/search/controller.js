@@ -31,6 +31,8 @@ angular.module('spotmop.search', [])
 	$scope.query = '';
     if( $stateParams.query )
         $scope.query = $filter('stripAccents')( $stateParams.query );
+		
+	var nextOffset = 50;
         
 	$scope.loading = false;
 	var searchDelayer;
@@ -63,15 +65,21 @@ angular.module('spotmop.search', [])
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.tracks = response.tracks.items;
 						$scope.tracklist.type = 'track';
-						$scope.next = response.tracks.next;
+						if( response.tracks.next )
+							nextOffset = response.tracks.offset + response.tracks.limit;
+						else
+							nextOffset = false;
 					});
 				break;
 			
 			case 'album' :
 				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
+					.then( function(response){
 						$scope.albums = response.albums;
-						$scope.next = response.albums.next;
+						if( response.albums.next )
+							nextOffset = response.albums.offset + response.albums.limit;
+						else
+							nextOffset = false;
 					});
 				break;
 					
@@ -80,6 +88,7 @@ angular.module('spotmop.search', [])
 					.then( function(response){		
 						$scope.artists = response.artists;
 						$scope.next = response.artists.next;
+						$scope.offset = response.artists.offset;
 					});
 				break;
 					
@@ -88,6 +97,7 @@ angular.module('spotmop.search', [])
 					.then( function(response){		
 						$scope.playlists = response.playlists;
 						$scope.next = response.playlists.next;
+						$scope.offset = response.playlists.offset;
 					});
 				break;
 			
@@ -126,16 +136,16 @@ angular.module('spotmop.search', [])
     
     var loadingMoreResults = false;
 	
-    function loadMoreResults( $nextUrl ){
+    function loadMoreResults( offset ){
         
-        if( typeof( $nextUrl ) === 'undefined' )
+        if( typeof( offset ) === 'undefined' )
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreResults = true; 
-
+        loadingMoreResults = true;
+		
         // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
+        SpotifyService.getSearchResults( $scope.type, $scope.query, 50, offset )
             .then(function( response ){
             
                 // append these new playlists to our existing array
@@ -143,18 +153,24 @@ angular.module('spotmop.search', [])
 					case 'artist':
 						$scope.artists.items = $scope.artists.items.concat( response.artists.items );
 						$scope.next = response.artists.next;
+						$scope.offset = response.artists.offset;
 						break;
 					case 'album':
 						$scope.albums.items = $scope.albums.items.concat( response.albums.items );
-						$scope.next = response.albums.next;
+						if( response.albums.next )
+							nextOffset = response.albums.offset + response.albums.limit;
+						else
+							nextOffset = false;
 						break;
 					case 'track':
 						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
 						$scope.next = response.tracks.next;
+						$scope.offset = response.tracks.offset;
 						break;
 					case 'playlist':
 						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
 						$scope.next = response.playlists.next;
+						$scope.offset = response.playlists.offset;
 						break;
 				}
                 
@@ -165,8 +181,8 @@ angular.module('spotmop.search', [])
 	
 	// once we're told we're ready to load more albums
     $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreResults && typeof( $scope.next ) !== 'undefined' && $scope.next ){
-            loadMoreResults( $scope.next );
+        if( !loadingMoreResults && nextOffset ){
+            loadMoreResults( nextOffset );
         }
 	});
 });

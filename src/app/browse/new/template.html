@@ -17,6 +17,11 @@
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="album.name"></div>
+                        <div class="secondary">
+                            <span ng-repeat="artist in album.artists">
+                                <span ng-bind="artist.name"></span><span ng-if="!$last">, </span>
+                            </span>
+                        </div>
 					</div>
 				</a>
 			</div>
