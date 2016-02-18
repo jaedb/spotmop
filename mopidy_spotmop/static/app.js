@@ -30233,6 +30233,8 @@ angular.module('spotmop.browse.new', [])
 		.then(function( response ) {
 			$scope.albums = response.albums;
 		});
+		
+	var nextOffset = 50;
 	
 	
     /**
@@ -30243,23 +30245,21 @@ angular.module('spotmop.browse.new', [])
     var loadingMoreNewReleases = false;
     
     // go off and get more of this playlist's tracks
-    function loadMoreNewReleases( $nextUrl ){
-		
-        if( typeof( $nextUrl ) === 'undefined' )
-            return false;
+    function loadMoreNewReleases( offset ){
+		console.log('loading');
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreNewReleases = true;
 
         // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
+        SpotifyService.newReleases( false, offset )
             .then(function( response ){
             
                 // append these new tracks to the main tracklist
                 $scope.albums.items = $scope.albums.items.concat( response.albums.items );
                 
                 // save the next set's url (if it exists)
-                $scope.albums.next = response.albums.next;
+                nextOffset = response.albums.offset + response.albums.limit;
                 
                 // update loader and re-open for further pagination objects
                 loadingMoreNewReleases = false;
@@ -30268,8 +30268,8 @@ angular.module('spotmop.browse.new', [])
 	
 	// once we're told we're ready to load more albums
     $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreNewReleases && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
-            loadMoreNewReleases( $scope.albums.next );
+        if( !loadingMoreNewReleases && nextOffset ){
+            loadMoreNewReleases( nextOffset );
         }
 	});
 	
@@ -35281,23 +35281,48 @@ angular.module('spotmop.services.spotify', [])
 		/**
 		 * Discover
 		 **/
-		newReleases: function( limit ){
+		newReleases: function( limit, offset ){
 			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
+			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
+			if( typeof( offset ) === 'undefined' ) offset = 0;
 			
             var deferred = $q.defer();
 
             $http({
 					cache: true,
 					method: 'GET',
-					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
+					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit+'&offset='+offset,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
-                    deferred.resolve( response );
+                .success(function( response ){	
+					
+					var readyToResolve = false;
+					var completeAlbums = [];
+					var batchesRequired = Math.ceil( response.albums.items.length / 20 );
+					
+					// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+					for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+						
+						var batch = response.albums.items.splice(0,20);
+						var albumids = [];
+						
+						// loop all our albums to build a list of all the album ids we need
+						for( var i = 0; i < 20; i++ ){
+							albumids.push( batch[i].id );
+						};
+						
+						// go get the albums
+						service.getAlbums( albumids )
+							.then( function(albums){
+								completeAlbums = completeAlbums.concat( albums.albums );									
+								if( batchCounter >= batchesRequired ){
+									response.albums.items = completeAlbums;
+									deferred.resolve( response );
+								}
+							});
+					}		
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
