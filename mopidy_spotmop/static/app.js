@@ -29642,7 +29642,7 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', ['$scope', '$rootScope', '$stateParams', '$filter', 'MopidyService', 'SpotifyService', function AlbumController( $scope, $rootScope, $stateParams, $filter, MopidyService, SpotifyService ){
+.controller('AlbumController', ['$scope', '$rootScope', '$stateParams', '$filter', '$state', 'MopidyService', 'SpotifyService', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {type: 'track'};
@@ -29899,7 +29899,7 @@ angular.module('spotmop.browse.artist', [])
 .controller('ArtistOverviewController', ['$scope', '$timeout', '$rootScope', '$stateParams', 'SpotifyService', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 	
 	// get the artist's albums
-	SpotifyService.getAlbums( $stateParams.uri )
+	SpotifyService.getArtistAlbums( $stateParams.uri )
 		.then( function( response ){
 			$scope.$parent.albums = response;
 		});	
@@ -29983,7 +29983,8 @@ angular.module('spotmop.browse.artist', [])
 		
 		LastfmService.artistInfo( name )
 			.then( function( response ){
-				$scope.artist.biography = response.artist.bio;
+				if( typeof(response.artist) !== 'undefined' && typeof(response.artist.bio) !== 'undefined' )
+					$scope.artist.biography = response.artist.bio;
 			});
 	}
 }]);
@@ -31365,6 +31366,11 @@ angular.module('spotmop.common.tracklist', [
 			
 			$scope.state = PlayerService.state;
 			
+			// detect if a local file (to change the links for artists, etc)
+			$scope.local = false;
+			if( $scope.track.track.uri.substring(0,6) == 'local:' )
+				$scope.local = true;
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -32138,99 +32144,6 @@ angular.module('spotmop.library', [])
 }])
 	
 /**
- * Local files
- **/
-.controller('LibraryFilesController', ['$scope', '$rootScope', '$filter', '$stateParams', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
-	
-	$scope.folders = [];
-	$scope.tracklist = {tracks: [], type: 'local'};
-	
-	var folder, parentFolder;
-	
-	if( $stateParams.folder ){
-	
-		folder = $stateParams.folder;
-		var parentFolders = folder.split('|');
-		parentFolder = '';
-		for( var i = 0; i < parentFolders.length-1; i++ ){
-			showParentFolderLink = true;
-			parentFolder += parentFolders[i];
-			if( i < parentFolders.length-2 )
-				parentFolder += '|';
-		}
-		
-		if( parentFolder == '' )
-			parentFolder = 'local:directory';
-		
-		folder = folder.replace('|','/');
-	}
-	
-	// on init, go get the items (or wait for mopidy to be online)
-	if( $scope.mopidyOnline )
-		getItems();
-	else
-		$scope.$on('mopidy:state:online', function(){ getItems() });
-	
-	
-	// go get em
-	function getItems(){
-			
-		MopidyService.getLibraryItems( folder )
-			.then( function( response ){
-					
-					// load tracks
-					var tracks = $filter('filter')(response, {type: 'track'});	
-/*					
-					if( tracks.length > 0 ){
-						
-						for( var i = 0; i < tracks.length; i++ ){
-							MopidyService.getTrack( tracks[i].uri )
-								.then( function(response){
-									console.log( i );
-									tracks[i] = response;
-									console.log( response );
-								});
-						}
-						
-					}*/
-					
-					$scope.tracklist.tracks = tracks;
-					
-					// fetch the folders
-					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
-
-					if( $stateParams.folder != 'local:directory' )
-						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
-					
-					$scope.folders = folders;
-				});
-	}
-	
-	
-	/**
-	 * Format our folders into the desired format
-	 * @param items = array
-	 * @return array
-	 **/
-	function formatFolders( items ){
-		
-		// sanitize uris
-		for( var i = 0; i < items.length; i++ ){
-			var item = items[i];
-			
-			// replace slashes (even urlencoded ones) to ":"
-			item.uri = item.uri.replace('%2F', '|');
-			item.uri = item.uri.replace('/', '|');
-			
-			items[i] = item;
-		}
-		
-		return items;
-	}
-		
-}])
-	
-/**
  * Library artists
  **/
 .controller('LibraryArtistsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
@@ -32340,6 +32253,108 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
+}])
+
+
+	
+/**
+ * Local files
+ **/
+.controller('LibraryFilesController', ['$scope', '$rootScope', '$filter', '$stateParams', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
+	
+	$scope.folders = [];
+	$scope.tracklist = {tracks: [], type: 'local'};
+	
+	var folder, parentFolder;
+	
+	if( $stateParams.folder ){
+	
+		folder = $stateParams.folder;
+		var parentFolders = folder.split('|');
+		parentFolder = '';
+		for( var i = 0; i < parentFolders.length-1; i++ ){
+			showParentFolderLink = true;
+			parentFolder += parentFolders[i];
+			if( i < parentFolders.length-2 )
+				parentFolder += '|';
+		}
+		
+		if( parentFolder == '' )
+			parentFolder = 'local:directory';
+		
+		folder = folder.replace('|','/');
+	}
+	
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	
+	// go get em
+	function getItems(){
+			
+		MopidyService.getLibraryItems( folder )
+			.then( function( response ){
+			
+					// load tracks
+					var trackReferences = $filter('filter')(response, {type: 'track'});
+					var trackUris = [];
+					
+					// loop all the track references, so we can get all the track objects
+					for( var i = 0; i < trackReferences.length; i++ ){
+						trackUris.push( trackReferences[i].uri );
+					}
+					
+					// take our track references and look up the actual track objects
+					if( trackUris.length > 0 ){
+						MopidyService.getTracks( trackUris )
+							.then( function( response ){
+							
+								var tracks = [];
+								
+								// loop all the tracks to sanitize the response
+								for( var key in response ){
+									tracks.push( response[key][0] );
+								}
+								
+								$scope.tracklist.tracks = tracks;
+							});
+					}
+					
+					// fetch the folders
+					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
+
+					if( $stateParams.folder != 'local:directory' )
+						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
+					
+					$scope.folders = folders;
+				});
+	}
+	
+	
+	/**
+	 * Format our folders into the desired format
+	 * @param items = array
+	 * @return array
+	 **/
+	function formatFolders( items ){
+		
+		// sanitize uris
+		for( var i = 0; i < items.length; i++ ){
+			var item = items[i];
+			
+			// replace slashes (even urlencoded ones) to ":"
+			item.uri = item.uri.replace('%2F', '|');
+			item.uri = item.uri.replace('/', '|');
+			
+			items[i] = item;
+		}
+		
+		return items;
+	}
+		
 }]);
 
 
@@ -32958,6 +32973,8 @@ angular.module('spotmop.search', [])
 	$scope.query = '';
     if( $stateParams.query )
         $scope.query = $filter('stripAccents')( $stateParams.query );
+		
+	var nextOffset = 50;
         
 	$scope.loading = false;
 	var searchDelayer;
@@ -32990,15 +33007,21 @@ angular.module('spotmop.search', [])
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.tracks = response.tracks.items;
 						$scope.tracklist.type = 'track';
-						$scope.next = response.tracks.next;
+						if( response.tracks.next )
+							nextOffset = response.tracks.offset + response.tracks.limit;
+						else
+							nextOffset = false;
 					});
 				break;
 			
 			case 'album' :
 				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
+					.then( function(response){
 						$scope.albums = response.albums;
-						$scope.next = response.albums.next;
+						if( response.albums.next )
+							nextOffset = response.albums.offset + response.albums.limit;
+						else
+							nextOffset = false;
 					});
 				break;
 					
@@ -33007,6 +33030,7 @@ angular.module('spotmop.search', [])
 					.then( function(response){		
 						$scope.artists = response.artists;
 						$scope.next = response.artists.next;
+						$scope.offset = response.artists.offset;
 					});
 				break;
 					
@@ -33015,6 +33039,7 @@ angular.module('spotmop.search', [])
 					.then( function(response){		
 						$scope.playlists = response.playlists;
 						$scope.next = response.playlists.next;
+						$scope.offset = response.playlists.offset;
 					});
 				break;
 			
@@ -33053,16 +33078,16 @@ angular.module('spotmop.search', [])
     
     var loadingMoreResults = false;
 	
-    function loadMoreResults( $nextUrl ){
+    function loadMoreResults( offset ){
         
-        if( typeof( $nextUrl ) === 'undefined' )
+        if( typeof( offset ) === 'undefined' )
             return false;
         
         // update our switch to prevent spamming for every scroll event
-        loadingMoreResults = true; 
-
+        loadingMoreResults = true;
+		
         // go get our 'next' URL
-        SpotifyService.getUrl( $nextUrl )
+        SpotifyService.getSearchResults( $scope.type, $scope.query, 50, offset )
             .then(function( response ){
             
                 // append these new playlists to our existing array
@@ -33070,18 +33095,24 @@ angular.module('spotmop.search', [])
 					case 'artist':
 						$scope.artists.items = $scope.artists.items.concat( response.artists.items );
 						$scope.next = response.artists.next;
+						$scope.offset = response.artists.offset;
 						break;
 					case 'album':
 						$scope.albums.items = $scope.albums.items.concat( response.albums.items );
-						$scope.next = response.albums.next;
+						if( response.albums.next )
+							nextOffset = response.albums.offset + response.albums.limit;
+						else
+							nextOffset = false;
 						break;
 					case 'track':
 						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
 						$scope.next = response.tracks.next;
+						$scope.offset = response.tracks.offset;
 						break;
 					case 'playlist':
 						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
 						$scope.next = response.playlists.next;
+						$scope.offset = response.playlists.offset;
 						break;
 				}
                 
@@ -33092,8 +33123,8 @@ angular.module('spotmop.search', [])
 	
 	// once we're told we're ready to load more albums
     $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreResults && typeof( $scope.next ) !== 'undefined' && $scope.next ){
-            loadMoreResults( $scope.next );
+        if( !loadingMoreResults && nextOffset ){
+            loadMoreResults( nextOffset );
         }
 	});
 }]);
@@ -35403,15 +35434,14 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getAlbums: function( artisturi ){
-			
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
+		getAlbum: function( albumuri ){
+						
+            var deferred = $q.defer();			
+			var albumid = this.getFromUri( 'albumid', albumuri );
 
             $http({
-					cache: true,
 					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country
+					url: urlBase+'albums/'+albumid
 				})
                 .success(function( response ){					
                     deferred.resolve( response );
@@ -35424,14 +35454,41 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getAlbum: function( albumuri ){
-						
-            var deferred = $q.defer();			
-			var albumid = this.getFromUri( 'albumid', albumuri );
+		getAlbums: function( albumids ){
+			
+            var deferred = $q.defer();
+			var albumids_string = '';
+			for( var i = 0; i < albumids.length; i++ ){
+				if( i > 0 )
+					albumids_string += ','
+				albumids_string += albumids[i];
+			}
 
             $http({
+					cache: true,
 					method: 'GET',
-					url: urlBase+'albums/'+albumid
+					url: urlBase+'albums?ids='+albumids_string+'&market='+country
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getArtistAlbums: function( artisturi ){
+			
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/albums?album_type=album,single&market='+country
 				})
                 .success(function( response ){					
                     deferred.resolve( response );
@@ -35492,21 +35549,54 @@ angular.module('spotmop.services.spotify', [])
 		 * @param query = string (search term)
 		 * @param limit = int (optional)
 		 **/
-		getSearchResults: function( type, query, limit ){
+		getSearchResults: function( type, query, limit, offset ){
 		
 			if( typeof( limit ) === 'undefined' ) limit = 10;
+			if( typeof( offset ) === 'undefined' ) offset = 0;
             var deferred = $q.defer();
 
             $http({
 					cache: true,
 					method: 'GET',
-					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit,
+					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit+'&offset='+offset,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
-                    deferred.resolve( response );
+                .success(function( response ){		
+					
+					if( type == 'album' ){
+					
+						var readyToResolve = false;
+						var completeAlbums = [];
+						var batchesRequired = Math.ceil( response.albums.items.length / 20 );
+						
+						// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+						for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+							
+							var batch = response.albums.items.splice(0,20);
+							var albumids = [];
+							
+							// loop all our albums to build a list of all the album ids we need
+							for( var i = 0; i < 20; i++ ){
+								albumids.push( batch[i].id );
+							};
+							
+							// go get the albums
+							service.getAlbums( albumids )
+								.then( function(albums){
+									completeAlbums = completeAlbums.concat( albums.albums );									
+									if( batchCounter >= batchesRequired ){
+										response.albums.items = completeAlbums;
+										deferred.resolve( response );
+									}
+								});
+						}
+						
+					}else{
+						deferred.resolve( response );
+					}
+					
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
