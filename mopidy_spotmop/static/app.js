@@ -29392,20 +29392,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-	
-	
-	/**
-	 * When we click anywhere
-	 * This allows us to kill context menus, unselect tracks, etc
-	 **/
-	$(document).on('mouseup', 'body', function( event ){
-		
-		// if we've clicked OUTSIDE of a tracklist, let's kill the context menu
-		// clicking INSIDE the tracklist is handled by the track/tltrack directives
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			$rootScope.$broadcast('spotmop:contextMenu:hide');
-		}
-	});
     
     /**
      * Detect if we have a droppable target
@@ -31513,6 +31499,24 @@ angular.module('spotmop.common.tracklist', [
 		if( $(evt.target).closest('.tracklist').length > 0 )
 			return false;
 	});
+	
+	
+	// collapse menus and deselect tracks when we click outside of a tracklist
+	$(document).on('mouseup', 'body', function( event ){
+		if( $(event.target).closest('.tracklist').length <= 0 ){
+			
+			// if we've just dropped some tracks somewhere, don't unselect them
+			// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
+			if( !$('body').hasClass('dragging') ){
+				$scope.$apply(
+					unselectAllTracks(),
+					1
+				);
+			}
+			
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		}
+	});
 
 	
 	
@@ -31802,16 +31806,25 @@ angular.module('spotmop.common.tracklist', [
 	/**
 	 * Manipulate selected tracks
 	 **/
+	 
 	$scope.$on('spotmop:tracklist:selectAll', function(event){
+		unselectAllTracks();
+	});
+	function unselectAllTracks(){	
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			track.selected = true;
 		});
-	});
+	}
+	
+	
 	$scope.$on('spotmop:tracklist:unselectAll', function(event){
+		unselectAllTracks();
+	});
+	function unselectAllTracks(){	
 		angular.forEach( $scope.tracklist.tracks, function( track ){
 			track.selected = false;
 		});
-	});
+	}
 	
 }]);
 
