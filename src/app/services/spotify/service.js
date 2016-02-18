@@ -894,23 +894,48 @@ angular.module('spotmop.services.spotify', [])
 		/**
 		 * Discover
 		 **/
-		newReleases: function( limit ){
+		newReleases: function( limit, offset ){
 			
-			if( typeof( limit ) === 'undefined' )
-				limit = 40;
+			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
+			if( typeof( offset ) === 'undefined' ) offset = 0;
 			
             var deferred = $q.defer();
 
             $http({
 					cache: true,
 					method: 'GET',
-					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit,
+					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit+'&offset='+offset,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
-                    deferred.resolve( response );
+                .success(function( response ){	
+					
+					var readyToResolve = false;
+					var completeAlbums = [];
+					var batchesRequired = Math.ceil( response.albums.items.length / 20 );
+					
+					// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+					for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+						
+						var batch = response.albums.items.splice(0,20);
+						var albumids = [];
+						
+						// loop all our albums to build a list of all the album ids we need
+						for( var i = 0; i < 20; i++ ){
+							albumids.push( batch[i].id );
+						};
+						
+						// go get the albums
+						service.getAlbums( albumids )
+							.then( function(albums){
+								completeAlbums = completeAlbums.concat( albums.albums );									
+								if( batchCounter >= batchesRequired ){
+									response.albums.items = completeAlbums;
+									deferred.resolve( response );
+								}
+							});
+					}		
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
