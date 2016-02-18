@@ -200,7 +200,8 @@ angular.module('spotmop.browse.artist', [])
 		
 		LastfmService.artistInfo( name )
 			.then( function( response ){
-				$scope.artist.biography = response.artist.bio;
+				if( typeof(response.artist) !== 'undefined' && typeof(response.artist.bio) !== 'undefined' )
+					$scope.artist.biography = response.artist.bio;
 			});
 	}
 });
