@@ -235,10 +235,10 @@ angular.module('spotmop.common.tracklist', [
 	});
 	
 	
-	// collapse menus and deselect tracks when we click outside of a tracklist
+	// collapse menus and deselect tracks when we click outside of a tracklist and not on a contextmenu
 	$(document).on('mouseup', 'body', function( event ){
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			
+		if( $(event.target).closest('.tracklist').length <= 0 && $(event.target).closest('contextmenu').length <= 0 ){
+            
 			// if we've just dropped some tracks somewhere, don't unselect them
 			// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
 			if( !$('body').hasClass('dragging') ){
