@@ -1,7 +1,7 @@
 <ul class="main-menu">
 	<li class="menu-item top-level {{ linkingMode('queue') }}">
 		<a ui-sref="queue" class="droppable" data-type="queue">
-			<i class="fa fa-play"></i>
+			<i class="si play"></i>
 			Now playing
 			<span class="dragging-note">Add to queue</span>
 		</a>
@@ -17,25 +17,25 @@
 	</li>
 	<li class="menu-item top-level {{ linkingMode('discover') }}">
 		<a ui-sref="discover">
-			<i class="fa fa-send"></i>
+			<i class="si discover"></i>
 			Discover
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.featured','browse.featuredplaylist']) }}">
 		<a ui-sref="browse.featured">
-			<i class="fa fa-bookmark"></i>
+			<i class="si featured-playlist"></i>
 			Featured playlists
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist']) }}">
 		<a ui-sref="browse.genre">
-			<i class="fa fa-folder"></i>
+			<i class="si genre"></i>
 			Genre / Mood
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}">
 		<a ui-sref="browse.new">
-			<i class="fa fa-star"></i>
+			<i class="si new"></i>
 			New releases
 		</a>
 	</li>
@@ -44,28 +44,28 @@
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.albums') }}">
 		<a ui-sref="library.albums" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="fa fa-music"></i>
+			<i class="si album"></i>
 			Albums
 			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
 		<a ui-sref="library.tracks" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="fa fa-music"></i>
+			<i class="si track"></i>
 			Tracks
 			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
 		<a ui-sref="library.artists" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="fa fa-user"></i>
+			<i class="si artist"></i>
 			Artists
 			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level playlists {{ linkingMode(['library.playlists', 'library.playlist']) }}">
 		<a ui-sref="library.playlists" class="droppable" data-type="playlists">
-			<i class="fa fa-tags"></i>
+			<i class="si playlists"></i>
 			Playlists
             <span class="playlists-submenu-trigger white-text" ng-if="!isTouchDevice() && spotifyAuthorized"><i class="fa fa-caret-right"></i></span>
 		</a>
@@ -80,14 +80,14 @@
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.files']) }}">
 		<a ui-sref="library.files({ folder: 'local:directory' })">
-			<i class="fa fa-file"></i>
+			<i class="si folder"></i>
 			Files
 		</a>
 	</li>
 	<li class="divider spacer"></li>
 	<li class="menu-item top-level {{ linkingMode('settings') }}">
 		<a ui-sref="settings">
-			<i class="fa fa-cog"></i>
+			<i class="si settings"></i>
 			Settings
 			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotifyOnline || !mopidyOnline"></i>
 		</a>

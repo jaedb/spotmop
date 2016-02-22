@@ -241,12 +241,6 @@ body {
 	float: right;
 }
 
-.main-menu .menu-item > a > i {
-	width: 15px;
-	padding-right: 5px;
-	font-size: 12px;
-}
-
 .main-menu > .menu-item > a > i.services-alert {
 	float: right;
 	padding: 3px 12px 0 0;
@@ -554,6 +548,31 @@ input[type='submit'],
 	right: 15px;
 }
     
+	
+	
+/**
+ * Icons
+ * These use a single sprite image grid of 8x5
+ **/
+ 
+.si {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	background-image: url('../icons/icons.svg');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	background-size: 8em 5em;
+	vertical-align: top;
+	margin-top: 2px;
+	margin-right: 5px;
+	padding: 0;
+}
+ 
+.si.play {			background-position: 0 0; }
+.si.genre {			background-position: -2em 0; }
+.si.settings {		background-position: -3em 0; }
+
 
 
 /**
