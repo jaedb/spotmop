@@ -1500,6 +1500,10 @@ body.dragging .tracklist .track.selected {
 	opacity: 0;
 }
 
+.artist-intro .image-container canvas {
+	background-color: #444444;
+}
+
 .artist-page .title-panel {
 	position: absolute;
 	bottom: 0;

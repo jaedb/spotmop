@@ -31501,10 +31501,10 @@ angular.module('spotmop.common.tracklist', [
 	});
 	
 	
-	// collapse menus and deselect tracks when we click outside of a tracklist
+	// collapse menus and deselect tracks when we click outside of a tracklist and not on a contextmenu
 	$(document).on('mouseup', 'body', function( event ){
-		if( $(event.target).closest('.tracklist').length <= 0 ){
-			
+		if( $(event.target).closest('.tracklist').length <= 0 && $(event.target).closest('contextmenu').length <= 0 ){
+            
 			// if we've just dropped some tracks somewhere, don't unselect them
 			// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
 			if( !$('body').hasClass('dragging') ){
@@ -35777,8 +35777,10 @@ angular.module('spotmop.settings', [])
 				SettingsService.setSetting('version', response, 'latest');
 				if( SettingsService.getSetting('version', 0, 'installed') < response ){
 					SettingsService.setSetting('version',true,'upgradeAvailable');
+					NotifyService.notify( 'Upgrade is available!' );
 				}else{
 					SettingsService.setSetting('version',false,'upgradeAvailable');
+					NotifyService.notify( 'You\'re already running the latest version' );
 				}
 			});
 	}
@@ -35786,10 +35788,12 @@ angular.module('spotmop.settings', [])
 		NotifyService.notify( 'Upgrade started' );
 		SettingsService.upgrade()
 			.then( function(response){				
-				if( response.status == 'error' )
+				if( response.status == 'error' ){
 					NotifyService.error( response.message );
-				else
+				}else{
 					NotifyService.notify( response.message );
+					SettingsService.setSetting('version',false,'upgradeAvailable');
+				}
 			});
 	}
 	

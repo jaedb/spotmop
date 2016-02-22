@@ -61,9 +61,9 @@
 						&nbsp;
                         <span class="upgrading" ng-show="settings.version.root">
                         
-                            <a ng-click="upgradeCheck()" ng-show="!settings.version.upgradeAvailable">Check for upgrade</a>
+                            <a ng-click="upgradeCheck()">Check for upgrade</a>
                             
-                            <span ng-show="settings.version.upgradeAvailable">
+                            <span ng-show="settings.version.upgradeAvailable && settings.version.installed < settings.version.latest">
                                 <a ng-click="upgrade()">Upgrade to <span ng-bind="settings.version.latest"></span></a>
                             </span>
                             
