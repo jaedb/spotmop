@@ -347,7 +347,7 @@ angular.module('spotmop.services.spotify', [])
 
             $http({
 					method: 'GET',
-					url: urlBase+'me/tracks/',
+					url: urlBase+'me/tracks/?limit=50',
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
@@ -441,6 +441,35 @@ angular.module('spotmop.services.spotify', [])
             $http({
 					method: 'GET',
 					url: urlBase+'me/following?type=artist',
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){
+					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getMyAlbums: function( userid ){
+			
+            var deferred = $q.defer();
+			
+			if( !this.isAuthorized() ){
+                deferred.reject();
+				return deferred.promise;
+			}
+
+            $http({
+					method: 'GET',
+					url: urlBase+'me/albums?limit=20',
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
