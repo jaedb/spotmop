@@ -397,6 +397,38 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
+		addAlbumsToLibrary: function( albumids ){
+			
+			if( !this.isAuthorized() ){
+                deferred.reject();
+				return deferred.promise;
+			}
+			
+            var deferred = $q.defer();
+			if( typeof(albumids) !== 'array' )
+				albumids = [albumids];
+			
+            $http({
+					method: 'PUT',
+					url: urlBase+'me/albums',
+					dataType: "json",
+					data: JSON.stringify( { ids: albumids } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
 		deleteTracksFromLibrary: function( trackids ){
 			
             var deferred = $q.defer();
@@ -458,28 +490,57 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getMyAlbums: function( userid ){
-			
-            var deferred = $q.defer();
+		getMyAlbums: function( userid, limit, offset ){
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
 			}
+			
+			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
+			if( typeof( offset ) === 'undefined' ) offset = 0;
+			
+            var deferred = $q.defer();
 
             $http({
+					cache: true,
 					method: 'GET',
-					url: urlBase+'me/albums?limit=20',
+					url: urlBase+'me/albums?limit='+limit+'&offset='+offset,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){
+                .success(function( response ){	
 					
-                    deferred.resolve( response );
+					var readyToResolve = false;
+					var completeAlbums = [];
+					var batchesRequired = Math.ceil( response.items.length / 20 );
+					
+					// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+					for( var batchCounter = 1; batchCounter <= batchesRequired; batchCounter++ ){
+						
+						var batch = response.items.splice(0,20);
+						var albumids = [];
+						
+						// loop all our albums to build a list of all the album ids we need
+						var batchLimiter = 20;
+						if( batch.length < 20 ) batchLimiter = batch.length;
+						for( var i = 0; i < batchLimiter; i++ ){
+							albumids.push( batch[i].album.id );
+						};
+						
+						// go get the albums
+						service.getAlbums( albumids )
+							.then( function(albums){
+								completeAlbums = completeAlbums.concat( albums.albums );									
+								if( batchCounter >= batchesRequired ){
+									response.items = completeAlbums;
+									deferred.resolve( response );
+								}
+							});
+					}		
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });

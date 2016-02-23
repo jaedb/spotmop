@@ -72,14 +72,8 @@ angular.module('spotmop.browse.album', [])
 	}
 	
 	// add album to library
-	$scope.addToLibrary = function(){
-		
-		var trackids = [];
-		angular.forEach( $scope.tracklist.tracks, function( track ){
-			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
-		});
-		
-		SpotifyService.addTracksToLibrary( trackids );
+	$scope.addToLibrary = function(){		
+		SpotifyService.addAlbumsToLibrary( $scope.album.id );
 	}
 	
 	// get the album

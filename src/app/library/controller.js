@@ -180,12 +180,8 @@ angular.module('spotmop.library', [])
 	if( $rootScope.spotifyAuthorized ){	
     
 		SpotifyService.getMyAlbums( userid )
-			.then( function( response ){ // successful
+			.then( function( response ){
 					$scope.albums = response;
-					
-					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-						Spotify.refreshToken();
 				});
 	}
 	
