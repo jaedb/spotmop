@@ -1197,7 +1197,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'albums?ids='+albumids_string+'&market='+country
 				})
-                .success(function( response ){					
+                .success(function( response ){
                     deferred.resolve( response );
                 })
                 .error(function( response ){					

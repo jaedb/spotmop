@@ -181,7 +181,15 @@ angular.module('spotmop.library', [])
     
 		SpotifyService.getMyAlbums( userid )
 			.then( function( response ){
+				
+					// build all albums 
+					for( var i = 0; i < response.items.length; i++ ){
+						response.items[i].tracklist = {type: 'track', tracks: response.items[i].tracks.items};
+					}
+					
 					$scope.albums = response;
+					
+					console.log( $scope.albums );
 				});
 	}
 	
