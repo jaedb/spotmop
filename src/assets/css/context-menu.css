@@ -23,7 +23,7 @@ contextmenu {
 
 contextmenu .menu-item {
 	display: block;
-	padding: 8px 12px;
+	padding: 8px 14px 8px 10px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -39,8 +39,10 @@ contextmenu .menu-item:hover {
  **/
 
 #app:not(.touchDevice) contextmenu .menu-item i {
-	font-size: 10px;
-	padding-right: 8px;
+	font-size: 8px;
+	padding-right: 5px;
+	vertical-align: top;
+	margin-top: 5px;
 }
 
 
