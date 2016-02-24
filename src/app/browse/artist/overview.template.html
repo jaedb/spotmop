@@ -1,16 +1,8 @@
 <div class="col" ng-class="{'w70': !mediumScreen(), 'w100': mediumScreen()}">
 
 	<h4 class="section-title">Top tracks</h4>
-
-	<div class="top-track-items tracklist" ng-controller="TracklistController">
-
-		<track ng-repeat="track in tracklist.tracks track by $index"></track>
-
-		<div ng-hide="tracklist.tracks.length" class="no-items">
-			No items
-		</div>
-
-	</div>
+	<tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="tracklist.type" class="top-track-items"></tracklist>
+    
 </div>
 
 <div class="col w25 pull-right" ng-hide="mediumScreen()">

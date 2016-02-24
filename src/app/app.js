@@ -71,7 +71,7 @@ angular.module('spotmop', [
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
 		
-    $scope.isTouchDevice = function(){
+    $rootScope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
 			return true;
 		return !!('ontouchstart' in window);

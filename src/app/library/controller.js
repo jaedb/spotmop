@@ -46,7 +46,7 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
-	$scope.tracklist = {tracks: []};
+	$scope.tracklist = {tracks: [], type: 'track'};
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);

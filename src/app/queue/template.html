@@ -76,15 +76,7 @@
 			</div>
 		</div>
 		
-		<div class="queue-items tracklist droppable" ng-controller="TracklistController" data-type="queue">		
-		
-			<tltrack ng-repeat="track in tracklist.tracks track by $index"></tltrack>
-
-			<div ng-hide="tracklist.tracks.length" class="no-items">
-				No items
-			</div>
-			
-		</div>
+        <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="tracklist.type" class="tracklist queue-tracks"></tracklist>
 		
 	</div>
 </div>
