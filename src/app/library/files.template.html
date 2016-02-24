@@ -16,10 +16,8 @@
 				<div class="clear-both"></div>
 			</a>
 		</div>
-		
-		<div class="library-tracks tracklist droppable" ng-controller="TracklistController">
-			<localtrack ng-repeat="track in tracklist.tracks track by $index"></localtrack>		
-		</div>
+        
+		<tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
 		
 	</div>
 </div>

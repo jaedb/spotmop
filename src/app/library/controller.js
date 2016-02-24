@@ -180,16 +180,8 @@ angular.module('spotmop.library', [])
 	if( $rootScope.spotifyAuthorized ){	
     
 		SpotifyService.getMyAlbums( userid )
-			.then( function( response ){
-				
-					// build all albums 
-					for( var i = 0; i < response.items.length; i++ ){
-						response.items[i].tracklist = {type: 'track', tracks: response.items[i].tracks.items};
-					}
-					
+			.then( function( response ){				
 					$scope.albums = response;
-					
-					console.log( $scope.albums );
 				});
 	}
 	
@@ -333,7 +325,7 @@ angular.module('spotmop.library', [])
 .controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.folders = [];
-	$scope.tracklist = {tracks: [], type: 'local'};
+	$scope.tracklist = {tracks: []};
 	
 	var folder, parentFolder;
 	

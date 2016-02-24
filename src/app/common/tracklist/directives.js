@@ -230,13 +230,13 @@ angular.module('spotmop.common.tracklist', [
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/template.html',
 		scope: {
-			tracks: '=',
-			type: '='
+			tracks: '=',		// = means to pass through an array/object
+			type: '@'			// @ means to listen for a string
 		},
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
-				
+			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
 				

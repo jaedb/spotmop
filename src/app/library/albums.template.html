@@ -36,10 +36,9 @@
                             </span>
                         </p>
                     </div>
-			
-                    <div class="album-items tracklist" ng-controller="TracklistController" >                        
-                        <track ng-repeat="track in album.tracklist.tracks track by $index"></track>
-                    </div>
+                    
+                    <tracklist tracks="album.tracks.items" type="track" class="tracklist album-tracks"></tracklist>
+                    
                 </div>
                 
                 <div class="clear-both"></div>
