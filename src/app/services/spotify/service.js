@@ -429,6 +429,38 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
+		removeAlbumsFromLibrary: function( albumids ){
+			
+			if( !this.isAuthorized() ){
+                deferred.reject();
+				return deferred.promise;
+			}
+			
+            var deferred = $q.defer();
+			if( typeof(albumids) !== 'array' )
+				albumids = [albumids];
+			
+            $http({
+					method: 'DELETE',
+					url: urlBase+'me/albums',
+					dataType: "json",
+					data: JSON.stringify( { ids: albumids } ),
+					contentType: "application/json; charset=utf-8",
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
 		deleteTracksFromLibrary: function( trackids ){
 			
             var deferred = $q.defer();

@@ -193,6 +193,18 @@ body {
 .pull-right {		float: right; }
 
 
+/** 
+ * Transitioning
+ * This occurs during a delete instruction and a delete success. It makes a snappy interface, but still indicates progress.
+ **/
+
+.transitioning,
+.transitioning:hover {
+	opacity: 0.2;
+}
+
+
+
 
 /* ================================================================================ SIDEBAR ======= */
 /* ================================================================================================ */
@@ -1149,6 +1161,7 @@ h1 .flag {
 
 .square-panel.library-album {
 	width: 90%;
+	margin: 0;
 }
 
 .square-panel.library-album:hover .image {	opacity: 1;}
@@ -1212,11 +1225,6 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.selected,
 .tracklist .track.selected:hover {
 	background: #FFF39C;
-}
-
-.tracklist .track.transitioning,
-.tracklist .track.transitioning:hover {
-	opacity: 0.2;
 }
 
 .tracklist .track.playing {

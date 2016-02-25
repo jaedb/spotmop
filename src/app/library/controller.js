@@ -185,6 +185,26 @@ angular.module('spotmop.library', [])
 				});
 	}
 	
+	// play a whole album
+	$scope.playAlbum = function( album ){
+		MopidyService.playStream( album.uri );
+	}
+	
+	// remove album from library
+	$scope.removeFromLibrary = function( album ){
+		album.transitioning = true;
+		
+		SpotifyService.removeAlbumsFromLibrary( album.id )
+			.then( function(response){
+				if( typeof(response.error) === 'undefined' ){
+					$scope.albums.items.splice( $scope.albums.items.indexOf(album), 1 );
+				}else{
+					NotifyService.error( response.error.message );
+					album.transitioning = false;
+				}
+			});
+	}
+	
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
