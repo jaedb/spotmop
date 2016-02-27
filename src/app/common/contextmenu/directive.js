@@ -56,6 +56,11 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 			}
 			
+			$scope.addToPlaylistByUri = function( uri ){
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', uri);
+				$element.fadeOut('fast');
+			}
+			
 			$scope.removeFromPlaylist = function(){
 				$rootScope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
 				$element.fadeOut('fast');
