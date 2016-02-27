@@ -25,11 +25,35 @@ contextmenu .menu-item {
 	display: block;
 	padding: 8px 14px 8px 10px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+}
+
+contextmenu .menu-item.has-submenu i {
+    position: absolute;
+    top: 8px;
+    right: 8px;
 }
 
 contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
+}
+
+contextmenu .menu-item:hover  > .sub-menu{
+	display: block;
+}
+
+contextmenu .sub-menu {
+    display: none;
+    position: absolute;
+    right: -150px;
+	background: #333333;
+    top: 0;
+    width: 150px;
+}
+
+contextmenu .sub-menu > .menu-item:hover {
+    background: #414141;
 }
 
 

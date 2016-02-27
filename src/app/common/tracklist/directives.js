@@ -502,7 +502,7 @@ angular.module('spotmop.common.tracklist', [
 			
 			
 			/**
-			 * Selected Tracks >> Add to playlist
+			 * Selected Tracks >> Add to playlist via dialog
 			 **/
 			$scope.$on('spotmop:tracklist:addSelectedTracksToPlaylist', function(event){
 				
@@ -522,7 +522,32 @@ angular.module('spotmop.common.tracklist', [
 				
 				DialogService.create('addToPlaylist', $scope);
 			});
-			
+                    
+            /**
+             * Selected Tracks >> Add to playlist immediately
+             **/
+            $scope.$on('spotmop:tracklist:addSelectedTracksToPlaylistByUri', function(event, uri){
+                
+                var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+                var selectedTracksUris = [];
+                
+                angular.forEach( selectedTracks, function(track){
+                    
+                    // if we have a nested track object (ie TlTrack objects)
+                    if( typeof(track.track) !== 'undefined' )
+                        selectedTracksUris.push( track.track.uri );
+                    
+                    // nope, so let's use a non-nested version
+                    else
+                        selectedTracksUris.push( track.uri );
+                });
+                
+                // now add them to the playlist, for reals
+                SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
+                    .then( function(response){
+                        NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
+                    });
+            });
 			
 			/**
 			 * Selected Tracks >> Add to library

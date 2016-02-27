@@ -37,25 +37,28 @@
 	
 	<div ng-if="!isTouchDevice()" class="non-touch-menu">
 		<span class="menu-item" singleclick="play()">
-            <i class="fa fa-fw fa-play"></i>Play
+            Play
         </span>
 		<span class="menu-item" ng-show="context == 'track' || context == 'localtrack'" singleclick="playNext()">
-            <i class="fa fa-fw fa-play"></i>Play next
+            Play next
         </span>
 		<span class="menu-item" ng-show="context == 'track' || context == 'localtrack'" singleclick="enqueue()">
-            <i class="fa fa-fw fa-plus"></i>Add to queue
+            Add to queue
         </span>
-		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToPlaylist()">
-            <i class="fa fa-fw fa-plus"></i>Add to playlist
+		<span class="menu-item has-submenu" ng-show="context != 'localtrack'">
+            Add to playlist <i class="fa fa-caret-right"></i>
+            <div class="sub-menu">
+                <span class="menu-item" ng-repeat="playlist in playlistsMenu" ng-bind="playlist.name" singleclick="addToPlaylistByUri( playlist.uri )"></span>
+            </div>
         </span>
 		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToLibrary()">
-            <i class="fa fa-fw fa-plus"></i>Add to library
+            Add to library
         </span>
 		<span class="menu-item" ng-show="context == 'tltrack'" singleclick="unqueue()">
-            <i class="fa fa-fw fa-trash"></i>Delete
+            Delete
         </span>
 		<span class="menu-item" ng-show="context == 'track'" singleclick="removeFromPlaylist()">
-            <i class="fa fa-fw fa-trash"></i>Delete
+            Delete
         </span>
 	</div>
 	
