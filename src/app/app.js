@@ -15,6 +15,7 @@ angular.module('spotmop', [
 	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',
+	'spotmop.common.track',
 	'spotmop.common.tracklist',
     
 	'spotmop.services.notify',
