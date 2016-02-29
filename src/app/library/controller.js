@@ -29,14 +29,6 @@ angular.module('spotmop.library', [])
 			templateUrl: "app/library/artists.template.html",
 			controller: 'LibraryArtistsController'
 		})
-		/*
-		 MORE COMPLEX THAN THE ALIAS TO PLAYLISTS (NESTED STATES). MAY NEED TO RECONSIDER APPROACH
-		.state('library.artist', {
-			url: "/artist/:uri",
-			templateUrl: "app/browse/artist/template.html",
-			controller: 'PlaylistController'
-		})
-		*/
 		.state('library.albums', {
 			url: "/albums",
 			templateUrl: "app/library/albums.template.html",
@@ -54,7 +46,7 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
-	$scope.tracklist = {tracks: []};
+	$scope.tracklist = {tracks: [], type: 'track'};
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
@@ -175,7 +167,87 @@ angular.module('spotmop.library', [])
 })
 
 /**
- * Library playlist
+ * Library albums
+ **/
+.controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
+	
+	$scope.albums = { items: [] };
+	
+    // if we've got a userid already in storage, use that
+    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+	
+	// if we have full spotify authorization
+	if( $rootScope.spotifyAuthorized ){	
+    
+		SpotifyService.getMyAlbums( userid )
+			.then( function( response ){				
+					$scope.albums = response;
+				});
+	}
+	
+	// play a whole album
+	$scope.playAlbum = function( album ){
+		MopidyService.playStream( album.uri );
+	}
+	
+	// remove album from library
+	$scope.removeFromLibrary = function( album ){
+		album.transitioning = true;
+		
+		SpotifyService.removeAlbumsFromLibrary( album.id )
+			.then( function(response){
+				if( typeof(response.error) === 'undefined' ){
+					$scope.albums.items.splice( $scope.albums.items.indexOf(album), 1 );
+				}else{
+					NotifyService.error( response.error.message );
+					album.transitioning = false;
+				}
+			});
+	}
+	
+    /**
+     * Load more of the album's tracks
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreAlbums = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreAlbums( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreAlbums = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+            
+                // append these new tracks to the main tracklist
+                $scope.albums.items = $scope.albums.items.concat( response.items );
+                
+                // save the next set's url (if it exists)
+                $scope.albums.next = response.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreAlbums = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+            loadMoreAlbums( $scope.albums.next );
+        }
+	});
+})
+
+
+
+/**
+ * Library playlists
  **/
 .controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
@@ -273,7 +345,7 @@ angular.module('spotmop.library', [])
 .controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.folders = [];
-	$scope.tracklist = {tracks: [], type: 'local'};
+	$scope.tracklist = {tracks: []};
 	
 	var folder, parentFolder;
 	

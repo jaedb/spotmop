@@ -20,7 +20,7 @@ angular.module('spotmop.browse.album', [])
 .controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService ){	
 	
 	$scope.album = {};
-	$scope.tracklist = {type: 'track'};
+	$scope.tracklist = {tracks: []};
     $scope.convertedDate = function(){
 		if( $scope.mediumScreen() ){
 			return $filter('date')($scope.album.release_date, "yyyy");
@@ -72,14 +72,8 @@ angular.module('spotmop.browse.album', [])
 	}
 	
 	// add album to library
-	$scope.addToLibrary = function(){
-		
-		var trackids = [];
-		angular.forEach( $scope.tracklist.tracks, function( track ){
-			trackids.push( SpotifyService.getFromUri( 'trackid', track.uri ) );
-		});
-		
-		SpotifyService.addTracksToLibrary( trackids );
+	$scope.addToLibrary = function(){		
+		SpotifyService.addAlbumsToLibrary( $scope.album.id );
 	}
 	
 	// get the album
@@ -114,7 +108,6 @@ angular.module('spotmop.browse.album', [])
 						$scope.artist = response;
 					});
 			}
-			
 		});
     
 	
