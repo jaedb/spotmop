@@ -39,7 +39,7 @@ contextmenu .menu-item:hover {
 	cursor: pointer;
 }
 
-contextmenu .menu-item:hover  > .sub-menu{
+contextmenu .menu-item:hover > .sub-menu{
 	display: block;
 }
 
@@ -50,6 +50,20 @@ contextmenu .sub-menu {
 	background: #333333;
     top: 0;
     width: 150px;
+	max-height: 306px;
+	overflow-y: scroll;
+}
+
+contextmenu.hard-right .sub-menu,
+contextmenu.close-right .sub-menu {
+	right: auto;
+	left: -150px;
+}
+
+contextmenu.hard-bottom .sub-menu,
+contextmenu.close-bottom .sub-menu {
+	top: auto;
+	bottom: 0px;
 }
 
 contextmenu .sub-menu > .menu-item:hover {
