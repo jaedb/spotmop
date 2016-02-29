@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, NotifyService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, NotifyService ){
 	
 	// setup response object
     var service = {
@@ -403,6 +403,10 @@ angular.module('spotmop.services.spotify', [])
                 deferred.reject();
 				return deferred.promise;
 			}
+			
+			// firstly, let's invalidate the album request cache (because we've changed the resource)
+			var httpCache = $cacheFactory.get('$http');
+			httpCache.remove( urlBase+'me/albums?limit=40&offset=0' );
 			
             var deferred = $q.defer();
 			if( typeof(albumids) !== 'array' )
