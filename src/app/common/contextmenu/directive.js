@@ -104,12 +104,24 @@ angular.module('spotmop.common.contextmenu', [
 						var menuHeight = $element.outerHeight();
 					
 						// too far right
-						if( positionX + menuWidth > $(window).width() )
+						if( positionX + menuWidth > $(window).width() ){
 							positionX -= menuWidth - 10;
+							$element.addClass('hard-right');					
+						}else if( positionX + menuWidth + 150 > $(window).width() ){
+							$element.addClass('close-right');
+						}else{
+							$element.removeClass('hard-right close-right');
+						}
 						
 						// too far to the bottom (yes, document.height() because we're using fixed positions!)
-						if( positionY + menuHeight > $(document).height() )
+						if( positionY + menuHeight > $(document).height() ){
 							positionY -= menuHeight;
+							$element.addClass('hard-bottom');					
+						}else if( positionY + menuHeight + 306 > $(document).height() ){
+							$element.addClass('close-bottom');
+						}else{
+							$element.removeClass('hard-bottom close-bottom');
+						}
 						
 						// now we can accurately reveal and position it
 						$element

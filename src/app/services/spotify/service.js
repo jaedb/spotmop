@@ -154,6 +154,15 @@ angular.module('spotmop.services.spotify', [])
 				
             return deferred.promise;
         },
+		
+		/** 
+		 * Request error 
+		 * When a request fails, but not due to authorization (ie 504, 503, etc). This is just a nifty alias to notify the user.
+		 **/
+		serviceUnavailable: function(){
+			NotifyService.error('Request failed. Spotify API may be temporarily unavailable.');
+		},
+		
         
 		/**
 		 * Get an element from a URI
@@ -373,6 +382,10 @@ angular.module('spotmop.services.spotify', [])
                 deferred.reject();
 				return deferred.promise;
 			}
+			
+			// firstly, let's invalidate the cache (because we've changed the resource)
+			var httpCache = $cacheFactory.get('$http');
+			httpCache.remove( urlBase+'me/tracks/?limit=50' );
 
             $http({
 					method: 'PUT',
@@ -473,6 +486,10 @@ angular.module('spotmop.services.spotify', [])
                 deferred.reject();
 				return deferred.promise;
 			}
+			
+			// firstly, let's invalidate the cache (because we've changed the resource)
+			var httpCache = $cacheFactory.get('$http');
+			httpCache.remove( urlBase+'me/tracks/?limit=50' );
 
             $http({
 					method: 'DELETE',
@@ -1420,26 +1437,36 @@ angular.module('spotmop.services.spotify', [])
 			
 			// check that it is a spotify request, and not a failed token request
 			// also limit to 3 retries
-			if( response.status == 401 && response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
+			if( response.config.url.search('https://api.spotify.com/') >= 0 && retryCount < 3 ){
+			
+				// permission denied
+				if( response.status == 401 ){
+						
+					retryCount++;
+					var deferred = $q.defer();
 					
-				retryCount++;
-				var deferred = $q.defer();
-				
-				// refresh the token
-				$injector.get('SpotifyService').refreshToken()
-					.then( function(refreshResponse){
-						
-						// make sure our refresh request didn't error, otherwise we'll create an infinite loop
-						if( typeof(refreshResponse.error) !== 'undefined' )
-							return response;
+					// refresh the token
+					$injector.get('SpotifyService').refreshToken()
+						.then( function(refreshResponse){
 							
-						retryCount--;
-						
-						// now retry the original request
-						retryHttpRequest( response.config, deferred, refreshResponse.access_token );
-					});
+							// make sure our refresh request didn't error, otherwise we'll create an infinite loop
+							if( typeof(refreshResponse.error) !== 'undefined' )
+								return response;
+								
+							retryCount--;
+							
+							// now retry the original request
+							retryHttpRequest( response.config, deferred, refreshResponse.access_token );
+						});
+					
+					return deferred.promise;
 				
-				return deferred.promise;
+				// misc error
+				}else if( response.status == 0 ){						
+					var deferred = $q.defer();
+					$injector.get('SpotifyService').serviceUnavailable();				
+					return deferred.promise;				
+				}			
 			}
 			
 			return response;
