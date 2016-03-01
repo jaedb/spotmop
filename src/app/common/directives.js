@@ -70,31 +70,6 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
 	}
 })
-
-
-/** 
- * Scrollable panels
- * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
- **/
-.directive('scrollingPanel', function() {
-	return {
-		restrict: 'C',
-		link: function($scope, $element, $attrs){
-		
-			$element.on('scroll', function( event ){
-				
-				// get our ducks in a row - these are all the numbers we need
-				var scrollPosition = $(this).scrollTop();
-				var frameHeight = $(this).outerHeight();
-				var contentHeight = $(this).children('.inner').outerHeight();
-				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-				
-				if( distanceFromBottom <= 100 )
-					$scope.$broadcast('spotmop:loadMore');
-			});
-		}
-	}
-})
 		
 		
 		
@@ -423,12 +398,11 @@ angular.module('spotmop.directives', [])
 				function(){	
 					window.requestAnimationFrame(function( event ){
 						
-						var scrollingPanel = $('.scrolling-panel');
-						var bannerPanel = scrollingPanel.find('.intro');
+						var bannerPanel = $('body').find('.intro');
 						
 						// if we've scrolled
-						if( scrollTop != scrollingPanel.scrollTop() ){
-							scrollTop = scrollingPanel.scrollTop();
+						if( scrollTop != $('body').scrollTop() ){
+							scrollTop = $('body').scrollTop();
 							
 							var bannerHeight = bannerPanel.outerHeight();
 

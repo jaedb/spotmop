@@ -6,7 +6,7 @@
 
 body,
 html {
-	background: ##FFFFFF;
+	background: #f5f5f5;
 	color: #000000;
 	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
 	font-size: 14px;
@@ -63,31 +63,15 @@ body.dragging .body * {
 /* ================================================================================ STRUCTURE ===== */
 /* ================================================================================================ */
 
-body {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-}
-
-#app {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background: #303030;
-}
-
 #sidebar {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	width: 20%;
 	overflow: hidden;
 	background: #111111;
+	z-index: 1;
 }
 
 #sidebar > .background-image {
@@ -118,11 +102,11 @@ body {
 	bottom: 0;
 	right: 0;
 	position: absolute;
-	overflow-y: auto;
+	overflow: hidden;
 }
 
 #player {
-	position: absolute;
+	position: fixed;
 	bottom: 20px;
 	left: 0;
 	width: 20%;
@@ -130,26 +114,11 @@ body {
 }
 
 #body {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 80%;
-	bottom: 0;
-	background: #f5f5f5;
+	padding-left: 20%;
 }
 
 .page > .inner {
 	padding: 40px;
-}
-
-.scrolling-panel {
-	overflow-x: hidden;
-	overflow-y: scroll;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
 }
 
 

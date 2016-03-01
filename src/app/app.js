@@ -193,6 +193,19 @@ angular.module('spotmop', [
 	$scope.hideMenu = function(){
 		$(document).find('body').removeClass('menu-revealed');
 	}
+		
+		
+	$(document).on('scroll', function( event ){
+	
+		// get our ducks in a row - these are all the numbers we need
+		var scrollPosition = $(document).scrollTop();
+		var frameHeight = $(window).height();
+		var contentHeight = $(document).height();
+		var distanceFromBottom = contentHeight - ( scrollPosition + frameHeight );
+		
+		if( distanceFromBottom <= 100 )
+			$scope.$broadcast('spotmop:loadMore');
+	});
 	
 	
 	/**
@@ -463,12 +476,32 @@ angular.module('spotmop', [
     }
 	
 	
+    var dragging = false;
+	var dragThreshold = 30;
+	
+	
+    /**
+     * Dragging of albums
+     **/
+    var albumBeingDragged = {};
+	
+	// when the mouse is pressed down on a track
+	$(document).on('mousedown', 'body:not(.touchDevice) .draggable', function(event){
+		
+		// create an object that gives us all the info we need
+		dragging = {
+					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
+					clientX: event.clientX,
+					clientY: event.clientY,
+					objectsBeingDragged: $(event.target)
+				}
+	});
+	
+	
     /**
      * Dragging of tracks
      **/
     var tracksBeingDragged = [];
-    var dragging = false;
-	var dragThreshold = 30;
 	
 	// when the mouse is pressed down on a track
 	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
@@ -482,7 +515,7 @@ angular.module('spotmop', [
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
-					tracks: tracks
+					objectsBeingDragged: tracks
 				}
 	});
 	
@@ -509,7 +542,7 @@ angular.module('spotmop', [
 				
 				// get the uris
 				var uris = [];
-				$.each( dragging.tracks, function(key, value){
+				$.each( dragging.objectsBeingDragged, function(key, value){
 					uris.push( $(value).attr('data-uri') );
 				});
 				
@@ -544,7 +577,7 @@ angular.module('spotmop', [
                     var start = 1000;
                     var end = 0;
                     var to_position = $(track).parent().index();
-                    $.each(dragging.tracks, function(key, track){
+                    $.each(dragging.objectsBeingDragged, function(key, track){
                         if( $(track).parent().index() < start )  
                             start = $(track).parent().index();
                         if( $(track).parent().index() > end )  
@@ -606,7 +639,9 @@ angular.module('spotmop', [
 				if( track ){
 					track.addClass('drag-hovering');
 				}
-			
+				
+				console.log( event.target );
+				
 				// turn the trigger safety of
 				dragging.safetyOff = true;
 				
@@ -631,7 +666,7 @@ angular.module('spotmop', [
                     target.addClass('dropping');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                 }else{
-                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
+                    dragTracer.html('Dragging '+dragging.objectsBeingDragged.length+' item(s)');
                 }
 			}
 		}
