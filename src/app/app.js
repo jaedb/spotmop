@@ -488,12 +488,16 @@ angular.module('spotmop', [
 	// when the mouse is pressed down on a track
 	$(document).on('mousedown', 'body:not(.touchDevice) .draggable', function(event){
 		
+		var album = $(event.target);
+		if( !album.is('.album.draggable') )
+			album = album.closest('.album.draggable');
+		
 		// create an object that gives us all the info we need
 		dragging = {
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
-					objectsBeingDragged: $(event.target)
+					objectsBeingDragged: album
 				}
 	});
 	
@@ -554,6 +558,15 @@ angular.module('spotmop', [
 					}
                     
 					MopidyService.addToTrackList( uris );
+					
+				// dropping on album library
+				}else if( isMenuItem && target.attr('data-type') === 'albumlibrary' ){
+					
+					var albumid = dragging.objectsBeingDragged.attr('data-id');
+					SpotifyService.addAlbumsToLibrary( albumid )
+						.then( function(response){
+							NotifyService.notify('Added album to library');
+						});
 					
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
@@ -640,8 +653,6 @@ angular.module('spotmop', [
 					track.addClass('drag-hovering');
 				}
 				
-				console.log( event.target );
-				
 				// turn the trigger safety of
 				dragging.safetyOff = true;
 				
@@ -658,6 +669,8 @@ angular.module('spotmop', [
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
+                    target.addClass('dropping');
+                }else if( target && isMenuItem && target.attr('data-type') === 'albumlibrary' ){
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
                     target.closest('.menu-item.playlists').addClass('dropping-within');
