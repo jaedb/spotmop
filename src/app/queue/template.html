@@ -45,12 +45,6 @@
 					<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
 						<i class="fa fa-repeat"></i>
 					</span>
-	
-					<span class="volume">
-						<span class="button" ng-click="popupVolumeControls()">
-							<i class="fa fa-volume-down fa-fw"></i>
-						</span>
-					</span>
 				</div>
 				
 				<div class="clear-both"></div>
@@ -76,15 +70,7 @@
 			</div>
 		</div>
 		
-		<div class="queue-items tracklist droppable" ng-controller="TracklistController" data-type="queue">		
-		
-			<tltrack ng-repeat="track in tracklist.tracks track by $index"></tltrack>
-
-			<div ng-hide="tracklist.tracks.length" class="no-items">
-				No items
-			</div>
-			
-		</div>
+        <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="tltrack" class="tracklist queue-tracks droppable"></tracklist>
 		
 	</div>
 </div>

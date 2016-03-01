@@ -15,6 +15,7 @@ angular.module('spotmop', [
 	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',
+	'spotmop.common.track',
 	'spotmop.common.tracklist',
     
 	'spotmop.services.notify',
@@ -71,7 +72,7 @@ angular.module('spotmop', [
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
 		
-    $scope.isTouchDevice = function(){
+    $rootScope.isTouchDevice = function(){
 		if( SettingsService.getSetting('emulateTouchDevice',false) )
 			return true;
 		return !!('ontouchstart' in window);
@@ -549,9 +550,9 @@ angular.module('spotmop', [
                         if( $(track).parent().index() > end )  
                             end = $(track).parent().index();
                     });
-                    
+					
                     // sorting queue tracklist
-                    if( track.closest('.tracklist').hasClass('queue-items') ){
+                    if( track.closest('.tracklist').hasClass('queue-tracks') ){
 						
 						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
 						if( to_position >= end )

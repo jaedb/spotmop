@@ -50,6 +50,11 @@ Screenshots
 Changelog
 --------
 
+*2.5.17*
+* Implement Spotify's new 'My Albums' infrastructure
+* New iconography
+* Rebuild `tracklist` object to facilitate multiple instances within a single scope
+
 *2.5*
 * Port to Mopidy extension
 

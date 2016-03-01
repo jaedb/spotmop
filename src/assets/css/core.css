@@ -193,6 +193,18 @@ body {
 .pull-right {		float: right; }
 
 
+/** 
+ * Transitioning
+ * This occurs during a delete instruction and a delete success. It makes a snappy interface, but still indicates progress.
+ **/
+
+.transitioning,
+.transitioning:hover {
+	opacity: 0.2;
+}
+
+
+
 
 /* ================================================================================ SIDEBAR ======= */
 /* ================================================================================================ */
@@ -239,12 +251,6 @@ body {
 	opacity: 0.5;
 	padding: 2px 20px 0 0;
 	float: right;
-}
-
-.main-menu .menu-item > a > i {
-	width: 15px;
-	padding-right: 5px;
-	font-size: 12px;
 }
 
 .main-menu > .menu-item > a > i.services-alert {
@@ -554,6 +560,39 @@ input[type='submit'],
 	right: 15px;
 }
     
+	
+	
+/**
+ * Icons
+ * These use a single sprite image grid of 8x5
+ **/
+ 
+.si {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url('../icons/icons.svg');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	margin-top: 2px;
+	margin-right: 5px;
+	padding: 0;
+}
+ 
+.si.play {			background-position: 0 0; }
+.si.explore {		background-position: 0 -16px; }
+.si.playlist {		background-position: 0 -32px; }
+.si.music {			background-position: 0 -48px; }
+.si.cog {			background-position: 0 -64px; }
+.si.folder {		background-position: 0 -80px; }
+.si.leaf {			background-position: 0 -96px; }
+.si.star {			background-position: 0 -112px; }
+.si.mic {			background-position: 0 -128px; }
+.si.album {			background-position: 0 -144px; }
+.si.grid {			background-position: 0 -160px; }
+.si.find {			background-position: 0 -176px; }
+
 
 
 /**
@@ -1121,6 +1160,13 @@ h1 .flag {
 	padding-bottom: 21%;
 }
 
+.square-panel.library-album {
+	width: 90%;
+	margin: 0;
+}
+
+.square-panel.library-album:hover .image {	opacity: 1;}
+
 
 /**
  * Track rows
@@ -1180,11 +1226,6 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.selected,
 .tracklist .track.selected:hover {
 	background: #FFF39C;
-}
-
-.tracklist .track.transitioning,
-.tracklist .track.transitioning:hover {
-	opacity: 0.2;
 }
 
 .tracklist .track.playing {
@@ -1485,6 +1526,20 @@ body.dragging .tracklist .track.selected {
 	padding-bottom: 20px;
 }
 
+
+/**
+ * Library
+ **/
+ 
+.library-albums .library-album {}
+
+.library-albums .full-album {
+	padding-bottom: 40px;
+}
+
+.library-albums .full-album .album-title {
+	padding: 0 10px 15px 10px;
+}
 
 
 /**

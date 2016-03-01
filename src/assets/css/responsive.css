@@ -82,15 +82,26 @@
 	}
 	
 	#player .button.previous,
-	#player .volume{
+	#player .volume:not(.touch-friendly){
 		display: none !important;
 	}
 	
+	#player .volume.touch-friendly{
+		display: inline-block !important;
+		position: absolute;
+		top: 14px;
+		right: -10px;
+	}
+	
+	#player .volume.touch-friendly .button {
+		font-size: 18px;
+	}
+	
 	#player .track-info {
-		float: right;
-		width: 80%;
 		padding: 0;
 		font-size: 13px;
+		padding-left: 80px;
+		padding-right: 80px;
 	}
 	
 	#player .playback {
