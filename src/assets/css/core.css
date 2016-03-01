@@ -1847,6 +1847,7 @@ body.dragging .tracklist .track.selected {
 	left: 0;
 	bottom: 0;
 	background: #08d58f;
+	max-width: 100%;
 }
 
 .player .slider  .track .fill.animate {

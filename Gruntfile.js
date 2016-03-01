@@ -15,7 +15,8 @@ module.exports = function(grunt) {
         },
         uglify: {
             options: {
-                banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n'
+                banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n',
+				ASCIIOnly: 'true'
             },
             build: {
                 src: 'mopidy_spotmop/static/app.js',
