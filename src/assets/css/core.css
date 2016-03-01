@@ -12,6 +12,10 @@ html {
 	font-size: 14px;
 }
 
+body {
+	overflow-y: scroll;
+}
+
 * {
 	border: 0;
 	padding: 0;
@@ -115,6 +119,7 @@ body.dragging .body * {
 
 #body {
 	padding-left: 20%;
+	position: relative;
 }
 
 .page > .inner {
@@ -241,7 +246,7 @@ body.dragging .body * {
     display: block;
     opacity: 0.5;
     margin-top: -7px;
-    padding: 10px 15px;
+    padding: 6px 15px;
 }
 
 .main-menu .playlists-submenu-trigger i {
@@ -1300,30 +1305,22 @@ body.dragging .tracklist .track.selected {
 	margin: 0 0 50px 0;
 }
 
-.playlist-page .asset-sidebar,
-.album-page .asset-sidebar {
-	width: 25%;
+.asset-sidebar {
+	width: 20%;
 	position: absolute;
 	top: 0;
-	left: 0;
+	left: 20%;
 	bottom: 0;
 	background: #EEEEEE;
 }
 
-.playlist-page .asset-sidebar .buttons,
-.album-page .asset-sidebar .buttons {
-	position: relative;
+.content.has-asset-sidebar {
+	padding-left: 25%;
 }
 
-.playlist-page .content,
-.album-page .content {
-	left: 25%;
-}
-
-.playlist-page .content > .inner,
-.album-page .content > .inner {
+.content.has-asset-sidebar > .inner {
 	padding: 40px 20px 40px 20px;
-}	
+}
 
 .playlist-page .playlist.thumbnail,
 .album-page .album.thumbnail {

@@ -398,11 +398,11 @@ angular.module('spotmop.directives', [])
 				function(){	
 					window.requestAnimationFrame(function( event ){
 						
-						var bannerPanel = $('body').find('.intro');
+						var bannerPanel = $(document).find('.intro');
 						
 						// if we've scrolled
-						if( scrollTop != $('body').scrollTop() ){
-							scrollTop = $('body').scrollTop();
+						if( scrollTop != $(document).scrollTop() ){
+							scrollTop = $(document).scrollTop();
 							
 							var bannerHeight = bannerPanel.outerHeight();
 
