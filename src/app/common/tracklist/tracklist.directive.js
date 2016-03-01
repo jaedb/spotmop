@@ -168,15 +168,15 @@ angular.module('spotmop.common.tracklist', [])
 					atPosition = 0;
 					
 					// fetch the currently playing track
-					var currentTrack = $scope.state().currentTlTrack;
+					var currentTrack = $scope.$parent.state().currentTlTrack;
 					
 					// make sure we have a current track
 					if( currentTrack ){
-						var currentTrackObject = $filter('filter')($scope.currentTracklist, {tlid: currentTrack.tlid});
+						var currentTrackObject = $filter('filter')($scope.$parent.currentTracklist, {tlid: currentTrack.tlid});
 					
 						// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
 						if( currentTrackObject.length > 0 )				
-							atPosition = $scope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
+							atPosition = $scope.$parent.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
 					}
 				}
 				

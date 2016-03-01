@@ -550,9 +550,9 @@ angular.module('spotmop', [
                         if( $(track).parent().index() > end )  
                             end = $(track).parent().index();
                     });
-                    
+					
                     // sorting queue tracklist
-                    if( track.closest('.tracklist').hasClass('queue-items') ){
+                    if( track.closest('.tracklist').hasClass('queue-tracks') ){
 						
 						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
 						if( to_position >= end )
