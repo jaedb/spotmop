@@ -491,6 +491,14 @@ angular.module('spotmop', [
 		var album = $(event.target);
 		if( !album.is('.album.draggable') )
 			album = album.closest('.album.draggable');
+			
+		var albumImage = album.find('.image').css('background-image');
+		if( !albumImage )
+			albumImage = 'url("'+album.attr('data-image')+'");';
+			
+		var albumName = album.find('.name').html();
+		if( !albumName )
+			albumName = album.attr('data-name');
 		
 		// create an object that gives us all the info we need
 		dragging = {
@@ -499,7 +507,7 @@ angular.module('spotmop', [
 					clientY: event.clientY,
 					objectsBeingDragged: album,
 					objectType: 'album',
-					dragContent: "<span class='album-thumbnail' style='background-image: "+album.find('.image').css('background-image')+";'></span><span class='album-name'>"+album.find('.name').html()+"</span>"
+					dragContent: "<div class='album-thumbnail' style='background-image: "+albumImage+";'></div><div class='album-name'>"+albumName+"</div>"
 				}
 	});
 	
@@ -516,6 +524,12 @@ angular.module('spotmop', [
 		var tracklist = $(event.currentTarget).closest('.tracklist');
 		var tracks = tracklist.find('.track.selected');
 		
+		var dragContent = '<div class="track-title top">'+ tracks.eq(0).find('.title').html() +'</div>';
+		if( tracks.length > 1 )
+			dragContent += '<div class="track-title middle">'+ tracks.eq(1).find('.title').html() +'</div>';
+		if( tracks.length > 2 )
+			dragContent += '<div class="track-title bottom">'+ tracks.eq(2).find('.title').html() +'</div>';
+		
 		// create an object that gives us all the info we need
 		dragging = {
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
@@ -523,7 +537,7 @@ angular.module('spotmop', [
 					clientY: event.clientY,
 					objectsBeingDragged: tracks,
 					objectType: 'track',
-					dragContent: 'Dragging '+ tracks.length +' tracks'
+					dragContent: dragContent
 				}
 	});
 	
@@ -545,7 +559,7 @@ angular.module('spotmop', [
 			
 			// if we have a target
 			if( target ){
-				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
+				$(document).find('.drag-tracer').html('<div class="text">Dropping...</div>').fadeOut('fast');
 				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
 				
 				// get the uris

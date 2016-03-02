@@ -3,10 +3,12 @@
 	<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 	
 	<div class="asset-sidebar">
-	
-		<div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
-		<div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
-		
+        
+        <div class="thumbnail-wrapper album draggable" data-id="{{ album.id }}" draggable="false" data-image="{{ album.images[0].url }}" data-name="{{ album.name }}">
+            <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+            <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
+		</div>
+        
 		<div class="artist-grid small">
 			<a
 			   ng-repeat="artist in album.artists"
