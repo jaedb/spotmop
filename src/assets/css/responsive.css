@@ -28,6 +28,10 @@
 	.main-menu .divider {
 		padding-top: 10px;
 	}
+	
+	#body {
+		padding-bottom: 50px;
+	}
 }
 
 @media( max-height: 300px ){

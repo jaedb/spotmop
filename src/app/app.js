@@ -497,7 +497,8 @@ angular.module('spotmop', [
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
-					objectsBeingDragged: album
+					objectsBeingDragged: album,
+					objectType: 'album'
 				}
 	});
 	
@@ -519,7 +520,8 @@ angular.module('spotmop', [
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
-					objectsBeingDragged: tracks
+					objectsBeingDragged: tracks,
+					objectType: 'track'
 				}
 	});
 	
@@ -656,8 +658,13 @@ angular.module('spotmop', [
 				// turn the trigger safety of
 				dragging.safetyOff = true;
 				
-                // setup the tracer
-                dragTracer.show();
+                // setup the tracer, and make him sticky
+                dragTracer
+                    .show()
+                    .css({
+                        top: event.clientY-10,
+                        left: event.clientX+10
+                    });
 					
                 $(document).find('.droppable').removeClass('dropping');
                 $(document).find('.dropping-within').removeClass('dropping-within');
@@ -666,21 +673,39 @@ angular.module('spotmop', [
 				if( target && target.closest('.main-menu').length > 0 )
 					isMenuItem = true;
 				
+				var tracerContext = '';
+				if( dragging.objectType == 'track' ){
+					if( dragging.objectsBeingDragged.length > 1 )
+						tracerContext = dragging.objectsBeingDragged.length + ' tracks';
+					else
+						tracerContext = 'track';
+				}else if( dragging.objectType == 'album' ){
+					tracerContext = '<em>'+ $(dragging.objectsBeingDragged[0]).find('.name').html() +'</em>';
+				}
+				
+                var tracerContent = 'Dragging '+ tracerContext;
+				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     target.addClass('dropping');
+					tracerContent = 'Add '+tracerContext +' to queue';
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
                     target.addClass('dropping');
+					tracerContent = 'Add '+tracerContext +' to library';
                 }else if( target && isMenuItem && target.attr('data-type') === 'albumlibrary' ){
                     target.addClass('dropping');
+					tracerContent = 'Add '+tracerContext +' to library';
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                     target.addClass('dropping');
+					tracerContent = 'Add '+tracerContext +' to playlist';
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     target.addClass('dropping');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
+					tracerContent = 'Add '+ tracerContext +' to playlist';
                 }else{
-                    dragTracer.html('Dragging '+dragging.objectsBeingDragged.length+' item(s)');
                 }
+				
+                dragTracer.html( tracerContent );
 			}
 		}
 	});

@@ -530,8 +530,7 @@ input[type='submit'],
 	color: #FFFFFF;
 	z-index: 9;
 	display: none;
-	bottom: 10px;
-	right: 15px;
+	font-size: 12px;
 }
     
 	
