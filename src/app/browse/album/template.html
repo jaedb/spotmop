@@ -9,6 +9,8 @@
             <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
 		</div>
         
+        <div class="clear-left"><!-- clear --></div>
+        
 		<div class="artist-grid small">
 			<a
 			   ng-repeat="artist in album.artists"
@@ -18,6 +20,8 @@
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
 		</div>
+        
+        <div class="clear-left"><!-- clear --></div>
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>

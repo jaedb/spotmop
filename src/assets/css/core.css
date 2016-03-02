@@ -120,6 +120,7 @@ body.dragging .body * {
 #body {
 	padding-left: 20%;
 	position: relative;
+	min-height: 100vh;
 }
 
 .page > .inner {
@@ -1002,15 +1003,15 @@ h1 .flag {
 }
 
 .artist-grid .artist {
-	display: inline-block;
-	clear: both;
+	display: block;
+	float: left;
 	border: 0 !important;
 	width: 50%;
 	position: relative;
 }
 
 .artist-grid .artist .image {
-	display: inline-block;
+	display: block;
 	width: 100%;
 	padding-bottom: 100%;
 	background-image: url('../svg/no-image.svg');
