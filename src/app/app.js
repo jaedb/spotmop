@@ -498,7 +498,8 @@ angular.module('spotmop', [
 					clientX: event.clientX,
 					clientY: event.clientY,
 					objectsBeingDragged: album,
-					objectType: 'album'
+					objectType: 'album',
+					dragContent: "<span class='album-thumbnail' style='background-image: "+album.find('.image').css('background-image')+";'></span><span class='album-name'>"+album.find('.name').html()+"</span>"
 				}
 	});
 	
@@ -521,7 +522,8 @@ angular.module('spotmop', [
 					clientX: event.clientX,
 					clientY: event.clientY,
 					objectsBeingDragged: tracks,
-					objectType: 'track'
+					objectType: 'track',
+					dragContent: 'Dragging '+ tracks.length +' tracks'
 				}
 	});
 	
@@ -673,39 +675,21 @@ angular.module('spotmop', [
 				if( target && target.closest('.main-menu').length > 0 )
 					isMenuItem = true;
 				
-				var tracerContext = '';
-				if( dragging.objectType == 'track' ){
-					if( dragging.objectsBeingDragged.length > 1 )
-						tracerContext = dragging.objectsBeingDragged.length + ' tracks';
-					else
-						tracerContext = 'track';
-				}else if( dragging.objectType == 'album' ){
-					tracerContext = '<em>'+ $(dragging.objectsBeingDragged[0]).find('.name').html() +'</em>';
-				}
-				
-                var tracerContent = 'Dragging '+ tracerContext;
+				dragTracer.html( dragging.dragContent );
 				
                 if( target && isMenuItem && target.attr('data-type') === 'queue' ){
                     target.addClass('dropping');
-					tracerContent = 'Add '+tracerContext +' to queue';
                 }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
                     target.addClass('dropping');
-					tracerContent = 'Add '+tracerContext +' to library';
                 }else if( target && isMenuItem && target.attr('data-type') === 'albumlibrary' ){
                     target.addClass('dropping');
-					tracerContent = 'Add '+tracerContext +' to library';
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
                     target.closest('.menu-item.playlists').addClass('dropping-within');
                     target.addClass('dropping');
-					tracerContent = 'Add '+tracerContext +' to playlist';
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
                     target.addClass('dropping');
                     target.closest('.menu-item.playlists').addClass('dropping-within');
-					tracerContent = 'Add '+ tracerContext +' to playlist';
-                }else{
                 }
-				
-                dragTracer.html( tracerContent );
 			}
 		}
 	});
