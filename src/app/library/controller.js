@@ -437,7 +437,9 @@ angular.module('spotmop.library', [])
 								
 								// loop all the tracks to sanitize the response
 								for( var key in response ){
-									tracks.push( response[key][0] );
+									var track = response[key][0];
+									track.type = 'localtrack';
+									tracks.push( track );
 								}
 								
 								$scope.tracklist.tracks = tracks;

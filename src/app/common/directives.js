@@ -68,10 +68,9 @@ angular.module('spotmop.directives', [])
                 drag.startY = event.clientY;
 				
 				// also, if we're dragging a mopidy track item, copy the model to our .type standard container
-				if( typeof($scope.dragobj.__model__) !== 'undefined' ){
+				if( typeof($scope.dragobj.__model__) !== 'undefined' && typeof($scope.dragobj.type) === 'undefined' ){
 					$scope.dragobj.type = $scope.dragobj.__model__.toLowerCase();
 				}
-				console.log( $scope.dragobj );
             });
             
             // release the mouse (anywhere in the document)
@@ -155,6 +154,13 @@ angular.module('spotmop.directives', [])
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
 							}
 							break;
+						
+						case 'localtrack':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -217,6 +223,14 @@ angular.module('spotmop.directives', [])
 						MopidyService.addToTrackList( trackUris );
 						break;
 					case 'track':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'localtrack':
 						var trackUris = [];
 						var trackDoms = $(document).find('.track.selected');
 						for( var i = 0; i < trackDoms.length; i++){
