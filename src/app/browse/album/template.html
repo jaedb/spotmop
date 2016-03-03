@@ -17,14 +17,12 @@
         
 		<div class="artist-grid small">
 			<a
-			   ng-repeat="artist in album.artists"
-			   class="artist draggable"
-			   ui-sref="browse.artist.overview({ uri: artist.uri })"
-               draggable="false"
-               data-draguri="{{ album.uri }}"
-               data-dragname="{{ artist.name }}"
-               data-dragimage="{{ artist.images[artist.images.length-1].url }}"
-               data-dragtype="artist">
+                ng-repeat="artist in album.artists"
+                class="artist draggable"
+                ui-sref="browse.artist.overview({ uri: artist.uri })"
+                draggable="false"
+                candrag
+                dragobj="artist">
 					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>

@@ -545,10 +545,7 @@ input[type='submit'],
 	z-index: 9;
 	display: none;
 	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
-}
-
-.drag-tracer .text {
-	padding: 8px 12px;
+	pointer-events: none;
 }
 
 .drag-tracer .track-title {
@@ -579,7 +576,7 @@ input[type='submit'],
 	background-size: cover;
 }
 
-.drag-tracer .name {
+.drag-tracer .text {
 	float: left;
 	padding: 12px 15px 0 15px;
 	font-size: 12px;

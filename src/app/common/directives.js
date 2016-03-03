@@ -39,7 +39,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', function() {
+.directive('candrag', function( MopidyService, SpotifyService, NotifyService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -55,6 +55,11 @@ angular.module('spotmop.directives', [])
                 startX: false,
                 starY: false
             };
+			
+			
+			/** 
+			 * Event functions
+			 **/
             
             // [potentially] start a drag event, log some initial states
             $element.on('mousedown', function(event){
@@ -104,13 +109,33 @@ angular.module('spotmop.directives', [])
                 
                 // turn on our drag active switch
                 drag.dragActive = true;
+				
+				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
+				$(document).find('.dropping').removeClass('dropping');
                 
                 // if we need initial setup of the tracer, do it darryl
                 if( requiresSetup ){
-                    console.log('start!');
-                    console.log( $scope.dragobj );
+				
+                    $('body').addClass('dragging');
                     
-                    tracer.html($scope.dragobj.name);
+					var tracerContent = '';
+					
+					switch( $scope.dragobj.type ){
+						case 'album':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+						case 'artist':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+					}
+					
+                    tracer.html( tracerContent );
                     tracer.show();
                 }
                 
@@ -119,13 +144,117 @@ angular.module('spotmop.directives', [])
                         left: event.clientX,
                         top: event.clientY
                     });
+					
+				// check to see if what we're hovering accepts what we're dragging				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				if( accepts ){
+					dropTarget.addClass('dropping');
+				}
             }
             
             // fired when the drop is initiated
             function dropping( event ){
-                console.log('drop it like its hot');
+			
                 tracer.fadeOut('medium');
+				$('body').removeClass('dragging');
+				$(document).find('.dropping').removeClass('dropping');
+				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				
+				// our drop target accepts our dragging object! 
+				if( accepts ){
+					if( dropTarget.attr('droptype') == 'queue' ){
+						addObjectToQueue();
+					}
+					if( dropTarget.attr('droptype') == 'libraryalbums' ){
+						addObjectToAlbumLibrary();
+					}
+					if( dropTarget.attr('droptype') == 'libraryartists' ){
+						addObjectToArtistLibrary();
+					}
+				}					
             }
+			
+			
+			/** 
+			 * Drop behaviours
+			 **/
+			 
+			function addObjectToQueue(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackUris = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackUris.push( $scope.dragobj.tracks.items[i].uri );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+				}
+			}
+			
+			function addObjectToAlbumLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						SpotifyService.addAlbumsToLibrary( $scope.dragobj.id );
+						break;
+				}
+			}
+			
+			function addObjectToTrackLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackIds = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackIds.push( $scope.dragobj.tracks.items[i].id );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+				}
+			}
+			
+			function addObjectToArtistLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'artist':
+						SpotifyService.followArtist( $scope.dragobj.uri );
+						break;
+				}
+			}
+			
+			
+			
+			
+			/**
+			 * Utility functions
+			 **/
+			 
+			function getDropTarget( event ){
+			
+				var dropTarget = $(event.target);
+				if( !dropTarget.hasClass('droppable') ) dropTarget = dropTarget.closest('.droppable');
+				
+				if( dropTarget )
+					return dropTarget;
+					
+				return false;
+			}
+			
+			function targetAcceptsType( dropTarget ){
+				
+				// get our accepts attribute, and bail if not found
+				var accepts = dropTarget.attr('dropaccept');
+				if( !accepts ) return false;
+				
+				// convert attribute string to an array object
+				accepts = JSON.parse(accepts);
+				
+				// run the check
+				if( accepts.indexOf( $scope.dragobj.type ) >= 0 )
+					return true;
+				
+				return false;
+			}
         }
     }
 })
