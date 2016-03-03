@@ -24,13 +24,17 @@
 
 				<div class="album-items square-panels smaller">
 					<div class="item-container" ng-repeat="artist in recommendations.suggestions | limitTo: 7 track by $index">
-						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
-							<div class="image-container">
-								<thumbnail images="artist.images"></thumbnail>
-							</div>
-							<div class="info smaller animate">
-								<div class="name" ng-bind="artist.name"></div>
-							</div>
+						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album"
+                            draggable="false"
+                            candrag
+                            dragobj="artist"
+                            data-id="{{ artist.id }}">
+                                <div class="image-container">
+                                    <thumbnail images="artist.images"></thumbnail>
+                                </div>
+                                <div class="info smaller animate">
+                                    <div class="name" ng-bind="artist.name"></div>
+                                </div>
 						</a>
 					</div>
 					<div class="clear-both"></div>

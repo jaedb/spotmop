@@ -66,6 +66,12 @@ angular.module('spotmop.directives', [])
                 drag.dragStarted = true;
                 drag.startX = event.clientX;
                 drag.startY = event.clientY;
+				
+				// also, if we're dragging a mopidy track item, copy the model to our .type standard container
+				if( typeof($scope.dragobj.__model__) !== 'undefined' ){
+					$scope.dragobj.type = $scope.dragobj.__model__.toLowerCase();
+				}
+				console.log( $scope.dragobj );
             });
             
             // release the mouse (anywhere in the document)
@@ -121,19 +127,29 @@ angular.module('spotmop.directives', [])
 					var tracerContent = '';
 					
 					switch( $scope.dragobj.type ){
+						
 						case 'album':
 							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
 							var text = $scope.dragobj.name;
 							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
 							tracerContent += '<div class="text">'+text+'</div>';
 							break;
+						
 						case 'artist':
 							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
 							var text = $scope.dragobj.name;
 							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
 							tracerContent += '<div class="text">'+text+'</div>';
 							break;
+						
 						case 'track':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+						
+						case 'tltrack':
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
@@ -183,7 +199,7 @@ angular.module('spotmop.directives', [])
 					if( dropTarget.attr('droptype') == 'librarytracks' ){
 						addObjectToTrackLibrary();
 					}
-				}					
+				}
             }
 			
 			
@@ -197,6 +213,14 @@ angular.module('spotmop.directives', [])
 						var trackUris = [];
 						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
 							trackUris.push( $scope.dragobj.tracks.items[i].uri );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'track':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
 						}
 						MopidyService.addToTrackList( trackUris );
 						break;
@@ -225,6 +249,14 @@ angular.module('spotmop.directives', [])
 						var trackDoms = $(document).find('.track.selected');
 						for( var i = 0; i < trackDoms.length; i++){
 							trackIds.push( trackDoms.eq(i).attr('data-id') );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'tltrack':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( SpotifyService.getFromUri('trackid',trackDoms.eq(i).attr('data-uri')) );
 						}
 						SpotifyService.addTracksToLibrary( trackIds );
 						break;
