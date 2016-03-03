@@ -1,6 +1,6 @@
 <ul class="main-menu">
 	<li class="menu-item top-level {{ linkingMode('queue') }}">
-		<a ui-sref="queue" class="droppable" data-type="queue">
+		<a ui-sref="queue" class="droppable" data-type="queue" data-droppable='["track","album"]'>
 			<i class="si play"></i>
 			Now playing
 		</a>
@@ -42,19 +42,19 @@
 		My music
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.albums') }}">
-		<a ui-sref="library.albums" class="droppable" data-type="albumlibrary" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.albums" class="droppable" data-type="albumlibrary" ng-class="{ unavailable: !spotifyAuthorized }"  data-droppable='["album"]'>
 			<i class="si album"></i>
 			Albums
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
-		<a ui-sref="library.tracks" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.tracks" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }"  data-droppable='["track","album"]'>
 			<i class="si music"></i>
 			Tracks
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
-		<a ui-sref="library.artists" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.artists" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }" data-droppable='["artist"]'>
 			<i class="si mic"></i>
 			Artists
 		</a>
@@ -67,7 +67,7 @@
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }" ng-if="spotifyAuthorized">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
-				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
+				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable" data-droppable='["track","album"]'>
 					<span ng-bind="playlist.name"></span>
 				</a>
 			</li>

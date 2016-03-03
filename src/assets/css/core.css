@@ -168,6 +168,7 @@ body.dragging .body * {
 .pull-right {		float: right; }
 
 
+
 /** 
  * Transitioning
  * This occurs during a delete instruction and a delete success. It makes a snappy interface, but still indicates progress.
@@ -176,6 +177,20 @@ body.dragging .body * {
 .transitioning,
 .transitioning:hover {
 	opacity: 0.2;
+}
+
+
+
+/** 
+ * Non-selectable text
+ **/
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* IE/Edge */
+	user-select: none;           /* non-prefixed version, currently  not supported by any browser */
 }
 
 
@@ -555,7 +570,7 @@ input[type='submit'],
 .drag-tracer .track-title:nth-child(2) {		top: 5px; left: 5px; z-index: 2; background: #29abe8; }
 .drag-tracer .track-title:nth-child(3) {		top: 10px; left: 10px; z-index: 1; background: #23a4e0; }
 
-.drag-tracer .album-thumbnail {
+.drag-tracer .thumbnail {
 	float: left;
 	width: 40px;
 	height: 40px;
@@ -564,7 +579,7 @@ input[type='submit'],
 	background-size: cover;
 }
 
-.drag-tracer .album-name {
+.drag-tracer .name {
 	float: left;
 	padding: 12px 15px 0 15px;
 	font-size: 12px;

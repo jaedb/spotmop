@@ -4,9 +4,15 @@
 	
 	<div class="asset-sidebar">
         
-        <div class="thumbnail-wrapper album draggable" data-id="{{ album.id }}" draggable="false" data-image="{{ album.images[0].url }}" data-name="{{ album.name }}">
-            <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
-            <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
+        <div
+            class="thumbnail-wrapper album draggable" 
+            draggable="false"
+            data-draguri="{{ album.uri }}"
+            data-dragname="{{ album.name }}"
+            data-dragimage="{{ album.images[album.images.length-1].url }}"
+            data-dragtype="album">
+                <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+                <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
 		</div>
         
         <div class="clear-left"><!-- clear --></div>
@@ -14,8 +20,13 @@
 		<div class="artist-grid small">
 			<a
 			   ng-repeat="artist in album.artists"
-			   class="artist"
-			   ui-sref="browse.artist.overview({ uri: artist.uri })">
+			   class="artist draggable"
+			   ui-sref="browse.artist.overview({ uri: artist.uri })"
+               draggable="false"
+               data-draguri="{{ album.uri }}"
+               data-dragname="{{ artist.name }}"
+               data-dragimage="{{ artist.images[artist.images.length-1].url }}"
+               data-dragtype="artist">
 					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>

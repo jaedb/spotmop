@@ -442,6 +442,29 @@ angular.module('spotmop', [
     );
     
     /**
+     * Detect if this draggable object is accepted by this droppable target
+	 * @param target = DOM object
+	 * @param objectType = string (the type to check, ie 'album')
+	 * @return boolean
+     **/
+    function acceptsObject( target, objectType ){
+        
+		// get the array of accepted types
+		var targetAccepts = $(target).attr('data-droppable');
+		
+		// no array? no acceptance of any types
+		if( !targetAccepts ) return false;
+		
+		// convert our array string into a proper array
+		targetAccepts = JSON.parse( targetAccepts );
+		
+		// now run a check on the array
+		if( targetAccepts.indexOf( objectType ) >= 0 ) return true;
+		
+		return false;
+    }
+    
+    /**
      * Detect if we have a droppable target
      * @var target = event.target object
      * @return jQuery DOM object
@@ -483,31 +506,27 @@ angular.module('spotmop', [
     /**
      * Dragging of albums
      **/
-    var albumBeingDragged = {};
 	
-	// when the mouse is pressed down on a track
+	// when the mouse is pressed down on a a draggable item
 	$(document).on('mousedown', 'body:not(.touchDevice) .draggable', function(event){
 		
-		var album = $(event.target);
-		if( !album.is('.album.draggable') )
-			album = album.closest('.album.draggable');
+		var object = $(event.target);
+		if( !object.is('.draggable') )
+			object = object.closest('.draggable');
 			
-		var albumImage = album.find('.image').css('background-image');
-		if( !albumImage )
-			albumImage = 'url("'+album.attr('data-image')+'");';
-			
-		var albumName = album.find('.name').html();
-		if( !albumName )
-			albumName = album.attr('data-name');
+		var image = 'url("'+object.attr('data-dragimage')+'");';			
+		var name = object.attr('data-dragname');
+		var type = object.attr('data-dragtype');
 		
 		// create an object that gives us all the info we need
 		dragging = {
 					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
 					clientX: event.clientX,
 					clientY: event.clientY,
-					objectsBeingDragged: album,
-					objectType: 'album',
-					dragContent: "<div class='album-thumbnail' style='background-image: "+albumImage+";'></div><div class='album-name'>"+albumName+"</div>"
+					objectsBeingDragged: object,
+					objectType: type,
+					objectUris: object.attr('data-draguri'),
+					dragContent: "<div class='thumbnail' style='background-image: "+image+";'></div><div class='name'>"+name+"</div>"
 				}
 	});
 	
@@ -523,6 +542,12 @@ angular.module('spotmop', [
 		// get us our list of selected tracks
 		var tracklist = $(event.currentTarget).closest('.tracklist');
 		var tracks = tracklist.find('.track.selected');
+				
+		// get the uris
+		var objectUris = [];
+		$.each( tracks, function(key, value){
+			objectUris.push( $(value).attr('data-draguri') );
+		});
 		
 		var dragContent = '<div class="track-title top">'+ tracks.eq(0).find('.title').html() +'</div>';
 		if( tracks.length > 1 )
@@ -537,6 +562,7 @@ angular.module('spotmop', [
 					clientY: event.clientY,
 					objectsBeingDragged: tracks,
 					objectType: 'track',
+					objectUris: objectUris,
 					dragContent: dragContent
 				}
 	});
@@ -562,12 +588,6 @@ angular.module('spotmop', [
 				$(document).find('.drag-tracer').html('<div class="text">Dropping...</div>').fadeOut('fast');
 				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
 				
-				// get the uris
-				var uris = [];
-				$.each( dragging.objectsBeingDragged, function(key, value){
-					uris.push( $(value).attr('data-uri') );
-				});
-				
 				// dropping on queue
 				if( isMenuItem && target.attr('data-type') === 'queue' ){
 			
@@ -580,12 +600,14 @@ angular.module('spotmop', [
 				// dropping on album library
 				}else if( isMenuItem && target.attr('data-type') === 'albumlibrary' ){
 					
-					var albumid = dragging.objectsBeingDragged.attr('data-id');
+					console.log( SpotifyService.getFromUri(dragging.objectUris,'albumid') );
+					
+					var albumid = SpotifyService.getFromUri(dragging.objectUris,'albumid');
 					SpotifyService.addAlbumsToLibrary( albumid )
 						.then( function(response){
 							NotifyService.notify('Added album to library');
 						});
-					
+						
 				// dropping on library
 				}else if( isMenuItem && target.attr('data-type') === 'library' ){
 					
@@ -664,6 +686,11 @@ angular.module('spotmop', [
                 $('body').addClass('dragging');
 				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
                 var target = getDroppableTarget( event.target );
+				var targetAccepts = $(target).attr('data-droppable');
+				if( targetAccepts )
+					targetAccepts = JSON.parse( targetAccepts );
+				else
+					targetAccepts = [];
 				var track = getTrackTarget( event.target );
                 var dragTracer = $(document).find('.drag-tracer');
 				
@@ -691,11 +718,7 @@ angular.module('spotmop', [
 				
 				dragTracer.html( dragging.dragContent );
 				
-                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'albumlibrary' ){
+                if( target && acceptsObject( target, dragging.objectType ) ){
                     target.addClass('dropping');
                 }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
                     target.closest('.menu-item.playlists').addClass('dropping-within');
