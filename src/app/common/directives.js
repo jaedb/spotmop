@@ -34,6 +34,103 @@ angular.module('spotmop.directives', [])
 })
 
 
+/**
+ * Draggable objects
+ * Facilitates dragging of tracks, albums, artists and so on
+ * Handles the drag and also the drop follow-on functions
+ **/
+.directive('candrag', function() {
+	return {
+		restrict: 'A',
+        scope: {
+            dragobj: '='
+        },
+		link: function($scope, $element, $attrs){
+            
+            var tracer = $(document).find('.drag-tracer');
+            var drag = {
+                threshold: 30,
+                dragStarted: false,
+                dragActive: false,
+                startX: false,
+                starY: false
+            };
+            
+            // [potentially] start a drag event, log some initial states
+            $element.on('mousedown', function(event){
+                drag.dragStarted = true;
+                drag.startX = event.clientX;
+                drag.startY = event.clientY;
+            });
+            
+            // release the mouse (anywhere in the document)
+            // we stop any [potential] drag event and [potentially] handle the drop event
+            $(document).on('mouseup', function(event){
+                
+                // if we've been dragging, handle a drop event
+                if( drag.dragActive ){
+                    dropping( event );
+                }
+                
+                // reset our drag handlers
+                drag.dragStarted = false;
+                drag.dragActive = false;
+                drag.startX = false;
+                drag.startY = false;
+            });
+	
+            // move the mouse, check if we're dragging
+            $(document).on('mousemove', function(event){
+                if( drag.dragStarted ){
+
+                    var left = drag.startX - drag.threshold;
+                    var right = drag.startX + drag.threshold;
+                    var top = drag.startY - drag.threshold;
+                    var bottom = drag.startY + drag.threshold;
+
+                    // check the threshold distance from drag start and now
+                    if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+                        dragging( event );
+                    }
+                }
+            });
+            
+            // fired when we are dragging (and throughout the drag motion)
+            function dragging( event ){
+                
+                // detect if we've just started dragging and need to setup the drag tracer
+                var requiresSetup = false;
+                if( !drag.dragActive ) requiresSetup = true;
+                
+                // turn on our drag active switch
+                drag.dragActive = true;
+                
+                // if we need initial setup of the tracer, do it darryl
+                if( requiresSetup ){
+                    console.log('start!');
+                    console.log( $scope.dragobj );
+                    
+                    tracer.html($scope.dragobj.name);
+                    tracer.show();
+                }
+                
+                // make our tracker sticky icky
+                tracer.css({
+                        left: event.clientX,
+                        top: event.clientY
+                    });
+            }
+            
+            // fired when the drop is initiated
+            function dropping( event ){
+                console.log('drop it like its hot');
+                tracer.fadeOut('medium');
+            }
+        }
+    }
+})
+
+
 /** 
  * Switch input field
  * Provides toggles for values
