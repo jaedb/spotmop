@@ -133,6 +133,12 @@ angular.module('spotmop.directives', [])
 							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
 							tracerContent += '<div class="text">'+text+'</div>';
 							break;
+						case 'track':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -174,6 +180,9 @@ angular.module('spotmop.directives', [])
 					if( dropTarget.attr('droptype') == 'libraryartists' ){
 						addObjectToArtistLibrary();
 					}
+					if( dropTarget.attr('droptype') == 'librarytracks' ){
+						addObjectToTrackLibrary();
+					}
 				}					
             }
 			
@@ -208,6 +217,14 @@ angular.module('spotmop.directives', [])
 						var trackIds = [];
 						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
 							trackIds.push( $scope.dragobj.tracks.items[i].id );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'track':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( trackDoms.eq(i).attr('data-id') );
 						}
 						SpotifyService.addTracksToLibrary( trackIds );
 						break;
