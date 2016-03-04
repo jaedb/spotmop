@@ -1259,8 +1259,8 @@ body.dragging .tracklist .track.selected {
 	font-weight: bold;
 }
 
-.tracklist .track.drag-hovering {
-	border-top: 3px solid #08d58f;
+body.dragging .tracklist .track:hover {
+	border-top: 3px solid #32b5f2;
 	margin-top: -3px;
 }
 

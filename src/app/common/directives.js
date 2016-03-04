@@ -61,11 +61,12 @@ angular.module('spotmop.directives', [])
 			 * Event functions
 			 **/
             
-            // [potentially] start a drag event, log some initial states
+            // a click marks the start of a potential drag event, log some initial states
             $element.on('mousedown', function(event){
                 drag.dragStarted = true;
                 drag.startX = event.clientX;
                 drag.startY = event.clientY;
+				drag.domobj = event.currentTarget;
 				
 				// also, if we're dragging a mopidy track item, copy the model to our .type standard container
 				if( typeof($scope.dragobj.__model__) !== 'undefined' && typeof($scope.dragobj.type) === 'undefined' ){
@@ -74,19 +75,18 @@ angular.module('spotmop.directives', [])
             });
             
             // release the mouse (anywhere in the document)
-            // we stop any [potential] drag event and [potentially] handle the drop event
+            // we stop any [potential] drag event and handle the drop event
             $(document).on('mouseup', function(event){
                 
                 // if we've been dragging, handle a drop event
-                if( drag.dragActive ){
-                    dropping( event );
-                }
+                if( drag.dragActive ) dropping( event );
                 
                 // reset our drag handlers
                 drag.dragStarted = false;
                 drag.dragActive = false;
                 drag.startX = false;
                 drag.startY = false;
+				drag.domobj = false;
             });
 	
             // move the mouse, check if we're dragging
@@ -176,9 +176,7 @@ angular.module('spotmop.directives', [])
 				// check to see if what we're hovering accepts what we're dragging				
 				var dropTarget = getDropTarget( event );
 				var accepts = targetAcceptsType( dropTarget );
-				if( accepts ){
-					dropTarget.addClass('dropping');
-				}
+				if( accepts ) dropTarget.addClass('dropping');
             }
             
             // fired when the drop is initiated
@@ -193,17 +191,22 @@ angular.module('spotmop.directives', [])
 				
 				// our drop target accepts our dragging object! 
 				if( accepts ){
-					if( dropTarget.attr('droptype') == 'queue' ){
-						addObjectToQueue();
-					}
-					if( dropTarget.attr('droptype') == 'libraryalbums' ){
-						addObjectToAlbumLibrary();
-					}
-					if( dropTarget.attr('droptype') == 'libraryartists' ){
-						addObjectToArtistLibrary();
-					}
-					if( dropTarget.attr('droptype') == 'librarytracks' ){
-						addObjectToTrackLibrary();
+					switch( dropTarget.attr('droptype') ){
+						case 'queue':
+							addObjectToQueue();
+							break;
+						case 'libraryalbums':
+							addObjectToAlbumLibrary();
+							break;
+						case 'libraryartists':
+							addObjectToArtistLibrary();
+							break;
+						case 'librarytracks':
+							addObjectToTrackLibrary();
+							break;
+						case 'queuetracklist':
+							sortQueueTracklist( event );
+							break;
 					}
 				}
             }
@@ -285,7 +288,18 @@ angular.module('spotmop.directives', [])
 				}
 			}
 			
-			
+			function sortQueueTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var to_position = trackDroppedOn.parent().attr('data-index');
+				var start = $(drag.domobj).parent().attr('data-index');
+				var end = Number($(drag.domobj).parent().attr('data-index'))+1;
+				
+				console.log( start, end, to_position );
+				
+				MopidyService.moveTlTracks( Number(start), Number(end), to_position );
+			}
 			
 			
 			/**
