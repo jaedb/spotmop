@@ -78,7 +78,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/tltrack.template.html',
-		link: function( $scope, element, attrs ){			
+		link: function( $scope, element, attrs ){
 		},
 		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
 			

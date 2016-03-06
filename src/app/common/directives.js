@@ -39,7 +39,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', function( MopidyService, SpotifyService, NotifyService ){
+.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -107,6 +107,9 @@ angular.module('spotmop.directives', [])
             
             // fired when we are dragging (and throughout the drag motion)
             function dragging( event ){
+					
+				// trigger our global switch (so nothing else interferes with our mouseup/down events)
+				$rootScope.dragging = true;
                 
                 // detect if we've just started dragging and need to setup the drag tracer
                 var requiresSetup = false;
@@ -209,6 +212,9 @@ angular.module('spotmop.directives', [])
 							break;
 					}
 				}
+					
+				// release our drag switch
+				$rootScope.dragging = false;
             }
 			
 			
@@ -292,13 +298,18 @@ angular.module('spotmop.directives', [])
 				var trackDroppedOn = $(dropEvent.target);
 				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
 				
-				var to_position = trackDroppedOn.parent().attr('data-index');
-				var start = $(drag.domobj).parent().attr('data-index');
-				var end = Number($(drag.domobj).parent().attr('data-index'))+1;
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
 				
-				console.log( start, end, to_position );
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var start = Number( selectedTracks.first().parent().attr('data-index') );
+				var end = Number( selectedTracks.last().parent().attr('data-index') ) + 1;
 				
-				MopidyService.moveTlTracks( Number(start), Number(end), to_position );
+				// if we're dragging down the list, we need to account for the tracks we're moving
+				if( to_position > end ){
+					to_position = to_position - selectedTracks.length;
+				}
+				
+				MopidyService.moveTlTracks( start, end, to_position );
 			}
 			
 			
