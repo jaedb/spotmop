@@ -29159,6 +29159,19 @@ angular.module('spotmop', [
 	$scope.hideMenu = function(){
 		$(document).find('body').removeClass('menu-revealed');
 	}
+		
+		
+	$(document).on('scroll', function( event ){
+	
+		// get our ducks in a row - these are all the numbers we need
+		var scrollPosition = $(document).scrollTop();
+		var frameHeight = $(window).height();
+		var contentHeight = $(document).height();
+		var distanceFromBottom = contentHeight - ( scrollPosition + frameHeight );
+		
+		if( distanceFromBottom <= 100 )
+			$scope.$broadcast('spotmop:loadMore');
+	});
 	
 	
 	/**
@@ -29393,215 +29406,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-    
-    /**
-     * Detect if we have a droppable target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getDroppableTarget( target ){
-        
-        var droppableTarget = null;
-        
-        if( $(target).hasClass('droppable') && !$(target).hasClass('unavailable') )
-            droppableTarget = $(target);
-        else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable:not(.unavailable)');   
-        
-        return droppableTarget;
-    }
-    
-    /**
-     * Detect if we have a track drop target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getTrackTarget( target ){
-        
-        var trackTarget = null;
-        
-		if( $(target).hasClass('track') )
-			trackTarget = $(target);				
-		else if( $(target).closest('.track').length > 0 )
-			trackTarget = $(target).closest('.track');
-        
-        return trackTarget;
-    }
-	
-	
-    /**
-     * Dragging of tracks
-     **/
-    var tracksBeingDragged = [];
-    var dragging = false;
-	var dragThreshold = 30;
-	
-	// when the mouse is pressed down on a track
-	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
-					
-		// get us our list of selected tracks
-		var tracklist = $(event.currentTarget).closest('.tracklist');
-		var tracks = tracklist.find('.track.selected');
-		
-		// create an object that gives us all the info we need
-		dragging = {
-					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
-					clientX: event.clientX,
-					clientY: event.clientY,
-					tracks: tracks
-				}
-	});
-	
-	// when we release the mouse, release dragging container
-	$(document).on('mouseup', function(event){
-		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
-			
-            $('body').removeClass('dragging');
-            $(document).find('.droppable').removeClass('dropping');
-            $(document).find('.drag-hovering').removeClass('drag-hovering');
-            
-			// identify the droppable target that we've released on (if it exists)
-			var target = getDroppableTarget( event.target );
-			var track = getTrackTarget( event.target );
-			
-			var isMenuItem = false;
-			if( target && target.closest('.main-menu').length > 0 )
-				isMenuItem = true;
-			
-			// if we have a target
-			if( target ){
-				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-				
-				// get the uris
-				var uris = [];
-				$.each( dragging.tracks, function(key, value){
-					uris.push( $(value).attr('data-uri') );
-				});
-				
-				// dropping on queue
-				if( isMenuItem && target.attr('data-type') === 'queue' ){
-			
-					if( uris.length > 10 ){
-						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
-					}
-                    
-					MopidyService.addToTrackList( uris );
-					
-				// dropping on library
-				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-					
-					// convert all our URIs to IDs
-					var trackids = new Array();
-					$.each( uris, function(key,value){
-						trackids.push( SpotifyService.getFromUri('trackid', value) );
-					});
-					
-					SpotifyService.addTracksToLibrary( trackids );
-					
-				// dropping on playlist
-				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
-					
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );	
-					
-				// dropping within tracklist
-				}else if( track ){
-                    
-                    var start = 1000;
-                    var end = 0;
-                    var to_position = $(track).parent().index();
-                    $.each(dragging.tracks, function(key, track){
-                        if( $(track).parent().index() < start )  
-                            start = $(track).parent().index();
-                        if( $(track).parent().index() > end )  
-                            end = $(track).parent().index();
-                    });
-					
-                    // sorting queue tracklist
-                    if( track.closest('.tracklist').hasClass('queue-tracks') ){
-						
-						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
-						if( to_position >= end )
-							to_position = to_position - uris.length;
-						
-						// note: mopidy want's the first track AFTER our range, so we need to +1
-                        MopidyService.moveTlTracks( start, end + 1, to_position );
-                        
-                    // sorting playlist tracklist
-                    }else if( track.closest('.tracklist').hasClass('playlist-items') ){
-					
-                        var range_length = 1;
-                        if( end > start ){
-							range_length = end - start;
-							range_length++;
-						};
-						
-						// tell our playlist controller to update it's track order, and pass it on to Spotify too
-						$scope.$broadcast('spotmop:playlist:reorder', start, range_length, to_position);
-                    }
-				}
-				
-			// no target, no drop action required
-			}else{
-				$(document).find('.drag-tracer').fadeOut('medium');
-			}
-		}
-			
-		// unset dragging
-		dragging = false;
-	});
-	
-	// when we move the mouse, check if we're dragging
-	$(document).on('mousemove', function(event){
-		if( dragging ){
-			
-			var left = dragging.clientX - dragThreshold;
-			var right = dragging.clientX + dragThreshold;
-			var top = dragging.clientY - dragThreshold;
-			var bottom = dragging.clientY + dragThreshold;
-			
-			// check the threshold distance from mousedown and now
-			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
-				
-                $('body').addClass('dragging');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-                var target = getDroppableTarget( event.target );
-				var track = getTrackTarget( event.target );
-                var dragTracer = $(document).find('.drag-tracer');
-				
-				if( track ){
-					track.addClass('drag-hovering');
-				}
-			
-				// turn the trigger safety of
-				dragging.safetyOff = true;
-				
-                // setup the tracer
-                dragTracer.show();
-					
-                $(document).find('.droppable').removeClass('dropping');
-                $(document).find('.dropping-within').removeClass('dropping-within');
-			
-				var isMenuItem = false;
-				if( target && target.closest('.main-menu').length > 0 )
-					isMenuItem = true;
-				
-                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
-                    target.addClass('dropping');
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                }else{
-                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
-                }
-			}
-		}
-	});
 	
 }]);
 
@@ -30353,35 +30157,44 @@ angular.module('spotmop.browse.playlist', [])
 	 **/
 	$scope.$on('spotmop:playlist:reorder', function( event, start, range_length, to_position ){
 	
-		var playlisturi = $state.params.uri;		
+		var playlisturi = $state.params.uri;
+		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
+		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
         
-		// get spotify to start moving
-		SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
-		
-		var tracksToMove = [];
-		
-		// build an array of the tracks we need to move
-		for( var i = 0; i < range_length; i++ )
-			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
-		
-		// if we're dragging items down the line further, account for the tracks that we've just removed
-		if( start < to_position )
-			to_position = to_position - range_length;
-		
-		// reverse the order of our tracks to move (unexplained as to why we need this...)
-		tracksToMove.reverse();
-		
-		// we need to apply this straight to the template, so we wrap in $apply
-		$scope.$apply( function(){
-		
-			// remove our tracks to move (remembering to adjust Spotify's range_length value)
-			$scope.tracklist.tracks.splice( start, range_length );
+		if( playlistOwnerID != currentUserID ){
 			
-			// and now we add our moved tracks, to their new position
-			angular.forEach( tracksToMove, function(trackToMove){
-				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+			NotifyService.error('Cannot edit a playlist you don\'t own');
+			
+		}else{
+			
+			// get spotify to start moving
+			SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+			
+			var tracksToMove = [];
+			
+			// build an array of the tracks we need to move
+			for( var i = 0; i < range_length; i++ )
+				tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
+			
+			// if we're dragging items down the line further, account for the tracks that we've just removed
+			if( start < to_position )
+				to_position = to_position - range_length;
+			
+			// reverse the order of our tracks to move (unexplained as to why we need this...)
+			tracksToMove.reverse();
+			
+			// we need to apply this straight to the template, so we wrap in $apply
+			$scope.$apply( function(){
+			
+				// remove our tracks to move (remembering to adjust Spotify's range_length value)
+				$scope.tracklist.tracks.splice( start, range_length );
+				
+				// and now we add our moved tracks, to their new position
+				angular.forEach( tracksToMove, function(trackToMove){
+					$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+				});
 			});
-		});
+		}
 	});
 
 	// on load, fetch the playlist
@@ -30666,10 +30479,10 @@ angular.module('spotmop.common.contextmenu', [
 					$timeout(function(){
 					
 						var positionY = originalEvent.pageY - $(window).scrollTop();
-						var positionX = originalEvent.pageX - window.pageYOffset;
+						var positionX = originalEvent.pageX;
 						var menuWidth = $element.outerWidth();
 						var menuHeight = $element.outerHeight();
-					
+						
 						// too far right
 						if( positionX + menuWidth > $(window).width() ){
 							positionX -= menuWidth - 10;
@@ -30680,11 +30493,11 @@ angular.module('spotmop.common.contextmenu', [
 							$element.removeClass('hard-right close-right');
 						}
 						
-						// too far to the bottom (yes, document.height() because we're using fixed positions!)
-						if( positionY + menuHeight > $(document).height() ){
+						// too far to the bottom
+						if( positionY + menuHeight > $(window).height() ){
 							positionY -= menuHeight;
 							$element.addClass('hard-bottom');					
-						}else if( positionY + menuHeight + 306 > $(document).height() ){
+						}else if( positionY + menuHeight + 306 > $(window).height() ){
 							$element.addClass('close-bottom');
 						}else{
 							$element.removeClass('hard-bottom close-bottom');
@@ -30766,6 +30579,337 @@ angular.module('spotmop.directives', [])
 })
 
 
+/**
+ * Draggable objects
+ * Facilitates dragging of tracks, albums, artists and so on
+ * Handles the drag and also the drop follow-on functions
+ **/
+.directive('candrag', ['$rootScope', 'MopidyService', 'SpotifyService', 'NotifyService', function( $rootScope, MopidyService, SpotifyService, NotifyService ){
+	return {
+		restrict: 'A',
+        scope: {
+            dragobj: '='
+        },
+		link: function($scope, $element, $attrs){
+            
+            var tracer = $(document).find('.drag-tracer');
+            var drag = {
+                threshold: 30,
+                dragStarted: false,
+                dragActive: false,
+                startX: false,
+                starY: false
+            };
+			
+			
+			/** 
+			 * Event functions
+			 **/
+            
+            // a click marks the start of a potential drag event, log some initial states
+            $element.on('mousedown', function(event){
+                drag.dragStarted = true;
+                drag.startX = event.clientX;
+                drag.startY = event.clientY;
+				drag.domobj = event.currentTarget;
+				
+				// also, if we're dragging a mopidy track item, copy the model to our .type standard container
+				if( typeof($scope.dragobj.__model__) !== 'undefined' && typeof($scope.dragobj.type) === 'undefined' ){
+					$scope.dragobj.type = $scope.dragobj.__model__.toLowerCase();
+				}
+            });
+            
+            // release the mouse (anywhere in the document)
+            // we stop any [potential] drag event and handle the drop event
+            $(document).on('mouseup', function(event){
+                
+                // if we've been dragging, handle a drop event
+                if( drag.dragActive ) dropping( event );
+                
+                // reset our drag handlers
+                drag.dragStarted = false;
+                drag.dragActive = false;
+                drag.startX = false;
+                drag.startY = false;
+				drag.domobj = false;
+            });
+	
+            // move the mouse, check if we're dragging
+            $(document).on('mousemove', function(event){
+                if( drag.dragStarted ){
+
+                    var left = drag.startX - drag.threshold;
+                    var right = drag.startX + drag.threshold;
+                    var top = drag.startY - drag.threshold;
+                    var bottom = drag.startY + drag.threshold;
+
+                    // check the threshold distance from drag start and now
+                    if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+                        dragging( event );
+                    }
+                }
+            });
+            
+            // fired when we are dragging (and throughout the drag motion)
+            function dragging( event ){
+					
+				// trigger our global switch (so nothing else interferes with our mouseup/down events)
+				$rootScope.dragging = true;
+                
+                // detect if we've just started dragging and need to setup the drag tracer
+                var requiresSetup = false;
+                if( !drag.dragActive ) requiresSetup = true;
+                
+                // turn on our drag active switch
+                drag.dragActive = true;
+				
+				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
+				$(document).find('.dropping').removeClass('dropping');
+                
+                // if we need initial setup of the tracer, do it darryl
+                if( requiresSetup ){
+				
+                    $('body').addClass('dragging');
+                    
+					var tracerContent = '';
+					
+					switch( $scope.dragobj.type ){
+						
+						case 'album':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+						
+						case 'artist':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+						
+						case 'track':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+						
+						case 'tltrack':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+						
+						case 'localtrack':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+					}
+					
+                    tracer.html( tracerContent );
+                    tracer.show();
+                }
+                
+                // make our tracker sticky icky
+                tracer.css({
+                        left: event.clientX,
+                        top: event.clientY
+                    });
+					
+				// check to see if what we're hovering accepts what we're dragging				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				if( accepts ) dropTarget.addClass('dropping');
+            }
+            
+            // fired when the drop is initiated
+            function dropping( event ){
+			
+                tracer.fadeOut('medium');
+				$('body').removeClass('dragging');
+				$(document).find('.dropping').removeClass('dropping');
+				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				
+				// our drop target accepts our dragging object! 
+				if( accepts ){
+					switch( dropTarget.attr('droptype') ){
+						case 'queue':
+							addObjectToQueue();
+							break;
+						case 'libraryalbums':
+							addObjectToAlbumLibrary();
+							break;
+						case 'libraryartists':
+							addObjectToArtistLibrary();
+							break;
+						case 'librarytracks':
+							addObjectToTrackLibrary();
+							break;
+						case 'queuetracklist':
+							sortQueueTracklist( event );
+							break;
+						case 'playlisttracklist':
+							sortPlaylistTracklist( event );
+							break;
+					}
+				}
+					
+				// release our drag switch
+				$rootScope.dragging = false;
+            }
+			
+			
+			/** 
+			 * Drop behaviours
+			 **/
+			 
+			function addObjectToQueue(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackUris = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackUris.push( $scope.dragobj.tracks.items[i].uri );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'track':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'localtrack':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+				}
+			}
+			
+			function addObjectToAlbumLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						SpotifyService.addAlbumsToLibrary( $scope.dragobj.id );
+						break;
+				}
+			}
+			
+			function addObjectToTrackLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackIds = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackIds.push( $scope.dragobj.tracks.items[i].id );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'track':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( trackDoms.eq(i).attr('data-id') );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'tltrack':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( SpotifyService.getFromUri('trackid',trackDoms.eq(i).attr('data-uri')) );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+				}
+			}
+			
+			function addObjectToArtistLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'artist':
+						SpotifyService.followArtist( $scope.dragobj.uri );
+						break;
+				}
+			}
+			
+			function sortQueueTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
+				
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var start = Number( selectedTracks.first().parent().attr('data-index') );
+				var end = Number( selectedTracks.last().parent().attr('data-index') ) + 1;
+				
+				// if we're dragging down the list, we need to account for the tracks we're moving
+				if( to_position > end ){
+					to_position = to_position - selectedTracks.length;
+				}
+				
+				MopidyService.moveTlTracks( start, end, to_position );
+			}
+			
+			function sortPlaylistTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
+				var playlisturi = trackDroppedOn.closest('.tracklist').attr('playlisturi');
+				
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var range_start = Number( selectedTracks.first().parent().attr('data-index') );
+				var range_length = Number( selectedTracks.length );
+				
+				$rootScope.$broadcast('spotmop:playlist:reorder', range_start, range_length, to_position);
+			}
+			
+			
+			/**
+			 * Utility functions
+			 **/
+			 
+			function getDropTarget( event ){
+			
+				var dropTarget = $(event.target);
+				if( !dropTarget.hasClass('droppable') ) dropTarget = dropTarget.closest('.droppable');
+				
+				if( dropTarget )
+					return dropTarget;
+					
+				return false;
+			}
+			
+			function targetAcceptsType( dropTarget ){
+				
+				// get our accepts attribute, and bail if not found
+				var accepts = dropTarget.attr('dropaccept');
+				if( !accepts ) return false;
+				
+				// convert attribute string to an array object
+				accepts = JSON.parse(accepts);
+				
+				// run the check
+				if( accepts.indexOf( $scope.dragobj.type ) >= 0 )
+					return true;
+				
+				return false;
+			}
+        }
+    }
+}])
+
+
 /** 
  * Switch input field
  * Provides toggles for values
@@ -30802,31 +30946,6 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
 	}
 }])
-
-
-/** 
- * Scrollable panels
- * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
- **/
-.directive('scrollingPanel', function() {
-	return {
-		restrict: 'C',
-		link: function($scope, $element, $attrs){
-		
-			$element.on('scroll', function( event ){
-				
-				// get our ducks in a row - these are all the numbers we need
-				var scrollPosition = $(this).scrollTop();
-				var frameHeight = $(this).outerHeight();
-				var contentHeight = $(this).children('.inner').outerHeight();
-				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-				
-				if( distanceFromBottom <= 100 )
-					$scope.$broadcast('spotmop:loadMore');
-			});
-		}
-	}
-})
 		
 		
 		
@@ -31155,12 +31274,11 @@ angular.module('spotmop.directives', [])
 				function(){	
 					window.requestAnimationFrame(function( event ){
 						
-						var scrollingPanel = $('.scrolling-panel');
-						var bannerPanel = scrollingPanel.find('.intro');
+						var bannerPanel = $(document).find('.intro');
 						
 						// if we've scrolled
-						if( scrollTop != scrollingPanel.scrollTop() ){
-							scrollTop = scrollingPanel.scrollTop();
+						if( scrollTop != $(document).scrollTop() ){
+							scrollTop = $(document).scrollTop();
 							
 							var bannerHeight = bannerPanel.outerHeight();
 
@@ -31314,16 +31432,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
@@ -31371,7 +31491,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/tltrack.template.html',
-		link: function( $scope, element, attrs ){			
+		link: function( $scope, element, attrs ){
 		},
 		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'PlayerService', function( $element, $scope, $rootScope, MopidyService, PlayerService ){
 			
@@ -31394,16 +31514,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click (only when selected)
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
@@ -31457,16 +31579,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}
@@ -31543,26 +31667,6 @@ angular.module('spotmop.common.tracklist', [])
 					return false;
 			});
 			
-			/*
-			DISABLED AS IT UNSELECTS ALL TRACKS WHEN YOU CLICK/DRAG SCROLLBAR
-			// collapse menus and deselect tracks when we click outside of a tracklist and not on a contextmenu
-			$(document).on('mouseup', 'body', function( event ){
-				if( $(event.target).closest('.tracklist').length <= 0 && $(event.target).closest('contextmenu').length <= 0 ){
-					
-					// if we've just dropped some tracks somewhere, don't unselect them
-					// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
-					if( !$('body').hasClass('dragging') ){
-						$scope.$apply(
-							unselectAllTracks(),
-							1
-						);
-					}
-					
-					$rootScope.$broadcast('spotmop:contextMenu:hide');
-				}
-			});
-			*/
-			
 			
 			/**
 			 * Dragging a track
@@ -31590,79 +31694,85 @@ angular.module('spotmop.common.tracklist', [])
 			
 			/**
 			 * Click on a single track
-			 * This event is detected and $emitted from the track/tltrack directive
+			 * This event is detected by the track/tltrack directive
+			 * We have it within the tracklist directive so we have one place that this event is handled
 			 **/
-			$scope.$on('spotmop:track:clicked', function( event, $track ){
+			$scope.trackClicked = function( $track ){
 				
 				// let all fellow tracklists the focus has changed to ME
 				$rootScope.$broadcast('spotmop:tracklist:focusChanged', $scope.$id);
 				
-				// if ctrl key held down
-				if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+				// if we're in a drag event, then we don't do nothin'
+				// this drag event will be handled by the 'candrag' directive
+				if( !$rootScope.dragging ){
 					
-					// toggle selection for this track
-					if( $track.track.selected ){
-						$track.$apply( function(){ $track.track.selected = false; });
-					}else{
+					// if ctrl key held down
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+						
+						// toggle selection for this track
+						if( $track.track.selected ){
+							$track.$apply( function(){ $track.track.selected = false; });
+						}else{
+							$track.$apply( function(){ $track.track.selected = true; });
+						}
+						
+					// if ctrl key not held down
+					}else if( !$rootScope.ctrlKeyHeld ){
+						
+						// unselect all tracks
+						angular.forEach( $scope.tracks, function(track){
+							track.selected = false;
+						});
+						
+						// and select only me
 						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
-				// if ctrl key not held down
-				}else if( !$rootScope.ctrlKeyHeld ){
-					
-					// unselect all tracks
-					angular.forEach( $scope.tracks, function(track){
-						track.selected = false;
-					});
-					
-					// and select only me
-					$track.$apply( function(){ $track.track.selected = true; });
-				}
-				
-				// if shift key held down, select all tracks between this track, and the last clicked one
-				if( $rootScope.shiftKeyHeld ){
-					
-					// make sure we have an existing selection to select from
-					if( typeof($scope.lastSelectedTrack) === 'undefined' ){
-					
-						// nope? just select me and leave it at that
-						$track.$apply( function(){ $track.track.selected = true; });
-						return;
+					// if shift key held down, select all tracks between this track, and the last clicked one
+					if( $rootScope.shiftKeyHeld ){
+						
+						// make sure we have an existing selection to select from
+						if( typeof($scope.lastSelectedTrack) === 'undefined' ){
+						
+							// nope? just select me and leave it at that
+							$track.$apply( function(){ $track.track.selected = true; });
+							return;
+						}
+						
+						// figure out the limits of our selection (use the array's index)
+						// assume last track clicked is the lower index value, to start with
+						var firstTrackIndex = $scope.lastSelectedTrack.$index;
+						var lastTrackIndex = $track.$index;
+						
+						// if we've selected a lower-indexed track, let's swap our limits accordingly
+						if( $track.$index < firstTrackIndex ){
+							firstTrackIndex = $track.$index;
+							lastTrackIndex = $scope.lastSelectedTrack.$index;
+						}
+						
+						// now loop through our subset limits, and make them all selected!
+						for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
+							$scope.tracks[i].selected = true;
+						};
+						
+						// tell our templates to re-read the arrays
+						$scope.$apply();
 					}
 					
-					// figure out the limits of our selection (use the array's index)
-					// assume last track clicked is the lower index value, to start with
-					var firstTrackIndex = $scope.lastSelectedTrack.$index;
-					var lastTrackIndex = $track.$index;
+					// save this item to our last-clicked (used for shift-click)
+					$scope.lastSelectedTrack = $track;
 					
-					// if we've selected a lower-indexed track, let's swap our limits accordingly
-					if( $track.$index < firstTrackIndex ){
-						firstTrackIndex = $track.$index;
-						lastTrackIndex = $scope.lastSelectedTrack.$index;
+					/**
+					 * Hide/show mobile version of the context menu
+					 **/
+					if( $rootScope.isTouchDevice() ){
+						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
+							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
+						else
+							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
-					
-					// now loop through our subset limits, and make them all selected!
-					for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
-						$scope.tracks[i].selected = true;
-					};
-					
-					// tell our templates to re-read the arrays
-					$scope.$apply();
 				}
-				
-				// save this item to our last-clicked (used for shift-click)
-				$scope.lastSelectedTrack = $track;
-				
-				/**
-				 * Hide/show mobile version of the context menu
-				 **/
-				if( $rootScope.isTouchDevice() ){
-					if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
-						$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
-					else
-						$rootScope.$broadcast('spotmop:contextMenu:hide' );
-				}
-			});
+			};
 			
 			
 			
@@ -32267,6 +32377,45 @@ angular.module('spotmop.library', [])
 				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
 					Spotify.refreshToken();
 			});
+    
+	
+    /**
+     * Load more of my artists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreItems = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreItems( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreItems = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+			
+                // append these new items
+                $scope.artists.items = $scope.artists.items.concat( response.artists.items );
+                
+                // save the next set's url (if it exists)
+                $scope.artists.next = response.artists.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreItems = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreItems && typeof( $scope.artists.next ) !== 'undefined' && $scope.artists.next ){
+            loadMoreItems( $scope.artists.next );
+        }
+	});
 		
 }])
 
@@ -32502,7 +32651,9 @@ angular.module('spotmop.library', [])
 								
 								// loop all the tracks to sanitize the response
 								for( var key in response ){
-									tracks.push( response[key][0] );
+									var track = response[key][0];
+									track.type = 'localtrack';
+									tracks.push( track );
 								}
 								
 								$scope.tracklist.tracks = tracks;
@@ -33272,8 +33423,12 @@ angular.module('spotmop.search', [])
         // update our switch to prevent spamming for every scroll event
         loadingMoreResults = true;
 		
+		// if our search page is "all", we need to adjust our search params to Spotify as "all" is not valid
+		var type = $scope.type;
+		if( type == 'all' )	type = 'track';
+		
         // go get our 'next' URL
-        SpotifyService.getSearchResults( $scope.type, $scope.query, 50, offset )
+        SpotifyService.getSearchResults( type, $scope.query, 50, offset )
             .then(function( response ){
             
                 // append these new playlists to our existing array
@@ -33299,6 +33454,11 @@ angular.module('spotmop.search', [])
 						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
 						$scope.next = response.playlists.next;
 						$scope.offset = response.playlists.offset;
+						break;
+					case 'all':
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
+						$scope.next = response.tracks.next;
+						$scope.offset = response.tracks.offset;
 						break;
 				}
                 
@@ -35470,17 +35630,17 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
-            
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-            if( userid != SettingsService.getSetting('spotifyuserid',null) )
-                return false;
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
-			}			
+			}	
+            
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+            if( userid != SettingsService.getSetting('spotifyuser',{id: null}).id )
+                return false;		
 			
             var deferred = $q.defer();
 
