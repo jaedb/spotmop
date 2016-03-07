@@ -30749,7 +30749,17 @@ angular.module('spotmop.directives', [])
 				// check to see if what we're hovering accepts what we're dragging				
 				var dropTarget = getDropTarget( event );
 				var accepts = targetAcceptsType( dropTarget );
-				if( accepts ) dropTarget.addClass('dropping');
+				if( accepts ){
+					dropTarget.addClass('dropping');
+					
+					// take it one step further, and if we're dropping on a track, add the dropping class to it too
+					// this allows us to style the drop location for Chrome that doesn't listen for :hover
+					var trackDroppingOn = $(event.target);
+					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
+					if( trackDroppingOn.hasClass('track') ){
+						trackDroppingOn.addClass('dropping');
+					}
+				}				
             }
             
             // fired when the drop is initiated
