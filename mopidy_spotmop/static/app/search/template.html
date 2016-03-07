@@ -92,12 +92,7 @@
 			</div>
 			
 			<div ng-if="type == 'track'">
-				<div class="search-items tracklist"  ng-controller="TracklistController">
-					<track ng-repeat="track in tracklist.tracks"></track>	
-				</div>
-				<div ng-hide="tracklist.tracks.length || loading" class="no-items">
-					No items
-				</div>	
+                <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
 			</div>
 			
 			<div ng-if="type == 'all'">
