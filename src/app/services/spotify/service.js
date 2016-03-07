@@ -897,17 +897,17 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		movePlaylistTracks: function( playlisturi, range_start, range_length, insert_before ){
-            
-			var userid = this.getFromUri( 'userid', playlisturi );
-			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-            if( userid != SettingsService.getSetting('spotifyuserid',null) )
-                return false;
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
-			}			
+			}	
+            
+			var userid = this.getFromUri( 'userid', playlisturi );
+			var playlistid = this.getFromUri( 'playlistid', playlisturi );
+			
+            if( userid != SettingsService.getSetting('spotifyuser',{id: null}).id )
+                return false;		
 			
             var deferred = $q.defer();
 

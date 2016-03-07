@@ -210,6 +210,9 @@ angular.module('spotmop.directives', [])
 						case 'queuetracklist':
 							sortQueueTracklist( event );
 							break;
+						case 'playlisttracklist':
+							sortPlaylistTracklist( event );
+							break;
 					}
 				}
 					
@@ -310,6 +313,20 @@ angular.module('spotmop.directives', [])
 				}
 				
 				MopidyService.moveTlTracks( start, end, to_position );
+			}
+			
+			function sortPlaylistTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
+				var playlisturi = trackDroppedOn.closest('.tracklist').attr('playlisturi');
+				
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var range_start = Number( selectedTracks.first().parent().attr('data-index') );
+				var range_length = Number( selectedTracks.length );
+				
+				$rootScope.$broadcast('spotmop:playlist:reorder', range_start, range_length, to_position);
 			}
 			
 			
