@@ -166,15 +166,8 @@
 				<div class="clear-both"></div>
 				
 				<div class="search-results-section tracks" ng-hide="loading">
-					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>	
-					<div class="search-items tracklist"  ng-controller="TracklistController">			
-					
-						<track ng-repeat="track in tracklist.tracks track by $index"></track>
-
-						<div ng-hide="tracklist.tracks.length" class="no-items">
-							No items
-						</div>
-					</div>
+					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>
+                    <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
 				</div>
 				
 			</div>
