@@ -167,6 +167,17 @@
 	}
 	
 	
+	/**
+	 * Tracklists
+	 **/
+	
+	.tracklist .track {
+		padding-right: 20px;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+	
+	
 	
 	/**
 	 * Swipe menu
@@ -441,11 +452,6 @@
 	/**
 	 * Tracklists
 	 **/
-	 
-	.tracklist {
-		margin-left: -20px;
-		margin-right: -20px;
-	}
 	
 	.tracklist .track {
 		padding-right: 20px;
