@@ -198,6 +198,9 @@ angular.module('spotmop.directives', [])
 						case 'queue':
 							addObjectToQueue();
 							break;
+						case 'playlist':
+							addObjectToPlaylist( event );
+							break;
 						case 'libraryalbums':
 							addObjectToAlbumLibrary();
 							break;
@@ -251,6 +254,11 @@ angular.module('spotmop.directives', [])
 						MopidyService.addToTrackList( trackUris );
 						break;
 				}
+			}
+			
+			function addObjectToPlaylist( dropEvent ){
+				var playlistUri = $(dropEvent.target).attr('data-uri');
+				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
 			}
 			
 			function addObjectToAlbumLibrary(){

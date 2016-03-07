@@ -62,7 +62,7 @@ angular.module('spotmop.common.contextmenu', [
 			}
 			
 			$scope.removeFromPlaylist = function(){
-				$rootScope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
+				$rootScope.$broadcast('spotmop:playlist:deleteSelectedTracks');
 				$element.fadeOut('fast');
 			}
 			

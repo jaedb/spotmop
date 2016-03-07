@@ -18,7 +18,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService ){
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -270,49 +270,6 @@ angular.module('spotmop.common.tracklist', [])
 			});
 			
 			
-			
-			/**
-			 * Selected Tracks >> Delete
-			 **/
-			$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
-				
-				// ignore if we're not the tracklist in focus
-				if( $rootScope.tracklistInFocus !== $scope.$id )
-					return;
-				
-				var selectedTracks = $filter('filter')( $scope.tracks, { selected: true } );
-				var trackPositionsToDelete = [];
-				
-				// construct each track into a json object to delete
-				angular.forEach( selectedTracks, function( selectedTrack, index ){
-					trackPositionsToDelete.push( $scope.tracks.indexOf( selectedTrack ) );
-					selectedTrack.transitioning = true;
-				});
-				
-				// parse these uris to spotify and delete these tracks
-				SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
-					.then( function(response){
-					
-							// rejected
-							if( typeof(response.error) !== 'undefined' ){
-								NotifyService.error( response.error.message );
-							
-								// un-transition and restore the tracks we couldn't delete
-								angular.forEach( selectedTracks, function( selectedTrack, index ){
-									selectedTrack.transitioning = false;
-								});
-							// successful
-							}else{						
-								// remove tracks from DOM
-								$scope.tracks = $filter('nullOrUndefined')( $scope.tracks, 'selected' );
-								
-								// update our snapshot so Spotify knows which version of the playlist our positions refer to
-								$scope.playlist.snapshot_id = response.snapshot_id;
-							}
-						});
-			});
-			
-			
 			/**
 			 * Selected Tracks >> Add to playlist via dialog
 			 **/
@@ -350,18 +307,40 @@ angular.module('spotmop.common.tracklist', [])
                 
                 var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
                 var selectedTracksUris = [];
+				var localTracksExcluded = 0;
                 
                 angular.forEach( selectedTracks, function(track){
                     
                     // if we have a nested track object (ie TlTrack objects)
-                    if( typeof(track.track) !== 'undefined' )
-                        selectedTracksUris.push( track.track.uri );
+                    if( typeof(track.track) !== 'undefined' ){
+						if( track.track.uri.substring(0,6) == 'local:' ){
+							localTracksExcluded++;
+						}else{
+							selectedTracksUris.push( track.track.uri );
+						}
                     
                     // nope, so let's use a non-nested version
-                    else
-                        selectedTracksUris.push( track.uri );
+                    }else{
+						if( track.uri.substring(0,6) == 'local:' ){
+							localTracksExcluded++;
+						}else{
+							selectedTracksUris.push( track.uri );
+						}
+					}
                 });
-                
+					
+				// if we have omitted some local tracks
+				if( localTracksExcluded > 0 ){
+					
+					// if they were all local tracks
+					if( selectedTracksUris.length <= 0 ){
+						NotifyService.error( 'Cannot add local tracks to a Spotify playlist' );
+						return false;
+					}else{
+						NotifyService.error( localTracksExcluded+' local tracks not added to Spotify playlist' );
+					}
+				}
+				
                 // now add them to the playlist, for reals
                 SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
                     .then( function(response){

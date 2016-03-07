@@ -68,25 +68,38 @@ angular.module('spotmop.browse.playlist', [])
         }
         return Math.round(totalTime / 100000);   
     }
-    
 	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
-	 **/
-    $(document).find('.browse > .content').on('scroll', function(evt){
+
+	// on load, fetch the playlist
+	SpotifyService.getPlaylist( $stateParams.uri )
+		.then(function( response ) {
+		
+			$scope.playlist = response;			
+			$scope.tracklist.next = response.tracks.next;
+			$scope.tracklist.previous = response.tracks.previous;
+			$scope.tracklist.offset = response.tracks.offset;
+			$scope.tracklist.total = response.tracks.total;
+			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
+		
+			// parse description string and make into real html (people often have links here)
+			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
         
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
+            // figure out if we're following this playlist
+			if( $rootScope.spotifyAuthorized ){
+				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+					.then( function( isFollowing ){
+						$scope.following = $.parseJSON(isFollowing);
+					});
+			}
+    
+			// if we're viewing from within a genre category, get the category
+			if( typeof($stateParams.categoryid) !== 'undefined' ){				
+				SpotifyService.getCategory( $stateParams.categoryid )
+					.then(function( response ) {
+						$scope.category = response;
+					});
+			}
+		});
 	
 	
 	/**
@@ -136,52 +149,64 @@ angular.module('spotmop.browse.playlist', [])
 			});
 		}
 	});
-
-	// on load, fetch the playlist
-	SpotifyService.getPlaylist( $stateParams.uri )
-		.then(function( response ) {
+	
+	
+	/**
+	 * Delete the selected tracks
+	 **/
+	$scope.$on('spotmop:playlist:deleteSelectedTracks', function( trackuris ){		
+		deleteMySelectedTracks();
+	});
+	
+	function deleteMySelectedTracks(){
+	
+		var playlisturi = $state.params.uri;
+		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
+		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
 		
-			$scope.playlist = response;			
-			$scope.tracklist.next = response.tracks.next;
-			$scope.tracklist.previous = response.tracks.previous;
-			$scope.tracklist.offset = response.tracks.offset;
-			$scope.tracklist.total = response.tracks.total;
-			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
+		if( playlistOwnerID != currentUserID ){
+			NotifyService.error('Cannot modify to a playlist you don\'t own');
+			return false;
+		}
 		
-			// parse description string and make into real html (people often have links here)
-			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-        
-            // figure out if we're following this playlist
-			if( $rootScope.spotifyAuthorized ){
-				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-					.then( function( isFollowing ){
-						$scope.following = $.parseJSON(isFollowing);
-					});
-			}
-    
-			// if we're viewing from within a genre category, get the category
-			if( typeof($stateParams.categoryid) !== 'undefined' ){				
-				SpotifyService.getCategory( $stateParams.categoryid )
-					.then(function( response ) {
-						$scope.category = response;
-					});
-			}
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var trackPositionsToDelete = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			selectedTrack.transitioning = true;
 		});
+		
+		// parse these uris to spotify and delete these tracks
+		SpotifyService.deleteTracksFromPlaylist( $scope.playlist.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
+			.then( function(response){
+			
+					// rejected
+					if( typeof(response.error) !== 'undefined' ){
+						NotifyService.error( response.error.message );
+					
+						// un-transition and restore the tracks we couldn't delete
+						angular.forEach( selectedTracks, function( selectedTrack, index ){
+							selectedTrack.transitioning = false;
+						});
+					// successful
+					}else{						
+						// remove tracks from DOM
+						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+						
+						// update our snapshot so Spotify knows which version of the playlist our positions refer to
+						$scope.playlist.snapshot_id = response.snapshot_id;
+					}
+				});
+	}
 		
 	
 	/**
 	 * When the delete key is broadcast, delete the selected tracks
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
-		
-		// make sure the current spotify user owns this playlist
-		if( $scope.playlist.owner.id !== SettingsService.getSetting('spotifyuserid') ){
-			NotifyService.error( 'Cannot delete from a playlist you don\'t own' );
-			
-		// we own it, proceed sir
-		}else{
-			$scope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
-		}
+		deleteMySelectedTracks();
 	});
 		
 	/**
