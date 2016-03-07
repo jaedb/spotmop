@@ -193,6 +193,19 @@ angular.module('spotmop', [
 	$scope.hideMenu = function(){
 		$(document).find('body').removeClass('menu-revealed');
 	}
+		
+		
+	$(document).on('scroll', function( event ){
+	
+		// get our ducks in a row - these are all the numbers we need
+		var scrollPosition = $(document).scrollTop();
+		var frameHeight = $(window).height();
+		var contentHeight = $(document).height();
+		var distanceFromBottom = contentHeight - ( scrollPosition + frameHeight );
+		
+		if( distanceFromBottom <= 100 )
+			$scope.$broadcast('spotmop:loadMore');
+	});
 	
 	
 	/**
@@ -427,215 +440,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-    
-    /**
-     * Detect if we have a droppable target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getDroppableTarget( target ){
-        
-        var droppableTarget = null;
-        
-        if( $(target).hasClass('droppable') && !$(target).hasClass('unavailable') )
-            droppableTarget = $(target);
-        else if( $(target).closest('.droppable').length > 0 )
-            droppableTarget = $(target).closest('.droppable:not(.unavailable)');   
-        
-        return droppableTarget;
-    }
-    
-    /**
-     * Detect if we have a track drop target
-     * @var target = event.target object
-     * @return jQuery DOM object
-     **/
-    function getTrackTarget( target ){
-        
-        var trackTarget = null;
-        
-		if( $(target).hasClass('track') )
-			trackTarget = $(target);				
-		else if( $(target).closest('.track').length > 0 )
-			trackTarget = $(target).closest('.track');
-        
-        return trackTarget;
-    }
-	
-	
-    /**
-     * Dragging of tracks
-     **/
-    var tracksBeingDragged = [];
-    var dragging = false;
-	var dragThreshold = 30;
-	
-	// when the mouse is pressed down on a track
-	$(document).on('mousedown', 'body:not(.touchDevice) track, body:not(.touchDevice) tltrack', function(event){
-					
-		// get us our list of selected tracks
-		var tracklist = $(event.currentTarget).closest('.tracklist');
-		var tracks = tracklist.find('.track.selected');
-		
-		// create an object that gives us all the info we need
-		dragging = {
-					safetyOff: false,			// we switch this on when we're outside of the dragThreshold
-					clientX: event.clientX,
-					clientY: event.clientY,
-					tracks: tracks
-				}
-	});
-	
-	// when we release the mouse, release dragging container
-	$(document).on('mouseup', function(event){
-		if( typeof(dragging) !== 'undefined' && dragging.safetyOff ){
-			
-            $('body').removeClass('dragging');
-            $(document).find('.droppable').removeClass('dropping');
-            $(document).find('.drag-hovering').removeClass('drag-hovering');
-            
-			// identify the droppable target that we've released on (if it exists)
-			var target = getDroppableTarget( event.target );
-			var track = getTrackTarget( event.target );
-			
-			var isMenuItem = false;
-			if( target && target.closest('.main-menu').length > 0 )
-				isMenuItem = true;
-			
-			// if we have a target
-			if( target ){
-				$(document).find('.drag-tracer').html('Dropping...').fadeOut('fast');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-				
-				// get the uris
-				var uris = [];
-				$.each( dragging.tracks, function(key, value){
-					uris.push( $(value).attr('data-uri') );
-				});
-				
-				// dropping on queue
-				if( isMenuItem && target.attr('data-type') === 'queue' ){
-			
-					if( uris.length > 10 ){
-						NotifyService.notify( 'Adding '+uris.length+' track(s) to queue... this could take some time' );
-					}
-                    
-					MopidyService.addToTrackList( uris );
-					
-				// dropping on library
-				}else if( isMenuItem && target.attr('data-type') === 'library' ){
-					
-					// convert all our URIs to IDs
-					var trackids = new Array();
-					$.each( uris, function(key,value){
-						trackids.push( SpotifyService.getFromUri('trackid', value) );
-					});
-					
-					SpotifyService.addTracksToLibrary( trackids );
-					
-				// dropping on playlist
-				}else if( isMenuItem && target.attr('data-type') === 'playlist' ){
-					
-					SpotifyService.addTracksToPlaylist( target.attr('data-uri'), uris );	
-					
-				// dropping within tracklist
-				}else if( track ){
-                    
-                    var start = 1000;
-                    var end = 0;
-                    var to_position = $(track).parent().index();
-                    $.each(dragging.tracks, function(key, track){
-                        if( $(track).parent().index() < start )  
-                            start = $(track).parent().index();
-                        if( $(track).parent().index() > end )  
-                            end = $(track).parent().index();
-                    });
-					
-                    // sorting queue tracklist
-                    if( track.closest('.tracklist').hasClass('queue-tracks') ){
-						
-						// destination position needs to account for length of selection offset, if we're dragging DOWN the list
-						if( to_position >= end )
-							to_position = to_position - uris.length;
-						
-						// note: mopidy want's the first track AFTER our range, so we need to +1
-                        MopidyService.moveTlTracks( start, end + 1, to_position );
-                        
-                    // sorting playlist tracklist
-                    }else if( track.closest('.tracklist').hasClass('playlist-items') ){
-					
-                        var range_length = 1;
-                        if( end > start ){
-							range_length = end - start;
-							range_length++;
-						};
-						
-						// tell our playlist controller to update it's track order, and pass it on to Spotify too
-						$scope.$broadcast('spotmop:playlist:reorder', start, range_length, to_position);
-                    }
-				}
-				
-			// no target, no drop action required
-			}else{
-				$(document).find('.drag-tracer').fadeOut('medium');
-			}
-		}
-			
-		// unset dragging
-		dragging = false;
-	});
-	
-	// when we move the mouse, check if we're dragging
-	$(document).on('mousemove', function(event){
-		if( dragging ){
-			
-			var left = dragging.clientX - dragThreshold;
-			var right = dragging.clientX + dragThreshold;
-			var top = dragging.clientY - dragThreshold;
-			var bottom = dragging.clientY + dragThreshold;
-			
-			// check the threshold distance from mousedown and now
-			if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
-				
-                $('body').addClass('dragging');
-				$(document).find('.track.drag-hovering').removeClass('drag-hovering');
-                var target = getDroppableTarget( event.target );
-				var track = getTrackTarget( event.target );
-                var dragTracer = $(document).find('.drag-tracer');
-				
-				if( track ){
-					track.addClass('drag-hovering');
-				}
-			
-				// turn the trigger safety of
-				dragging.safetyOff = true;
-				
-                // setup the tracer
-                dragTracer.show();
-					
-                $(document).find('.droppable').removeClass('dropping');
-                $(document).find('.dropping-within').removeClass('dropping-within');
-			
-				var isMenuItem = false;
-				if( target && target.closest('.main-menu').length > 0 )
-					isMenuItem = true;
-				
-                if( target && isMenuItem && target.attr('data-type') === 'queue' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'library' ){
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlists' ){
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                    target.addClass('dropping');
-                }else if( target && isMenuItem && target.attr('data-type') === 'playlist' ){
-                    target.addClass('dropping');
-                    target.closest('.menu-item.playlists').addClass('dropping-within');
-                }else{
-                    dragTracer.html('Dragging '+dragging.tracks.length+' track(s)');
-                }
-			}
-		}
-	});
 	
 });
 

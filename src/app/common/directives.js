@@ -34,6 +34,337 @@ angular.module('spotmop.directives', [])
 })
 
 
+/**
+ * Draggable objects
+ * Facilitates dragging of tracks, albums, artists and so on
+ * Handles the drag and also the drop follow-on functions
+ **/
+.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService ){
+	return {
+		restrict: 'A',
+        scope: {
+            dragobj: '='
+        },
+		link: function($scope, $element, $attrs){
+            
+            var tracer = $(document).find('.drag-tracer');
+            var drag = {
+                threshold: 30,
+                dragStarted: false,
+                dragActive: false,
+                startX: false,
+                starY: false
+            };
+			
+			
+			/** 
+			 * Event functions
+			 **/
+            
+            // a click marks the start of a potential drag event, log some initial states
+            $element.on('mousedown', function(event){
+                drag.dragStarted = true;
+                drag.startX = event.clientX;
+                drag.startY = event.clientY;
+				drag.domobj = event.currentTarget;
+				
+				// also, if we're dragging a mopidy track item, copy the model to our .type standard container
+				if( typeof($scope.dragobj.__model__) !== 'undefined' && typeof($scope.dragobj.type) === 'undefined' ){
+					$scope.dragobj.type = $scope.dragobj.__model__.toLowerCase();
+				}
+            });
+            
+            // release the mouse (anywhere in the document)
+            // we stop any [potential] drag event and handle the drop event
+            $(document).on('mouseup', function(event){
+                
+                // if we've been dragging, handle a drop event
+                if( drag.dragActive ) dropping( event );
+                
+                // reset our drag handlers
+                drag.dragStarted = false;
+                drag.dragActive = false;
+                drag.startX = false;
+                drag.startY = false;
+				drag.domobj = false;
+            });
+	
+            // move the mouse, check if we're dragging
+            $(document).on('mousemove', function(event){
+                if( drag.dragStarted ){
+
+                    var left = drag.startX - drag.threshold;
+                    var right = drag.startX + drag.threshold;
+                    var top = drag.startY - drag.threshold;
+                    var bottom = drag.startY + drag.threshold;
+
+                    // check the threshold distance from drag start and now
+                    if( event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom ){
+                        dragging( event );
+                    }
+                }
+            });
+            
+            // fired when we are dragging (and throughout the drag motion)
+            function dragging( event ){
+					
+				// trigger our global switch (so nothing else interferes with our mouseup/down events)
+				$rootScope.dragging = true;
+                
+                // detect if we've just started dragging and need to setup the drag tracer
+                var requiresSetup = false;
+                if( !drag.dragActive ) requiresSetup = true;
+                
+                // turn on our drag active switch
+                drag.dragActive = true;
+				
+				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
+				$(document).find('.dropping').removeClass('dropping');
+                
+                // if we need initial setup of the tracer, do it darryl
+                if( requiresSetup ){
+				
+                    $('body').addClass('dragging');
+                    
+					var tracerContent = '';
+					
+					switch( $scope.dragobj.type ){
+						
+						case 'album':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+						
+						case 'artist':
+							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							var text = $scope.dragobj.name;
+							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							tracerContent += '<div class="text">'+text+'</div>';
+							break;
+						
+						case 'track':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+						
+						case 'tltrack':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+						
+						case 'localtrack':
+							var selectedTracks = $(document).find('.track.selected');
+							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
+								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+							}
+							break;
+					}
+					
+                    tracer.html( tracerContent );
+                    tracer.show();
+                }
+                
+                // make our tracker sticky icky
+                tracer.css({
+                        left: event.clientX,
+                        top: event.clientY
+                    });
+					
+				// check to see if what we're hovering accepts what we're dragging				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				if( accepts ) dropTarget.addClass('dropping');
+            }
+            
+            // fired when the drop is initiated
+            function dropping( event ){
+			
+                tracer.fadeOut('medium');
+				$('body').removeClass('dragging');
+				$(document).find('.dropping').removeClass('dropping');
+				
+				var dropTarget = getDropTarget( event );
+				var accepts = targetAcceptsType( dropTarget );
+				
+				// our drop target accepts our dragging object! 
+				if( accepts ){
+					switch( dropTarget.attr('droptype') ){
+						case 'queue':
+							addObjectToQueue();
+							break;
+						case 'libraryalbums':
+							addObjectToAlbumLibrary();
+							break;
+						case 'libraryartists':
+							addObjectToArtistLibrary();
+							break;
+						case 'librarytracks':
+							addObjectToTrackLibrary();
+							break;
+						case 'queuetracklist':
+							sortQueueTracklist( event );
+							break;
+						case 'playlisttracklist':
+							sortPlaylistTracklist( event );
+							break;
+					}
+				}
+					
+				// release our drag switch
+				$rootScope.dragging = false;
+            }
+			
+			
+			/** 
+			 * Drop behaviours
+			 **/
+			 
+			function addObjectToQueue(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackUris = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackUris.push( $scope.dragobj.tracks.items[i].uri );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'track':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+					case 'localtrack':
+						var trackUris = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackUris.push( trackDoms.eq(i).attr('data-uri') );
+						}
+						MopidyService.addToTrackList( trackUris );
+						break;
+				}
+			}
+			
+			function addObjectToAlbumLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						SpotifyService.addAlbumsToLibrary( $scope.dragobj.id );
+						break;
+				}
+			}
+			
+			function addObjectToTrackLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'album':
+						var trackIds = [];
+						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
+							trackIds.push( $scope.dragobj.tracks.items[i].id );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'track':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( trackDoms.eq(i).attr('data-id') );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+					case 'tltrack':
+						var trackIds = [];
+						var trackDoms = $(document).find('.track.selected');
+						for( var i = 0; i < trackDoms.length; i++){
+							trackIds.push( SpotifyService.getFromUri('trackid',trackDoms.eq(i).attr('data-uri')) );
+						}
+						SpotifyService.addTracksToLibrary( trackIds );
+						break;
+				}
+			}
+			
+			function addObjectToArtistLibrary(){
+				switch( $scope.dragobj.type ){
+					case 'artist':
+						SpotifyService.followArtist( $scope.dragobj.uri );
+						break;
+				}
+			}
+			
+			function sortQueueTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
+				
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var start = Number( selectedTracks.first().parent().attr('data-index') );
+				var end = Number( selectedTracks.last().parent().attr('data-index') ) + 1;
+				
+				// if we're dragging down the list, we need to account for the tracks we're moving
+				if( to_position > end ){
+					to_position = to_position - selectedTracks.length;
+				}
+				
+				MopidyService.moveTlTracks( start, end, to_position );
+			}
+			
+			function sortPlaylistTracklist( dropEvent ){
+				var trackDroppedOn = $(dropEvent.target);
+				if( !trackDroppedOn.hasClass('track') ) trackDroppedOn = trackDroppedOn.closest('.track');
+				
+				var selectedTracks = $(drag.domobj).closest('.tracklist').find('.track.selected');
+				var playlisturi = trackDroppedOn.closest('.tracklist').attr('playlisturi');
+				
+				var to_position = Number( trackDroppedOn.parent().attr('data-index') );
+				var range_start = Number( selectedTracks.first().parent().attr('data-index') );
+				var range_length = Number( selectedTracks.length );
+				
+				$rootScope.$broadcast('spotmop:playlist:reorder', range_start, range_length, to_position);
+			}
+			
+			
+			/**
+			 * Utility functions
+			 **/
+			 
+			function getDropTarget( event ){
+			
+				var dropTarget = $(event.target);
+				if( !dropTarget.hasClass('droppable') ) dropTarget = dropTarget.closest('.droppable');
+				
+				if( dropTarget )
+					return dropTarget;
+					
+				return false;
+			}
+			
+			function targetAcceptsType( dropTarget ){
+				
+				// get our accepts attribute, and bail if not found
+				var accepts = dropTarget.attr('dropaccept');
+				if( !accepts ) return false;
+				
+				// convert attribute string to an array object
+				accepts = JSON.parse(accepts);
+				
+				// run the check
+				if( accepts.indexOf( $scope.dragobj.type ) >= 0 )
+					return true;
+				
+				return false;
+			}
+        }
+    }
+})
+
+
 /** 
  * Switch input field
  * Provides toggles for values
@@ -68,31 +399,6 @@ angular.module('spotmop.directives', [])
 			});
 		},
 		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
-	}
-})
-
-
-/** 
- * Scrollable panels
- * Facilitates scrolling of sections of the app. When near the bottom, notifies app to resume lazy-loading
- **/
-.directive('scrollingPanel', function() {
-	return {
-		restrict: 'C',
-		link: function($scope, $element, $attrs){
-		
-			$element.on('scroll', function( event ){
-				
-				// get our ducks in a row - these are all the numbers we need
-				var scrollPosition = $(this).scrollTop();
-				var frameHeight = $(this).outerHeight();
-				var contentHeight = $(this).children('.inner').outerHeight();
-				var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-				
-				if( distanceFromBottom <= 100 )
-					$scope.$broadcast('spotmop:loadMore');
-			});
-		}
 	}
 })
 		
@@ -423,12 +729,11 @@ angular.module('spotmop.directives', [])
 				function(){	
 					window.requestAnimationFrame(function( event ){
 						
-						var scrollingPanel = $('.scrolling-panel');
-						var bannerPanel = scrollingPanel.find('.intro');
+						var bannerPanel = $(document).find('.intro');
 						
 						// if we've scrolled
-						if( scrollTop != scrollingPanel.scrollTop() ){
-							scrollTop = scrollingPanel.scrollTop();
+						if( scrollTop != $(document).scrollTop() ){
+							scrollTop = $(document).scrollTop();
 							
 							var bannerHeight = bannerPanel.outerHeight();
 

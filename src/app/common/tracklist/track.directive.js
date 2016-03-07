@@ -21,16 +21,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'track');
 				}
@@ -78,7 +80,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/tltrack.template.html',
-		link: function( $scope, element, attrs ){			
+		link: function( $scope, element, attrs ){
 		},
 		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
 			
@@ -101,16 +103,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click (only when selected)
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					// now reveal context menu
 					$scope.$emit('spotmop:contextMenu:show', event, 'tltrack');
@@ -164,16 +168,18 @@ angular.module('spotmop.common.track', [])
 					if( !$rootScope.isTouchDevice() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
-					// make sure we haven't clicked on a sub-link
-					if( !$(event.target).is('a') )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
+					if( !$(event.target).is('a') ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 				// right click
 				}else if( event.which === 3 ){
 					
 					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected )
-						$scope.$emit('spotmop:track:clicked', $scope);
+					if( !$scope.track.selected ){
+						$scope.$parent.trackClicked( $scope );
+					}
 					
 					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
 				}

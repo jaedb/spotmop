@@ -163,6 +163,45 @@ angular.module('spotmop.library', [])
 				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
 					Spotify.refreshToken();
 			});
+    
+	
+    /**
+     * Load more of my artists
+     * Triggered by scrolling to the bottom
+     **/
+    
+    var loadingMoreItems = false;
+    
+    // go off and get more of this playlist's tracks
+    function loadMoreItems( $nextUrl ){
+        
+        if( typeof( $nextUrl ) === 'undefined' )
+            return false;
+        
+        // update our switch to prevent spamming for every scroll event
+        loadingMoreItems = true;
+
+        // go get our 'next' URL
+        SpotifyService.getUrl( $nextUrl )
+            .then(function( response ){
+			
+                // append these new items
+                $scope.artists.items = $scope.artists.items.concat( response.artists.items );
+                
+                // save the next set's url (if it exists)
+                $scope.artists.next = response.artists.next;
+                
+                // update loader and re-open for further pagination objects
+                loadingMoreItems = false;
+            });
+    }
+	
+	// once we're told we're ready to load more albums
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreItems && typeof( $scope.artists.next ) !== 'undefined' && $scope.artists.next ){
+            loadMoreItems( $scope.artists.next );
+        }
+	});
 		
 })
 
@@ -398,7 +437,9 @@ angular.module('spotmop.library', [])
 								
 								// loop all the tracks to sanitize the response
 								for( var key in response ){
-									tracks.push( response[key][0] );
+									var track = response[key][0];
+									track.type = 'localtrack';
+									tracks.push( track );
 								}
 								
 								$scope.tracklist.tracks = tracks;

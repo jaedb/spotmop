@@ -97,35 +97,44 @@ angular.module('spotmop.browse.playlist', [])
 	 **/
 	$scope.$on('spotmop:playlist:reorder', function( event, start, range_length, to_position ){
 	
-		var playlisturi = $state.params.uri;		
+		var playlisturi = $state.params.uri;
+		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
+		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
         
-		// get spotify to start moving
-		SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
-		
-		var tracksToMove = [];
-		
-		// build an array of the tracks we need to move
-		for( var i = 0; i < range_length; i++ )
-			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
-		
-		// if we're dragging items down the line further, account for the tracks that we've just removed
-		if( start < to_position )
-			to_position = to_position - range_length;
-		
-		// reverse the order of our tracks to move (unexplained as to why we need this...)
-		tracksToMove.reverse();
-		
-		// we need to apply this straight to the template, so we wrap in $apply
-		$scope.$apply( function(){
-		
-			// remove our tracks to move (remembering to adjust Spotify's range_length value)
-			$scope.tracklist.tracks.splice( start, range_length );
+		if( playlistOwnerID != currentUserID ){
 			
-			// and now we add our moved tracks, to their new position
-			angular.forEach( tracksToMove, function(trackToMove){
-				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+			NotifyService.error('Cannot edit a playlist you don\'t own');
+			
+		}else{
+			
+			// get spotify to start moving
+			SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+			
+			var tracksToMove = [];
+			
+			// build an array of the tracks we need to move
+			for( var i = 0; i < range_length; i++ )
+				tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
+			
+			// if we're dragging items down the line further, account for the tracks that we've just removed
+			if( start < to_position )
+				to_position = to_position - range_length;
+			
+			// reverse the order of our tracks to move (unexplained as to why we need this...)
+			tracksToMove.reverse();
+			
+			// we need to apply this straight to the template, so we wrap in $apply
+			$scope.$apply( function(){
+			
+				// remove our tracks to move (remembering to adjust Spotify's range_length value)
+				$scope.tracklist.tracks.splice( start, range_length );
+				
+				// and now we add our moved tracks, to their new position
+				angular.forEach( tracksToMove, function(trackToMove){
+					$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+				});
 			});
-		});
+		}
 	});
 
 	// on load, fetch the playlist

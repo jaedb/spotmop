@@ -144,8 +144,12 @@ angular.module('spotmop.search', [])
         // update our switch to prevent spamming for every scroll event
         loadingMoreResults = true;
 		
+		// if our search page is "all", we need to adjust our search params to Spotify as "all" is not valid
+		var type = $scope.type;
+		if( type == 'all' )	type = 'track';
+		
         // go get our 'next' URL
-        SpotifyService.getSearchResults( $scope.type, $scope.query, 50, offset )
+        SpotifyService.getSearchResults( type, $scope.query, 50, offset )
             .then(function( response ){
             
                 // append these new playlists to our existing array
@@ -171,6 +175,11 @@ angular.module('spotmop.search', [])
 						$scope.playlists.items = $scope.playlists.items.concat( response.playlists.items );
 						$scope.next = response.playlists.next;
 						$scope.offset = response.playlists.offset;
+						break;
+					case 'all':
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
+						$scope.next = response.tracks.next;
+						$scope.offset = response.tracks.offset;
 						break;
 				}
                 

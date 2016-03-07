@@ -28,26 +28,6 @@ angular.module('spotmop.common.tracklist', [])
 					return false;
 			});
 			
-			/*
-			DISABLED AS IT UNSELECTS ALL TRACKS WHEN YOU CLICK/DRAG SCROLLBAR
-			// collapse menus and deselect tracks when we click outside of a tracklist and not on a contextmenu
-			$(document).on('mouseup', 'body', function( event ){
-				if( $(event.target).closest('.tracklist').length <= 0 && $(event.target).closest('contextmenu').length <= 0 ){
-					
-					// if we've just dropped some tracks somewhere, don't unselect them
-					// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
-					if( !$('body').hasClass('dragging') ){
-						$scope.$apply(
-							unselectAllTracks(),
-							1
-						);
-					}
-					
-					$rootScope.$broadcast('spotmop:contextMenu:hide');
-				}
-			});
-			*/
-			
 			
 			/**
 			 * Dragging a track
@@ -75,79 +55,85 @@ angular.module('spotmop.common.tracklist', [])
 			
 			/**
 			 * Click on a single track
-			 * This event is detected and $emitted from the track/tltrack directive
+			 * This event is detected by the track/tltrack directive
+			 * We have it within the tracklist directive so we have one place that this event is handled
 			 **/
-			$scope.$on('spotmop:track:clicked', function( event, $track ){
+			$scope.trackClicked = function( $track ){
 				
 				// let all fellow tracklists the focus has changed to ME
 				$rootScope.$broadcast('spotmop:tracklist:focusChanged', $scope.$id);
 				
-				// if ctrl key held down
-				if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+				// if we're in a drag event, then we don't do nothin'
+				// this drag event will be handled by the 'candrag' directive
+				if( !$rootScope.dragging ){
 					
-					// toggle selection for this track
-					if( $track.track.selected ){
-						$track.$apply( function(){ $track.track.selected = false; });
-					}else{
+					// if ctrl key held down
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+						
+						// toggle selection for this track
+						if( $track.track.selected ){
+							$track.$apply( function(){ $track.track.selected = false; });
+						}else{
+							$track.$apply( function(){ $track.track.selected = true; });
+						}
+						
+					// if ctrl key not held down
+					}else if( !$rootScope.ctrlKeyHeld ){
+						
+						// unselect all tracks
+						angular.forEach( $scope.tracks, function(track){
+							track.selected = false;
+						});
+						
+						// and select only me
 						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
-				// if ctrl key not held down
-				}else if( !$rootScope.ctrlKeyHeld ){
-					
-					// unselect all tracks
-					angular.forEach( $scope.tracks, function(track){
-						track.selected = false;
-					});
-					
-					// and select only me
-					$track.$apply( function(){ $track.track.selected = true; });
-				}
-				
-				// if shift key held down, select all tracks between this track, and the last clicked one
-				if( $rootScope.shiftKeyHeld ){
-					
-					// make sure we have an existing selection to select from
-					if( typeof($scope.lastSelectedTrack) === 'undefined' ){
-					
-						// nope? just select me and leave it at that
-						$track.$apply( function(){ $track.track.selected = true; });
-						return;
+					// if shift key held down, select all tracks between this track, and the last clicked one
+					if( $rootScope.shiftKeyHeld ){
+						
+						// make sure we have an existing selection to select from
+						if( typeof($scope.lastSelectedTrack) === 'undefined' ){
+						
+							// nope? just select me and leave it at that
+							$track.$apply( function(){ $track.track.selected = true; });
+							return;
+						}
+						
+						// figure out the limits of our selection (use the array's index)
+						// assume last track clicked is the lower index value, to start with
+						var firstTrackIndex = $scope.lastSelectedTrack.$index;
+						var lastTrackIndex = $track.$index;
+						
+						// if we've selected a lower-indexed track, let's swap our limits accordingly
+						if( $track.$index < firstTrackIndex ){
+							firstTrackIndex = $track.$index;
+							lastTrackIndex = $scope.lastSelectedTrack.$index;
+						}
+						
+						// now loop through our subset limits, and make them all selected!
+						for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
+							$scope.tracks[i].selected = true;
+						};
+						
+						// tell our templates to re-read the arrays
+						$scope.$apply();
 					}
 					
-					// figure out the limits of our selection (use the array's index)
-					// assume last track clicked is the lower index value, to start with
-					var firstTrackIndex = $scope.lastSelectedTrack.$index;
-					var lastTrackIndex = $track.$index;
+					// save this item to our last-clicked (used for shift-click)
+					$scope.lastSelectedTrack = $track;
 					
-					// if we've selected a lower-indexed track, let's swap our limits accordingly
-					if( $track.$index < firstTrackIndex ){
-						firstTrackIndex = $track.$index;
-						lastTrackIndex = $scope.lastSelectedTrack.$index;
+					/**
+					 * Hide/show mobile version of the context menu
+					 **/
+					if( $rootScope.isTouchDevice() ){
+						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
+							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
+						else
+							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
-					
-					// now loop through our subset limits, and make them all selected!
-					for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
-						$scope.tracks[i].selected = true;
-					};
-					
-					// tell our templates to re-read the arrays
-					$scope.$apply();
 				}
-				
-				// save this item to our last-clicked (used for shift-click)
-				$scope.lastSelectedTrack = $track;
-				
-				/**
-				 * Hide/show mobile version of the context menu
-				 **/
-				if( $rootScope.isTouchDevice() ){
-					if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
-						$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
-					else
-						$rootScope.$broadcast('spotmop:contextMenu:hide' );
-				}
-			});
+			};
 			
 			
 			
