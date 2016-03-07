@@ -75,9 +75,10 @@ angular.module('spotmop.common.tracklist', [])
 			
 			/**
 			 * Click on a single track
-			 * This event is detected and $emitted from the track/tltrack directive
+			 * This event is detected by the track/tltrack directive
+			 * We have it within the tracklist directive so we have one place that this event is handled
 			 **/
-			$scope.$on('spotmop:track:clicked', function( event, $track ){
+			$scope.trackClicked = function( $track ){
 				
 				// let all fellow tracklists the focus has changed to ME
 				$rootScope.$broadcast('spotmop:tracklist:focusChanged', $scope.$id);
@@ -152,7 +153,7 @@ angular.module('spotmop.common.tracklist', [])
 							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
 				}
-			});
+			};
 			
 			
 			
