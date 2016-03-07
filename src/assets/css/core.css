@@ -399,48 +399,15 @@ body.dragging .body * {
 	padding-left: 29px;
 	padding-top: 5px;
 }
-
-#utilities {
-	position: fixed;
-	top: 5px;
-	right: 22px;
-	z-index: 9;
+	
+#loading-bar .bar {
+	left: 20% !important;
+	right: 0px !important;
 }
-
-#utilities .loader,
-#utilities .settings-menu-item {
-	width: 28px;
-	height: 28px;
-	padding: 2px;
-	display: inline-block;
-	vertical-align: bottom;
-}
-
-#utilities:not(.background--dark) .loader.white,
-#utilities.background--dark .loader.black {
-	display: none;
-}
-
-#utilities .loader {
-    -moz-animation: spin .5s infinite linear;
-    -webkit-animation: spin .5s infinite linear;
-}
-
-.settings-menu-item {
-	padding: 2px;
-	color: #000000;
-	opacity: 0.5;
-	font-size: 26px;
-	border: none !important;
-}
-
-.settings-menu-item.active {
-	color: #08d58f;
-	opacity: 1;
-}
-
-.settings-menu-item:hover {
-	opacity: 1;
+	
+#loading-bar-spinner {
+	right: 10px !important;
+	left: auto !important;
 }
 
 

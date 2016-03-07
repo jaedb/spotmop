@@ -45,7 +45,7 @@ angular.module('spotmop', [
 	'spotmop.browse.new'
 ])
 
-.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider){
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider, cfpLoadingBarProvider){
 
 	$urlRouterProvider.otherwise("queue");
 	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
@@ -53,6 +53,9 @@ angular.module('spotmop', [
 	// initiate analytics
 	AnalyticsProvider.useAnalytics(true);
 	AnalyticsProvider.setAccount("UA-64701652-3");
+	
+	// loading bar config
+	cfpLoadingBarProvider.parentSelector = 'body';
 })
 
 

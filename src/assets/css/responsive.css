@@ -206,6 +206,11 @@
 		display: block;
 	}
 	
+	#loading-bar .bar {
+		left: 0px !important;
+		right: 0px !important;
+	}
+	
 	#loading-bar-spinner {
 		right: 10px !important;
 		left: auto !important;
