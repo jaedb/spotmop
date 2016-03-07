@@ -28,6 +28,10 @@
 	.main-menu .divider {
 		padding-top: 10px;
 	}
+	
+	#body {
+		padding-bottom: 50px;
+	}
 }
 
 @media( max-height: 300px ){
@@ -58,11 +62,7 @@
 	
 	/**
 	 * Player
-	 **/	
-	 
-	#body {
-		bottom: 50px;
-	}
+	 **/
 	
 	#player {
 		position: fixed;
@@ -167,6 +167,17 @@
 	}
 	
 	
+	/**
+	 * Tracklists
+	 **/
+	
+	.tracklist .track {
+		padding-right: 20px;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+	
+	
 	
 	/**
 	 * Swipe menu
@@ -184,7 +195,7 @@
 	
 	#body {
 		width: 100%;
-		left: 0;
+		padding: 0 0 50px 0;
 	}
 
 	.menu-revealed #sidebar {
@@ -193,6 +204,11 @@
 	
 	.menu-reveal-trigger {
 		display: block;
+	}
+	
+	#loading-bar .bar {
+		left: 0px !important;
+		right: 0px !important;
 	}
 	
 	#loading-bar-spinner {
@@ -215,6 +231,7 @@
 	 
 	.page-header {
 		display: block;
+		position: relative;
 		margin: -40px -40px 20px -40px;
 		background: #333333;
 		color: #FFFFFF;
@@ -269,28 +286,15 @@
 	 * Album/playlist page
 	 **/
 	
-	.playlist-page,
-	.album-page {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		overflow-y: scroll;
-	}
-	
-	.playlist-page .asset-sidebar,
-	.album-page .asset-sidebar {
+	.asset-sidebar {
 		position: static;
 		width: auto;
 		overflow: visible;
 		background: transparent;
 	}
 	
-	.playlist-page .content,
-	.album-page .content {
-		position: static;
-		width: auto;
+	.content.has-asset-sidebar {
+		padding-left: 0;
 		overflow: visible;
 	}
 	
@@ -453,11 +457,6 @@
 	/**
 	 * Tracklists
 	 **/
-	 
-	.tracklist {
-		margin-left: -20px;
-		margin-right: -20px;
-	}
 	
 	.tracklist .track {
 		padding-right: 20px;

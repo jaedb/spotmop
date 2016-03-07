@@ -29,8 +29,13 @@
 				
 		<div class="info-panel">
 			
-			<preloadedimage ng-if="artist.images.length > 0" ng-repeat="image in artist.images | limitTo:1" class="thumbnail artist" url="{{ image.url }}" useproxy="true"></preloadedimage>
-			<div class="thumbnail artist placeholder" ng-if="!artist.images || artist.images.length <= 0"></div>
+            <div class="thumbnail-wrapper"
+                candrag
+                dragobj="artist"
+                draggable="false">
+                    <preloadedimage ng-if="artist.images.length > 0" ng-repeat="image in artist.images | limitTo:1" class="thumbnail artist" url="{{ image.url }}" useproxy="true"></preloadedimage>
+                    <div class="thumbnail artist placeholder" ng-if="!artist.images || artist.images.length <= 0"></div>
+            </div>
 			
 			<span class="buttons">
 			

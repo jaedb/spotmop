@@ -62,7 +62,7 @@ angular.module('spotmop.common.contextmenu', [
 			}
 			
 			$scope.removeFromPlaylist = function(){
-				$rootScope.$broadcast('spotmop:tracklist:deleteSelectedTracks');
+				$rootScope.$broadcast('spotmop:playlist:deleteSelectedTracks');
 				$element.fadeOut('fast');
 			}
 			
@@ -99,10 +99,10 @@ angular.module('spotmop.common.contextmenu', [
 					$timeout(function(){
 					
 						var positionY = originalEvent.pageY - $(window).scrollTop();
-						var positionX = originalEvent.pageX - window.pageYOffset;
+						var positionX = originalEvent.pageX;
 						var menuWidth = $element.outerWidth();
 						var menuHeight = $element.outerHeight();
-					
+						
 						// too far right
 						if( positionX + menuWidth > $(window).width() ){
 							positionX -= menuWidth - 10;
@@ -113,11 +113,11 @@ angular.module('spotmop.common.contextmenu', [
 							$element.removeClass('hard-right close-right');
 						}
 						
-						// too far to the bottom (yes, document.height() because we're using fixed positions!)
-						if( positionY + menuHeight > $(document).height() ){
+						// too far to the bottom
+						if( positionY + menuHeight > $(window).height() ){
 							positionY -= menuHeight;
 							$element.addClass('hard-bottom');					
-						}else if( positionY + menuHeight + 306 > $(document).height() ){
+						}else if( positionY + menuHeight + 306 > $(window).height() ){
 							$element.addClass('close-bottom');
 						}else{
 							$element.removeClass('hard-bottom close-bottom');

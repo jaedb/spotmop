@@ -1,9 +1,8 @@
 <ul class="main-menu">
 	<li class="menu-item top-level {{ linkingMode('queue') }}">
-		<a ui-sref="queue" class="droppable" data-type="queue">
+		<a ui-sref="queue" class="droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
 			<i class="si play"></i>
 			Now playing
-			<span class="dragging-note">Add to queue</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('search') }} mobile-show">
@@ -43,37 +42,33 @@
 		My music
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.albums') }}">
-		<a ui-sref="library.albums" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.albums" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }" dropaccept='["album"]' droptype="libraryalbums">
 			<i class="si album"></i>
 			Albums
-			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
-		<a ui-sref="library.tracks" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.tracks" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }" dropaccept='["track","album","tltrack"]' droptype="librarytracks">
 			<i class="si music"></i>
 			Tracks
-			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
-		<a ui-sref="library.artists" class="droppable" data-type="library" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.artists" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }" dropaccept='["artist"]' droptype="libraryartists">
 			<i class="si mic"></i>
 			Artists
-			<span class="dragging-note">Add to library</span>
 		</a>
 	</li>
 	<li class="menu-item top-level playlists {{ linkingMode(['library.playlists', 'library.playlist']) }}">
-		<a ui-sref="library.playlists" class="droppable" data-type="playlists">
+		<a ui-sref="library.playlists">
 			<i class="si playlist"></i>
 			Playlists
             <span class="playlists-submenu-trigger white-text" ng-if="!isTouchDevice() && spotifyAuthorized"><i class="fa fa-caret-right"></i></span>
 		</a>
 		<ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }" ng-if="spotifyAuthorized">
 			<li ng-repeat="playlist in playlistsMenu" class="menu-item">
-				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" data-type="playlist" data-uri="{{ playlist.uri }}" class="droppable">
+				<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="droppable" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
 					<span ng-bind="playlist.name"></span>
-					<span class="dragging-note">Add to playlist</span>
 				</a>
 			</li>
 		</ul>

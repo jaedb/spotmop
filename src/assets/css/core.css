@@ -6,10 +6,14 @@
 
 body,
 html {
-	background: ##FFFFFF;
+	background: #f5f5f5;
 	color: #000000;
 	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
 	font-size: 14px;
+}
+
+body {
+	overflow-y: scroll;
 }
 
 * {
@@ -63,31 +67,15 @@ body.dragging .body * {
 /* ================================================================================ STRUCTURE ===== */
 /* ================================================================================================ */
 
-body {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-}
-
-#app {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	background: #303030;
-}
-
 #sidebar {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	bottom: 0;
 	width: 20%;
 	overflow: hidden;
 	background: #111111;
+	z-index: 1;
 }
 
 #sidebar > .background-image {
@@ -118,11 +106,11 @@ body {
 	bottom: 0;
 	right: 0;
 	position: absolute;
-	overflow-y: auto;
+	overflow: hidden;
 }
 
 #player {
-	position: absolute;
+	position: fixed;
 	bottom: 20px;
 	left: 0;
 	width: 20%;
@@ -130,26 +118,13 @@ body {
 }
 
 #body {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 80%;
-	bottom: 0;
-	background: #f5f5f5;
+	padding-left: 20%;
+	position: relative;
+	min-height: 100vh;
 }
 
 .page > .inner {
 	padding: 40px;
-}
-
-.scrolling-panel {
-	overflow-x: hidden;
-	overflow-y: scroll;
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
 }
 
 
@@ -193,6 +168,7 @@ body {
 .pull-right {		float: right; }
 
 
+
 /** 
  * Transitioning
  * This occurs during a delete instruction and a delete success. It makes a snappy interface, but still indicates progress.
@@ -201,6 +177,20 @@ body {
 .transitioning,
 .transitioning:hover {
 	opacity: 0.2;
+}
+
+
+
+/** 
+ * Non-selectable text
+ **/
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* IE/Edge */
+	user-select: none;           /* non-prefixed version, currently  not supported by any browser */
 }
 
 
@@ -272,7 +262,7 @@ body {
     display: block;
     opacity: 0.5;
     margin-top: -7px;
-    padding: 10px 15px;
+    padding: 6px 15px;
 }
 
 .main-menu .playlists-submenu-trigger i {
@@ -409,48 +399,15 @@ body {
 	padding-left: 29px;
 	padding-top: 5px;
 }
-
-#utilities {
-	position: fixed;
-	top: 5px;
-	right: 22px;
-	z-index: 9;
+	
+#loading-bar .bar {
+	left: 20% !important;
+	right: 0px !important;
 }
-
-#utilities .loader,
-#utilities .settings-menu-item {
-	width: 28px;
-	height: 28px;
-	padding: 2px;
-	display: inline-block;
-	vertical-align: bottom;
-}
-
-#utilities:not(.background--dark) .loader.white,
-#utilities.background--dark .loader.black {
-	display: none;
-}
-
-#utilities .loader {
-    -moz-animation: spin .5s infinite linear;
-    -webkit-animation: spin .5s infinite linear;
-}
-
-.settings-menu-item {
-	padding: 2px;
-	color: #000000;
-	opacity: 0.5;
-	font-size: 26px;
-	border: none !important;
-}
-
-.settings-menu-item.active {
-	color: #08d58f;
-	opacity: 1;
-}
-
-.settings-menu-item:hover {
-	opacity: 1;
+	
+#loading-bar-spinner {
+	right: 10px !important;
+	left: auto !important;
 }
 
 
@@ -550,14 +507,51 @@ input[type='submit'],
 
 .drag-tracer {
 	position: fixed;
-    padding: 10px 18px;
-    border-radius: 100px;
-    background: rgba(0,0,0,0.9);
 	color: #FFFFFF;
+	background: #32b5f2;
 	z-index: 9;
 	display: none;
-	bottom: 10px;
-	right: 15px;
+	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+	pointer-events: none;
+}
+
+.drag-tracer .track-title {
+	padding: 8px 12px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100px;
+	font-size: 12px;
+	vertical-align: top;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	z-index: 3;
+	background: #32b5f2;
+	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+}
+
+.drag-tracer .track-title:nth-child(2) {		top: 5px; left: 5px; z-index: 2; background: #29abe8; }
+.drag-tracer .track-title:nth-child(3) {		top: 10px; left: 10px; z-index: 1; background: #23a4e0; }
+
+.drag-tracer .thumbnail {
+	float: left;
+	width: 40px;
+	height: 40px;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.drag-tracer .text {
+	float: left;
+	padding: 12px 15px 0 15px;
+	font-size: 12px;
+	max-width: 150px;
+	vertical-align: top;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
     
 	
@@ -988,15 +982,15 @@ h1 .flag {
 }
 
 .artist-grid .artist {
-	display: inline-block;
-	clear: both;
+	display: block;
+	float: left;
 	border: 0 !important;
 	width: 50%;
 	position: relative;
 }
 
 .artist-grid .artist .image {
-	display: inline-block;
+	display: block;
 	width: 100%;
 	padding-bottom: 100%;
 	background-image: url('../svg/no-image.svg');
@@ -1232,8 +1226,9 @@ body.dragging .tracklist .track.selected {
 	font-weight: bold;
 }
 
-.tracklist .track.drag-hovering {
-	border-top: 3px solid #08d58f;
+body.dragging .tracklist .track:hover,
+body.dragging .tracklist .track.dropping {
+	border-top: 3px solid #32b5f2;
 	margin-top: -3px;
 }
 
@@ -1331,30 +1326,22 @@ body.dragging .tracklist .track.selected {
 	margin: 0 0 50px 0;
 }
 
-.playlist-page .asset-sidebar,
-.album-page .asset-sidebar {
-	width: 25%;
+.asset-sidebar {
+	width: 20%;
 	position: absolute;
 	top: 0;
-	left: 0;
+	left: 20%;
 	bottom: 0;
 	background: #EEEEEE;
 }
 
-.playlist-page .asset-sidebar .buttons,
-.album-page .asset-sidebar .buttons {
-	position: relative;
+.content.has-asset-sidebar {
+	padding-left: 25%;
 }
 
-.playlist-page .content,
-.album-page .content {
-	left: 25%;
-}
-
-.playlist-page .content > .inner,
-.album-page .content > .inner {
+.content.has-asset-sidebar > .inner {
 	padding: 40px 20px 40px 20px;
-}	
+}
 
 .playlist-page .playlist.thumbnail,
 .album-page .album.thumbnail {
@@ -1847,6 +1834,7 @@ body.dragging .tracklist .track.selected {
 	left: 0;
 	bottom: 0;
 	background: #08d58f;
+	max-width: 100%;
 }
 
 .player .slider  .track .fill.animate {

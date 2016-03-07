@@ -18,7 +18,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService ){
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -27,26 +27,6 @@ angular.module('spotmop.common.tracklist', [])
 				if( $(evt.target).closest('.tracklist').length > 0 )
 					return false;
 			});
-			
-			/*
-			DISABLED AS IT UNSELECTS ALL TRACKS WHEN YOU CLICK/DRAG SCROLLBAR
-			// collapse menus and deselect tracks when we click outside of a tracklist and not on a contextmenu
-			$(document).on('mouseup', 'body', function( event ){
-				if( $(event.target).closest('.tracklist').length <= 0 && $(event.target).closest('contextmenu').length <= 0 ){
-					
-					// if we've just dropped some tracks somewhere, don't unselect them
-					// NOTE: this doesn't apply when dragging in the queue, as changing the queue completely refreshes it and flushes all selected states
-					if( !$('body').hasClass('dragging') ){
-						$scope.$apply(
-							unselectAllTracks(),
-							1
-						);
-					}
-					
-					$rootScope.$broadcast('spotmop:contextMenu:hide');
-				}
-			});
-			*/
 			
 			
 			/**
@@ -75,79 +55,85 @@ angular.module('spotmop.common.tracklist', [])
 			
 			/**
 			 * Click on a single track
-			 * This event is detected and $emitted from the track/tltrack directive
+			 * This event is detected by the track/tltrack directive
+			 * We have it within the tracklist directive so we have one place that this event is handled
 			 **/
-			$scope.$on('spotmop:track:clicked', function( event, $track ){
+			$scope.trackClicked = function( $track ){
 				
 				// let all fellow tracklists the focus has changed to ME
 				$rootScope.$broadcast('spotmop:tracklist:focusChanged', $scope.$id);
 				
-				// if ctrl key held down
-				if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+				// if we're in a drag event, then we don't do nothin'
+				// this drag event will be handled by the 'candrag' directive
+				if( !$rootScope.dragging ){
 					
-					// toggle selection for this track
-					if( $track.track.selected ){
-						$track.$apply( function(){ $track.track.selected = false; });
-					}else{
+					// if ctrl key held down
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+						
+						// toggle selection for this track
+						if( $track.track.selected ){
+							$track.$apply( function(){ $track.track.selected = false; });
+						}else{
+							$track.$apply( function(){ $track.track.selected = true; });
+						}
+						
+					// if ctrl key not held down
+					}else if( !$rootScope.ctrlKeyHeld ){
+						
+						// unselect all tracks
+						angular.forEach( $scope.tracks, function(track){
+							track.selected = false;
+						});
+						
+						// and select only me
 						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
-				// if ctrl key not held down
-				}else if( !$rootScope.ctrlKeyHeld ){
-					
-					// unselect all tracks
-					angular.forEach( $scope.tracks, function(track){
-						track.selected = false;
-					});
-					
-					// and select only me
-					$track.$apply( function(){ $track.track.selected = true; });
-				}
-				
-				// if shift key held down, select all tracks between this track, and the last clicked one
-				if( $rootScope.shiftKeyHeld ){
-					
-					// make sure we have an existing selection to select from
-					if( typeof($scope.lastSelectedTrack) === 'undefined' ){
-					
-						// nope? just select me and leave it at that
-						$track.$apply( function(){ $track.track.selected = true; });
-						return;
+					// if shift key held down, select all tracks between this track, and the last clicked one
+					if( $rootScope.shiftKeyHeld ){
+						
+						// make sure we have an existing selection to select from
+						if( typeof($scope.lastSelectedTrack) === 'undefined' ){
+						
+							// nope? just select me and leave it at that
+							$track.$apply( function(){ $track.track.selected = true; });
+							return;
+						}
+						
+						// figure out the limits of our selection (use the array's index)
+						// assume last track clicked is the lower index value, to start with
+						var firstTrackIndex = $scope.lastSelectedTrack.$index;
+						var lastTrackIndex = $track.$index;
+						
+						// if we've selected a lower-indexed track, let's swap our limits accordingly
+						if( $track.$index < firstTrackIndex ){
+							firstTrackIndex = $track.$index;
+							lastTrackIndex = $scope.lastSelectedTrack.$index;
+						}
+						
+						// now loop through our subset limits, and make them all selected!
+						for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
+							$scope.tracks[i].selected = true;
+						};
+						
+						// tell our templates to re-read the arrays
+						$scope.$apply();
 					}
 					
-					// figure out the limits of our selection (use the array's index)
-					// assume last track clicked is the lower index value, to start with
-					var firstTrackIndex = $scope.lastSelectedTrack.$index;
-					var lastTrackIndex = $track.$index;
+					// save this item to our last-clicked (used for shift-click)
+					$scope.lastSelectedTrack = $track;
 					
-					// if we've selected a lower-indexed track, let's swap our limits accordingly
-					if( $track.$index < firstTrackIndex ){
-						firstTrackIndex = $track.$index;
-						lastTrackIndex = $scope.lastSelectedTrack.$index;
+					/**
+					 * Hide/show mobile version of the context menu
+					 **/
+					if( $rootScope.isTouchDevice() ){
+						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
+							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
+						else
+							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
-					
-					// now loop through our subset limits, and make them all selected!
-					for( var i = firstTrackIndex; i <= lastTrackIndex; i++ ){
-						$scope.tracks[i].selected = true;
-					};
-					
-					// tell our templates to re-read the arrays
-					$scope.$apply();
 				}
-				
-				// save this item to our last-clicked (used for shift-click)
-				$scope.lastSelectedTrack = $track;
-				
-				/**
-				 * Hide/show mobile version of the context menu
-				 **/
-				if( $rootScope.isTouchDevice() ){
-					if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
-						$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
-					else
-						$rootScope.$broadcast('spotmop:contextMenu:hide' );
-				}
-			});
+			};
 			
 			
 			
@@ -284,49 +270,6 @@ angular.module('spotmop.common.tracklist', [])
 			});
 			
 			
-			
-			/**
-			 * Selected Tracks >> Delete
-			 **/
-			$scope.$on('spotmop:tracklist:deleteSelectedTracks', function(event){
-				
-				// ignore if we're not the tracklist in focus
-				if( $rootScope.tracklistInFocus !== $scope.$id )
-					return;
-				
-				var selectedTracks = $filter('filter')( $scope.tracks, { selected: true } );
-				var trackPositionsToDelete = [];
-				
-				// construct each track into a json object to delete
-				angular.forEach( selectedTracks, function( selectedTrack, index ){
-					trackPositionsToDelete.push( $scope.tracks.indexOf( selectedTrack ) );
-					selectedTrack.transitioning = true;
-				});
-				
-				// parse these uris to spotify and delete these tracks
-				SpotifyService.deleteTracksFromPlaylist( $stateParams.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
-					.then( function(response){
-					
-							// rejected
-							if( typeof(response.error) !== 'undefined' ){
-								NotifyService.error( response.error.message );
-							
-								// un-transition and restore the tracks we couldn't delete
-								angular.forEach( selectedTracks, function( selectedTrack, index ){
-									selectedTrack.transitioning = false;
-								});
-							// successful
-							}else{						
-								// remove tracks from DOM
-								$scope.tracks = $filter('nullOrUndefined')( $scope.tracks, 'selected' );
-								
-								// update our snapshot so Spotify knows which version of the playlist our positions refer to
-								$scope.playlist.snapshot_id = response.snapshot_id;
-							}
-						});
-			});
-			
-			
 			/**
 			 * Selected Tracks >> Add to playlist via dialog
 			 **/
@@ -364,18 +307,40 @@ angular.module('spotmop.common.tracklist', [])
                 
                 var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
                 var selectedTracksUris = [];
+				var localTracksExcluded = 0;
                 
                 angular.forEach( selectedTracks, function(track){
                     
                     // if we have a nested track object (ie TlTrack objects)
-                    if( typeof(track.track) !== 'undefined' )
-                        selectedTracksUris.push( track.track.uri );
+                    if( typeof(track.track) !== 'undefined' ){
+						if( track.track.uri.substring(0,6) == 'local:' ){
+							localTracksExcluded++;
+						}else{
+							selectedTracksUris.push( track.track.uri );
+						}
                     
                     // nope, so let's use a non-nested version
-                    else
-                        selectedTracksUris.push( track.uri );
+                    }else{
+						if( track.uri.substring(0,6) == 'local:' ){
+							localTracksExcluded++;
+						}else{
+							selectedTracksUris.push( track.uri );
+						}
+					}
                 });
-                
+					
+				// if we have omitted some local tracks
+				if( localTracksExcluded > 0 ){
+					
+					// if they were all local tracks
+					if( selectedTracksUris.length <= 0 ){
+						NotifyService.error( 'Cannot add local tracks to a Spotify playlist' );
+						return false;
+					}else{
+						NotifyService.error( localTracksExcluded+' local tracks not added to Spotify playlist' );
+					}
+				}
+				
                 // now add them to the playlist, for reals
                 SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
                     .then( function(response){

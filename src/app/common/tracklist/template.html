@@ -1,6 +1,6 @@
-<track ng-if="type == 'track'" ng-repeat="track in tracks track by $index"></track>
-<tltrack ng-if="type == 'tltrack'" ng-repeat="track in tracks track by $index"></tltrack>
-<localtrack ng-if="type == 'localtrack'" ng-repeat="track in tracks track by $index"></localtrack>
+<track ng-if="type == 'track'" ng-repeat="track in tracks track by $index" data-index="{{ $index }}"></track>
+<tltrack ng-if="type == 'tltrack'" ng-repeat="track in tracks track by $index" data-index="{{ $index }}"></tltrack>
+<localtrack ng-if="type == 'localtrack'" ng-repeat="track in tracks track by $index" data-index="{{ $index }}"></localtrack>
 
 <div ng-hide="tracks.length" class="no-items">
     No items
