@@ -2771,6 +2771,17 @@ body.dragging .tracklist .track:hover {
 	}
 	
 	
+	/**
+	 * Tracklists
+	 **/
+	
+	.tracklist .track {
+		padding-right: 20px;
+		margin-left: -20px;
+		margin-right: -20px;
+	}
+	
+	
 	
 	/**
 	 * Swipe menu
@@ -3045,11 +3056,6 @@ body.dragging .tracklist .track:hover {
 	/**
 	 * Tracklists
 	 **/
-	 
-	.tracklist {
-		margin-left: -20px;
-		margin-right: -20px;
-	}
 	
 	.tracklist .track {
 		padding-right: 20px;

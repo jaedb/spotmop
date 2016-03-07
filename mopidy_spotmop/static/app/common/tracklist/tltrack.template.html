@@ -3,14 +3,15 @@
     candrag
     dragobj="track"
     draggable="false"
-    data-uri="{{ track.track.uri }}">
+    data-uri="{{ track.track.uri }}"
+    data-local="{{ local }}">
 
         <div class="selected-state">
             <i class="fa fa-check-square-o" ng-show="track.selected"></i>
             <i class="fa fa-square-o" ng-show="!track.selected"></i>
         </div>
 
-        <div class="col w30 title"><span ng-bind="track.track.name"></span><span class="flag grey" ng-if="!track.track.album.uri">Local</span></div>
+        <div class="col w30 title"><span ng-bind="track.track.name"></span><span class="flag grey" ng-if="local">Local</span></div>
         
         <div class="col w30 artist" ng-if="!local">
             <span ng-repeat="artist in track.track.artists">
