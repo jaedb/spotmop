@@ -412,6 +412,48 @@ body.dragging .body * {
 
 
 
+/**
+ * Dropzones
+ * When dragging, these zones are revealed to allow dropping
+ **/
+
+#dropzones {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 20%;
+	z-index: 98;
+	background: rgba(0,0,0,0.5);
+}
+
+.dragging #dropzones {
+	display: block;
+}
+
+#dropzones .dropzone {
+	background: #444444;
+	padding: 50px 20px;
+	text-align: center;
+	font-size: 20px;
+	color: #FFFFFF;
+	margin: 20px 20px 0 20px;
+}
+
+#dropzones .dropzone:hover,
+#dropzones .dropzone.dropping {
+	background: #08d58f;
+}
+
+#dropzones .dropzone .label {
+	padding-top: 20px;
+}
+ 
+ 
+ 
+ 
+
 /* ====================================================================== GLOBAL ELEMENTS ========= */
 /* ================================================================================================ */
 
@@ -509,7 +551,7 @@ input[type='submit'],
 	position: fixed;
 	color: #FFFFFF;
 	background: #32b5f2;
-	z-index: 9;
+	z-index: 99;
 	display: none;
 	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
 	pointer-events: none;
@@ -574,6 +616,12 @@ input[type='submit'],
 	padding: 0;
 }
  
+.si.doublesize {
+	width: 32px;
+	height: 32px;
+	background-size: 32px 512px;
+}
+ 
 .si.play {			background-position: 0 0; }
 .si.explore {		background-position: 0 -16px; }
 .si.playlist {		background-position: 0 -32px; }
@@ -586,6 +634,19 @@ input[type='submit'],
 .si.album {			background-position: 0 -144px; }
 .si.grid {			background-position: 0 -160px; }
 .si.find {			background-position: 0 -176px; }
+ 
+.si.play.doublesize {			background-position: 0 0; }
+.si.explore.doublesize {		background-position: 0 -32px; }
+.si.playlist.doublesize {		background-position: 0 -64px; }
+.si.music.doublesize {			background-position: 0 -96px; }
+.si.cog.doublesize {			background-position: 0 -128px; }
+.si.folder.doublesize {			background-position: 0 -160px; }
+.si.leaf.doublesize {			background-position: 0 -192px; }
+.si.star.doublesize {			background-position: 0 -224px; }
+.si.mic.doublesize {			background-position: 0 -256px; }
+.si.album.doublesize {			background-position: 0 -288px; }
+.si.grid.doublesize {			background-position: 0 -320px; }
+.si.find.doublesize {			background-position: 0 -352px; }
 
 
 

@@ -98,8 +98,19 @@
 					</form>
 				</div>
 				<ng-include src="'app/common/mainmenu.template.html'"></ng-include>	
-			</div>
+			</div>            
 		</div>
+            
+        <div id="dropzones">
+            <div class="dropzone queue droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
+                <i class="si play doublesize"></i>
+                <div class="label">Add to queue</div>
+            </div>
+            <div class="dropzone library droppable" dropaccept='["track","tltrack","album"]' droptype="library">
+                <i class="si music doublesize"></i>
+                <div class="label">Add to library</div>
+            </div>
+        </div>
 		
 		<ng-include src="'app/player/template.html'" ng-controller="PlayerController"></ng-include>	
 
