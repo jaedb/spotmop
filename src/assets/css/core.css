@@ -481,6 +481,7 @@ body.dragging .body * {
 	font-size: 16px;
 }
 
+#dropzones .dropzone .menu-item.dropping,
 #dropzones .dropzone .dropzone.dropping {
 	background: #08d58f;
 }
