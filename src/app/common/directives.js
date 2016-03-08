@@ -211,14 +211,16 @@ angular.module('spotmop.directives', [])
 						case 'playlist':
 							addObjectToPlaylist( event );
 							break;
-						case 'libraryalbums':
-							addObjectToAlbumLibrary();
-							break;
-						case 'libraryartists':
-							addObjectToArtistLibrary();
-							break;
-						case 'librarytracks':
-							addObjectToTrackLibrary();
+						case 'library':		
+							if( $scope.dragobj.type == 'track' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'album' ){
+								addObjectToAlbumLibrary();
+							}else if( $scope.dragobj.type == 'artist' ){
+								addObjectToArtistLibrary();
+							}else if( $scope.dragobj.type == 'playlist' ){
+								addObjectToPlaylistLibrary();
+							}							
 							break;
 						case 'queuetracklist':
 							sortQueueTracklist( event );
