@@ -131,17 +131,27 @@ angular.module('spotmop.directives', [])
 					switch( $scope.dragobj.type ){
 						
 						case 'album':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'artist':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
+							break;
+						
+						case 'playlist':
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'track':
@@ -213,6 +223,8 @@ angular.module('spotmop.directives', [])
 							break;
 						case 'library':		
 							if( $scope.dragobj.type == 'track' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'tltrack' ){
 								addObjectToTrackLibrary();
 							}else if( $scope.dragobj.type == 'album' ){
 								addObjectToAlbumLibrary();
@@ -315,6 +327,10 @@ angular.module('spotmop.directives', [])
 						SpotifyService.followArtist( $scope.dragobj.uri );
 						break;
 				}
+			}
+			
+			function addObjectToPlaylistLibrary(){
+				SpotifyService.followPlaylist( $scope.dragobj.uri );
 			}
 			
 			function sortQueueTracklist( dropEvent ){

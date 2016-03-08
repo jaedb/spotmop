@@ -426,6 +426,8 @@ body.dragging .body * {
 	width: 20%;
 	z-index: 98;
 	background: rgba(0,0,0,0.5);
+	animation: fadereveal 0.2s linear;
+	animation-fill-mode: forward;
 }
 
 .dragging #dropzones {
@@ -513,6 +515,55 @@ input[type='submit'],
         -webkit-transform: rotate(360deg);
     };
 }
+@keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    };
+}
+ 
+/* fade in hidden elements */
+@-moz-keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
+@-webkit-keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
+@keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
 
 
 /**
@@ -587,7 +638,7 @@ input[type='submit'],
 
 .drag-tracer .text {
 	float: left;
-	padding: 12px 15px 0 15px;
+	padding: 12px 15px;
 	font-size: 12px;
 	max-width: 150px;
 	vertical-align: top;
