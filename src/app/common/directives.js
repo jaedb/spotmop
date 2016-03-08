@@ -39,7 +39,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService ){
+.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -183,9 +183,9 @@ angular.module('spotmop.directives', [])
 					// hide/show the relevant dropzones that accept this type of object
 					$.each( $(document).find('#dropzones > .dropzone'), function(index, zone){
 						if( targetAcceptsType( $(zone) ) ){
-							$(zone).removeClass('hide');
+							$(zone).removeClass('disabled');
 						}else{
-							$(zone).addClass('hide');
+							$(zone).addClass('disabled');
 						}
 					});
 				}
@@ -231,6 +231,10 @@ angular.module('spotmop.directives', [])
 						case 'queue':
 							addObjectToQueue();
 							break;
+						case 'queuenext':
+							var at_position = PlayerService.state().currentTracklistPosition();
+							addObjectToQueue( at_position );
+							break;
 						case 'playlist':
 							addObjectToPlaylist( event );
 							break;
@@ -265,7 +269,11 @@ angular.module('spotmop.directives', [])
 			 * Drop behaviours
 			 **/
 			 
-			function addObjectToQueue(){
+			function addObjectToQueue( at_position ){
+			
+				if( typeof(at_position) === 'undefined' )
+					var at_position = null;
+			
 				switch( $scope.dragobj.type ){
 					case 'album':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ] );
@@ -276,7 +284,7 @@ angular.module('spotmop.directives', [])
 						for( var i = 0; i < trackDoms.length; i++){
 							trackUris.push( trackDoms.eq(i).attr('data-uri') );
 						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( trackUris, at_position );
 						break;
 					case 'localtrack':
 						var trackUris = [];
@@ -284,7 +292,7 @@ angular.module('spotmop.directives', [])
 						for( var i = 0; i < trackDoms.length; i++){
 							trackUris.push( trackDoms.eq(i).attr('data-uri') );
 						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( trackUris, at_position );
 						break;
 				}
 			}

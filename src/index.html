@@ -103,9 +103,18 @@
             
         <div id="dropzones" class="animate fadereveal">
             <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack"]' droptype="queue">
-                <div class="liner">
+                <div class="liner default-content">
                     <i class="si play doublesize"></i>
                     <div class="label">Add to queue</div>
+                </div>
+                <div class="liner hover-content">
+                    <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
+                        <i class="si play doublesize"></i>
+                        <div class="label">Add to queue</div>
+                    </div>
+                    <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack"]' droptype="queuenext">
+                        <div class="label">... and play next</div>
+                    </div>
                 </div>
             </div>
             <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album","artist","playlist"]' droptype="library">

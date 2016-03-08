@@ -322,9 +322,9 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		addToTrackList: function( uris, atPosition ){
-			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
-			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
+		addToTrackList: function( uris, at_position ){
+			if( typeof( at_position ) === 'undefined' ) var at_position = null;
+			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: at_position });
 		},
 		removeFromTrackList: function( tlids ){
 			var self = this;

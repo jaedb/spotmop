@@ -92,7 +92,7 @@ angular.module('spotmop', [
 			return true;
 		}
 	$scope.state = PlayerService.state;
-	$scope.currentTracklist = [];
+	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
@@ -281,7 +281,7 @@ angular.module('spotmop', [
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$scope.currentTracklist = tlTracks;
+			$rootScope.currentTracklist = tlTracks;
 		});
 		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);

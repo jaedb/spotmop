@@ -440,6 +440,14 @@ body.dragging .body * {
 	margin: 20px 20px 0 20px;
 }
 
+#dropzones > .dropzone.disabled {
+	background: #222222;
+}
+
+#dropzones > .dropzone.disabled > .liner {
+	opacity: 0.3;
+}
+
 #dropzones .dropzone > .liner {
 	padding: 50px 20px;
 }
@@ -464,10 +472,6 @@ body.dragging .body * {
 	padding-top: 20px;
 }
 
-#dropzones .dropzone.playlists > .liner.hover-content {
-	padding: 0;
-}
-
 #dropzones .dropzone .menu-item {
 	display: block;
 	text-align: left;
@@ -477,7 +481,7 @@ body.dragging .body * {
 	font-size: 16px;
 }
 
-#dropzones .dropzone .menu-item.dropping {
+#dropzones .dropzone .dropzone.dropping {
 	background: #08d58f;
 }
 
@@ -485,6 +489,30 @@ body.dragging .body * {
 	border-bottom: 1px solid rgba(255,255,255,0.1);
 }
  
+ 
+/** unique dropzones **/
+
+#dropzones .dropzone.playlists > .liner.hover-content {
+	padding: 0;
+}
+
+#dropzones .dropzone.queue > .liner.hover-content {
+	padding: 0;
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue {
+	padding: 30px 20px 20px;
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue-next {
+	padding: 12px 20px;
+	border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue-next .label {
+	padding: 0;
+}
+	
  
  
  
