@@ -30693,6 +30693,7 @@ angular.module('spotmop.directives', [])
 				
 				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
 				$(document).find('.dropping').removeClass('dropping');
+				$(document).find('.dropping-within').removeClass('dropping-within');
                 
                 // if we need initial setup of the tracer, do it darryl
                 if( requiresSetup ){
@@ -30704,17 +30705,27 @@ angular.module('spotmop.directives', [])
 					switch( $scope.dragobj.type ){
 						
 						case 'album':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'artist':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
+							break;
+						
+						case 'playlist':
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'track':
@@ -30741,7 +30752,16 @@ angular.module('spotmop.directives', [])
 					
                     tracer.html( tracerContent );
                     tracer.show();
-                }
+					
+					// hide/show the relevant dropzones that accept this type of object
+					$.each( $(document).find('#dropzones > .dropzone'), function(index, zone){
+						if( targetAcceptsType( $(zone) ) ){
+							$(zone).removeClass('hide');
+						}else{
+							$(zone).addClass('hide');
+						}
+					});
+				}
                 
                 // make our tracker sticky icky
                 tracer.css({
@@ -30755,13 +30775,16 @@ angular.module('spotmop.directives', [])
 				if( accepts ){
 					dropTarget.addClass('dropping');
 					
-					// take it one step further, and if we're dropping on a track, add the dropping class to it too
+					// if we're dropping on a track, add the dropping class to it too
 					// this allows us to style the drop location for Chrome that doesn't listen for :hover
 					var trackDroppingOn = $(event.target);
 					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
 					if( trackDroppingOn.hasClass('track') ){
 						trackDroppingOn.addClass('dropping');
 					}
+					
+					// dropping on nested dropzone (ie playlist dropzone)
+					dropTarget.parent().closest('.droppable').addClass('dropping-within');
 				}				
             }
             
@@ -30784,14 +30807,18 @@ angular.module('spotmop.directives', [])
 						case 'playlist':
 							addObjectToPlaylist( event );
 							break;
-						case 'libraryalbums':
-							addObjectToAlbumLibrary();
-							break;
-						case 'libraryartists':
-							addObjectToArtistLibrary();
-							break;
-						case 'librarytracks':
-							addObjectToTrackLibrary();
+						case 'library':		
+							if( $scope.dragobj.type == 'track' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'tltrack' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'album' ){
+								addObjectToAlbumLibrary();
+							}else if( $scope.dragobj.type == 'artist' ){
+								addObjectToArtistLibrary();
+							}else if( $scope.dragobj.type == 'playlist' ){
+								addObjectToPlaylistLibrary();
+							}							
 							break;
 						case 'queuetracklist':
 							sortQueueTracklist( event );
@@ -30814,11 +30841,7 @@ angular.module('spotmop.directives', [])
 			function addObjectToQueue(){
 				switch( $scope.dragobj.type ){
 					case 'album':
-						var trackUris = [];
-						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
-							trackUris.push( $scope.dragobj.tracks.items[i].uri );
-						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ] );
 						break;
 					case 'track':
 						var trackUris = [];
@@ -30841,7 +30864,17 @@ angular.module('spotmop.directives', [])
 			
 			function addObjectToPlaylist( dropEvent ){
 				var playlistUri = $(dropEvent.target).attr('data-uri');
-				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+				switch( $scope.dragobj.type ){
+					case 'track':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'tltrack':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'album':
+						alert('Not yet implemented');
+						break;
+				}
 			}
 			
 			function addObjectToAlbumLibrary(){
@@ -30886,6 +30919,10 @@ angular.module('spotmop.directives', [])
 						SpotifyService.followArtist( $scope.dragobj.uri );
 						break;
 				}
+			}
+			
+			function addObjectToPlaylistLibrary(){
+				SpotifyService.followPlaylist( $scope.dragobj.uri );
 			}
 			
 			function sortQueueTracklist( dropEvent ){

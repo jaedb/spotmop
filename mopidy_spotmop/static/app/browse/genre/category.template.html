@@ -11,7 +11,12 @@
 		<div class="playlist-items square-panels">
 			
 			<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
-				<a ui-sref="browse.categoryplaylist({ categoryid: category.id, uri: playlist.uri })" class="square-panel playlist">
+				<a ui-sref="browse.categoryplaylist({ categoryid: category.id, uri: playlist.uri })"
+                    class="square-panel playlist"
+                    ui-sref="browse.artist.overview({ uri: artist.uri })"           
+                    candrag
+                    dragobj="playlist"
+                    draggable="false">
 					<div class="image-container">
 						<thumbnail images="playlist.images"></thumbnail>
 					</div>
