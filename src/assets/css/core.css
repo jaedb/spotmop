@@ -426,8 +426,6 @@ body.dragging .body * {
 	width: 20%;
 	z-index: 98;
 	background: rgba(0,0,0,0.5);
-	animation: fadereveal 0.2s linear;
-	animation-fill-mode: forward;
 }
 
 .dragging #dropzones {
@@ -446,17 +444,18 @@ body.dragging .body * {
 	padding: 50px 20px;
 }
 
-#dropzones .dropzone.dropping > .liner:not(.hover-content) {
+#dropzones .dropzone.dropping > .liner:not(.hover-content),
+#dropzones .dropzone.dropping-within > .liner:not(.hover-content) {
 	background: #08d58f;
 }
 
-#dropzones .dropzone:hover .default-content,
-#dropzones .dropzone.dropping .default-content {
+#dropzones .dropzone.dropping .default-content,
+#dropzones .dropzone.dropping-within .default-content {
 	display: none;
 }
 
-#dropzones .dropzone:hover .hover-content,
-#dropzones .dropzone.dropping .hover-content {
+#dropzones .dropzone.dropping .hover-content,
+#dropzones .dropzone.dropping-within .hover-content {
 	display: block !important;
 }
 
@@ -558,6 +557,16 @@ input[type='submit'],
 }
  
 /* fade in hidden elements */
+.fadereveal {	
+	-webkit-animation: fadereveal 0.2s linear;
+	-moz-animation: fadereveal 0.2s linear;
+	-o-animation: fadereveal 0.2s linear;
+	animation: fadereveal 0.2s linear;
+	-webkit-animation-fill-mode: forward;
+	-moz-animation-fill-mode: forward;
+	-o-animation-fill-mode: forward;
+	animation-fill-mode: forward;
+}
 @-moz-keyframes fadereveal {
 	0% {
 		display: none;

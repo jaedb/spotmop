@@ -120,6 +120,7 @@ angular.module('spotmop.directives', [])
 				
 				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
 				$(document).find('.dropping').removeClass('dropping');
+				$(document).find('.dropping-within').removeClass('dropping-within');
                 
                 // if we need initial setup of the tracer, do it darryl
                 if( requiresSetup ){
@@ -201,13 +202,16 @@ angular.module('spotmop.directives', [])
 				if( accepts ){
 					dropTarget.addClass('dropping');
 					
-					// take it one step further, and if we're dropping on a track, add the dropping class to it too
+					// if we're dropping on a track, add the dropping class to it too
 					// this allows us to style the drop location for Chrome that doesn't listen for :hover
 					var trackDroppingOn = $(event.target);
 					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
 					if( trackDroppingOn.hasClass('track') ){
 						trackDroppingOn.addClass('dropping');
 					}
+					
+					// dropping on nested dropzone (ie playlist dropzone)
+					dropTarget.parent().closest('.droppable').addClass('dropping-within');
 				}				
             }
             
