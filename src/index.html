@@ -103,23 +103,27 @@
             
         <div id="dropzones" class="animate">
             <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack"]' droptype="queue">
-                <i class="si play doublesize"></i>
-                <div class="label">Add to queue</div>
+                <div class="liner">
+                    <i class="si play doublesize"></i>
+                    <div class="label">Add to queue</div>
+                </div>
             </div>
             <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album","artist","playlist"]' droptype="library">
-                <i class="si music doublesize"></i>
-                <div class="label">Add to library</div>
+                <div class="liner">
+                    <i class="si music doublesize"></i>
+                    <div class="label">Add to library</div>
+                </div>
             </div>
-            <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist">
-                <i class="si playlist doublesize"></i>
-                <div class="label">Add to playlist</div>
-                <ul class="submenu playlists animate" ng-class="{ empty: playlistsMenu.length <= 0 }" ng-if="spotifyAuthorized">
-                    <li ng-repeat="playlist in playlistsMenu" class="menu-item">
-                        <a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })">
-                            <span ng-bind="playlist.name"></span>
-                        </a>
-                    </li>
-                </ul>
+            <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist">
+                <div class="liner default-content">
+                    <i class="si playlist doublesize"></i>
+                    <div class="label">Add to playlist</div>
+                </div>
+                <div class="liner hover-content hide animate" ng-if="spotifyAuthorized">
+                    <a ng-repeat="playlist in playlistsMenu" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
+                        <span ng-bind="playlist.name"></span>
+                    </a>
+                </div>
             </div>
         </div>
 		

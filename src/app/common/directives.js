@@ -178,7 +178,16 @@ angular.module('spotmop.directives', [])
 					
                     tracer.html( tracerContent );
                     tracer.show();
-                }
+					
+					// hide/show the relevant dropzones that accept this type of object
+					$.each( $(document).find('#dropzones > .dropzone'), function(index, zone){
+						if( targetAcceptsType( $(zone) ) ){
+							$(zone).removeClass('hide');
+						}else{
+							$(zone).addClass('hide');
+						}
+					});
+				}
                 
                 // make our tracker sticky icky
                 tracer.css({
@@ -255,11 +264,7 @@ angular.module('spotmop.directives', [])
 			function addObjectToQueue(){
 				switch( $scope.dragobj.type ){
 					case 'album':
-						var trackUris = [];
-						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
-							trackUris.push( $scope.dragobj.tracks.items[i].uri );
-						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ] );
 						break;
 					case 'track':
 						var trackUris = [];
@@ -282,7 +287,17 @@ angular.module('spotmop.directives', [])
 			
 			function addObjectToPlaylist( dropEvent ){
 				var playlistUri = $(dropEvent.target).attr('data-uri');
-				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+				switch( $scope.dragobj.type ){
+					case 'track':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'tltrack':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'album':
+						alert('Not yet implemented');
+						break;
+				}
 			}
 			
 			function addObjectToAlbumLibrary(){
