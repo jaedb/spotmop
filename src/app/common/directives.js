@@ -276,7 +276,7 @@ angular.module('spotmop.directives', [])
 			
 				switch( $scope.dragobj.type ){
 					case 'album':
-						MopidyService.addToTrackList( [ $scope.dragobj.uri ] );
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
 						var trackUris = [];
