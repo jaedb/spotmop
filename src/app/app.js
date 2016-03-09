@@ -280,9 +280,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$rootScope.currentTracklist = tlTracks;
-		});
 		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
