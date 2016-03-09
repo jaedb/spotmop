@@ -438,6 +438,7 @@ body.dragging .body * {
 	font-size: 20px;
 	color: #FFFFFF;
 	margin: 20px 20px 0 20px;
+	line-height: 20px;
 }
 
 #dropzones > .dropzone.disabled {
@@ -506,7 +507,7 @@ body.dragging .body * {
 }
 
 #dropzones .dropzone.queue .dropzone.add-to-queue-next {
-	padding: 12px 20px;
+	padding: 14.5px 20px;
 	border-top: 1px solid rgba(255,255,255,0.1);
 }
 
