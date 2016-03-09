@@ -17,6 +17,22 @@ angular.module('spotmop.services.player', [])
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
+		currentTracklistPosition: function(){
+			if( state.currentTlTrack ){
+				
+				var currentTrackObject = $filter('filter')($rootScope.currentTracklist, {tlid: state.currentTlTrack.tlid});
+				var at_position = 0;
+				
+				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
+				if( currentTrackObject.length > 0 ){
+					at_position = $rootScope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
+				}
+				
+				return at_position;
+			}else{
+				return null;
+			}
+		},
 		playPositionPercent: function(){
 			if( state.currentTlTrack ){
 				return ( state.playPosition / state.currentTlTrack.track.length * 100 ).toFixed(2);
@@ -33,6 +49,7 @@ angular.module('spotmop.services.player', [])
 		updateCurrentTrack();
 		updatePlayerState();
 		updateVolume();
+		updateTracklist();
 		
 		// figure out if we're playing already
 		MopidyService.getState().then( function( newState ){
@@ -43,7 +60,10 @@ angular.module('spotmop.services.player', [])
 		});
 	});
 	
-	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
+		updateTracklist();
+	});
+	
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
 		updateToggles();
 	});
@@ -232,6 +252,16 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 	};	
+	
+	
+	/**
+	 * Update our current tracklist
+	 **/
+	function updateTracklist(){
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
+			$rootScope.currentTracklist = tlTracks;
+		});
+	}
 		
 
 	/**

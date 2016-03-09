@@ -43,8 +43,43 @@
 					</form>
 				</div>
 				<ng-include src="'app/common/mainmenu.template.html'"></ng-include>	
-			</div>
+			</div>            
 		</div>
+            
+        <div id="dropzones" class="animate fadereveal">
+            <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack"]' droptype="queue">
+                <div class="liner default-content">
+                    <i class="si play doublesize"></i>
+                    <div class="label">Add to queue</div>
+                </div>
+                <div class="liner hover-content animate fadereveal">
+                    <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
+                        <i class="si play doublesize"></i>
+                        <div class="label">Add to queue</div>
+                    </div>
+                    <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack"]' droptype="queuenext">
+                        <div class="label">... and play next</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album","artist","playlist"]' droptype="library">
+                <div class="liner">
+                    <i class="si music doublesize"></i>
+                    <div class="label">Add to library</div>
+                </div>
+            </div>
+            <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist" ng-if="spotifyAuthorized">
+                <div class="liner default-content">
+                    <i class="si playlist doublesize"></i>
+                    <div class="label">Add to playlist</div>
+                </div>
+                <div class="liner hover-content animate fadereveal">
+                    <a ng-repeat="playlist in playlistsMenu" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
+                        <span ng-bind="playlist.name"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
 		
 		<ng-include src="'app/player/template.html'" ng-controller="PlayerController"></ng-include>	
 

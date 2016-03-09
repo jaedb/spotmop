@@ -29058,7 +29058,7 @@ angular.module('spotmop', [
 			return true;
 		}
 	$scope.state = PlayerService.state;
-	$scope.currentTracklist = [];
+	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
@@ -29246,9 +29246,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$scope.currentTracklist = tlTracks;
-		});
 		MopidyService.getConsume().then( function( isConsume ){
 			SettingsService.setSetting('mopidyconsume',isConsume);
 		});
@@ -30147,6 +30144,14 @@ angular.module('spotmop.browse.playlist', [])
 			// parse description string and make into real html (people often have links here)
 			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
         
+            // get the owner
+			if( $rootScope.spotifyAuthorized ){
+				SpotifyService.getUser( $scope.playlist.owner.uri )
+					.then( function( response ){
+						$scope.playlist.owner = response;
+					});
+			}
+        
             // figure out if we're following this playlist
 			if( $rootScope.spotifyAuthorized ){
 				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
@@ -30612,7 +30617,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', ['$rootScope', 'MopidyService', 'SpotifyService', 'NotifyService', function( $rootScope, MopidyService, SpotifyService, NotifyService ){
+.directive('candrag', ['$rootScope', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -30693,6 +30698,7 @@ angular.module('spotmop.directives', [])
 				
 				// if we've previously been able to drop on something, it's now irrelevant as we've moved the mouse
 				$(document).find('.dropping').removeClass('dropping');
+				$(document).find('.dropping-within').removeClass('dropping-within');
                 
                 // if we need initial setup of the tracer, do it darryl
                 if( requiresSetup ){
@@ -30704,17 +30710,27 @@ angular.module('spotmop.directives', [])
 					switch( $scope.dragobj.type ){
 						
 						case 'album':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'artist':
-							var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-							var text = $scope.dragobj.name;
-							tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							tracerContent += '<div class="text">'+text+'</div>';
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
+							break;
+						
+						case 'playlist':
+							if( $scope.dragobj.images.length > 0 ){
+								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							}
+							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							break;
 						
 						case 'track':
@@ -30741,7 +30757,16 @@ angular.module('spotmop.directives', [])
 					
                     tracer.html( tracerContent );
                     tracer.show();
-                }
+					
+					// hide/show the relevant dropzones that accept this type of object
+					$.each( $(document).find('#dropzones > .dropzone'), function(index, zone){
+						if( targetAcceptsType( $(zone) ) ){
+							$(zone).removeClass('disabled');
+						}else{
+							$(zone).addClass('disabled');
+						}
+					});
+				}
                 
                 // make our tracker sticky icky
                 tracer.css({
@@ -30755,13 +30780,16 @@ angular.module('spotmop.directives', [])
 				if( accepts ){
 					dropTarget.addClass('dropping');
 					
-					// take it one step further, and if we're dropping on a track, add the dropping class to it too
+					// if we're dropping on a track, add the dropping class to it too
 					// this allows us to style the drop location for Chrome that doesn't listen for :hover
 					var trackDroppingOn = $(event.target);
 					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
 					if( trackDroppingOn.hasClass('track') ){
 						trackDroppingOn.addClass('dropping');
 					}
+					
+					// dropping on nested dropzone (ie playlist dropzone)
+					dropTarget.parent().closest('.droppable').addClass('dropping-within');
 				}				
             }
             
@@ -30781,17 +30809,25 @@ angular.module('spotmop.directives', [])
 						case 'queue':
 							addObjectToQueue();
 							break;
+						case 'queuenext':
+							var at_position = PlayerService.state().currentTracklistPosition();
+							addObjectToQueue( at_position );
+							break;
 						case 'playlist':
 							addObjectToPlaylist( event );
 							break;
-						case 'libraryalbums':
-							addObjectToAlbumLibrary();
-							break;
-						case 'libraryartists':
-							addObjectToArtistLibrary();
-							break;
-						case 'librarytracks':
-							addObjectToTrackLibrary();
+						case 'library':		
+							if( $scope.dragobj.type == 'track' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'tltrack' ){
+								addObjectToTrackLibrary();
+							}else if( $scope.dragobj.type == 'album' ){
+								addObjectToAlbumLibrary();
+							}else if( $scope.dragobj.type == 'artist' ){
+								addObjectToArtistLibrary();
+							}else if( $scope.dragobj.type == 'playlist' ){
+								addObjectToPlaylistLibrary();
+							}							
 							break;
 						case 'queuetracklist':
 							sortQueueTracklist( event );
@@ -30811,14 +30847,14 @@ angular.module('spotmop.directives', [])
 			 * Drop behaviours
 			 **/
 			 
-			function addObjectToQueue(){
+			function addObjectToQueue( at_position ){
+			
+				if( typeof(at_position) === 'undefined' )
+					var at_position = null;
+			
 				switch( $scope.dragobj.type ){
 					case 'album':
-						var trackUris = [];
-						for( var i = 0; i < $scope.dragobj.tracks.items.length; i++){
-							trackUris.push( $scope.dragobj.tracks.items[i].uri );
-						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
 						var trackUris = [];
@@ -30826,7 +30862,7 @@ angular.module('spotmop.directives', [])
 						for( var i = 0; i < trackDoms.length; i++){
 							trackUris.push( trackDoms.eq(i).attr('data-uri') );
 						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( trackUris, at_position );
 						break;
 					case 'localtrack':
 						var trackUris = [];
@@ -30834,14 +30870,24 @@ angular.module('spotmop.directives', [])
 						for( var i = 0; i < trackDoms.length; i++){
 							trackUris.push( trackDoms.eq(i).attr('data-uri') );
 						}
-						MopidyService.addToTrackList( trackUris );
+						MopidyService.addToTrackList( trackUris, at_position );
 						break;
 				}
 			}
 			
 			function addObjectToPlaylist( dropEvent ){
 				var playlistUri = $(dropEvent.target).attr('data-uri');
-				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+				switch( $scope.dragobj.type ){
+					case 'track':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'tltrack':
+						$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToPlaylistByUri', playlistUri);
+						break;
+					case 'album':
+						alert('Not yet implemented');
+						break;
+				}
 			}
 			
 			function addObjectToAlbumLibrary(){
@@ -30886,6 +30932,10 @@ angular.module('spotmop.directives', [])
 						SpotifyService.followArtist( $scope.dragobj.uri );
 						break;
 				}
+			}
+			
+			function addObjectToPlaylistLibrary(){
+				SpotifyService.followPlaylist( $scope.dragobj.uri );
 			}
 			
 			function sortQueueTracklist( dropEvent ){
@@ -31703,7 +31753,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: ['$element', '$scope', '$filter', '$rootScope', '$stateParams', 'MopidyService', 'SpotifyService', 'DialogService', 'NotifyService', 'SettingsService', function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService ){
+		controller: ['$element', '$scope', '$filter', '$rootScope', '$stateParams', 'MopidyService', 'SpotifyService', 'DialogService', 'NotifyService', 'SettingsService', 'PlayerService', function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -31834,21 +31884,8 @@ angular.module('spotmop.common.tracklist', [])
 				var atPosition = null;
 					
 				// if we're adding these tracks to play next
-				if( typeof( playNext ) !== 'undefined' && playNext == true ){
-				
-					atPosition = 0;
-					
-					// fetch the currently playing track
-					var currentTrack = $scope.$parent.state().currentTlTrack;
-					
-					// make sure we have a current track
-					if( currentTrack ){
-						var currentTrackObject = $filter('filter')($scope.$parent.currentTracklist, {tlid: currentTrack.tlid});
-					
-						// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
-						if( currentTrackObject.length > 0 )				
-							atPosition = $scope.$parent.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
-					}
+				if( typeof( playNext ) !== 'undefined' && playNext == true ){				
+					atPosition = PlayerService.state().currentTracklistPosition();
 				}
 				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
@@ -32842,6 +32879,22 @@ angular.module('spotmop.services.player', [])
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
+		currentTracklistPosition: function(){
+			if( state.currentTlTrack ){
+				
+				var currentTrackObject = $filter('filter')($rootScope.currentTracklist, {tlid: state.currentTlTrack.tlid});
+				var at_position = 0;
+				
+				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
+				if( currentTrackObject.length > 0 ){
+					at_position = $rootScope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
+				}
+				
+				return at_position;
+			}else{
+				return null;
+			}
+		},
 		playPositionPercent: function(){
 			if( state.currentTlTrack ){
 				return ( state.playPosition / state.currentTlTrack.track.length * 100 ).toFixed(2);
@@ -32858,6 +32911,7 @@ angular.module('spotmop.services.player', [])
 		updateCurrentTrack();
 		updatePlayerState();
 		updateVolume();
+		updateTracklist();
 		
 		// figure out if we're playing already
 		MopidyService.getState().then( function( newState ){
@@ -32868,7 +32922,10 @@ angular.module('spotmop.services.player', [])
 		});
 	});
 	
-	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
+		updateTracklist();
+	});
+	
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
 		updateToggles();
 	});
@@ -33057,6 +33114,16 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 	};	
+	
+	
+	/**
+	 * Update our current tracklist
+	 **/
+	function updateTracklist(){
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
+			$rootScope.currentTracklist = tlTracks;
+		});
+	}
 		
 
 	/**
@@ -33248,15 +33315,15 @@ angular.module('spotmop.queue', [])
 .controller('QueueController', ['$scope', '$rootScope', '$filter', '$timeout', '$state', 'MopidyService', 'SpotifyService', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
 	
 	$scope.totalTime = 0;
-	$scope.tracklist = { type: 'tltrack', tracks: $scope.$parent.currentTracklist };
+	$scope.tracklist = { type: 'tltrack', tracks: $rootScope.currentTracklist };
 
     /**
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes
      **/
-    $scope.$watch(
-        function( $scope ){
-            return $scope.$parent.currentTracklist;
+    $rootScope.$watch(
+        function( $rootScope ){
+            return $rootScope.currentTracklist;
         },
         function(newTracklist, oldTracklist){
 			$scope.tracklist.tracks = newTracklist;
@@ -34452,9 +34519,9 @@ angular.module('spotmop.services.mopidy', [
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
 		},
-		addToTrackList: function( uris, atPosition ){
-			if( typeof( atPosition ) === 'undefined' ) var atPosition = null;
-			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: atPosition });
+		addToTrackList: function( uris, at_position ){
+			if( typeof( at_position ) === 'undefined' ) var at_position = null;
+			return wrapMopidyFunc("mopidy.tracklist.add", this)({ uris: uris, at_position: at_position });
 		},
 		removeFromTrackList: function( tlids ){
 			var self = this;
@@ -35020,7 +35087,7 @@ angular.module('spotmop.services.spotify', [])
         
         getUser: function( useruri ){
 		
-			var userid = this.getFromUri( 'userid', useruri );			
+			var userid = this.getFromUri( 'userid', useruri );
             var deferred = $q.defer();
 
             $http({

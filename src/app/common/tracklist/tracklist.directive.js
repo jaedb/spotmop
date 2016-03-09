@@ -18,7 +18,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -149,21 +149,8 @@ angular.module('spotmop.common.tracklist', [])
 				var atPosition = null;
 					
 				// if we're adding these tracks to play next
-				if( typeof( playNext ) !== 'undefined' && playNext == true ){
-				
-					atPosition = 0;
-					
-					// fetch the currently playing track
-					var currentTrack = $scope.$parent.state().currentTlTrack;
-					
-					// make sure we have a current track
-					if( currentTrack ){
-						var currentTrackObject = $filter('filter')($scope.$parent.currentTracklist, {tlid: currentTrack.tlid});
-					
-						// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
-						if( currentTrackObject.length > 0 )				
-							atPosition = $scope.$parent.currentTracklist.indexOf( currentTrackObject[0] ) + 1;				
-					}
+				if( typeof( playNext ) !== 'undefined' && playNext == true ){				
+					atPosition = PlayerService.state().currentTracklistPosition();
 				}
 				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );

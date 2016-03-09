@@ -262,7 +262,7 @@ angular.module('spotmop.services.spotify', [])
         
         getUser: function( useruri ){
 		
-			var userid = this.getFromUri( 'userid', useruri );			
+			var userid = this.getFromUri( 'userid', useruri );
             var deferred = $q.defer();
 
             $http({

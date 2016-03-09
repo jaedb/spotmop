@@ -4,7 +4,14 @@
 	
 	<div class="asset-sidebar">
 	
-		<div class="thumbnail playlist" ng-if="playlist.images.length > 0" ng-repeat="image in playlist.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+		<div class="thumbnail playlist"
+            ng-if="playlist.images.length > 0"
+            ng-repeat="image in playlist.images | limitTo:1"
+            style="background-image: url({{ image.url }});"
+            draggable="false"
+            candrag
+            dragobj="playlist"
+            ></div>
 		<div class="thumbnail playlist placeholder" ng-if=" !playlist.images || playlist.images.length <= 0"></div>
 				
 		<div class="buttons">
@@ -19,12 +26,12 @@
                           ng-click="unfollowPlaylist()"
                           ng-mouseover="hovering = true"
                           ng-mouseleave="hovering = false">
-                        <span ng-show="hovering">Unfollow</span>
-                        <span ng-show="!hovering">Following</span>
+                        <span ng-show="hovering">Remove</span>
+                        <span ng-show="!hovering">In library</span>
                     </a>
                     <a class="button follow"
                           ng-click="followPlaylist()">
-                        <span>Follow</span>
+                        <span>Add to library</span>
                     </a>
                 </span>
                 
@@ -58,11 +65,14 @@
 			<div class="info-item capitalize">
 				<span ng-bind="playlist.followers.total | number:0"></span> followers
 			</div>
-			<div class="info-item capitalize">
-				Created by: <a ng-bind="playlist.owner.id" ui-sref="browse.user({ uri: playlist.owner.uri })"></a>
-			</div>
 			<div class="info-item capitalize" ng-hide="playlist.public">
 				<i class="fa fa-lock" ></i> Private playlist
+			</div>
+			<div class="info-item">
+				<a class="playlist-owner" ui-sref="browse.user({ uri: playlist.owner.uri })">
+                    <span class="thumbnail animate" ng-repeat="image in playlist.owner.images | limitTo: 1 : playlist.owner.images.length-1" style="background-image: url('{{ image.url }}');"><span class="border animate"></span></span>
+                    <span class="name" ng-bind="playlist.owner.display_name"></span>
+                </a>
 			</div>
 		</div>
 		
