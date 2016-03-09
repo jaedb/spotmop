@@ -425,7 +425,7 @@ body.dragging .body * {
 	bottom: 0;
 	width: 20%;
 	z-index: 98;
-	background: rgba(0,0,0,0.5);
+	background: rgba(0,0,0,0.75);
 }
 
 .dragging #dropzones {
