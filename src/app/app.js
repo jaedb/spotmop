@@ -179,6 +179,7 @@ angular.module('spotmop', [
 	// when we navigate to a new state
 	$rootScope.$on('$stateChangeStart', function(event){ 
 		$scope.hideMenu();
+        $scope.$broadcast('spotmop:contextMenu:hide');
 		Analytics.trackPage( $location.path() );
 	});
 	

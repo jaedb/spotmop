@@ -106,7 +106,8 @@ body.dragging .body * {
 	bottom: 0;
 	right: 0;
 	position: absolute;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 #player {

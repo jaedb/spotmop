@@ -217,7 +217,9 @@ angular.module('spotmop.directives', [])
             
             // fired when the drop is initiated
             function dropping( event ){
-			
+                
+                $rootScope.$broadcast('spotmop:contextMenu:hide');
+                
                 tracer.fadeOut('medium');
 				$('body').removeClass('dragging');
 				$(document).find('.dropping').removeClass('dropping');
