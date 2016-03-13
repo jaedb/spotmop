@@ -156,6 +156,10 @@
 	.mobile-hide {
 		display: none !important;
 	}
+    
+    .breadcrumbs {
+        display: none;
+    }
 	
 	
 	/**
@@ -311,6 +315,9 @@
 	 
 	.artist-page .artist-intro {
 		margin-bottom: 0;
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
 	}
 	 
 	.artist-page .info-panel .thumbnail {
