@@ -298,6 +298,47 @@ angular.module('spotmop.services.dialog', [])
             }
 		}
 	};
+})
+
+
+/**
+ * Dialog: Add asset to the queue by URI
+ * Accepts whatever format is provided by the backends (ie spotify: soundcloud: local:)
+ **/
+
+.directive('addbyuridialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/addbyuri.template.html',
+		controller: function( $scope, $element, DialogService, SpotifyService, MopidyService ){
+				
+            $scope.saving = false;
+            $scope.add = function(){          
+				if( $scope.uri && $scope.uri != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.error = false;
+					$scope.saving = true;
+					
+					MopidyService.addToTrackList( [ $scope.uri ] )
+						.catch( function(error){
+							$scope.saving = false;
+							$scope.error = true;
+						})
+						.then( function(response){
+							if( !$scope.error ){
+								DialogService.remove();
+							}
+						});
+				}else{
+					$scope.error = true;
+				}
+            }
+		}
+	};
 });
 
 
