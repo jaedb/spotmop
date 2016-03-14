@@ -152,6 +152,10 @@
 	.mobile-show {
 		display: block !important;
 	}
+
+	.button.mobile-show {
+		display: inline-block !important;
+	}
 	
 	.mobile-hide {
 		display: none !important;
@@ -296,18 +300,43 @@
 		overflow: visible;
 		background: transparent;
 	}
+    
+    .asset-sidebar .button.showing {
+        border-bottom: 1px solid #EEEEEE;
+        margin-bottom: -1px;
+    }
 	
 	.content.has-asset-sidebar {
 		padding-left: 0;
 		overflow: visible;
 	}
+    
+    .content.has-asset-sidebar > .inner {
+        padding-top: 10px;
+    }
 	
 	.playlist-page .artist-grid,
 	.album-page .artist-grid {
 		display: none;
 	}
+    
+    .playlist-page .intro,
+    .album-page .intro {
+        margin-bottom: 25px;
+    }
 	
+	.playlist-page .info,
+    .album-page .info {
+        margin-top: 0;
+        background: #DDDDDD;
+    }
 	
+	.playlist-page .info:not(.show),
+    .album-page .info:not(.show) {
+        display: none;
+    }
+    
+    
 	
 	/**
 	 * Artist intro panel

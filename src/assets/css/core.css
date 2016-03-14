@@ -1042,7 +1042,7 @@ h1 .flag {
 .body .button,
 .dialog .button.secondary { 						background: #9b9b9b; }
 .body .button:hover,
-.dialog .button.secondary:hover { 					background: #8B8B8B; }
+.dialog .button.secondary:hover { 				background: #8B8B8B; }
 
 .body .button .fa {
 	margin-top: 2px;
@@ -1065,6 +1065,9 @@ h1 .flag {
 
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
+
+.body .button.tertiary {				    background: #DDDDDD; }
+.body .button.tertiary:hover {		    background: #CFCFCF; }
 
 
 .body .button.disabled,
