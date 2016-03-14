@@ -300,11 +300,6 @@
 		overflow: visible;
 		background: transparent;
 	}
-    
-    .asset-sidebar .button.showing {
-        border-bottom: 1px solid #EEEEEE;
-        margin-bottom: -1px;
-    }
 	
 	.content.has-asset-sidebar {
 		padding-left: 0;
@@ -328,7 +323,7 @@
 	.playlist-page .info,
     .album-page .info {
         margin-top: 0;
-        background: #DDDDDD;
+        background: #EEEEEE;
     }
 	
 	.playlist-page .info:not(.show),

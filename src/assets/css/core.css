@@ -1066,8 +1066,8 @@ h1 .flag {
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
 
-.body .button.tertiary {				    background: #DDDDDD; }
-.body .button.tertiary:hover {		    background: #CFCFCF; }
+.body .button.tertiary {				background: #EEEEEE; color: #AAAAAA; }
+.body .button.tertiary:hover {		    background: #DDDDDD; }
 
 
 .body .button.disabled,
