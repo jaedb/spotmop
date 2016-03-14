@@ -29145,6 +29145,7 @@ angular.module('spotmop', [
 	// when we navigate to a new state
 	$rootScope.$on('$stateChangeStart', function(event){ 
 		$scope.hideMenu();
+        $scope.$broadcast('spotmop:contextMenu:hide');
 		Analytics.trackPage( $location.path() );
 	});
 	
@@ -29480,8 +29481,7 @@ angular.module('spotmop.browse.album', [])
 		if( distanceFromBottom <= 100 )
         	$scope.$broadcast('spotmop:loadMore');
     });
-	
-	
+    
 	// play the whole album
 	$scope.playAlbum = function(){
 		MopidyService.playStream( $scope.album.uri );
@@ -30795,7 +30795,9 @@ angular.module('spotmop.directives', [])
             
             // fired when the drop is initiated
             function dropping( event ){
-			
+                
+                $rootScope.$broadcast('spotmop:contextMenu:hide');
+                
                 tracer.fadeOut('medium');
 				$('body').removeClass('dragging');
 				$(document).find('.dropping').removeClass('dropping');
@@ -33056,37 +33058,46 @@ angular.module('spotmop.services.player', [])
 		
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
+						
+			// if we have an album image baked-in, let's use that
+			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
-			// if this is a Spotify track, get the track image from Spotify
-			if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
-				// now we have track info, let's get the spotify artwork	
-				SpotifyService.getTrack( tlTrack.track.uri )
-					.then(function( response ){
-						if( typeof(response.album) !== 'undefined' ){
-							state.currentTlTrack.track.image = response.album.images[0].url;
-						}
-					});
+				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
 			
-			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+			// no image provided by backend, so let's fetch it from elsewhere
 			}else{
+			
+				// if this is a Spotify track, get the track image from Spotify
+				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
+					// now we have track info, let's get the spotify artwork	
+					SpotifyService.getTrack( tlTrack.track.uri )
+						.then(function( response ){
+							if( typeof(response.album) !== 'undefined' ){
+								state.currentTlTrack.track.image = response.album.images[0].url;
+							}
+						});
 				
-				var artist = encodeURIComponent( tlTrack.track.artists[0].name );
-				var album = encodeURIComponent( tlTrack.track.album.name );
-				
-				if( artist && album )
-					LastfmService.albumInfo( artist, album )
-						.then( function(response){
-							
-								// remove the existing image
-								state.currentTlTrack.track.image = false;
+				// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+				}else{
+					
+					var artist = encodeURIComponent( tlTrack.track.artists[0].name );
+					var album = encodeURIComponent( tlTrack.track.album.name );
+					
+					if( artist && album )
+						LastfmService.albumInfo( artist, album )
+							.then( function(response){
 								
-								// if we got an album match, plug in the 'extralarge' image to our state()
-								if( typeof(response.album) !== 'undefined' ){
-									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-									if( largest )
-										state.currentTlTrack.track.image = largest['#text'];
-								}
-							});
+									// remove the existing image
+									state.currentTlTrack.track.image = false;
+									
+									// if we got an album match, plug in the 'extralarge' image to our state()
+									if( typeof(response.album) !== 'undefined' ){
+										var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
+										if( largest )
+											state.currentTlTrack.track.image = largest['#text'];
+									}
+								});
+				}
 			}
 			
 			// update ui
@@ -33312,11 +33323,16 @@ angular.module('spotmop.queue', [])
 /**
  * Main controller
  **/
-.controller('QueueController', ['$scope', '$rootScope', '$filter', '$timeout', '$state', 'MopidyService', 'SpotifyService', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
+.controller('QueueController', ['$scope', '$rootScope', '$filter', '$timeout', '$state', 'MopidyService', 'SpotifyService', 'DialogService', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
 	$scope.totalTime = 0;
 	$scope.tracklist = { type: 'tltrack', tracks: $rootScope.currentTracklist };
 
+	$scope.addByUri = function(){
+		DialogService.create('addbyuri',$scope);
+	};
+	
+	
     /**
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes
@@ -33860,6 +33876,47 @@ angular.module('spotmop.services.dialog', [])
 					// perform the creation
 					SettingsService.setSetting('pushername', $scope.name);
 					DialogService.remove();
+				}else{
+					$scope.error = true;
+				}
+            }
+		}]
+	};
+})
+
+
+/**
+ * Dialog: Add asset to the queue by URI
+ * Accepts whatever format is provided by the backends (ie spotify: soundcloud: local:)
+ **/
+
+.directive('addbyuridialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/addbyuri.template.html',
+		controller: ['$scope', '$element', 'DialogService', 'SpotifyService', 'MopidyService', function( $scope, $element, DialogService, SpotifyService, MopidyService ){
+				
+            $scope.saving = false;
+            $scope.add = function(){          
+				if( $scope.uri && $scope.uri != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.error = false;
+					$scope.saving = true;
+					
+					MopidyService.addToTrackList( [ $scope.uri ] )
+						.catch( function(error){
+							$scope.saving = false;
+							$scope.error = true;
+						})
+						.then( function(response){
+							if( !$scope.error ){
+								DialogService.remove();
+							}
+						});
 				}else{
 					$scope.error = true;
 				}

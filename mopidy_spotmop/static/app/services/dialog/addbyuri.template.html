@@ -1,0 +1,24 @@
+<div class="add-by-uri-dialog">
+	
+	<h4 class="section-title dialog-title">Add by URI</h4>
+    <div class="form-note note">Add an album, artist, playlist or track as a URI (ie <em>spotify:track:123</em>)</div>
+    
+	<form>
+		
+		<div class="field text large">
+			<input name="uri" placeholder="provider:type:id" ng-model="uri" />
+			<span class="note red-text" ng-if="error">Unable to add this URI</span>
+		</div>
+
+		<div class="actions">
+			<span class="button save primary" ng-click="add()" ng-hide="saving">
+				<i class="fa fa-check"></i>&nbsp; Add
+			</span>
+			<span ng-show="saving" class="saving">
+				<img src="assets/svg/spinner.svg" class="working" />
+			</span>
+		</div>
+		
+	</form>
+	
+</div>

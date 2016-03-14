@@ -238,7 +238,8 @@ body.dragging .body * {
 	bottom: 0;
 	right: 0;
 	position: absolute;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 #player {
@@ -1173,7 +1174,7 @@ h1 .flag {
 .body .button,
 .dialog .button.secondary { 						background: #9b9b9b; }
 .body .button:hover,
-.dialog .button.secondary:hover { 					background: #8B8B8B; }
+.dialog .button.secondary:hover { 				background: #8B8B8B; }
 
 .body .button .fa {
 	margin-top: 2px;
@@ -1196,6 +1197,9 @@ h1 .flag {
 
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
+
+.body .button.tertiary {				background: #EEEEEE; color: #AAAAAA; }
+.body .button.tertiary:hover {		    background: #DDDDDD; }
 
 
 .body .button.disabled,
@@ -2797,7 +2801,6 @@ body.dragging .tracklist .track.dropping {
   100% { transform: rotate(360deg); transform: rotate(360deg); }
 }
 
-
 /**
  * Responsive layouts
  * 
@@ -2952,10 +2955,18 @@ body.dragging .tracklist .track.dropping {
 	.mobile-show {
 		display: block !important;
 	}
+
+	.button.mobile-show {
+		display: inline-block !important;
+	}
 	
 	.mobile-hide {
 		display: none !important;
 	}
+    
+    .breadcrumbs {
+        display: none;
+    }
 	
 	
 	/**
@@ -3097,13 +3108,33 @@ body.dragging .tracklist .track.dropping {
 		padding-left: 0;
 		overflow: visible;
 	}
+    
+    .content.has-asset-sidebar > .inner {
+        padding-top: 10px;
+    }
 	
 	.playlist-page .artist-grid,
 	.album-page .artist-grid {
 		display: none;
 	}
+    
+    .playlist-page .intro,
+    .album-page .intro {
+        margin-bottom: 25px;
+    }
 	
+	.playlist-page .info,
+    .album-page .info {
+        margin-top: 0;
+        background: #EEEEEE;
+    }
 	
+	.playlist-page .info:not(.show),
+    .album-page .info:not(.show) {
+        display: none;
+    }
+    
+    
 	
 	/**
 	 * Artist intro panel
@@ -3111,6 +3142,9 @@ body.dragging .tracklist .track.dropping {
 	 
 	.artist-page .artist-intro {
 		margin-bottom: 0;
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
 	}
 	 
 	.artist-page .info-panel .thumbnail {
@@ -3128,6 +3162,12 @@ body.dragging .tracklist .track.dropping {
 	
 	.artist-page .info-panel .buttons {
 		padding-right: 10px;
+	}
+	 
+    .featured-playlists-intro{
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
 	}
 	
 	

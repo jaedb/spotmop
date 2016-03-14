@@ -33,11 +33,12 @@
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
 			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized">Add to library</a>
+			<a class="button mobile-show tertiary" ng-click="showInfo = !showInfo" ng-class="{ showing: showInfo }">Info</a>
 		</div>
 		
 		<div class="clear-left"></div>
 			
-		<div class="info">
+		<div class="info" ng-class="{ show: showInfo }">
 			<div class="info-item capitalize">
 				<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
 			</div>
