@@ -53,13 +53,6 @@ angular.module('spotmop.search', [])
 	 * @param query = string
 	 **/
 	function performSearch( type, query ){
-		
-		//MopidyService.testMethod('library.lookup',
-		
-		MopidyService.search('radiohead', ['soundcloud:'])
-			.then( function(response){
-				console.log( response );
-			});
 			
 		if( typeof(type) === 'undefined' )
 			var type = $scope.type;
@@ -67,11 +60,18 @@ angular.module('spotmop.search', [])
 		switch( type ){
 			
 			case 'track' :
+                MopidyService.search(query, ['soundcloud:','file:','local:'])
+                    .then( function(response){
+                            console.log( response );
+                        for( var i = 0; i < response.length; i++ ){
+                            $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response[i].tracks );
+                        }
+                    });
 				SpotifyService.getSearchResults( 'track', query, 50 )
 					.then( function(response){
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.tracks = response.tracks.items;
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
 						$scope.tracklist.type = 'track';
+						$scope.tracklist.next = response.tracks.next;
 						if( response.tracks.next )
 							nextOffset = response.tracks.offset + response.tracks.limit;
 						else
