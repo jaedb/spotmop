@@ -21,7 +21,7 @@ angular.module('spotmop.search', [])
 /**
  * Main controller
  **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
 	
 	$scope.tracklist = {tracks: [], type: 'track'};
 	$scope.albums = [];
@@ -53,7 +53,14 @@ angular.module('spotmop.search', [])
 	 * @param query = string
 	 **/
 	function performSearch( type, query ){
-	
+		
+		//MopidyService.testMethod('library.lookup',
+		
+		MopidyService.search('radiohead', ['soundcloud:'])
+			.then( function(response){
+				console.log( response );
+			});
+			
 		if( typeof(type) === 'undefined' )
 			var type = $scope.type;
 		
