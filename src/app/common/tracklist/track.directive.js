@@ -9,6 +9,10 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
+			// detect the track source
+			var uri = $scope.track.track.uri.split(':');
+			$scope.source = uri[0];
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -86,10 +90,9 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// detect if a local file (to change the links for artists, etc)
-			$scope.local = false;
-			if( $scope.track.track.uri.substring(0,6) == 'local:' )
-				$scope.local = true;
+			// detect the track source
+			var uri = $scope.track.track.uri.split(':');
+			$scope.source = uri[0];
 			
 			/**
 			 * Single click
@@ -155,6 +158,7 @@ angular.module('spotmop.common.track', [])
 		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
+			$scope.source = 'local';
 			
 			/**
 			 * Single click

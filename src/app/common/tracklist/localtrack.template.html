@@ -10,7 +10,7 @@
             <i class="fa fa-square-o" ng-show="!track.selected"></i>
         </div>
 
-        <div class="col w30 title"><span ng-bind="track.name"></span><span class="flag grey" ng-if="!track.album.uri">Local</span></div>
+        <div class="col w30 title"><span ng-bind="track.name"></span></div>
         
         <div class="col w30 artist">
             <span ng-repeat="artist in track.artists">
@@ -22,6 +22,10 @@
         
         <div class="col w5 duration">	
             <span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
+        </div>
+        
+        <div class="col w5 source">	
+            <span ng-show="track.source" class="source-icon {{ track.source }}"></span>
         </div>
         
         <div class="clear-both"></div>

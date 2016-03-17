@@ -62,8 +62,10 @@ angular.module('spotmop.search', [])
 			case 'track' :
                 MopidyService.search(query, ['soundcloud:','file:','local:'])
                     .then( function(response){
-                            console.log( response );
-                        for( var i = 0; i < response.length; i++ ){
+                        console.log( response );
+						
+						// loop all our result sources (-1 in index because last item is the uri record)
+                        for( var i = 0; i < response.length - 1; i++ ){
                             $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response[i].tracks );
                         }
                     });

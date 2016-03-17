@@ -774,6 +774,27 @@ input[type='submit'],
 .si.find.doublesize {			background-position: 0 -352px; }
 
 
+.ssi {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url('../icons/source-icons.svg');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	margin-top: 2px;
+	margin-right: 5px;
+	padding: 0;
+}
+
+.ssi.local {				background-position: 0 0; }
+.ssi.soundcloud {			background-position: 0 -16px; }
+.ssi.spotify {				background-position: 0 -32px; }
+
+.playing .ssi.local	{		background-position: -16px 0; }
+.playing .ssi.soundcloud {	background-position: -16px -16px; }
+.playing .ssi.spotify {		background-position: -16px -32px; }
+
 
 /**
  * Notifications
@@ -1380,12 +1401,6 @@ h1 .flag {
 .track .popularity {
 	float: left;
 	min-height: 1px;
-}
-
-.track .title .local-track {
-	opacity: 0.2;
-	font-size: 11px;
-	padding-left: 5px;
 }
 
 .track .title {				width: 30%; }
