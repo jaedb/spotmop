@@ -10,8 +10,9 @@ angular.module('spotmop.common.track', [])
 		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
 			// detect the track source
-			var uri = $scope.track.track.uri.split(':');
-			$scope.source = uri[0];
+			$scope.track.source = function(){
+                return $scope.track.uri.split(':')[0];
+            };
 			
 			/**
 			 * Single click

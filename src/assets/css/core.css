@@ -530,7 +530,7 @@ body.dragging .body * {
 .hide {				display: none !important; }
 .invisible {		visibility: hidden !important; }
 *:focus {		    outline: none; }
-
+.spacer {           height: 40px; }
 
 /**
  * Animations
@@ -721,7 +721,44 @@ input[type='submit'],
 	text-overflow: ellipsis;
 }
     
-	
+    
+/**
+ * Tooltips
+ * Only using CSS for basic hovers
+ **/
+
+.tooltip-wrapper {
+    z-index: 2;
+    position: relative;
+}
+
+.tooltip-wrapper .tooltip {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #DDDDDD;
+    color: #333333;
+    font-size: 11px;
+    padding: 2px 5px;
+}
+
+.tooltip-wrapper:hover .tooltip {
+    display: block;
+}
+
+.popularity .tooltip {
+    z-index: -1;
+    top: -5px;
+    right: -8px;
+    padding: 5px 16px 5px 8px;
+}
+
+.popularity:hover .bar-track {
+    background: #FFFFFF;
+}
+    
+   
 	
 /**
  * Icons
@@ -782,8 +819,7 @@ input[type='submit'],
 	background-position: 0 0;
 	background-repeat: no-repeat;
 	vertical-align: top;
-	margin-top: 2px;
-	margin-right: 5px;
+	margin-top: 1px;
 	padding: 0;
 }
 
@@ -1121,17 +1157,16 @@ h1 .flag {
  
 .bar-track {	
 	display: inline-block;
-	width: 40px;
+	width: 5px;
 	position: relative;
-	height: 4px;
+	height: 12px;
 	background: #DDDDDD;
-	margin-top: 5px;
 }
 
 .bar-track .bar {
 	position: absolute;
-	top: 0;
 	left: 0;
+	right: 0;
 	bottom: 0;
 	background: #666666;
 }
@@ -1397,19 +1432,22 @@ h1 .flag {
 .track .title,
 .track .artist,
 .track .album,
-.track .duration,
-.track .popularity {
+.track .duration {
 	float: left;
 	min-height: 1px;
 }
 
-.track .title {				width: 30%; }
-.track .artist {			width: 30%; }
-.track .album {				width: 30%; }
-.track .duration {			width: 5%; }
-.track .popularity {		width: 5%; }
+.track .title {			width: 30%; }
+.track .artist {			width: 35%; }
+.track .album {			width: 30%; }
+.track .duration {		width: 5%; }
 
-.tracklist.album-items .track .title {			width: 35%; }
+.track .popularity {
+    position: absolute;
+    top: 11px;
+    right: 10px;
+}
+
 .tracklist.album-items .track .popularity {		display: none; }
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {

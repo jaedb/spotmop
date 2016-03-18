@@ -234,13 +234,20 @@
 	
 	
 	/**
+	 * Body layout
+	 **/
+	.page > .inner {
+		padding: 20px;
+	}
+	
+	/**
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
 	 
 	.page-header {
 		display: block;
 		position: relative;
-		margin: -40px -40px 20px -40px;
+		margin: -20px -20px 20px -20px;
 		background: #333333;
 		color: #FFFFFF;
 		padding: 15px 20px;
@@ -461,22 +468,6 @@
 	#sidebar {
 		width: 50%;
 		left: -50%;
-	}
-	
-	
-	/**
-	 * Page headings (that also foster the swipe trigger button)
-	 **/
-	.page-header {
-		margin: -20px -20px 20px -20px;
-	}
-	
-	
-	/**
-	 * Body layout
-	 **/
-	.page > .inner {
-		padding: 20px;
 	}
 	
 	
