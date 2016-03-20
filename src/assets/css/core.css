@@ -1432,17 +1432,22 @@ h1 .flag {
 .track .title,
 .track .artist,
 .track .album,
-.track .duration {
+.track .info {
 	float: left;
 	min-height: 1px;
 }
 
 .track .title {			width: 30%; }
-.track .artist {			width: 35%; }
+.track .artist {			width: 30%; }
 .track .album {			width: 30%; }
-.track .duration {		width: 5%; }
+.track .info {		    width: 10%; text-align: right; }
 
-.track .popularity {
+.track .info .duration {
+    display: inline-block;
+    padding-right: 15px;
+}
+
+.track .info .popularity {
     position: absolute;
     top: 11px;
     right: 10px;
@@ -1611,20 +1616,20 @@ body.dragging .tracklist .track.dropping {
 	padding-top: 5px;
 }
 
-.playlist-page .info,
-.album-page .info {
+.playlist-page .asset-sidebar .info,
+.album-page .asset-sidebar .info {
 	padding: 14px 20px;
 	margin-top: 1px;
 }
 
-.playlist-page .info > .info-item,
-.album-page .info > .info-item {
+.playlist-page .asset-sidebar .info > .info-item,
+.album-page .asset-sidebar .info > .info-item {
 	padding: 2px 0;
 	color: #AAAAAA;
 }
 
-.playlist-page .info .bar-track,
-.album-page .info .bar-track {
+.playlist-page .asset-sidebar .info .bar-track,
+.album-page .asset-sidebar .info .bar-track {
 	vertical-align: top;
 	margin-top: 7px;
 	margin-left: 6px;
