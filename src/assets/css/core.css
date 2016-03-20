@@ -843,6 +843,7 @@ input[type='submit'],
     left: 20%;
     right: 0;
     text-align: center;
+	pointer-events: none;
 }
 
 #notifications .notification {
