@@ -28,16 +28,14 @@
 	.main-menu .divider {
 		padding-top: 10px;
 	}
+	.main-menu .divider.spacer {
+		height: 0;
+	}
 	
 	#body {
 		padding-bottom: 50px;
 	}
 }
-
-@media( max-height: 300px ){
-	
-}
-
 
 
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
