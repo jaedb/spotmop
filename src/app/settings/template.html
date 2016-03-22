@@ -181,12 +181,10 @@
 			
 				<h4 class="section-title underline">
 					Echonest
-					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonest.enabled">Connected</span>
-					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonest.enabled">Offline</span>
+					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonest.enabled == true">Connected</span>
+					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonest.enabled == true">Offline</span>
 					<span class="state-label grey-background white-text" ng-if="!settings.echonest.enabled">Disabled</span>
 				</h4>
-                
-                {{ settings.echonest.enabled }}
 				
 				<div class="field">
 					<div class="label">Enabled</div>
