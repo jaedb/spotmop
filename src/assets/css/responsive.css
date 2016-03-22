@@ -446,9 +446,25 @@
 	
 	
 	/**
-	 * Search
+	 * General elements
 	 **/
-	 
+	.library-albums .col.info,
+	.library-albums .col.main {
+		float: none;
+		width: auto;
+		clear: both;
+	}
+	
+	.library-albums .col.main {
+		padding-top: 20px;
+	}
+	
+	.library-albums .col.info .square-panel {
+		width: 25%;
+		float: left;
+		margin-right: 30px;
+		margin-left: -20px;
+	}
 }
 
 
