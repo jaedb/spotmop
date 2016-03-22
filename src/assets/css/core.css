@@ -201,7 +201,7 @@ body.dragging .body * {
 /* ================================================================================================ */
 
 .main-menu .divider {
-	padding: 25px 0 5px 10px;
+	padding: 20px 0 5px 10px;
 	font-size: 11px;
 	color: #FFFFFF;
 	opacity: 0.4;
@@ -209,7 +209,7 @@ body.dragging .body * {
 }
 
 .main-menu .divider.spacer {
-    padding-top: 10px;
+    height: 0;
 }
 
 .main-menu .menu-item:last-child {

@@ -20,7 +20,7 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 670px ){
+@media( max-height: 740px ){
 	.main-menu .menu-item > a {
 		padding-top: 7px;
 		padding-bottom: 7px;
@@ -51,7 +51,7 @@
 /**
  * Narrow OR shallow screens need the skinny player
  **/
-@media ( max-width: 800px ), ( max-height: 640px ){
+@media ( max-width: 800px ), ( max-height: 650px ){
 	
 	#sidebar > .inner {
 		bottom: 54px;
