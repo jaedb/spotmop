@@ -333,7 +333,7 @@ body.dragging .body * {
 /* ================================================================================================ */
 
 .main-menu .divider {
-	padding: 25px 0 5px 10px;
+	padding: 20px 0 5px 10px;
 	font-size: 11px;
 	color: #FFFFFF;
 	opacity: 0.4;
@@ -341,7 +341,7 @@ body.dragging .body * {
 }
 
 .main-menu .divider.spacer {
-    padding-top: 10px;
+    height: 0;
 }
 
 .main-menu .menu-item:last-child {
@@ -662,7 +662,7 @@ body.dragging .body * {
 .hide {				display: none !important; }
 .invisible {		visibility: hidden !important; }
 *:focus {		    outline: none; }
-
+.spacer {           height: 40px; }
 
 /**
  * Animations
@@ -853,7 +853,44 @@ input[type='submit'],
 	text-overflow: ellipsis;
 }
     
-	
+    
+/**
+ * Tooltips
+ * Only using CSS for basic hovers
+ **/
+
+.tooltip-wrapper {
+    z-index: 2;
+    position: relative;
+}
+
+.tooltip-wrapper .tooltip {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #DDDDDD;
+    color: #333333;
+    font-size: 11px;
+    padding: 2px 5px;
+}
+
+.tooltip-wrapper:hover .tooltip {
+    display: block;
+}
+
+.popularity .tooltip {
+    z-index: -1;
+    top: -5px;
+    right: -8px;
+    padding: 5px 16px 5px 8px;
+}
+
+.popularity:hover .bar-track {
+    background: #FFFFFF;
+}
+    
+   
 	
 /**
  * Icons
@@ -906,6 +943,26 @@ input[type='submit'],
 .si.find.doublesize {			background-position: 0 -352px; }
 
 
+.ssi {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-image: url('../icons/source-icons.svg');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	margin-top: 1px;
+	padding: 0;
+}
+
+.ssi.local {				background-position: 0 0; }
+.ssi.soundcloud {			background-position: 0 -16px; }
+.ssi.spotify {				background-position: 0 -32px; }
+
+.playing .ssi.local	{		background-position: -16px 0; }
+.playing .ssi.soundcloud {	background-position: -16px -16px; }
+.playing .ssi.spotify {		background-position: -16px -32px; }
+
 
 /**
  * Notifications
@@ -918,6 +975,7 @@ input[type='submit'],
     left: 20%;
     right: 0;
     text-align: center;
+	pointer-events: none;
 }
 
 #notifications .notification {
@@ -1232,17 +1290,16 @@ h1 .flag {
  
 .bar-track {	
 	display: inline-block;
-	width: 40px;
+	width: 5px;
 	position: relative;
-	height: 4px;
+	height: 12px;
 	background: #DDDDDD;
-	margin-top: 5px;
 }
 
 .bar-track .bar {
 	position: absolute;
-	top: 0;
 	left: 0;
+	right: 0;
 	bottom: 0;
 	background: #666666;
 }
@@ -1508,25 +1565,27 @@ h1 .flag {
 .track .title,
 .track .artist,
 .track .album,
-.track .duration,
-.track .popularity {
+.track .info {
 	float: left;
 	min-height: 1px;
 }
 
-.track .title .local-track {
-	opacity: 0.2;
-	font-size: 11px;
-	padding-left: 5px;
+.track .title {			width: 30%; }
+.track .artist {			width: 30%; }
+.track .album {			width: 30%; }
+.track .info {		    width: 10%; text-align: right; }
+
+.track .info .duration {
+    display: inline-block;
+    padding-right: 15px;
 }
 
-.track .title {				width: 30%; }
-.track .artist {			width: 30%; }
-.track .album {				width: 30%; }
-.track .duration {			width: 5%; }
-.track .popularity {		width: 5%; }
+.track .info .popularity {
+    position: absolute;
+    top: 11px;
+    right: 10px;
+}
 
-.tracklist.album-items .track .title {			width: 35%; }
 .tracklist.album-items .track .popularity {		display: none; }
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
@@ -1690,20 +1749,20 @@ body.dragging .tracklist .track.dropping {
 	padding-top: 5px;
 }
 
-.playlist-page .info,
-.album-page .info {
+.playlist-page .asset-sidebar .info,
+.album-page .asset-sidebar .info {
 	padding: 14px 20px;
 	margin-top: 1px;
 }
 
-.playlist-page .info > .info-item,
-.album-page .info > .info-item {
+.playlist-page .asset-sidebar .info > .info-item,
+.album-page .asset-sidebar .info > .info-item {
 	padding: 2px 0;
 	color: #AAAAAA;
 }
 
-.playlist-page .info .bar-track,
-.album-page .info .bar-track {
+.playlist-page .asset-sidebar .info .bar-track,
+.album-page .asset-sidebar .info .bar-track {
 	vertical-align: top;
 	margin-top: 7px;
 	margin-left: 6px;
@@ -2823,7 +2882,7 @@ body.dragging .tracklist .track.dropping {
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 670px ){
+@media( max-height: 740px ){
 	.main-menu .menu-item > a {
 		padding-top: 7px;
 		padding-bottom: 7px;
@@ -2831,16 +2890,14 @@ body.dragging .tracklist .track.dropping {
 	.main-menu .divider {
 		padding-top: 10px;
 	}
+	.main-menu .divider.spacer {
+		height: 0;
+	}
 	
 	#body {
 		padding-bottom: 50px;
 	}
 }
-
-@media( max-height: 300px ){
-	
-}
-
 
 
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
@@ -2856,7 +2913,7 @@ body.dragging .tracklist .track.dropping {
 /**
  * Narrow OR shallow screens need the skinny player
  **/
-@media ( max-width: 800px ), ( max-height: 640px ){
+@media ( max-width: 800px ), ( max-height: 650px ){
 	
 	#sidebar > .inner {
 		bottom: 54px;
@@ -3037,13 +3094,20 @@ body.dragging .tracklist .track.dropping {
 	
 	
 	/**
+	 * Body layout
+	 **/
+	.page > .inner {
+		padding: 20px;
+	}
+	
+	/**
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
 	 
 	.page-header {
 		display: block;
 		position: relative;
-		margin: -40px -40px 20px -40px;
+		margin: -20px -20px 20px -20px;
 		background: #333333;
 		color: #FFFFFF;
 		padding: 15px 20px;
@@ -3244,9 +3308,25 @@ body.dragging .tracklist .track.dropping {
 	
 	
 	/**
-	 * Search
+	 * General elements
 	 **/
-	 
+	.library-albums .col.info,
+	.library-albums .col.main {
+		float: none;
+		width: auto;
+		clear: both;
+	}
+	
+	.library-albums .col.main {
+		padding-top: 20px;
+	}
+	
+	.library-albums .col.info .square-panel {
+		width: 25%;
+		float: left;
+		margin-right: 30px;
+		margin-left: -20px;
+	}
 }
 
 
@@ -3264,22 +3344,6 @@ body.dragging .tracklist .track.dropping {
 	#sidebar {
 		width: 50%;
 		left: -50%;
-	}
-	
-	
-	/**
-	 * Page headings (that also foster the swipe trigger button)
-	 **/
-	.page-header {
-		margin: -20px -20px 20px -20px;
-	}
-	
-	
-	/**
-	 * Body layout
-	 **/
-	.page > .inner {
-		padding: 20px;
 	}
 	
 	

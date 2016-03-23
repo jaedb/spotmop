@@ -15,23 +15,28 @@
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
             <span ng-repeat="artist in track.artists">
-                <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+                <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-bind="artist.name" ng-if="!artist.uri"></span><span ng-if="!$last">, </span>
             </span>
         </div>
 
         <div class="album" ng-class="{ empty: !track.album.name }">
-            <a ui-sref="browse.album({ uri: track.album.uri })" ng-bind="track.album.name"></a>
+            <a ui-sref="browse.album({ uri: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
+            <span ng-bind="track.album.name" ng-if="!track.album.uri"></span>
         </div>
 
-        <div class="duration">
-            <span ng-show="track.duration_ms">{{ track.duration_ms | formatMilliseconds }}</span>
-            <span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
-        </div>
-
-        <div class="popularity" ng-class="{ empty: !track.popularity }">
-            <span class="bar-track">
-                <span class="bar" style="width: {{ track.popularity }}%;"></span>
+        <div class="info">
+            
+            <span class="duration">
+                <span ng-show="track.duration_ms">{{ track.duration_ms | formatMilliseconds }}</span>
+                <span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
             </span>
+            
+            <div class="popularity tooltip-wrapper" ng-class="{ empty: !track.popularity }">
+                <span class="bar-track">
+                    <span class="bar" style="height: {{ track.popularity }}%;"></span>
+                </span>
+                <span class="tooltip"><span ng-bind="track.popularity"></span>%</span>
+            </div>
         </div>
 
         <div class="clear-both"></div>

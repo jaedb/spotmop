@@ -29042,7 +29042,7 @@ angular.module('spotmop', [
 	Analytics.trackEvent('Spotmop', 'Started');
 		
     $rootScope.isTouchDevice = function(){
-		if( SettingsService.getSetting('emulateTouchDevice',false) )
+		if( SettingsService.getSetting('spotmop',false,'emulateTouchDevice') )
 			return true;
 		return !!('ontouchstart' in window);
 	}
@@ -29248,7 +29248,7 @@ angular.module('spotmop', [
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
 		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
+			SettingsService.setSetting('mopidy',isConsume,'consume');
 		});
 	});
 	
@@ -29284,6 +29284,38 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:offline', function(){
 		$scope.playlistsMenu = [];
 		$rootScope.spotifyOnline = false;
+	});
+	
+    
+	
+	/**
+	 * Settings
+	 **/
+	
+	if( SettingsService.getSetting('echonest', false, 'enabled') ){
+		EchonestService.start();
+	}
+	
+	// some settings need extra behavior attached when changed
+	$rootScope.$on('spotmop:settings:changed', function( event, data ){
+		switch( data.name ){
+			case 'mopidy.consume':
+				MopidyService.setConsume( data.value );
+				break;
+			case 'echonest.enabled':
+				if( data.value )
+					EchonestService.start();
+				else
+					EchonestService.stop();
+				break;
+		}				
+	});
+	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		MopidyService.getConsume().then( function( isConsume ){
+			SettingsService.setSetting('mopidy',isConsume,'consume');
+		});
 	});
 	
 	
@@ -31016,32 +31048,24 @@ angular.module('spotmop.directives', [])
 	return {
 		restrict: 'E',
 		scope: {
-			name: '@'
+			name: '@',
+			value: '='
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
-		link: function($scope, $element, $attrs){
-			
-			var settingElements = $scope.name.split('.');
-			var setting = settingElements[0];
-			var subsetting = false;
-			if( settingElements.length > 1 )
-				subsetting = settingElements[1];
-			
-			$scope.on = SettingsService.getSetting( setting, false, subsetting );
-			
+		controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
+		
 			// listen for click events
 			$element.bind('touchstart click', function(event) {
 				event.preventDefault();
 				event.stopPropagation();
 				$scope.$apply( function(){
-					$scope.on = !$scope.on;
-					SettingsService.setSetting( setting, $scope.on, subsetting );
-					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
+					$scope.value = !$scope.value;
+					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.value});
 				});
 			});
-		},
-		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
+		}],
+		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 }])
 		
@@ -31518,6 +31542,11 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
+			// detect the track source
+			$scope.track.source = function(){
+                return $scope.track.uri.split(':')[0];
+            };
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -31595,10 +31624,9 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// detect if a local file (to change the links for artists, etc)
-			$scope.local = false;
-			if( $scope.track.track.uri.substring(0,6) == 'local:' )
-				$scope.local = true;
+			// detect the track source
+			var uri = $scope.track.track.uri.split(':');
+			$scope.source = uri[0];
 			
 			/**
 			 * Single click
@@ -31664,6 +31692,7 @@ angular.module('spotmop.common.track', [])
 		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'PlayerService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
+			$scope.source = 'local';
 			
 			/**
 			 * Single click
@@ -33408,7 +33437,7 @@ angular.module('spotmop.search', [])
 /**
  * Main controller
  **/
-.controller('SearchController', ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$filter', 'SpotifyService', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService ){
+.controller('SearchController', ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$filter', 'SpotifyService', 'MopidyService', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
 	
 	$scope.tracklist = {tracks: [], type: 'track'};
 	$scope.albums = [];
@@ -33440,18 +33469,27 @@ angular.module('spotmop.search', [])
 	 * @param query = string
 	 **/
 	function performSearch( type, query ){
-	
+			
 		if( typeof(type) === 'undefined' )
 			var type = $scope.type;
 		
 		switch( type ){
 			
 			case 'track' :
+                MopidyService.search(query, ['soundcloud:','file:','local:'])
+                    .then( function(response){
+                        console.log( response );
+						
+						// loop all our result sources (-1 in index because last item is the uri record)
+                        for( var i = 0; i < response.length - 1; i++ ){
+                            $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response[i].tracks );
+                        }
+                    });
 				SpotifyService.getSearchResults( 'track', query, 50 )
 					.then( function(response){
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.tracks = response.tracks.items;
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
 						$scope.tracklist.type = 'track';
+						$scope.tracklist.next = response.tracks.next;
 						if( response.tracks.next )
 							nextOffset = response.tracks.offset + response.tracks.limit;
 						else
@@ -33857,9 +33895,11 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
 		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SettingsService', 'SpotifyService', function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService ){
-		
+			
+			$scope.settings = SettingsService.getSettings();
+			
 			// default to on
-			SettingsService.setSetting('attemptSpotifyAuthorization',true);
+			SettingsService.setSetting('spotify',true,'authorizationenabled');
 		
             $scope.saving = false;
             $scope.save = function(){          
@@ -33869,7 +33909,7 @@ angular.module('spotmop.services.dialog', [])
 					$scope.saving = true;
 					
 					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('attemptSpotifyAuthorization',false) ){
+					if( SettingsService.getSetting('spotify',false,'authorizationenabled') ){
 						SpotifyService.authorize();
 					}
 					
@@ -34423,8 +34463,9 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
-		search: function(query) {
-			return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
+		search: function(query, backends){			
+			if( typeof(backends) === 'undefined' ) var backends = null;			
+			return wrapMopidyFunc("mopidy.library.search", this)({ any: [ query ], uris: backends });
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
@@ -36431,28 +36472,6 @@ angular.module('spotmop.settings', [])
 				}
 			});
 	}
-	
-	// some settings need extra behavior attached when changed
-	$rootScope.$on('spotmop:settings:changed', function( event, data ){
-		switch( data.name ){
-			case 'mopidy.consume':
-				MopidyService.setConsume( data.value );
-				break;
-			case 'echonest.enabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
-				break;
-		}				
-	});
-	
-	// listen for changes from other clients
-	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
-		});
-	});
 	
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
