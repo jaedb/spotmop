@@ -76,7 +76,7 @@ angular.module('spotmop', [
 	Analytics.trackEvent('Spotmop', 'Started');
 		
     $rootScope.isTouchDevice = function(){
-		if( SettingsService.getSetting('emulateTouchDevice',false) )
+		if( SettingsService.getSetting('spotmop',false,'emulateTouchDevice') )
 			return true;
 		return !!('ontouchstart' in window);
 	}
@@ -282,7 +282,7 @@ angular.module('spotmop', [
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
 		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
+			SettingsService.setSetting('mopidy',isConsume,'consume');
 		});
 	});
 	
@@ -318,6 +318,38 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:offline', function(){
 		$scope.playlistsMenu = [];
 		$rootScope.spotifyOnline = false;
+	});
+	
+    
+	
+	/**
+	 * Settings
+	 **/
+	
+	if( SettingsService.getSetting('echonest', false, 'enabled') ){
+		EchonestService.start();
+	}
+	
+	// some settings need extra behavior attached when changed
+	$rootScope.$on('spotmop:settings:changed', function( event, data ){
+		switch( data.name ){
+			case 'mopidy.consume':
+				MopidyService.setConsume( data.value );
+				break;
+			case 'echonest.enabled':
+				if( data.value )
+					EchonestService.start();
+				else
+					EchonestService.stop();
+				break;
+		}				
+	});
+	
+	// listen for changes from other clients
+	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
+		MopidyService.getConsume().then( function( isConsume ){
+			SettingsService.setSetting('mopidy',isConsume,'consume');
+		});
 	});
 	
 	
