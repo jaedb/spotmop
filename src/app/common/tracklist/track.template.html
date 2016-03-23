@@ -31,7 +31,7 @@
                 <span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
             </span>
             
-            <div class="popularity tooltip-wrapper" ng-class="{ empty: !track.popularity }">
+            <div class="popularity tooltip-wrapper" ng-if="track.popularity">
                 <span class="bar-track">
                     <span class="bar" style="height: {{ track.popularity }}%;"></span>
                 </span>
