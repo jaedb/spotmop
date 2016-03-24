@@ -174,7 +174,7 @@ angular.module('spotmop.services.mopidy', [
 			if( typeof(type) === 'undefined' || !type ) var type = 'any';
 			var query = {};
 			query[type] = [searchterm];
-			return wrapMopidyFunc("mopidy.library.search", this)( { query, uris : backends } );
+			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();

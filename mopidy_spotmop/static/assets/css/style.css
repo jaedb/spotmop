@@ -1570,14 +1570,15 @@ h1 .flag {
 	min-height: 1px;
 }
 
+.track .source {		display: none; }
 .track .title {			width: 30%; }
-.track .artist {			width: 30%; }
+.track .artist {		width: 30%; }
 .track .album {			width: 30%; }
 .track .info {		    width: 10%; text-align: right; }
 
 .track .info .duration {
     display: inline-block;
-    padding-right: 15px;
+    padding-right: 20px;
 }
 
 .track .info .popularity {
@@ -1586,7 +1587,17 @@ h1 .flag {
     right: 10px;
 }
 
-.tracklist.album-items .track .popularity {		display: none; }
+.track .source {
+	display: none;
+    position: absolute;
+    top: 9px;
+    right: 5px;
+}
+
+.tracklist.queue-tracks .track .source,
+.tracklist.search-results.other .track .source {
+	display: inline-block;
+}
 
 body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
 	background: #F4F4F4;
@@ -3324,8 +3335,8 @@ body.dragging .tracklist .track.dropping {
 	.library-albums .col.info .square-panel {
 		width: 25%;
 		float: left;
-		margin-right: 30px;
-		margin-left: -20px;
+		margin-right: 20px;
+		margin-left: -10px;
 	}
 }
 

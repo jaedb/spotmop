@@ -31,12 +31,17 @@
                 <span ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
             </span>
             
-            <div class="popularity tooltip-wrapper" ng-class="{ empty: !track.popularity }">
+            <div class="popularity tooltip-wrapper" ng-if="track.popularity >= 0">
                 <span class="bar-track">
                     <span class="bar" style="height: {{ track.popularity }}%;"></span>
                 </span>
                 <span class="tooltip"><span ng-bind="track.popularity"></span>%</span>
             </div>
+        
+            <div class="source">
+                <span class="ssi {{ track.uri | splitstring:0 }}"></span>
+            </div>
+            
         </div>
 
         <div class="clear-both"></div>

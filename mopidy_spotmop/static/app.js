@@ -31427,6 +31427,15 @@ angular.module('spotmop.directives', [])
 
 
 // facilitates a filter for null/undefined/false values
+.filter('splitstring', [function () {
+    return function( string, position ){
+        var split = string.split(':');
+        return split[position];
+    };
+}])
+
+
+// facilitates a filter for null/undefined/false values
 .filter('nullOrUndefined', [function () {
     return function( items, property ){
         var arrayToReturn = [];
@@ -31542,11 +31551,6 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
-			// detect the track source
-			$scope.track.source = function(){
-                return $scope.track.uri.split(':')[0];
-            };
-			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -31624,10 +31628,6 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// detect the track source
-			var uri = $scope.track.track.uri.split(':');
-			$scope.source = uri[0];
-			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -31692,7 +31692,6 @@ angular.module('spotmop.common.track', [])
 		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'PlayerService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
-			$scope.source = 'local';
 			
 			/**
 			 * Single click
@@ -33443,6 +33442,7 @@ angular.module('spotmop.search', [])
 	$scope.albums = [];
 	$scope.artists = [];
 	$scope.playlists = [];
+	$scope.other = {tracks: [], type: 'track'};
 	$scope.type = $stateParams.type;
 	$scope.query = '';
     if( $stateParams.query )
@@ -33476,15 +33476,6 @@ angular.module('spotmop.search', [])
 		switch( type ){
 			
 			case 'track' :
-                MopidyService.search(query, ['soundcloud:','file:','local:'])
-                    .then( function(response){
-                        console.log( response );
-						
-						// loop all our result sources (-1 in index because last item is the uri record)
-                        for( var i = 0; i < response.length - 1; i++ ){
-                            $scope.tracklist.tracks = $scope.tracklist.tracks.concat( response[i].tracks );
-                        }
-                    });
 				SpotifyService.getSearchResults( 'track', query, 50 )
 					.then( function(response){
 						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
@@ -33525,6 +33516,16 @@ angular.module('spotmop.search', [])
 						$scope.offset = response.playlists.offset;
 					});
 				break;
+					
+			case 'other' :
+				if( $rootScope.mopidyOnline ){
+					mopidySearch( $scope.query );
+				}else{
+					$rootScope.$on('mopidy:state:online', function(){
+						mopidySearch( $scope.query );
+					});
+				}
+				break;
 			
 			default :
 				SpotifyService.getSearchResults( 'track', query, 50 )
@@ -33554,6 +33555,27 @@ angular.module('spotmop.search', [])
 	}
 	
 	
+	
+	/**
+	 * Perform mopidy search
+	 **/
+	function mopidySearch( query ){		
+		MopidyService.search(query, false, ['soundcloud:','local:'])
+			.then( function(response){
+				// loop all our result sources (-1 in index because last item is the uri record)
+				for( var i = 0; i < response.length; i++ ){
+					if( typeof(response[i].tracks) !== 'undefined' ){
+						for( var j = 0; j < response[i].tracks.length - 1; j++ ){
+							$scope.other.tracks = $scope.other.tracks.concat( response[i].tracks[j] );
+						}
+					}
+				}
+			});
+	}
+	
+	
+	
+	
     /**
      * Load more results
      * Triggered by scrolling to the bottom
@@ -33563,7 +33585,7 @@ angular.module('spotmop.search', [])
 	
     function loadMoreResults( offset ){
         
-        if( typeof( offset ) === 'undefined' )
+        if( typeof( offset ) === 'undefined' || $scope.type == 'other' )
             return false;
         
         // update our switch to prevent spamming for every scroll event
@@ -34463,9 +34485,12 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
-		search: function(query, backends){			
+		search: function(searchterm, type, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
-			return wrapMopidyFunc("mopidy.library.search", this)({ any: [ query ], uris: backends });
+			if( typeof(type) === 'undefined' || !type ) var type = 'any';
+			var query = {};
+			query[type] = [searchterm];
+			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
