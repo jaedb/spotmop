@@ -19,10 +19,10 @@
 
 		<div class="sub-page-navigation">
 			<a class="menu-item"
-				ng-repeat="typename in ['all','artist','album','playlist','track']"
+				ng-repeat="typename in ['all','artist','album','playlist','track','other']"
 				ui-sref="search({ query: query, type: typename })"
 				ng-class="{active: type == typename}">
-					{{ typename }}<span ng-hide="typename == 'all'">s</span>
+					{{ typename }}<span ng-hide="typename == 'all' || typename == 'other'">s</span>
 			</a>
 			<div class="clear-both"></div>
 		</div>
@@ -102,6 +102,10 @@
 			
 			<div ng-if="type == 'track'">
                 <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
+			</div>
+			
+			<div ng-if="type == 'other'">
+                <tracklist ng-if="other.tracks" tracks="other.tracks" type="track" class="tracklist search-results"></tracklist>
 			</div>
 			
 			<div ng-if="type == 'all'">
