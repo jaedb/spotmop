@@ -149,8 +149,10 @@ angular.module('spotmop.search', [])
 			.then( function(response){
 				// loop all our result sources (-1 in index because last item is the uri record)
 				for( var i = 0; i < response.length; i++ ){
-					for( var j = 0; j < response[i].tracks.length - 1; j++ ){
-						$scope.other.tracks = $scope.other.tracks.concat( response[i].tracks[j] );
+					if( typeof(response[i].tracks) !== 'undefined' ){
+						for( var j = 0; j < response[i].tracks.length - 1; j++ ){
+							$scope.other.tracks = $scope.other.tracks.concat( response[i].tracks[j] );
+						}
 					}
 				}
 			});

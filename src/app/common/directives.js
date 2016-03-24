@@ -817,6 +817,15 @@ angular.module('spotmop.directives', [])
 
 
 // facilitates a filter for null/undefined/false values
+.filter('splitstring', [function () {
+    return function( string, position ){
+        var split = string.split(':');
+        return split[position];
+    };
+}])
+
+
+// facilitates a filter for null/undefined/false values
 .filter('nullOrUndefined', [function () {
     return function( items, property ){
         var arrayToReturn = [];

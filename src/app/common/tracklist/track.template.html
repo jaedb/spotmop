@@ -37,6 +37,11 @@
                 </span>
                 <span class="tooltip"><span ng-bind="track.popularity"></span>%</span>
             </div>
+        
+            <div class="source">
+                <span class="ssi {{ track.uri | splitstring:0 }}"></span>
+            </div>
+            
         </div>
 
         <div class="clear-both"></div>

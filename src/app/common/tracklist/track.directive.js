@@ -9,11 +9,6 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
-			// detect the track source
-			$scope.track.source = function(){
-                return $scope.track.uri.split(':')[0];
-            };
-			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -91,10 +86,6 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// detect the track source
-			var uri = $scope.track.track.uri.split(':');
-			$scope.source = uri[0];
-			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -159,7 +150,6 @@ angular.module('spotmop.common.track', [])
 		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
-			$scope.source = 'local';
 			
 			/**
 			 * Single click
