@@ -169,8 +169,12 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
-		search: function(query) {
-			return wrapMopidyFunc("mopidy.library.search", this)({ any : [ query ] });
+		search: function(searchterm, type, backends){			
+			if( typeof(backends) === 'undefined' ) var backends = null;			
+			if( typeof(type) === 'undefined' || !type ) var type = 'any';
+			var query = {};
+			query[type] = [searchterm];
+			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();

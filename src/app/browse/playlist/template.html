@@ -54,11 +54,13 @@
                         </a>					
                     </span>
                 </span>
-            
+                
 			</span>
+                
+            <a class="button mobile-show tertiary" ng-click="showInfo = !showInfo" ng-class="{ showing: showInfo }">Info</a>
 		</div>
 	
-		<div class="info">
+		<div class="info" ng-class="{ show: showInfo }">
 			<div class="info-item capitalize">
 				<span ng-bind="tracklist.total">0</span> tracks<span ng-show="tracks.next">+</span>, <span ng-bind="totalTime()">0</span> minutes
 			</div>

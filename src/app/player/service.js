@@ -194,37 +194,46 @@ angular.module('spotmop.services.player', [])
 		
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
+						
+			// if we have an album image baked-in, let's use that
+			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
-			// if this is a Spotify track, get the track image from Spotify
-			if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
-				// now we have track info, let's get the spotify artwork	
-				SpotifyService.getTrack( tlTrack.track.uri )
-					.then(function( response ){
-						if( typeof(response.album) !== 'undefined' ){
-							state.currentTlTrack.track.image = response.album.images[0].url;
-						}
-					});
+				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
 			
-			// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+			// no image provided by backend, so let's fetch it from elsewhere
 			}else{
+			
+				// if this is a Spotify track, get the track image from Spotify
+				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
+					// now we have track info, let's get the spotify artwork	
+					SpotifyService.getTrack( tlTrack.track.uri )
+						.then(function( response ){
+							if( typeof(response.album) !== 'undefined' ){
+								state.currentTlTrack.track.image = response.album.images[0].url;
+							}
+						});
 				
-				var artist = encodeURIComponent( tlTrack.track.artists[0].name );
-				var album = encodeURIComponent( tlTrack.track.album.name );
-				
-				if( artist && album )
-					LastfmService.albumInfo( artist, album )
-						.then( function(response){
-							
-								// remove the existing image
-								state.currentTlTrack.track.image = false;
+				// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
+				}else{
+					
+					var artist = encodeURIComponent( tlTrack.track.artists[0].name );
+					var album = encodeURIComponent( tlTrack.track.album.name );
+					
+					if( artist && album )
+						LastfmService.albumInfo( artist, album )
+							.then( function(response){
 								
-								// if we got an album match, plug in the 'extralarge' image to our state()
-								if( typeof(response.album) !== 'undefined' ){
-									var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-									if( largest )
-										state.currentTlTrack.track.image = largest['#text'];
-								}
-							});
+									// remove the existing image
+									state.currentTlTrack.track.image = false;
+									
+									// if we got an album match, plug in the 'extralarge' image to our state()
+									if( typeof(response.album) !== 'undefined' ){
+										var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
+										if( largest )
+											state.currentTlTrack.track.image = largest['#text'];
+									}
+								});
+				}
 			}
 			
 			// update ui

@@ -273,9 +273,11 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService ){
-		
+			
+			$scope.settings = SettingsService.getSettings();
+			
 			// default to on
-			SettingsService.setSetting('attemptSpotifyAuthorization',true);
+			SettingsService.setSetting('spotify',true,'authorizationenabled');
 		
             $scope.saving = false;
             $scope.save = function(){          
@@ -285,13 +287,54 @@ angular.module('spotmop.services.dialog', [])
 					$scope.saving = true;
 					
 					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('attemptSpotifyAuthorization',false) ){
+					if( SettingsService.getSetting('spotify',false,'authorizationenabled') ){
 						SpotifyService.authorize();
 					}
 					
 					// perform the creation
 					SettingsService.setSetting('pushername', $scope.name);
 					DialogService.remove();
+				}else{
+					$scope.error = true;
+				}
+            }
+		}
+	};
+})
+
+
+/**
+ * Dialog: Add asset to the queue by URI
+ * Accepts whatever format is provided by the backends (ie spotify: soundcloud: local:)
+ **/
+
+.directive('addbyuridialog', function(){
+	
+	return {
+		restrict: 'E',
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/services/dialog/addbyuri.template.html',
+		controller: function( $scope, $element, DialogService, SpotifyService, MopidyService ){
+				
+            $scope.saving = false;
+            $scope.add = function(){          
+				if( $scope.uri && $scope.uri != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.error = false;
+					$scope.saving = true;
+					
+					MopidyService.addToTrackList( [ $scope.uri ] )
+						.catch( function(error){
+							$scope.saving = false;
+							$scope.error = true;
+						})
+						.then( function(response){
+							if( !$scope.error ){
+								DialogService.remove();
+							}
+						});
 				}else{
 					$scope.error = true;
 				}

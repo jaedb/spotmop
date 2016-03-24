@@ -217,7 +217,9 @@ angular.module('spotmop.directives', [])
             
             // fired when the drop is initiated
             function dropping( event ){
-			
+                
+                $rootScope.$broadcast('spotmop:contextMenu:hide');
+                
                 tracer.fadeOut('medium');
 				$('body').removeClass('dragging');
 				$(document).find('.dropping').removeClass('dropping');
@@ -436,32 +438,24 @@ angular.module('spotmop.directives', [])
 	return {
 		restrict: 'E',
 		scope: {
-			name: '@'
+			name: '@',
+			value: '='
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
-		link: function($scope, $element, $attrs){
-			
-			var settingElements = $scope.name.split('.');
-			var setting = settingElements[0];
-			var subsetting = false;
-			if( settingElements.length > 1 )
-				subsetting = settingElements[1];
-			
-			$scope.on = SettingsService.getSetting( setting, false, subsetting );
-			
+		controller: function($scope, $element, $attrs){
+		
 			// listen for click events
 			$element.bind('touchstart click', function(event) {
 				event.preventDefault();
 				event.stopPropagation();
 				$scope.$apply( function(){
-					$scope.on = !$scope.on;
-					SettingsService.setSetting( setting, $scope.on, subsetting );
-					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.on});
+					$scope.value = !$scope.value;
+					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.value});
 				});
 			});
 		},
-		template: '<span class="switch-button" ng-class="{ on: on }"><span class="switch animate"></span></span>'
+		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 })
 		
@@ -820,6 +814,15 @@ angular.module('spotmop.directives', [])
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
+
+
+// facilitates a filter for null/undefined/false values
+.filter('splitstring', [function () {
+    return function( string, position ){
+        var split = string.split(':');
+        return split[position];
+    };
+}])
 
 
 // facilitates a filter for null/undefined/false values

@@ -63,28 +63,6 @@ angular.module('spotmop.settings', [])
 			});
 	}
 	
-	// some settings need extra behavior attached when changed
-	$rootScope.$on('spotmop:settings:changed', function( event, data ){
-		switch( data.name ){
-			case 'mopidy.consume':
-				MopidyService.setConsume( data.value );
-				break;
-			case 'echonest.enabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
-				break;
-		}				
-	});
-	
-	// listen for changes from other clients
-	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidyconsume',isConsume);
-		});
-	});
-	
 	$scope.deleteEchonestTasteProfile = function( confirmed ){
 		if( confirmed ){
 			NotifyService.notify( 'Profile deleted and Echonest disabled' );

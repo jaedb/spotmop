@@ -21,12 +21,13 @@ angular.module('spotmop.search', [])
 /**
  * Main controller
  **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
 	
 	$scope.tracklist = {tracks: [], type: 'track'};
 	$scope.albums = [];
 	$scope.artists = [];
 	$scope.playlists = [];
+	$scope.other = {tracks: [], type: 'track'};
 	$scope.type = $stateParams.type;
 	$scope.query = '';
     if( $stateParams.query )
@@ -53,7 +54,7 @@ angular.module('spotmop.search', [])
 	 * @param query = string
 	 **/
 	function performSearch( type, query ){
-	
+			
 		if( typeof(type) === 'undefined' )
 			var type = $scope.type;
 		
@@ -62,9 +63,9 @@ angular.module('spotmop.search', [])
 			case 'track' :
 				SpotifyService.getSearchResults( 'track', query, 50 )
 					.then( function(response){
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.tracks = response.tracks.items;
+						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
 						$scope.tracklist.type = 'track';
+						$scope.tracklist.next = response.tracks.next;
 						if( response.tracks.next )
 							nextOffset = response.tracks.offset + response.tracks.limit;
 						else
@@ -100,6 +101,16 @@ angular.module('spotmop.search', [])
 						$scope.offset = response.playlists.offset;
 					});
 				break;
+					
+			case 'other' :
+				if( $rootScope.mopidyOnline ){
+					mopidySearch( $scope.query );
+				}else{
+					$rootScope.$on('mopidy:state:online', function(){
+						mopidySearch( $scope.query );
+					});
+				}
+				break;
 			
 			default :
 				SpotifyService.getSearchResults( 'track', query, 50 )
@@ -129,6 +140,27 @@ angular.module('spotmop.search', [])
 	}
 	
 	
+	
+	/**
+	 * Perform mopidy search
+	 **/
+	function mopidySearch( query ){		
+		MopidyService.search(query, false, ['soundcloud:','local:'])
+			.then( function(response){
+				// loop all our result sources (-1 in index because last item is the uri record)
+				for( var i = 0; i < response.length; i++ ){
+					if( typeof(response[i].tracks) !== 'undefined' ){
+						for( var j = 0; j < response[i].tracks.length - 1; j++ ){
+							$scope.other.tracks = $scope.other.tracks.concat( response[i].tracks[j] );
+						}
+					}
+				}
+			});
+	}
+	
+	
+	
+	
     /**
      * Load more results
      * Triggered by scrolling to the bottom
@@ -138,7 +170,7 @@ angular.module('spotmop.search', [])
 	
     function loadMoreResults( offset ){
         
-        if( typeof( offset ) === 'undefined' )
+        if( typeof( offset ) === 'undefined' || $scope.type == 'other' )
             return false;
         
         // update our switch to prevent spamming for every scroll event

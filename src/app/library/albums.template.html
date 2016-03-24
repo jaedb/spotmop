@@ -18,22 +18,32 @@
 			
 			<div class="item-container full-album" ng-repeat="album in albums.items track by album.uri" ng-class="{ transitioning: album.transitioning }">
             
-                <div class="col w20">
-                    <div class="library-album album square-panel">
-                        <div class="image-container">
-                            <thumbnail images="album.images"></thumbnail>
+                <div class="col w20 info">
+                    <div class="album-header">
+                        <a class="library-album album square-panel" ui-sref="browse.album({ uri: album.uri })">
+                            <div class="image-container">
+                                <thumbnail images="album.images"></thumbnail>
+                            </div>
+                        </a>
+                        <div class="album-title mobile-show">
+                            <h3 class="name" ng-bind="album.name"></h3>
+                            <p class="grey-text">
+                                <span ng-repeat="artist in album.artists">
+                                    <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
+                                </span>
+                            </p>
+                        </div>
+                        <div class="buttons">
+                            <a class="button primary" ng-click="playAlbum( album )"><i class="fa fa-play"></i>&nbsp; Play</a>
+                            <a class="button" ng-click="removeFromLibrary( album )" ng-if="spotifyAuthorized">Remove</a>
                         </div>
                     </div>
-					<div class="buttons">
-						<a class="button primary" ng-click="playAlbum( album )"><i class="fa fa-play"></i>&nbsp; Play</a>
-						<a class="button" ng-click="removeFromLibrary( album )" ng-if="spotifyAuthorized">Remove</a>
-					</div>
                 </div>
                 
-                <div class="col w80">
+                <div class="col w80 main">
                 
-                    <div class="album-title">
-                        <h3 class="name" ng-bind="album.name"></h3>
+                    <div class="album-title mobile-hide">
+                        <h3 class="name"><a ui-sref="browse.album({ uri: album.uri })" ng-bind="album.name"></a></h3>
                         <p class="grey-text">
                             <span ng-repeat="artist in album.artists">
                                 <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>

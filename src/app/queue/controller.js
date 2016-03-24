@@ -15,11 +15,16 @@ angular.module('spotmop.queue', [])
 /**
  * Main controller
  **/
-.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
 	$scope.totalTime = 0;
 	$scope.tracklist = { type: 'tltrack', tracks: $rootScope.currentTracklist };
 
+	$scope.addByUri = function(){
+		DialogService.create('addbyuri',$scope);
+	};
+	
+	
     /**
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes

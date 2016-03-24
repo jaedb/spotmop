@@ -42,14 +42,14 @@
 				<div class="field">
 					<div class="label">Disable browser notifications</div>
 					<div class="input">
-						<switch class="switch-button" name="pusherdisabled"></switch>
+						<switch class="switch-button" name="pusher.disabled" value="settings.pusher.disabled"></switch>
 					</div>
 				</div>
 
 				<div class="field shortcut-keys">
 					<div class="label">Keyboard shortcuts</div>
 					<div class="input">
-						<switch class="switch-button" name="keyboardShortcutsEnabled"></switch>
+						<switch class="switch-button" name="keyboardShortcutsEnabled" value="settings.keyboardShortcutsEnabled"></switch>
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -110,7 +110,7 @@
 				<div class="field">
 					<div class="label">Consume mode</div>
 					<div class="input">
-						<switch class="switch-button" name="mopidy.consume"></switch>
+						<switch class="switch-button" name="mopidy.consume" value="settings.mopidy.consume"></switch>
 					</div>
 				</div>
 
@@ -181,15 +181,15 @@
 			
 				<h4 class="section-title underline">
 					Echonest
-					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonest.enabled">Connected</span>
-					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonest.enabled">Offline</span>
+					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonest.enabled == true">Connected</span>
+					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonest.enabled == true">Offline</span>
 					<span class="state-label grey-background white-text" ng-if="!settings.echonest.enabled">Disabled</span>
 				</h4>
 				
 				<div class="field">
 					<div class="label">Enabled</div>
 					<div class="input">
-						<switch class="switch-button" name="echonest.enabled"></switch>
+						<switch class="switch-button" name="echonest.enabled" value="settings.echonest.enabled"></switch>
 					</div>
 				</div>
                 
@@ -225,16 +225,16 @@
 				<div class="field">
 					<div class="label">Enable advanced settings</div>
 					<div class="input">
-						<switch class="switch-button" name="advancedMode"></switch>
+						<switch class="switch-button" name="spotmop.advancedMode" value="settings.spotmop.advancedMode"></switch>
 					</div>
 				</div>
 				
-				<div ng-if="settings.advancedMode">
+				<div ng-if="settings.spotmop.advancedMode">
 				
 					<div class="field">
 						<div class="label">Emulate touch device</div>
 						<div class="input">		
-							<switch class="switch-button" name="emulateTouchDevice"></switch>
+							<switch class="switch-button" name="spotmop.emulateTouchDevice" value="settings.spotmop.emulateTouchDevice"></switch>
 						</div>
 					</div>
 

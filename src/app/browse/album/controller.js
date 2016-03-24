@@ -64,8 +64,7 @@ angular.module('spotmop.browse.album', [])
 		if( distanceFromBottom <= 100 )
         	$scope.$broadcast('spotmop:loadMore');
     });
-	
-	
+    
 	// play the whole album
 	$scope.playAlbum = function(){
 		MopidyService.playStream( $scope.album.uri );

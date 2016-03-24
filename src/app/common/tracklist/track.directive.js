@@ -86,11 +86,6 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// detect if a local file (to change the links for artists, etc)
-			$scope.local = false;
-			if( $scope.track.track.uri.substring(0,6) == 'local:' )
-				$scope.local = true;
-			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly

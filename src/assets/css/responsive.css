@@ -20,7 +20,7 @@
 /* ================================================================= HEIGHT-RELATED ELEMENTS ====== */
 /* ================================================================================================ */
 
-@media( max-height: 670px ){
+@media( max-height: 740px ){
 	.main-menu .menu-item > a {
 		padding-top: 7px;
 		padding-bottom: 7px;
@@ -28,16 +28,14 @@
 	.main-menu .divider {
 		padding-top: 10px;
 	}
+	.main-menu .divider.spacer {
+		height: 0;
+	}
 	
 	#body {
 		padding-bottom: 50px;
 	}
 }
-
-@media( max-height: 300px ){
-	
-}
-
 
 
 /* ================================================================= LANDSCAPE / SMALL SCREENS ==== */
@@ -53,7 +51,7 @@
 /**
  * Narrow OR shallow screens need the skinny player
  **/
-@media ( max-width: 800px ), ( max-height: 640px ){
+@media ( max-width: 800px ), ( max-height: 650px ){
 	
 	#sidebar > .inner {
 		bottom: 54px;
@@ -152,10 +150,18 @@
 	.mobile-show {
 		display: block !important;
 	}
+
+	.button.mobile-show {
+		display: inline-block !important;
+	}
 	
 	.mobile-hide {
 		display: none !important;
 	}
+    
+    .breadcrumbs {
+        display: none;
+    }
 	
 	
 	/**
@@ -226,13 +232,20 @@
 	
 	
 	/**
+	 * Body layout
+	 **/
+	.page > .inner {
+		padding: 20px;
+	}
+	
+	/**
 	 * Page headings (that also foster the swipe trigger button)
 	 **/
 	 
 	.page-header {
 		display: block;
 		position: relative;
-		margin: -40px -40px 20px -40px;
+		margin: -20px -20px 20px -20px;
 		background: #333333;
 		color: #FFFFFF;
 		padding: 15px 20px;
@@ -297,13 +310,33 @@
 		padding-left: 0;
 		overflow: visible;
 	}
+    
+    .content.has-asset-sidebar > .inner {
+        padding-top: 10px;
+    }
 	
 	.playlist-page .artist-grid,
 	.album-page .artist-grid {
 		display: none;
 	}
+    
+    .playlist-page .intro,
+    .album-page .intro {
+        margin-bottom: 25px;
+    }
 	
+	.playlist-page .info,
+    .album-page .info {
+        margin-top: 0;
+        background: #EEEEEE;
+    }
 	
+	.playlist-page .info:not(.show),
+    .album-page .info:not(.show) {
+        display: none;
+    }
+    
+    
 	
 	/**
 	 * Artist intro panel
@@ -311,6 +344,9 @@
 	 
 	.artist-page .artist-intro {
 		margin-bottom: 0;
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
 	}
 	 
 	.artist-page .info-panel .thumbnail {
@@ -328,6 +364,12 @@
 	
 	.artist-page .info-panel .buttons {
 		padding-right: 10px;
+	}
+	 
+    .featured-playlists-intro{
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
 	}
 	
 	
@@ -404,9 +446,25 @@
 	
 	
 	/**
-	 * Search
+	 * General elements
 	 **/
-	 
+	.library-albums .col.info,
+	.library-albums .col.main {
+		float: none;
+		width: auto;
+		clear: both;
+	}
+	
+	.library-albums .col.main {
+		padding-top: 20px;
+	}
+	
+	.library-albums .col.info .square-panel {
+		width: 25%;
+		float: left;
+		margin-right: 20px;
+		margin-left: -10px;
+	}
 }
 
 
@@ -424,22 +482,6 @@
 	#sidebar {
 		width: 50%;
 		left: -50%;
-	}
-	
-	
-	/**
-	 * Page headings (that also foster the swipe trigger button)
-	 **/
-	.page-header {
-		margin: -20px -20px 20px -20px;
-	}
-	
-	
-	/**
-	 * Body layout
-	 **/
-	.page > .inner {
-		padding: 20px;
 	}
 	
 	
