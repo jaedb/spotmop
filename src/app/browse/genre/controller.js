@@ -32,7 +32,7 @@ angular.module('spotmop.browse.genre', [])
 	
 	$scope.categories = [];
 	
-	SpotifyService.discoverCategories()
+	SpotifyService.browseCategories()
 		.then(function( response ) {
 			$scope.categories = response.categories;
 		});

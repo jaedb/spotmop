@@ -1088,7 +1088,7 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		discoverCategories: function( limit ){
+		browseCategories: function( limit ){
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
@@ -1162,6 +1162,40 @@ angular.module('spotmop.services.spotify', [])
 				
             return deferred.promise;
 		},
+		
+		
+		/**
+		 * My top content
+		 **/
+		
+		getMyFavorites: function( type, limit, offset, time_range ){
+			
+			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'medium_term';
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
 		
 		/**
 		 * Artist

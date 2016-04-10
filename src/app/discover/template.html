@@ -18,6 +18,42 @@
 				<h1>Discover</h1>
 			</div>
 			
+			<div class="discover-section" ng-repeat="section in sections track by $index">
+
+				<h4 class="section-title">
+					{{ section.title }}
+					<a ng-if="section.source" ng-bind="section.source.title" href="section.source.link"></a>
+				</h4>
+
+				<slider class="square-panels panel-slider" items="section.items">
+                    <div class="controls">
+                        <span class="back"><<</span>
+                        <span class="forward">>></span>
+                    </div>
+                    <div class="items">
+                        <div class="item-container" ng-repeat="item in section.items track by $index">
+                            <a ui-sref="browse.artist.overview({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'artist'">
+                                <div class="image-container">
+                                    <thumbnail images="item.images"></thumbnail>
+                                </div>
+                                <div class="info smaller animate">
+                                    <div class="name" ng-bind="item.name"></div>
+                                </div>
+                            </a>
+                            <a ui-sref="browse.album({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'album'">
+                                <div class="image-container">
+                                    <thumbnail images="item.images"></thumbnail>
+                                </div>
+                                <div class="info smaller animate">
+                                    <div class="name" ng-bind="item.name"></div>
+                                </div>
+                            </a>
+                        </div>
+					</div>
+				</slider>
+				
+			</div>
+            
 			<div class="discover-section current-artist" ng-if="recommendations.suggestions.length > 0">
 
 				<h4 class="section-title">Recommended for you</h4>
@@ -66,6 +102,7 @@
 				</div>
 				
 			</div>
+			
 		</div>
 		
 	</div>

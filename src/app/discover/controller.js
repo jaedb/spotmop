@@ -30,46 +30,20 @@ angular.module('spotmop.discover', [])
 		},
 		suggestions: []
 	};
+	$scope.sections = [];
+	
+	
+	SpotifyService.getMyFavorites('artists').then( function(response){
+		console.log( response );
+		$scope.sections.push({
+			title: 'Some old favorites',
+			items: response.items
+		});
+	});
 	
 	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled', false) ){
+	if( SettingsService.getSetting('echonest', false, 'enabled')){
 		
-		
-		// ================= CATALOG RADIO ==== //
-		
-		/*
-		EchonestService.favoriteArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestSongs = response.response.songs;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestSongs.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
-					
-				}else{
-				
-					$rootScope.requestsLoading++;
-					
-					angular.forEach( echonestSongs, function( echonestSong ){
-						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
-						});
-				}
-			});
-			*/
 			
 		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
 		

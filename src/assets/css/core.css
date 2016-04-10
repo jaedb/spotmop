@@ -1527,6 +1527,33 @@ body.dragging .tracklist .track.dropping {
  
  
  
+/** 
+ * Sliders
+ * Side-scrolling content (ie discover sections)
+ **/
+
+slider {
+	height: 250px;
+	overflow-x: hidden;
+	display: block;
+	position: relative;
+}
+
+slider .controls {
+	position: absolute;
+	top: 0px;
+	right: 0;
+	z-index: 5;
+}
+
+slider .items {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+ 
+ 
  
 
 

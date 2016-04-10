@@ -612,6 +612,37 @@ angular.module('spotmop.directives', [])
  * Enhances readability when placed on dynamic background images
  * Requires spotmop:detectBackgroundColour broadcast to initiate check
  **/
+.directive('slider', function(){
+    return {
+        restrict: 'E',
+		scope: {
+			items: '='
+		},
+        controller: function( $scope, $element ){		
+		
+			$scope.$watch(
+				'items',
+				function( newItems, oldItems ){
+					resizeScroller();
+				}
+			);
+			
+			function resizeScroller(){
+				var itemHeight = $element.find('.item-container').children().first().height();
+				$element.css({height: itemHeight+'px'});
+				console.log( itemHeight );
+			}
+        }
+    };
+})
+
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
 .directive('textOverImage', function(){
     return {
         restrict: 'A',
