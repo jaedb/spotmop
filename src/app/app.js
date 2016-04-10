@@ -198,9 +198,12 @@ angular.module('spotmop', [
 		$(document).find('body').removeClass('menu-revealed');
 	}
 		
-		
-	$(document).on('scroll', function( event ){
 	
+	/**
+	 * Lazy loading
+	 **/
+
+	$scope.checkForLazyLoading = function(){		
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -209,6 +212,10 @@ angular.module('spotmop', [
 		
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
+	}
+	 
+	$(document).on('scroll', function( event ){
+		$scope.checkForLazyLoading();
 	});
 	
 	
