@@ -25,32 +25,7 @@
 					<a ng-if="section.source" ng-bind="section.source.title" href="section.source.link"></a>
 				</h4>
 
-				<slider class="square-panels panel-slider" items="section.items">
-                    <div class="controls">
-                        <span class="back"><<</span>
-                        <span class="forward">>></span>
-                    </div>
-                    <div class="items">
-                        <div class="item-container" ng-repeat="item in section.items track by $index">
-                            <a ui-sref="browse.artist.overview({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'artist'">
-                                <div class="image-container">
-                                    <thumbnail images="item.images"></thumbnail>
-                                </div>
-                                <div class="info smaller animate">
-                                    <div class="name" ng-bind="item.name"></div>
-                                </div>
-                            </a>
-                            <a ui-sref="browse.album({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'album'">
-                                <div class="image-container">
-                                    <thumbnail images="item.images"></thumbnail>
-                                </div>
-                                <div class="info smaller animate">
-                                    <div class="name" ng-bind="item.name"></div>
-                                </div>
-                            </a>
-                        </div>
-					</div>
-				</slider>
+				<slider class="square-panels panel-slider" items="section.items"></slider>
 				
 			</div>
             

@@ -618,8 +618,33 @@ angular.module('spotmop.directives', [])
 		scope: {
 			items: '='
 		},
+        link: function( $scope, $element ){		
+			
+			var sliderContent = $element.find('.slides-content');
+			var currentSlide = 0;
+			var totalSlides = ( $scope.items.length / 5 ) - 1;
+			
+			$scope.prev = function(){
+				if( canSlide('prev') ){
+					currentSlide--;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			$scope.next = function(){
+				if( canSlide('next') ){
+					currentSlide++;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			
+			function canSlide( direction ){
+				if( direction == 'prev' && currentSlide <= 0 ) return false;
+				if( direction == 'next' && currentSlide >= totalSlides ) return false;
+				return true;
+			}
+        },
         controller: function( $scope, $element ){		
-		
+			
 			$scope.$watch(
 				'items',
 				function( newItems, oldItems ){
@@ -632,7 +657,8 @@ angular.module('spotmop.directives', [])
 				$element.css({height: itemHeight+'px'});
 				console.log( itemHeight );
 			}
-        }
+        },
+		templateUrl: 'app/common/slider.template.html'
     };
 })
 

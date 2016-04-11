@@ -1,0 +1,25 @@
+<div class="controls">
+    <span class="si invert prev" ng-click="prev()"></span><span class="si invert next" ng-click="next()"></span>
+</div>
+<div class="slides">
+    <div class="slides-content">
+        <div class="item-container" ng-repeat="item in items track by $index">
+            <a ui-sref="browse.artist.overview({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'artist'">
+                <div class="image-container">
+                    <thumbnail images="item.images"></thumbnail>
+                </div>
+                <div class="info smaller animate">
+                    <div class="name" ng-bind="item.name"></div>
+                </div>
+            </a>
+            <a ui-sref="browse.album({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'album'">
+                <div class="image-container">
+                    <thumbnail images="item.images"></thumbnail>
+                </div>
+                <div class="info smaller animate">
+                    <div class="name" ng-bind="item.name"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
