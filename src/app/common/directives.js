@@ -466,16 +466,13 @@ angular.module('spotmop.directives', [])
  **/
 .directive('artistlist', function( $rootScope, SettingsService ){
 	return {
-		restrict: 'A',
+		restrict: 'E',
 		scope: {
 			artists: '='
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
-		link: function($scope, $element, $attrs){
-			
-		},
-		template: '<span class="artists"></span>'
+		template: '<span ng-repeat="artist in artists"><a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-bind="artist.name" ng-if="!artist.uri"></span><span ng-if="!$last">, </span></span>'
 	}
 })
 		

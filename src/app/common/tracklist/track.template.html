@@ -14,9 +14,7 @@
         <div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
-            <span ng-repeat="artist in track.artists">
-                <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-bind="artist.name" ng-if="!artist.uri"></span><span ng-if="!$last">, </span>
-            </span>
+            <artistlist artists="track.artists"></artistlist>
         </div>
 
         <div class="album" ng-class="{ empty: !track.album.name }">
