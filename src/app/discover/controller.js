@@ -20,18 +20,7 @@ angular.module('spotmop.discover', [])
  **/
 .controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.albums = [];
-	$scope.recommendations = {
-		currentArtist: {
-			artists: [],
-			recommendations: []
-		},
-		suggestions: []
-	};
-	$scope.sections = [];
-	
+	$scope.sections = [];	
 	
 	SpotifyService.getMyFavorites('artists').then( function(response){
 		$scope.sections.push({
@@ -103,9 +92,8 @@ angular.module('spotmop.discover', [])
 				}
 			);
 		});
-		$scope.recommendations.currentArtist.artists = artists;
 	
-		EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
+		EchonestService.recommendedArtists( artists )
 			.then(function( response ){
 			
 				// convert our echonest list into an array to get from spotify
@@ -123,7 +111,8 @@ angular.module('spotmop.discover', [])
 					SpotifyService.getArtists( artisturis )
 						.then( function( response ){
 							$scope.sections.push({
-								title: 'Because you\'re listening to XXXXX',
+								title: 'Because you\'re listening to ',
+								artists: tlTrack.track.artists,
 								items: response.artists
 							});
 						});

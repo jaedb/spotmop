@@ -22,6 +22,7 @@
 
 				<h4 class="section-title">
 					{{ section.title }}
+                    <artistlist ng-if="section.artists" artists="section.artists"></artistlist>
 					<a ng-if="section.source" ng-bind="section.source.title" href="section.source.link"></a>
 				</h4>
 

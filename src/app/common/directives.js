@@ -662,7 +662,6 @@ angular.module('spotmop.directives', [])
 			
 			// once we've rendered the slider
             $timeout( function(){
-					console.log( 'update' );
 					resizeScroller();
 			}, 0);
 			
@@ -673,7 +672,6 @@ angular.module('spotmop.directives', [])
 			function resizeScroller(){
 				var itemHeight = $element.find('.item-container').children().first().height();
 				$element.css({height: itemHeight+'px'});
-				console.log( itemHeight );
 			}
         },
 		templateUrl: 'app/common/slider.template.html'
