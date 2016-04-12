@@ -458,6 +458,26 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 })
+
+
+/** 
+ * Artist list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('artistlist', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'A',
+		scope: {
+			artists: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		link: function($scope, $element, $attrs){
+			
+		},
+		template: '<span class="artists"></span>'
+	}
+})
 		
 		
 		
@@ -612,7 +632,7 @@ angular.module('spotmop.directives', [])
  * Enhances readability when placed on dynamic background images
  * Requires spotmop:detectBackgroundColour broadcast to initiate check
  **/
-.directive('slider', function(){
+.directive('slider', function($timeout){
     return {
         restrict: 'E',
 		scope: {
@@ -642,15 +662,16 @@ angular.module('spotmop.directives', [])
 				if( direction == 'next' && currentSlide >= totalSlides ) return false;
 				return true;
 			}
-        },
-        controller: function( $scope, $element ){		
 			
-			$scope.$watch(
-				'items',
-				function( newItems, oldItems ){
+			// once we've rendered the slider
+            $timeout( function(){
+					console.log( 'update' );
 					resizeScroller();
-				}
-			);
+			}, 0);
+			
+			$(window).resize( function(){
+				resizeScroller();
+			});
 			
 			function resizeScroller(){
 				var itemHeight = $element.find('.item-container').children().first().height();

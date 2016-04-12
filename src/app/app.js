@@ -107,15 +107,6 @@ angular.module('spotmop', [
     /**
      * Playlists submenu
      **/
-     
-    // handle manual show
-    $(document).on('mouseenter', '.playlists-submenu-trigger', function( event ){
-        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
-    });
-    
-    $(document).on('mouseleave', '.menu-item.top-level.playlists', function( event ){
-        $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
-    });
     
 	// update the playlists menu
 	$scope.updatePlaylists = function( userid ){

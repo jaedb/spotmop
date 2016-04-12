@@ -14,6 +14,7 @@ html {
 
 body {
 	overflow-y: scroll;
+	overflow-x: hidden;
 }
 
 * {
@@ -1546,23 +1547,24 @@ slider {
 	height: 250px;
 	display: block;
 	position: relative;
+	margin-bottom: 40px;
 }
 
 slider.square-panels {
 	margin-left: 0;
-	margin-right: -4%;
+	margin-right: -40px;
 }
 
 slider .controls {
 	position: absolute;
-	top: -48px;
-	right: 4%;
+	top: -40px;
+	right: 40px;
 	z-index: 5;
 }
 
 slider .controls .si {
 	cursor: pointer;
-	margin: 10px;
+	margin: 5px;
 	opacity: 0.7;
 }
 
@@ -1571,7 +1573,7 @@ slider .controls .si:hover {
 }
 
 slider .slides {
-	overflow-x: hidden;
+	overflow: hidden;
 	position: relative;
 	height: 100%;
 }
