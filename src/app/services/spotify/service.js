@@ -1172,7 +1172,7 @@ angular.module('spotmop.services.spotify', [])
 			
 			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
 			if( typeof( offset ) === 'undefined' )			var offset = 0;
-			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'short_term';
+			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
 			
             var deferred = $q.defer();
 

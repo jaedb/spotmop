@@ -179,7 +179,7 @@ angular.module('spotmop.services.echonest', [])
 			
             var deferred = $q.defer();
 
-            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
+            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=25')
                 .success(function( response ){
                     deferred.resolve( response );
                 })
@@ -196,7 +196,7 @@ angular.module('spotmop.services.echonest', [])
 			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=25&adventurousness=0')
                 .success(function( response ){
                     deferred.resolve( response );
                 })
