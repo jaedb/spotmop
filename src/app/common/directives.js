@@ -470,9 +470,13 @@ angular.module('spotmop.directives', [])
 		scope: {
 			artists: '='
 		},
+		link: function($scope, $element, $attrs){
+			$scope.nolinks = $attrs.hasOwnProperty('nolinks');
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
-		template: '<span ng-repeat="artist in artists"><a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-bind="artist.name" ng-if="!artist.uri"></span><span ng-if="!$last">, </span></span>'
+		templateUrl: 'app/common/artistlist.template.html'
 	}
 })
 		
@@ -494,20 +498,32 @@ angular.module('spotmop.directives', [])
 		transclude: true, // we want to insert custom content inside the directive
 		link: function($scope, $element, $attrs){
 			
-			// fetch this instance's best thumbnail
-			$scope.image = getThumbnailImage( $scope.images );
+			// load thumbnail on init
+			loadThumbnail();
 			
-			// now actually go get the image
-			if( $scope.image ){
-				$http({
-					method: 'GET',
-					url: $scope.image.url,
-					cache: true
-					}).success( function(){
-					
-						// inject to DOM once loaded
-						$element.css('background-image', 'url('+$scope.image.url+')' );
-					});
+			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			$scope.$watch('images', function(oldValue,newValue){
+				loadThumbnail();
+			});
+			
+			// perform core functionality
+			function loadThumbnail(){
+			
+				// fetch this instance's best thumbnail
+				$scope.image = getThumbnailImage( $scope.images );
+				
+				// now actually go get the image
+				if( $scope.image ){
+					$http({
+						method: 'GET',
+						url: $scope.image.url,
+						cache: true
+						}).success( function(){
+						
+							// inject to DOM once loaded
+							$element.css('background-image', 'url('+$scope.image.url+')' );
+						});
+				}
 			}
 			
 			/**

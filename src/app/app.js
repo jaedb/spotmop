@@ -23,7 +23,6 @@ angular.module('spotmop', [
 	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
-	'spotmop.services.echonest',
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	'spotmop.services.pusher',
@@ -70,7 +69,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
 
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -324,21 +323,11 @@ angular.module('spotmop', [
 	 * Settings
 	 **/
 	
-	if( SettingsService.getSetting('echonest', false, 'enabled') ){
-		EchonestService.start();
-	}
-	
 	// some settings need extra behavior attached when changed
 	$rootScope.$on('spotmop:settings:changed', function( event, data ){
 		switch( data.name ){
 			case 'mopidy.consume':
 				MopidyService.setConsume( data.value );
-				break;
-			case 'echonest.enabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
 				break;
 		}				
 	});
@@ -378,14 +367,6 @@ angular.module('spotmop', [
 		
 		Analytics.trackEvent('Pusher', 'Notification received', data.body);
 	});
-	
-	
-	// when playback finishes, log this to EchoNest (if enabled)
-	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
-	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonest',false,'enabled') )
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-	});
     
     
 
@@ -397,8 +378,6 @@ angular.module('spotmop', [
      **/
 	MopidyService.start();
 	SpotifyService.start();
-	if(SettingsService.getSetting('echonestenabled',false))
-		EchonestService.start();
 	
 	
 	/**

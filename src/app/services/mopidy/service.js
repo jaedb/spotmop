@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -237,10 +237,6 @@ angular.module('spotmop.services.mopidy', [
 			}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){
-		
-			// add to taste profile
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-			
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){

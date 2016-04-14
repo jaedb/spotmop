@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
 	
 	// setup initial states
 	var state = {
@@ -388,12 +388,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){
-		
-			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonest',false,'enabled') )
-				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
-		
+		next: function(){		
 			MopidyService.play();
 			MopidyService.next();
 		},

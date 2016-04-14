@@ -17,7 +17,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -62,14 +62,6 @@ angular.module('spotmop.settings', [])
 				}
 			});
 	}
-	
-	$scope.deleteEchonestTasteProfile = function( confirmed ){
-		if( confirmed ){
-			NotifyService.notify( 'Profile deleted and Echonest disabled' );
-			SettingsService.setSetting('echonesttasteprofileid',null);
-            EchonestService.stop();			
-		}
-	};
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
 		localStorage.clear();		

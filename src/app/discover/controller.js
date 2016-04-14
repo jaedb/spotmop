@@ -18,72 +18,36 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
 	
-	$scope.sections = [];	
+	$scope.favorites = [];
+	$scope.current = [];
+	$scope.sections = [];
 	
-	SpotifyService.getMyFavorites('artists').then( function(response){
-		$scope.sections.push({
-			title: 'Some old favorites',
-			items: response.items
-		});
+	SpotifyService.getMyFavorites('artists').then( function(response){		
+		$scope.favorites.items = response.items;
 	});
-	
-	// get our recommended artists
-	if( SettingsService.getSetting('echonest', false, 'enabled')){
-			
-			
-			
-		/** 
-		 * General recommendations based on the Echonest taste profile
-		 **/
 		
-		EchonestService.recommendedArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = [];
-				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
-					echonestArtists = response.response.artists;
-					
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestArtists.length > 0 ){
-					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( spotifyArtists ){
-							$scope.sections.push({
-								title: 'Reccommended for you',
-								items: spotifyArtists.artists
-							});
-						});
-				}
-			});
-	
-			
-		/**
-		 * Recommendations based on the currently playing track
-		 * We need to listen for the complete loading of the currentTlTrack for this to work smoothly
-		 **/
-		 
-		if( typeof( $scope.state().currentTlTrack.track ) !== 'undefined' ){
-			getCurrentlyPlayingRecommendations( $scope.state().currentTlTrack );
-		}
-		$rootScope.$on('spotmop:currenttrack:loaded', function(event, tlTrack){
-			getCurrentlyPlayingRecommendations( tlTrack );
-		});
+	/**
+	 * Recommendations based on the currently playing track
+	 * We need to listen for the complete loading of the currentTlTrack for this to work smoothly
+	 **/
+	 
+	if( typeof( $scope.state().currentTlTrack.track ) !== 'undefined' ){
+		getCurrentlyPlayingRecommendations( $scope.state().currentTlTrack );
 	}
+	$rootScope.$on('spotmop:currenttrack:loaded', function(event, tlTrack){
+		getCurrentlyPlayingRecommendations( tlTrack );
+	});
 	
 	// actually go get the recommendations
 	function getCurrentlyPlayingRecommendations( tlTrack ){
 	
 		var artists = [];
+		var artistIds = '';
 		angular.forEach( tlTrack.track.artists, function(artist){
+		
+			// create our template-friendly array of artists
 			artists.push(
 				{
 					'name': artist.name,
@@ -91,33 +55,27 @@ angular.module('spotmop.discover', [])
 					'uri': artist.uri
 				}
 			);
-		});
-	
-		EchonestService.recommendedArtists( artists )
-			.then(function( response ){
 			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = response.response.artists;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestArtists.length > 0 ){
-					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-							artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( response ){
-							$scope.sections.push({
-								title: 'Because you\'re listening to ',
-								artists: tlTrack.track.artists,
-								items: response.artists
-							});
-						});
-				}
+			// build our list of seed artists (because our current track might contain multiple artists)
+			if( artistIds != '' ) artistIds += ',';
+			artistIds += SpotifyService.getFromUri('artistid',artist.uri);
+		});
+		
+		// store our seed artists for the template
+		$scope.current.artists = artists;
+		
+		// now get recommendations based on these artists
+		SpotifyService.getRecommendations(false, false, artistIds).then( function(response){
+			var albums = [];
+			
+			angular.forEach( response.tracks, function( track ){
+				var album = track.album;
+				album.artists = track.artists;
+				albums.push( album );
 			});
+			
+			$scope.current.items = albums;
+		});
 	}
 	
 });
