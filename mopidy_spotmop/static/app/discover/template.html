@@ -7,27 +7,32 @@
 				<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 				<h1>Discover</h1>
 			</div>
-
-			<div class="page-notification red-background white-text" ng-show="!echonestOnline">
-				<i class="fa fa-exclamation-triangle white-text"></i>
-				&nbsp;
-				<span>You need to enable EchoNest to discover new music</span>
-			</div>
 			
 			<div class="page-header mobile-hide">
 				<h1>Discover</h1>
 			</div>
 			
 			<div class="discover-section" ng-repeat="section in sections track by $index">
-
 				<h4 class="section-title">
 					{{ section.title }}
                     <artistlist ng-if="section.artists" artists="section.artists"></artistlist>
-					<a ng-if="section.source" ng-bind="section.source.title" href="section.source.link"></a>
 				</h4>
-
-				<slider class="square-panels panel-slider" items="section.items"></slider>
-				
+				<slider class="square-panels panel-slider" items="section.items"></slider>				
+			</div>
+			
+			<div class="discover-section" ng-if="current.items">
+				<h4 class="section-title">
+					Because you're listening to
+                    <artistlist artists="current.artists" sentence></artistlist>
+				</h4>
+				<slider class="square-panels panel-slider" items="current.items"></slider>				
+			</div>
+			
+			<div class="discover-section" ng-if="favorites.items">
+				<h4 class="section-title">
+					Some old favorites
+				</h4>
+				<slider class="square-panels panel-slider" items="favorites.items"></slider>				
 			</div>
 			
 		</div>

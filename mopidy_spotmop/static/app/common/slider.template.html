@@ -4,7 +4,12 @@
 <div class="slides">
     <div class="slides-content">
         <div class="item-container" ng-repeat="item in items track by $index">
-            <a ui-sref="browse.artist.overview({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'artist'">
+            <a ui-sref="browse.artist.overview({ uri: item.uri })" ng-if="item.type == 'artist'"
+                class="square-panel artists draggable"
+                data-id="{{ item.id }}"
+                draggable="false"
+                candrag
+                dragobj="item">
                 <div class="image-container">
                     <thumbnail images="item.images"></thumbnail>
                 </div>
@@ -12,12 +17,20 @@
                     <div class="name" ng-bind="item.name"></div>
                 </div>
             </a>
-            <a ui-sref="browse.album({ uri: item.uri })" class="square-panel album" ng-if="item.type == 'album'">
+            <a ui-sref="browse.album({ uri: item.uri })" ng-if="item.type == 'album'"
+                class="square-panel album draggable"
+                data-id="{{ item.id }}"
+                draggable="false"
+                candrag
+                dragobj="item">
                 <div class="image-container">
                     <thumbnail images="item.images"></thumbnail>
                 </div>
-                <div class="info smaller animate">
+                <div class="info animate">
                     <div class="name" ng-bind="item.name"></div>
+                    <div class="secondary">
+                        <artistlist artists="item.artists" nolinks="false"></artistlist>
+                    </div>
                 </div>
             </a>
         </div>
