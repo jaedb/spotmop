@@ -29073,15 +29073,6 @@ angular.module('spotmop', [
     /**
      * Playlists submenu
      **/
-     
-    // handle manual show
-    $(document).on('mouseenter', '.playlists-submenu-trigger', function( event ){
-        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
-    });
-    
-    $(document).on('mouseleave', '.menu-item.top-level.playlists', function( event ){
-        $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
-    });
     
 	// update the playlists menu
 	$scope.updatePlaylists = function( userid ){
@@ -29164,9 +29155,12 @@ angular.module('spotmop', [
 		$(document).find('body').removeClass('menu-revealed');
 	}
 		
-		
-	$(document).on('scroll', function( event ){
 	
+	/**
+	 * Lazy loading
+	 **/
+
+	$scope.checkForLazyLoading = function(){		
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -29175,6 +29169,10 @@ angular.module('spotmop', [
 		
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
+	}
+	 
+	$(document).on('scroll', function( event ){
+		$scope.checkForLazyLoading();
 	});
 	
 	
@@ -29914,7 +29912,7 @@ angular.module('spotmop.browse.genre', [])
 	
 	$scope.categories = [];
 	
-	SpotifyService.discoverCategories()
+	SpotifyService.browseCategories()
 		.then(function( response ) {
 			$scope.categories = response.categories;
 		});
@@ -30048,6 +30046,7 @@ angular.module('spotmop.browse.new', [])
 	SpotifyService.newReleases()
 		.then(function( response ) {
 			$scope.albums = response.albums;
+			$scope.checkForLazyLoading();
 		});
 		
 	var nextOffset = 50;
@@ -31068,6 +31067,23 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 }])
+
+
+/** 
+ * Artist list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('artistlist', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			artists: '='
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		template: '<span ng-repeat="artist in artists"><a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a><span ng-bind="artist.name" ng-if="!artist.uri"></span><span ng-if="!$last">, </span></span>'
+	}
+}])
 		
 		
 		
@@ -31214,6 +31230,62 @@ angular.module('spotmop.directives', [])
 		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
 	};
 })
+
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('slider', ['$timeout', function($timeout){
+    return {
+        restrict: 'E',
+		scope: {
+			items: '='
+		},
+        link: function( $scope, $element ){		
+			
+			var sliderContent = $element.find('.slides-content');
+			var currentSlide = 0;
+			var totalSlides = ( $scope.items.length / 5 ) - 1;
+			
+			$scope.prev = function(){
+				if( canSlide('prev') ){
+					currentSlide--;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			$scope.next = function(){
+				if( canSlide('next') ){
+					currentSlide++;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			
+			function canSlide( direction ){
+				if( direction == 'prev' && currentSlide <= 0 ) return false;
+				if( direction == 'next' && currentSlide >= totalSlides ) return false;
+				return true;
+			}
+			
+			// once we've rendered the slider
+            $timeout( function(){
+					resizeScroller();
+			}, 0);
+			
+			$(window).resize( function(){
+				resizeScroller();
+			});
+			
+			function resizeScroller(){
+				var itemHeight = $element.find('.item-container').children().first().height();
+				$element.css({height: itemHeight+'px'});
+			}
+        },
+		templateUrl: 'app/common/slider.template.html'
+    };
+}])
 
 
 
@@ -32172,102 +32244,23 @@ angular.module('spotmop.discover', [])
  **/
 .controller('DiscoverController', ['$scope', '$rootScope', 'SpotifyService', 'EchonestService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
 	
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.albums = [];
-	$scope.recommendations = {
-		currentArtist: {
-			artists: [],
-			recommendations: []
-		},
-		suggestions: []
-	};
+	$scope.sections = [];	
+	
+	SpotifyService.getMyFavorites('artists').then( function(response){
+		$scope.sections.push({
+			title: 'Some old favorites',
+			items: response.items
+		});
+	});
 	
 	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled', false) ){
-		
-		
-		// ================= CATALOG RADIO ==== //
-		
-		/*
-		EchonestService.favoriteArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestSongs = response.response.songs;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestSongs.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
-					
-				}else{
-				
-					$rootScope.requestsLoading++;
-					
-					angular.forEach( echonestSongs, function( echonestSong ){
-						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
-						});
-				}
-			});
-			*/
-			
-		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
-		
-		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
-			var artists = [];
-			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
-				artists.push(
-					{
-						'name': artist.name,
-						'name_encoded': encodeURIComponent(artist.name),
-						'uri': artist.uri
-					}
-				);
-			});
-			$scope.recommendations.currentArtist.artists = artists;
-		
-			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
-				.then(function( response ){
-				
-					// convert our echonest list into an array to get from spotify
-					var echonestArtists = response.response.artists;
-					var artisturis = [];
-					
-					// make sure we got some artists
-					if( echonestArtists.length <= 0 ){
-					
-						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-						
-					}else{
-						
-						angular.forEach( echonestArtists, function( echonestArtist ){
-							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-						});
-						
-						SpotifyService.getArtists( artisturis )
-							.then( function( response ){
-								$scope.recommendations.currentArtist.recommendations = response.artists;
-							});
-					}
-				});
-		}
+	if( SettingsService.getSetting('echonest', false, 'enabled')){
 			
 			
 			
-		// ================= GENERAL RECOMMENDED ARTISTS ==== //
+		/** 
+		 * General recommendations based on the Echonest taste profile
+		 **/
 		
 		EchonestService.recommendedArtists()
 			.then(function( response ){
@@ -32280,11 +32273,7 @@ angular.module('spotmop.discover', [])
 				var artisturis = [];
 				
 				// make sure we got some artists
-				if( echonestArtists.length <= 0 ){
-				
-					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-					
-				}else{
+				if( echonestArtists.length > 0 ){
 					
 					angular.forEach( echonestArtists, function( echonestArtist ){
 						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
@@ -32292,7 +32281,64 @@ angular.module('spotmop.discover', [])
 					
 					SpotifyService.getArtists( artisturis )
 						.then( function( spotifyArtists ){
-							$scope.recommendations.suggestions = spotifyArtists.artists;
+							$scope.sections.push({
+								title: 'Reccommended for you',
+								items: spotifyArtists.artists
+							});
+						});
+				}
+			});
+	
+			
+		/**
+		 * Recommendations based on the currently playing track
+		 * We need to listen for the complete loading of the currentTlTrack for this to work smoothly
+		 **/
+		 
+		if( typeof( $scope.state().currentTlTrack.track ) !== 'undefined' ){
+			getCurrentlyPlayingRecommendations( $scope.state().currentTlTrack );
+		}
+		$rootScope.$on('spotmop:currenttrack:loaded', function(event, tlTrack){
+			getCurrentlyPlayingRecommendations( tlTrack );
+		});
+	}
+	
+	// actually go get the recommendations
+	function getCurrentlyPlayingRecommendations( tlTrack ){
+	
+		var artists = [];
+		angular.forEach( tlTrack.track.artists, function(artist){
+			artists.push(
+				{
+					'name': artist.name,
+					'name_encoded': encodeURIComponent(artist.name),
+					'uri': artist.uri
+				}
+			);
+		});
+	
+		EchonestService.recommendedArtists( artists )
+			.then(function( response ){
+			
+				// convert our echonest list into an array to get from spotify
+				var echonestArtists = response.response.artists;
+				var artisturis = [];
+				
+				// make sure we got some artists
+				if( echonestArtists.length > 0 ){
+					
+					angular.forEach( echonestArtists, function( echonestArtist ){
+						if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
+							artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
+					});
+					
+					SpotifyService.getArtists( artisturis )
+						.then( function( response ){
+							$scope.sections.push({
+								title: 'Because you\'re listening to ',
+								artists: tlTrack.track.artists,
+								items: response.artists
+							});
 						});
 				}
 			});
@@ -33091,6 +33137,7 @@ angular.module('spotmop.services.player', [])
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
 				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
 			}else{
@@ -33103,6 +33150,7 @@ angular.module('spotmop.services.player', [])
 							if( typeof(response.album) !== 'undefined' ){
 								state.currentTlTrack.track.image = response.album.images[0].url;
 							}
+							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
 				
 				// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
@@ -33124,6 +33172,8 @@ angular.module('spotmop.services.player', [])
 										if( largest )
 											state.currentTlTrack.track.image = largest['#text'];
 									}
+									
+									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
 				}
 			}
@@ -34176,7 +34226,7 @@ angular.module('spotmop.services.echonest', [])
 			
             var deferred = $q.defer();
 
-            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
+            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=25')
                 .success(function( response ){
                     deferred.resolve( response );
                 })
@@ -34193,7 +34243,7 @@ angular.module('spotmop.services.echonest', [])
 			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
             var deferred = $q.defer();
 
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
+            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=25&adventurousness=0')
                 .success(function( response ){
                     deferred.resolve( response );
                 })
@@ -36036,7 +36086,7 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		discoverCategories: function( limit ){
+		browseCategories: function( limit ){
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
@@ -36110,6 +36160,40 @@ angular.module('spotmop.services.spotify', [])
 				
             return deferred.promise;
 		},
+		
+		
+		/**
+		 * My top content
+		 **/
+		
+		getMyFavorites: function( type, limit, offset, time_range ){
+			
+			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
 		
 		/**
 		 * Artist
