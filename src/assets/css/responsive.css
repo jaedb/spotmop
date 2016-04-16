@@ -422,10 +422,6 @@
 		padding-right: 15%;
 	}
 	
-	.add-to-playlist-dialog .playlist {
-		width: 21%;
-	}
-	
 	
 	/** 
 	 * Full player (now playing)
@@ -554,6 +550,12 @@
 	 **/
 	.dialog input.large {
 		width: 100%;
+	}
+	
+	.add-to-playlist-dialog .playlist-item {
+		float: none;
+		width: 94%;
+		margin-left: 0 !important;
 	}
 	
 	.edit-playlist-dialog .actions {
