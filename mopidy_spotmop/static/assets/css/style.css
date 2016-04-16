@@ -2590,17 +2590,23 @@ slider .item-container > .square-panel {
  
 .add-to-playlist-dialog .select-playlist {
 	padding-top: 15px;
-	margin: 0 -2%;
 }
- 
-.add-to-playlist-dialog .playlist {
-	display: block;
+
+.add-to-playlist-dialog .playlist-item {
+	font-size: 16px;
+	padding: 10px 3%;
+	border-top: 1px solid #333333;
+	width: 42%;
 	float: left;
-	width: 12.6666%;
 }
- 
-.add-to-playlist-dialog .square-panel .info {
-	height: 30px;
+
+.add-to-playlist-dialog .playlist-item:focus,
+.add-to-playlist-dialog .playlist-item:active {
+	background: #08d58f;
+}
+
+.add-to-playlist-dialog .playlist-item:nth-child(2n){
+	margin-left: 4%;
 }
 
 
@@ -3364,10 +3370,6 @@ slider .item-container > .square-panel {
 		padding-right: 15%;
 	}
 	
-	.add-to-playlist-dialog .playlist {
-		width: 21%;
-	}
-	
 	
 	/** 
 	 * Full player (now playing)
@@ -3496,6 +3498,12 @@ slider .item-container > .square-panel {
 	 **/
 	.dialog input.large {
 		width: 100%;
+	}
+	
+	.add-to-playlist-dialog .playlist-item {
+		float: none;
+		width: 94%;
+		margin-left: 0 !important;
 	}
 	
 	.edit-playlist-dialog .actions {
