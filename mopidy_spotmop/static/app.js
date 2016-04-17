@@ -28989,7 +28989,6 @@ angular.module('spotmop', [
 	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
-	'spotmop.services.echonest',
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	'spotmop.services.pusher',
@@ -29036,7 +29035,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ['$scope', '$rootScope', '$state', '$localStorage', '$timeout', '$location', 'SpotifyService', 'MopidyService', 'EchonestService', 'PlayerService', 'SettingsService', 'NotifyService', 'PusherService', 'DialogService', 'Analytics', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+.controller('ApplicationController', ['$scope', '$rootScope', '$state', '$localStorage', '$timeout', '$location', 'SpotifyService', 'MopidyService', 'PlayerService', 'SettingsService', 'NotifyService', 'PusherService', 'DialogService', 'Analytics', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
 
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -29073,15 +29072,6 @@ angular.module('spotmop', [
     /**
      * Playlists submenu
      **/
-     
-    // handle manual show
-    $(document).on('mouseenter', '.playlists-submenu-trigger', function( event ){
-        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
-    });
-    
-    $(document).on('mouseleave', '.menu-item.top-level.playlists', function( event ){
-        $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
-    });
     
 	// update the playlists menu
 	$scope.updatePlaylists = function( userid ){
@@ -29164,9 +29154,12 @@ angular.module('spotmop', [
 		$(document).find('body').removeClass('menu-revealed');
 	}
 		
-		
-	$(document).on('scroll', function( event ){
 	
+	/**
+	 * Lazy loading
+	 **/
+
+	$scope.checkForLazyLoading = function(){		
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -29175,6 +29168,10 @@ angular.module('spotmop', [
 		
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
+	}
+	 
+	$(document).on('scroll', function( event ){
+		$scope.checkForLazyLoading();
 	});
 	
 	
@@ -29292,21 +29289,11 @@ angular.module('spotmop', [
 	 * Settings
 	 **/
 	
-	if( SettingsService.getSetting('echonest', false, 'enabled') ){
-		EchonestService.start();
-	}
-	
 	// some settings need extra behavior attached when changed
 	$rootScope.$on('spotmop:settings:changed', function( event, data ){
 		switch( data.name ){
 			case 'mopidy.consume':
 				MopidyService.setConsume( data.value );
-				break;
-			case 'echonest.enabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
 				break;
 		}				
 	});
@@ -29346,14 +29333,6 @@ angular.module('spotmop', [
 		
 		Analytics.trackEvent('Pusher', 'Notification received', data.body);
 	});
-	
-	
-	// when playback finishes, log this to EchoNest (if enabled)
-	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
-	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonest',false,'enabled') )
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-	});
     
     
 
@@ -29365,8 +29344,6 @@ angular.module('spotmop', [
      **/
 	MopidyService.start();
 	SpotifyService.start();
-	if(SettingsService.getSetting('echonestenabled',false))
-		EchonestService.start();
 	
 	
 	/**
@@ -29645,7 +29622,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', 'SpotifyService', 'SettingsService', 'MopidyService', 'EchonestService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, EchonestService, NotifyService, LastfmService ){
+.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', 'SpotifyService', 'SettingsService', 'MopidyService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = {type: 'track'};
@@ -29914,7 +29891,7 @@ angular.module('spotmop.browse.genre', [])
 	
 	$scope.categories = [];
 	
-	SpotifyService.discoverCategories()
+	SpotifyService.browseCategories()
 		.then(function( response ) {
 			$scope.categories = response.categories;
 		});
@@ -30048,6 +30025,7 @@ angular.module('spotmop.browse.new', [])
 	SpotifyService.newReleases()
 		.then(function( response ) {
 			$scope.albums = response.albums;
+			$scope.checkForLazyLoading();
 		});
 		
 	var nextOffset = 50;
@@ -31068,6 +31046,27 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 }])
+
+
+/** 
+ * Artist list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('artistlist', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			artists: '='
+		},
+		link: function($scope, $element, $attrs){
+			$scope.nolinks = $attrs.hasOwnProperty('nolinks');
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		templateUrl: 'app/common/artistlist.template.html'
+	}
+}])
 		
 		
 		
@@ -31087,20 +31086,32 @@ angular.module('spotmop.directives', [])
 		transclude: true, // we want to insert custom content inside the directive
 		link: function($scope, $element, $attrs){
 			
-			// fetch this instance's best thumbnail
-			$scope.image = getThumbnailImage( $scope.images );
+			// load thumbnail on init
+			loadThumbnail();
 			
-			// now actually go get the image
-			if( $scope.image ){
-				$http({
-					method: 'GET',
-					url: $scope.image.url,
-					cache: true
-					}).success( function(){
-					
-						// inject to DOM once loaded
-						$element.css('background-image', 'url('+$scope.image.url+')' );
-					});
+			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			$scope.$watch('images', function(oldValue,newValue){
+				loadThumbnail();
+			});
+			
+			// perform core functionality
+			function loadThumbnail(){
+			
+				// fetch this instance's best thumbnail
+				$scope.image = getThumbnailImage( $scope.images );
+				
+				// now actually go get the image
+				if( $scope.image ){
+					$http({
+						method: 'GET',
+						url: $scope.image.url,
+						cache: true
+						}).success( function(){
+						
+							// inject to DOM once loaded
+							$element.css('background-image', 'url('+$scope.image.url+')' );
+						});
+				}
 			}
 			
 			/**
@@ -31214,6 +31225,62 @@ angular.module('spotmop.directives', [])
 		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
 	};
 })
+
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('slider', ['$timeout', function($timeout){
+    return {
+        restrict: 'E',
+		scope: {
+			items: '='
+		},
+        link: function( $scope, $element ){		
+			
+			var sliderContent = $element.find('.slides-content');
+			var currentSlide = 0;
+			var totalSlides = ( $scope.items.length / 5 ) - 1;
+			
+			$scope.prev = function(){
+				if( canSlide('prev') ){
+					currentSlide--;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			$scope.next = function(){
+				if( canSlide('next') ){
+					currentSlide++;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			
+			function canSlide( direction ){
+				if( direction == 'prev' && currentSlide <= 0 ) return false;
+				if( direction == 'next' && currentSlide >= totalSlides ) return false;
+				return true;
+			}
+			
+			// once we've rendered the slider
+            $timeout( function(){
+					resizeScroller();
+			}, 0);
+			
+			$(window).resize( function(){
+				resizeScroller();
+			});
+			
+			function resizeScroller(){
+				var itemHeight = $element.find('.item-container').children().first().height();
+				$element.css({height: itemHeight+'px'});
+			}
+        },
+		templateUrl: 'app/common/slider.template.html'
+    };
+}])
 
 
 
@@ -32170,132 +32237,64 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', ['$scope', '$rootScope', 'SpotifyService', 'EchonestService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('DiscoverController', ['$scope', '$rootScope', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
 	
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.albums = [];
-	$scope.recommendations = {
-		currentArtist: {
-			artists: [],
-			recommendations: []
-		},
-		suggestions: []
-	};
+	$scope.favorites = [];
+	$scope.current = [];
+	$scope.sections = [];
 	
-	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled', false) ){
+	SpotifyService.getMyFavorites('artists').then( function(response){		
+		$scope.favorites.items = response.items;
+	});
 		
+	/**
+	 * Recommendations based on the currently playing track
+	 * We need to listen for the complete loading of the currentTlTrack for this to work smoothly
+	 **/
+	 
+	if( typeof( $scope.state().currentTlTrack.track ) !== 'undefined' ){
+		getCurrentlyPlayingRecommendations( $scope.state().currentTlTrack );
+	}
+	$rootScope.$on('spotmop:currenttrack:loaded', function(event, tlTrack){
+		getCurrentlyPlayingRecommendations( tlTrack );
+	});
+	
+	// actually go get the recommendations
+	function getCurrentlyPlayingRecommendations( tlTrack ){
+	
+		var artists = [];
+		var artistIds = '';
+		angular.forEach( tlTrack.track.artists, function(artist){
 		
-		// ================= CATALOG RADIO ==== //
-		
-		/*
-		EchonestService.favoriteArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestSongs = response.response.songs;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestSongs.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
-					
-				}else{
-				
-					$rootScope.requestsLoading++;
-					
-					angular.forEach( echonestSongs, function( echonestSong ){
-						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
-						});
+			// create our template-friendly array of artists
+			artists.push(
+				{
+					'name': artist.name,
+					'name_encoded': encodeURIComponent(artist.name),
+					'uri': artist.uri
 				}
-			});
-			*/
+			);
 			
-		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
+			// build our list of seed artists (because our current track might contain multiple artists)
+			if( artistIds != '' ) artistIds += ',';
+			artistIds += SpotifyService.getFromUri('artistid',artist.uri);
+		});
 		
-		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
-			var artists = [];
-			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
-				artists.push(
-					{
-						'name': artist.name,
-						'name_encoded': encodeURIComponent(artist.name),
-						'uri': artist.uri
-					}
-				);
-			});
-			$scope.recommendations.currentArtist.artists = artists;
+		// store our seed artists for the template
+		$scope.current.artists = artists;
 		
-			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
-				.then(function( response ){
-				
-					// convert our echonest list into an array to get from spotify
-					var echonestArtists = response.response.artists;
-					var artisturis = [];
-					
-					// make sure we got some artists
-					if( echonestArtists.length <= 0 ){
-					
-						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-						
-					}else{
-						
-						angular.forEach( echonestArtists, function( echonestArtist ){
-							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-						});
-						
-						SpotifyService.getArtists( artisturis )
-							.then( function( response ){
-								$scope.recommendations.currentArtist.recommendations = response.artists;
-							});
-					}
-				});
-		}
+		// now get recommendations based on these artists
+		SpotifyService.getRecommendations(false, false, artistIds).then( function(response){
+			var albums = [];
 			
-			
-			
-		// ================= GENERAL RECOMMENDED ARTISTS ==== //
-		
-		EchonestService.recommendedArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = [];
-				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
-					echonestArtists = response.response.artists;
-					
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestArtists.length <= 0 ){
-				
-					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-					
-				}else{
-					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( spotifyArtists ){
-							$scope.recommendations.suggestions = spotifyArtists.artists;
-						});
-				}
+			angular.forEach( response.tracks, function( track ){
+				var album = track.album;
+				album.artists = track.artists;
+				albums.push( album );
 			});
+			
+			$scope.current.items = albums;
+		});
 	}
 	
 }]);
@@ -32797,7 +32796,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', ['$scope', '$rootScope', '$timeout', '$interval', '$element', 'PlayerService', 'MopidyService', 'SpotifyService', 'EchonestService', 'SettingsService', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, EchonestService, SettingsService ){
+.controller('PlayerController', ['$scope', '$rootScope', '$timeout', '$interval', '$element', 'PlayerService', 'MopidyService', 'SpotifyService', 'SettingsService', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, SettingsService ){
 	
 	$scope.state = PlayerService.state;
 	    
@@ -32898,7 +32897,7 @@ angular.module('spotmop.player', [
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
 	
 	// setup initial states
 	var state = {
@@ -33091,6 +33090,7 @@ angular.module('spotmop.services.player', [])
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
 				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
 			}else{
@@ -33103,6 +33103,7 @@ angular.module('spotmop.services.player', [])
 							if( typeof(response.album) !== 'undefined' ){
 								state.currentTlTrack.track.image = response.album.images[0].url;
 							}
+							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
 				
 				// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
@@ -33124,6 +33125,8 @@ angular.module('spotmop.services.player', [])
 										if( largest )
 											state.currentTlTrack.track.image = largest['#text'];
 									}
+									
+									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
 				}
 			}
@@ -33276,12 +33279,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){
-		
-			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonest',false,'enabled') )
-				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
-		
+		next: function(){		
 			MopidyService.play();
 			MopidyService.next();
 		},
@@ -33823,7 +33821,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SpotifyService', 'SettingsService', function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
+		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SpotifyService', 'SettingsService', 'NotifyService', function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
             
 			$scope.playlists = [];
 			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
@@ -33838,7 +33836,7 @@ angular.module('spotmop.services.dialog', [])
 			 **/
 			$scope.playlistSelected = function( playlist ){
 			
-				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );				
+				var selectedTracks = $filter('filter')( $scope.$parent.tracks, { selected: true } );				
 				var selectedTracksUris = [];
 				
 				// construct a flat array of track uris
@@ -33860,7 +33858,7 @@ angular.module('spotmop.services.dialog', [])
 						// remove this dialog, and initiate standard notification
 						DialogService.remove();
 						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
+						NotifyService.notify( selectedTracksUris.length +' tracks added to '+ playlist.name );
 					});
 			};
 		}]
@@ -33996,256 +33994,6 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
- * Create an Echonest service
- *
- * This holds all of the Echonest API calls, and returns the response (or promise)
- * back to the caller.
- * @return dataFactory array
- **/
- 
-angular.module('spotmop.services.echonest', [])
-
-.factory("EchonestService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$cacheFactory', '$q', 'SettingsService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $cacheFactory, $q, SettingsService ){
-    
-    var baseURL = 'http://developer.echonest.com/api/v4/';
-    var apiKey = SettingsService.getSetting('echonestapikey','YVW64VSEPEV93M4EG');
-	
-	// setup response object
-    return {
-        
-        isOnline: false,
-        
-        start: function(){
-            
-            SettingsService.setSetting('echonest',true,'enabled');
-            
-            // if we don't have a taste profile, make one
-            if( !SettingsService.getSetting('echonest',false,'tasteprofileid') ){
-                this.createTasteProfile()
-                    .success( function(response){ 
-                        SettingsService.setSetting('echonest', response.response.id, 'tasteprofileid');
-                        this.isOnline = true;
-                        $rootScope.echonestOnline = true;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
-                    });
-            }else{
-                this.getTasteProfile( SettingsService.getSetting('echonest',false,'tasteprofileid') )
-                    .success( function(response){
-                        this.isOnline = true;
-                        $rootScope.echonestOnline = true;
-						if( typeof($localStorage.echonest) === 'undefined' )
-							$localStorage.echonest = {};
-                        $localStorage.echonest.tasteprofile = response.response.catalog;
-                    })
-                    .error( function(error){
-                        this.isOnline = false;
-                        $rootScope.echonestOnline = false;
-                    });
-            }
-        },
-        
-        stop: function(){            
-            SettingsService.setSetting('echonest',false,'enabled');            
-            $rootScope.echonestOnline = false;
-        },
-		
-        /**
-         * Taste Profile
-         **/
-		createTasteProfile: function(){
-            return $.ajax({
-                url: baseURL+'catalog/create',
-                method: "POST",
-                data: {
-                        api_key: apiKey,
-                        format: 'json',
-                        type: 'general',
-                        name: 'spotmop:' + Date.now() + Math.round((Math.random() + 1) * 1000),
-                    }
-            });
-        },
-        
-		getTasteProfile: function(){
-			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
-            return $.ajax({
-                url: baseURL+'tasteprofile/read?api_key='+apiKey+'&id='+profileID,
-                method: "GET"
-            });
-        },
-        
-		
-		/**
-		 * Add a number of trackids to the taste profile
-		 * NOTE: This hasn't been upgraded to return a deferred.promise because of CORS issue when using $http instead of $ajax ... need to investigate
-		 * @param action = string the action that we need to add ("delete"|"update"|"play"|"skip")
-		 * @param trackid = string|array spotify uri
-		 * @param favorite = boolean (optional) add these track(s) as favorites
-		 * @return ajax request
-		 **/
-		addToTasteProfile: function( action, trackid ){
-			
-			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
-			var requestData = [];
-			var trackids = [];
-			
-			// if we've been given a single string, wrap it in an array
-			if( typeof( trackid ) === 'string' ){
-				trackids = [trackid];
-			}else{
-				trackids = trackid;
-			}
-			
-			// loop all the trackids (even if a single one, wrapped in an array)
-			angular.forEach( trackids, function( trackid ){
-			
-				// add each to our request payload
-				requestData.push( {
-								action: action,
-								item: {
-									track_id: trackid
-								}
-							} );
-			});
-		
-            return $.ajax({
-                url: baseURL+'tasteprofile/update',
-                method: "POST",
-				data: {
-						api_key: apiKey,
-						format: 'json',
-						data_type: 'json',
-						id: profileID,
-						data: JSON.stringify( requestData )
-					}
-            });
-        },
-        
-        
-        /**
-         * Get artist
-         **/
-		getArtistBiography: function( artistid ){
-		
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: baseURL+'artist/biographies?api_key='+apiKey+'&format=json&results=1&id='+artistid
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'getArtistBiography', message: response.error.message});
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-        },
-		
-        
-        /**
-         * Recommended content
-		 * We disable caching on these calls because a single track play will alter the recommendations returned
-         **/
-		 
-		/**
-		 * Recommend artists based on another artist (or on our taste profile)
-		 * @param artistname = array of artist objects (optional)
-		 * @return promise
-		 **/
-		recommendedArtists: function( artists ){
-		
-			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
-			
-			// no artist provided, so seed based on our taste profile
-			if( typeof( artists ) === 'undefined' || !artists || artists.length <= 0 ){				
-				var seed = '&seed_catalog='+profileID;
-				
-			// the artist name
-			}else{
-				var seed = '';				
-				angular.forEach( artists, function(artist){
-					seed += '&name='+artist.name_encoded;
-				});
-			}
-			
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'artist/similar?api_key='+apiKey+seed+'&format=json&bucket=id:spotify&results=10')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		favoriteArtists: function(){		
-		
-			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog&seed_catalog='+profileID+'&bucket=id:spotify&format=json&results=20&adventurousness=0')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'favoriteArtists', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		catalogRadio: function(){		
-		
-			var profileID = SettingsService.getSetting('echonest',false,'tasteprofileid');
-            var deferred = $q.defer();
-
-            $http.get(baseURL+'playlist/static?api_key='+apiKey+'&type=catalog-radio&seed_catalog='+profileID+'&bucket=artist_discovery&bucket=id:spotify&format=json&results=20')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'catalogRadio', message: response.error.message});
-                    deferred.reject("Failed to get albums");
-                });
-				
-            return deferred.promise;
-        },
-		
-		startArtistRadio: function( artistname ){
-		
-            var deferred = $q.defer();
-			
-            $http.get(baseURL+'playlist/dynamic/create?api_key='+apiKey+'&type=artist-radio&artist='+artistname+'&bucket=tracks&bucket=id:spotify&results=1')
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'artistRadio', message: response.error.message});
-                    deferred.reject("Failed to create artist radio");
-                });
-				
-            return deferred.promise;
-        }
-	};
-}]);
-
-
-
-
-
-
-/**
  * Create a LastFM service 
  *
  * This holds all of the LastFM API calls, and returns the response (or promise)
@@ -34325,7 +34073,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", ['$q', '$rootScope', '$cacheFactory', '$location', '$timeout', 'SettingsService', 'EchonestService', 'PusherService', function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, EchonestService, PusherService ){
+.factory("MopidyService", ['$q', '$rootScope', '$cacheFactory', '$location', '$timeout', 'SettingsService', 'PusherService', function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -34553,10 +34301,6 @@ angular.module('spotmop.services.mopidy', [
 			}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){
-		
-			// add to taste profile
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-			
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){
@@ -36036,7 +35780,7 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		discoverCategories: function( limit ){
+		browseCategories: function( limit ){
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
@@ -36110,6 +35854,72 @@ angular.module('spotmop.services.spotify', [])
 				
             return deferred.promise;
 		},
+		
+		
+		/**
+		 * Top content and recommendations
+		 * This is Spotify's merger with EchoNest
+		 **/
+		
+		getMyFavorites: function( type, limit, offset, time_range ){
+			
+			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getRecommendations: function( limit, offset, seed_artists, seed_albums, seed_tracks ){
+			
+			var url = urlBase+'recommendations/?';
+			
+			if( typeof( limit ) !== 'undefined' && limit ) 					url += 'limit='+limit;
+			if( typeof( offset ) !== 'undefined'&& offset ) 				url += '&offset='+offset;
+			if( typeof( seed_artists ) !== 'undefined'&& seed_artists ) 	url += '&seed_artists='+seed_artists;
+			if( typeof( seed_albums ) !== 'undefined'&& seed_albums ) 		url += '&seed_albums='+seed_albums;
+			if( typeof( seed_tracks ) !== 'undefined'&& seed_tracks ) 		url += '&seed_tracks='+seed_tracks;
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: url,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
 		
 		/**
 		 * Artist
@@ -36452,7 +36262,7 @@ angular.module('spotmop.settings', [])
 /**
  * Main controller
  **/	
-.controller('SettingsController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'EchonestService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, EchonestService, SettingsService, NotifyService, PusherService ){
+.controller('SettingsController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -36497,14 +36307,6 @@ angular.module('spotmop.settings', [])
 				}
 			});
 	}
-	
-	$scope.deleteEchonestTasteProfile = function( confirmed ){
-		if( confirmed ){
-			NotifyService.notify( 'Profile deleted and Echonest disabled' );
-			SettingsService.setSetting('echonesttasteprofileid',null);
-            EchonestService.stop();			
-		}
-	};
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
 		localStorage.clear();		

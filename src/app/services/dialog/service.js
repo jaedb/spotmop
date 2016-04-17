@@ -179,7 +179,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
             
 			$scope.playlists = [];
 			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
@@ -194,7 +194,7 @@ angular.module('spotmop.services.dialog', [])
 			 **/
 			$scope.playlistSelected = function( playlist ){
 			
-				var selectedTracks = $filter('filter')( $scope.$parent.tracklist.tracks, { selected: true } );				
+				var selectedTracks = $filter('filter')( $scope.$parent.tracks, { selected: true } );				
 				var selectedTracksUris = [];
 				
 				// construct a flat array of track uris
@@ -216,7 +216,7 @@ angular.module('spotmop.services.dialog', [])
 						// remove this dialog, and initiate standard notification
 						DialogService.remove();
 						$rootScope.$broadcast('spotmop:tracklist:unselectAll');
-						$scope.$emit('spotmop:notifyUser', {id: 'adding-to-playlist', message: 'Added '+selectedTracksUris.length+' tracks', autoremove: true});
+						NotifyService.notify( selectedTracksUris.length +' tracks added to '+ playlist.name );
 					});
 			};
 		}

@@ -105,4 +105,8 @@
 	c0,0-2.049,1.583-4.471-0.508C2.747,104.075,6.048,100.109,1.383,100.219z"/>
 <circle fill="none" stroke="#FFFFFF" stroke-width="1.4173" stroke-miterlimit="10" cx="6.752" cy="183.413" r="5.061"/>
 <line fill="none" stroke="#FFFFFF" stroke-width="1.4173" stroke-miterlimit="10" x1="10.208" y1="186.436" x2="14.605" y2="190.833"/>
+<polyline fill="none" stroke="#FFFFFF" stroke-width="1.8546" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+	5.13,193.774 11.491,200.136 5.13,206.497 "/>
+<polyline fill="none" stroke="#FFFFFF" stroke-width="1.8546" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" points="
+	11.491,222.611 5.13,216.25 11.491,209.889 "/>
 </svg>

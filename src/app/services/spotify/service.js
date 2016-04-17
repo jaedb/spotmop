@@ -1088,7 +1088,7 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		discoverCategories: function( limit ){
+		browseCategories: function( limit ){
 			
 			if( typeof( limit ) === 'undefined' )
 				limit = 40;
@@ -1162,6 +1162,72 @@ angular.module('spotmop.services.spotify', [])
 				
             return deferred.promise;
 		},
+		
+		
+		/**
+		 * Top content and recommendations
+		 * This is Spotify's merger with EchoNest
+		 **/
+		
+		getMyFavorites: function( type, limit, offset, time_range ){
+			
+			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getRecommendations: function( limit, offset, seed_artists, seed_albums, seed_tracks ){
+			
+			var url = urlBase+'recommendations/?';
+			
+			if( typeof( limit ) !== 'undefined' && limit ) 					url += 'limit='+limit;
+			if( typeof( offset ) !== 'undefined'&& offset ) 				url += '&offset='+offset;
+			if( typeof( seed_artists ) !== 'undefined'&& seed_artists ) 	url += '&seed_artists='+seed_artists;
+			if( typeof( seed_albums ) !== 'undefined'&& seed_albums ) 		url += '&seed_albums='+seed_albums;
+			if( typeof( seed_tracks ) !== 'undefined'&& seed_tracks ) 		url += '&seed_tracks='+seed_tracks;
+			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: url,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
 		
 		/**
 		 * Artist

@@ -23,7 +23,6 @@ angular.module('spotmop', [
 	'spotmop.services.player',
 	'spotmop.services.spotify',
 	'spotmop.services.mopidy',
-	'spotmop.services.echonest',
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	'spotmop.services.pusher',
@@ -70,7 +69,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, EchonestService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
 
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -107,15 +106,6 @@ angular.module('spotmop', [
     /**
      * Playlists submenu
      **/
-     
-    // handle manual show
-    $(document).on('mouseenter', '.playlists-submenu-trigger', function( event ){
-        $(document).find('.menu-item.top-level.playlists').addClass('show-submenu');
-    });
-    
-    $(document).on('mouseleave', '.menu-item.top-level.playlists', function( event ){
-        $(document).find('.menu-item.top-level.playlists').removeClass('show-submenu');
-    });
     
 	// update the playlists menu
 	$scope.updatePlaylists = function( userid ){
@@ -198,9 +188,12 @@ angular.module('spotmop', [
 		$(document).find('body').removeClass('menu-revealed');
 	}
 		
-		
-	$(document).on('scroll', function( event ){
 	
+	/**
+	 * Lazy loading
+	 **/
+
+	$scope.checkForLazyLoading = function(){		
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -209,6 +202,10 @@ angular.module('spotmop', [
 		
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
+	}
+	 
+	$(document).on('scroll', function( event ){
+		$scope.checkForLazyLoading();
 	});
 	
 	
@@ -326,21 +323,11 @@ angular.module('spotmop', [
 	 * Settings
 	 **/
 	
-	if( SettingsService.getSetting('echonest', false, 'enabled') ){
-		EchonestService.start();
-	}
-	
 	// some settings need extra behavior attached when changed
 	$rootScope.$on('spotmop:settings:changed', function( event, data ){
 		switch( data.name ){
 			case 'mopidy.consume':
 				MopidyService.setConsume( data.value );
-				break;
-			case 'echonest.enabled':
-				if( data.value )
-					EchonestService.start();
-				else
-					EchonestService.stop();
 				break;
 		}				
 	});
@@ -380,14 +367,6 @@ angular.module('spotmop', [
 		
 		Analytics.trackEvent('Pusher', 'Notification received', data.body);
 	});
-	
-	
-	// when playback finishes, log this to EchoNest (if enabled)
-	// this is not in PlayerController as there may be multiple instances at any given time which results in duplicated entries
-	$rootScope.$on('mopidy:event:trackPlaybackEnded', function( event, tlTrack ){
-		if( SettingsService.getSetting('echonest',false,'enabled') )
-			EchonestService.addToTasteProfile( 'play', tlTrack.tl_track.track.uri );
-	});
     
     
 
@@ -399,8 +378,6 @@ angular.module('spotmop', [
      **/
 	MopidyService.start();
 	SpotifyService.start();
-	if(SettingsService.getSetting('echonestenabled',false))
-		EchonestService.start();
 	
 	
 	/**

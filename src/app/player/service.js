@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'EchonestService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, EchonestService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
 	
 	// setup initial states
 	var state = {
@@ -199,6 +199,7 @@ angular.module('spotmop.services.player', [])
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
 				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
 			}else{
@@ -211,6 +212,7 @@ angular.module('spotmop.services.player', [])
 							if( typeof(response.album) !== 'undefined' ){
 								state.currentTlTrack.track.image = response.album.images[0].url;
 							}
+							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
 				
 				// not a Spotify track (ie Mopidy-Local), so let's use LastFM to get some artwork
@@ -232,6 +234,8 @@ angular.module('spotmop.services.player', [])
 										if( largest )
 											state.currentTlTrack.track.image = largest['#text'];
 									}
+									
+									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
 				}
 			}
@@ -384,12 +388,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){
-		
-			// log this skip (we do this BEFORE moving to the next, as the skip is on the OLD track)
-			if( SettingsService.getSetting('echonest',false,'enabled') )
-				EchonestService.addToTasteProfile( 'skip', state.currentTlTrack.track.uri );
-		
+		next: function(){		
 			MopidyService.play();
 			MopidyService.next();
 		},

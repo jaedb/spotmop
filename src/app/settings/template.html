@@ -164,7 +164,7 @@
                     </div>
 				</div>
 
-                <div class="field" ng-if="settings.advancedMode && spotifyOnline">
+                <div class="field" ng-if="settings.spotmop.advancedMode && spotifyOnline">
                     <div class="label">Spotify authentication</div>
                     <div class="input">
                         <a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
@@ -173,47 +173,6 @@
 
 				<div class="clear-both"></div>
 			
-			</div>
-			
-			<!-- SECTION -->
-			
-			<div class="section echonest">
-			
-				<h4 class="section-title underline">
-					Echonest
-					<span class="state-label green-background white-text" ng-if="echonestOnline && settings.echonest.enabled == true">Connected</span>
-					<span class="state-label red-background white-text" ng-if="!echonestOnline && settings.echonest.enabled == true">Offline</span>
-					<span class="state-label grey-background white-text" ng-if="!settings.echonest.enabled">Disabled</span>
-				</h4>
-				
-				<div class="field">
-					<div class="label">Enabled</div>
-					<div class="input">
-						<switch class="switch-button" name="echonest.enabled" value="settings.echonest.enabled"></switch>
-					</div>
-				</div>
-                
-				<div class="field" ng-show="echonestOnline">
-					<div class="label">Taste profile ID</div>
-					<div class="input">
-						<input type="text" name="echonest.tasteprofileid" ng-model="settings.echonest.tasteprofileid" />
-						<a class="view-my-profile" href="http://static.echonest.com/demo/tp/tpview.html?id={{ settings.echonest.tasteprofileid }}" target="_blank"><i class="fa fa-external-link"></i></a>
-					</div>
-				</div>
-
-                <div class="field" ng-if="settings.advancedMode">
-                    <div class="label">Echonest taste profile</div>
-                    <div class="input">
-                        <confirmation-button
-                            extra-classes="destructive"
-                            default-text="Delete taste profile"
-                            confirmation-text="Are you sure?"
-                            on-confirmation="deleteEchonestTasteProfile()">
-                        </confirmation-button>
-                    </div>
-                </div>
-
-				<div class="clear-both"></div>
 			</div>
 			
 			<!-- SECTION -->

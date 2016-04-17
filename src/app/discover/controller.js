@@ -18,132 +18,64 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, EchonestService, SettingsService, NotifyService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
 	
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.albums = [];
-	$scope.recommendations = {
-		currentArtist: {
-			artists: [],
-			recommendations: []
-		},
-		suggestions: []
-	};
+	$scope.favorites = [];
+	$scope.current = [];
+	$scope.sections = [];
 	
-	// get our recommended artists
-	if( SettingsService.getSetting('echonestenabled', false) ){
+	SpotifyService.getMyFavorites('artists').then( function(response){		
+		$scope.favorites.items = response.items;
+	});
 		
+	/**
+	 * Recommendations based on the currently playing track
+	 * We need to listen for the complete loading of the currentTlTrack for this to work smoothly
+	 **/
+	 
+	if( typeof( $scope.state().currentTlTrack.track ) !== 'undefined' ){
+		getCurrentlyPlayingRecommendations( $scope.state().currentTlTrack );
+	}
+	$rootScope.$on('spotmop:currenttrack:loaded', function(event, tlTrack){
+		getCurrentlyPlayingRecommendations( tlTrack );
+	});
+	
+	// actually go get the recommendations
+	function getCurrentlyPlayingRecommendations( tlTrack ){
+	
+		var artists = [];
+		var artistIds = '';
+		angular.forEach( tlTrack.track.artists, function(artist){
 		
-		// ================= CATALOG RADIO ==== //
-		
-		/*
-		EchonestService.favoriteArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestSongs = response.response.songs;
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestSongs.length <= 0 ){
-				
-					$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'discover', message: 'Your taste profile is empty. Play some more music!'});
-					
-				}else{
-				
-					$rootScope.requestsLoading++;
-					
-					angular.forEach( echonestSongs, function( echonestSong ){
-						artisturis.push( echonestSong.artist_foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.success( function( response ){
-							$rootScope.requestsLoading--;
-							$scope.artists = response.artists;
-						})
-						.error(function( error ){
-							$rootScope.requestsLoading--;
-							$rootScope.$broadcast('spotmop:notifyUser', {type: 'bad', id: 'loading-discover', message: error.error.message});
-						});
+			// create our template-friendly array of artists
+			artists.push(
+				{
+					'name': artist.name,
+					'name_encoded': encodeURIComponent(artist.name),
+					'uri': artist.uri
 				}
-			});
-			*/
+			);
 			
-		// ================= BASED ON CURRENT PLAYING ARTIST ==== //
+			// build our list of seed artists (because our current track might contain multiple artists)
+			if( artistIds != '' ) artistIds += ',';
+			artistIds += SpotifyService.getFromUri('artistid',artist.uri);
+		});
 		
-		if( typeof($scope.state().currentTlTrack.track) !== 'undefined' ){
-			var artists = [];
-			angular.forEach( $scope.state().currentTlTrack.track.artists, function(artist){
-				artists.push(
-					{
-						'name': artist.name,
-						'name_encoded': encodeURIComponent(artist.name),
-						'uri': artist.uri
-					}
-				);
-			});
-			$scope.recommendations.currentArtist.artists = artists;
+		// store our seed artists for the template
+		$scope.current.artists = artists;
 		
-			EchonestService.recommendedArtists( $scope.recommendations.currentArtist.artists )
-				.then(function( response ){
-				
-					// convert our echonest list into an array to get from spotify
-					var echonestArtists = response.response.artists;
-					var artisturis = [];
-					
-					// make sure we got some artists
-					if( echonestArtists.length <= 0 ){
-					
-						NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-						
-					}else{
-						
-						angular.forEach( echonestArtists, function( echonestArtist ){
-							if( typeof( echonestArtist.foreign_ids ) !== 'undefined' && echonestArtist.foreign_ids.length > 0 )
-								artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-						});
-						
-						SpotifyService.getArtists( artisturis )
-							.then( function( response ){
-								$scope.recommendations.currentArtist.recommendations = response.artists;
-							});
-					}
-				});
-		}
+		// now get recommendations based on these artists
+		SpotifyService.getRecommendations(false, false, artistIds).then( function(response){
+			var albums = [];
 			
-			
-			
-		// ================= GENERAL RECOMMENDED ARTISTS ==== //
-		
-		EchonestService.recommendedArtists()
-			.then(function( response ){
-			
-				// convert our echonest list into an array to get from spotify
-				var echonestArtists = [];
-				if( typeof(response.response) !== 'undefined' && typeof(response.response.artists) !== 'undefined')
-					echonestArtists = response.response.artists;
-					
-				var artisturis = [];
-				
-				// make sure we got some artists
-				if( echonestArtists.length <= 0 ){
-				
-					NotifyService.error( 'Your taste profile is empty. Play some more music!' );
-					
-				}else{
-					
-					angular.forEach( echonestArtists, function( echonestArtist ){
-						artisturis.push( echonestArtist.foreign_ids[0].foreign_id );
-					});
-					
-					SpotifyService.getArtists( artisturis )
-						.then( function( spotifyArtists ){
-							$scope.recommendations.suggestions = spotifyArtists.artists;
-						});
-				}
+			angular.forEach( response.tracks, function( track ){
+				var album = track.album;
+				album.artists = track.artists;
+				albums.push( album );
 			});
+			
+			$scope.current.items = albums;
+		});
 	}
 	
 });

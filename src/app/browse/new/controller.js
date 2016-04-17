@@ -28,6 +28,7 @@ angular.module('spotmop.browse.new', [])
 	SpotifyService.newReleases()
 		.then(function( response ) {
 			$scope.albums = response.albums;
+			$scope.checkForLazyLoading();
 		});
 		
 	var nextOffset = 50;

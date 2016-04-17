@@ -458,6 +458,27 @@ angular.module('spotmop.directives', [])
 		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
 	}
 })
+
+
+/** 
+ * Artist list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('artistlist', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			artists: '='
+		},
+		link: function($scope, $element, $attrs){
+			$scope.nolinks = $attrs.hasOwnProperty('nolinks');
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		templateUrl: 'app/common/artistlist.template.html'
+	}
+})
 		
 		
 		
@@ -477,20 +498,32 @@ angular.module('spotmop.directives', [])
 		transclude: true, // we want to insert custom content inside the directive
 		link: function($scope, $element, $attrs){
 			
-			// fetch this instance's best thumbnail
-			$scope.image = getThumbnailImage( $scope.images );
+			// load thumbnail on init
+			loadThumbnail();
 			
-			// now actually go get the image
-			if( $scope.image ){
-				$http({
-					method: 'GET',
-					url: $scope.image.url,
-					cache: true
-					}).success( function(){
-					
-						// inject to DOM once loaded
-						$element.css('background-image', 'url('+$scope.image.url+')' );
-					});
+			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			$scope.$watch('images', function(oldValue,newValue){
+				loadThumbnail();
+			});
+			
+			// perform core functionality
+			function loadThumbnail(){
+			
+				// fetch this instance's best thumbnail
+				$scope.image = getThumbnailImage( $scope.images );
+				
+				// now actually go get the image
+				if( $scope.image ){
+					$http({
+						method: 'GET',
+						url: $scope.image.url,
+						cache: true
+						}).success( function(){
+						
+							// inject to DOM once loaded
+							$element.css('background-image', 'url('+$scope.image.url+')' );
+						});
+				}
 			}
 			
 			/**
@@ -603,6 +636,62 @@ angular.module('spotmop.directives', [])
 		transclude: true, 	// we want to insert custom content inside the directive
 		template: '<span ng-bind="text" class="button {{ extraClasses }}" ng-class="{ destructive: confirming }"></span>'
 	};
+})
+
+
+
+/**
+ * This let's us detect whether we need light text or dark text
+ * Enhances readability when placed on dynamic background images
+ * Requires spotmop:detectBackgroundColour broadcast to initiate check
+ **/
+.directive('slider', function($timeout){
+    return {
+        restrict: 'E',
+		scope: {
+			items: '='
+		},
+        link: function( $scope, $element ){		
+			
+			var sliderContent = $element.find('.slides-content');
+			var currentSlide = 0;
+			var totalSlides = ( $scope.items.length / 5 ) - 1;
+			
+			$scope.prev = function(){
+				if( canSlide('prev') ){
+					currentSlide--;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			$scope.next = function(){
+				if( canSlide('next') ){
+					currentSlide++;
+					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
+				}
+			}
+			
+			function canSlide( direction ){
+				if( direction == 'prev' && currentSlide <= 0 ) return false;
+				if( direction == 'next' && currentSlide >= totalSlides ) return false;
+				return true;
+			}
+			
+			// once we've rendered the slider
+            $timeout( function(){
+					resizeScroller();
+			}, 0);
+			
+			$(window).resize( function(){
+				resizeScroller();
+			});
+			
+			function resizeScroller(){
+				var itemHeight = $element.find('.item-container').children().first().height();
+				$element.css({height: itemHeight+'px'});
+			}
+        },
+		templateUrl: 'app/common/slider.template.html'
+    };
 })
 
 

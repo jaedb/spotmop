@@ -6,7 +6,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, EchonestService, SettingsService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, SettingsService ){
 	
 	$scope.state = PlayerService.state;
 	    
