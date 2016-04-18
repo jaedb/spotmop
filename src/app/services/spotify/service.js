@@ -1171,9 +1171,9 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyFavorites: function( type, limit, offset, time_range ){
 			
-			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
-			if( typeof( offset ) === 'undefined' )			var offset = 0;
-			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
+			if( typeof( limit ) === 'undefined' || !limit ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' || !offset )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' || !time_range ) 	var time_range = 'long_term';
 			
             var deferred = $q.defer();
 
