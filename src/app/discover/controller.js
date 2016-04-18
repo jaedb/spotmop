@@ -18,7 +18,7 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
@@ -30,10 +30,15 @@ angular.module('spotmop.discover', [])
 	});
 	
 	
-	// get 5 of my short-term top tracks
-	SpotifyService.getMyFavorites('tracks', 5, false, 'short_term').then( function(response){
+	// get my short-term top tracks
+	SpotifyService.getMyFavorites('tracks', false, false, 'short_term').then( function(response){
 		
-		angular.forEach( response.items, function(track){
+		// shuffle our tracks for interest, and limit to 5
+		var favoriteTracks = response.items;
+		favoriteTracks = $filter('shuffle')(response.items);
+		favoriteTracks = $filter('limitTo')(response.items, 5);
+		
+		angular.forEach( favoriteTracks, function(track){
 			SpotifyService.getRecommendations(false, false, false, false, track.id).then( function(recommendations){
 				var items = [];
 				angular.forEach( recommendations.tracks, function( track ){
