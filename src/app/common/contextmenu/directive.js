@@ -11,6 +11,24 @@ angular.module('spotmop.common.contextmenu', [
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $scope, $rootScope, $element, $timeout ){
+		
+			$(document).on('click', function(event){
+			
+				// only interested in left-clicks, right-clicks will be addressed accordingly
+				if( event.which === 1 ){
+					
+					var contextMenu = $(event.target);
+					
+					// track down the click event's context menu
+					if( !contextMenu.is('contextmenu') ) contextMenu = contextMenu.closest('contextmenu');
+					
+					// still no context menu? then we have clicked outside of one, so hide 'em
+					if( !contextMenu.is('contextmenu') ){
+						$rootScope.$broadcast('spotmop:contextMenu:hide');
+					}
+				}
+			});
+			
 			
 			/**
 			 * Menu item functionality
