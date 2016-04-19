@@ -1281,6 +1281,53 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
+		getTopTracks: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getRelatedArtists: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/related-artists'
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
+		/** 
+		 * Albums
+		 **/
+		
 		getAlbum: function( albumuri ){
 						
             var deferred = $q.defer();			
@@ -1348,41 +1395,35 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getTopTracks: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );			
+		isAlbumInLibrary: function( albumids ){
+			
             var deferred = $q.defer();
+			
+			var albumids_string = '';
+			for( var i = 0; i < albumids.length; i++ ){
+				if( i > 0 )
+					albumids_string += ','
+				albumids_string += albumids[i];
+			}
+			
+			if( !this.isAuthorized() ){
+                deferred.reject();
+				return deferred.promise;
+			}
 
             $http({
-					cache: true,
 					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country
+					url: urlBase+'me/albums/contains?ids='+albumids_string,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
 				})
                 .success(function( response ){
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getRelatedArtists: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/related-artists'
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
+					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });

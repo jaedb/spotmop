@@ -32,7 +32,8 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized">Add to library</a>
+			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized && !isInLibrary">Add to library</a>
+			<a class="button" ng-click="removeFromLibrary()" ng-if="spotifyAuthorized && isInLibrary">Remove from library</a>
 			<a class="button mobile-show tertiary" ng-click="showInfo = !showInfo" ng-class="{ showing: showInfo }">Info</a>
 		</div>
 		

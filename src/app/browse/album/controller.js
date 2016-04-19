@@ -72,7 +72,18 @@ angular.module('spotmop.browse.album', [])
 	
 	// add album to library
 	$scope.addToLibrary = function(){		
-		SpotifyService.addAlbumsToLibrary( $scope.album.id );
+		SpotifyService.addAlbumsToLibrary( $scope.album.id )
+			.then( function(){
+				$scope.isInLibrary = true;
+			});
+	}
+	
+	// remove from library
+	$scope.removeFromLibrary = function(){		
+		SpotifyService.removeAlbumsFromLibrary($scope.album.id)
+			.then( function(){
+				$scope.isInLibrary = false;
+			});
 	}
 	
 	// get the album
@@ -107,6 +118,12 @@ angular.module('spotmop.browse.album', [])
 						$scope.artist = response;
 					});
 			}
+			
+			// figure out if we have this album in our library already
+			SpotifyService.isAlbumInLibrary([$scope.album.id])
+				.then( function( isInLibrary ){
+					$scope.isInLibrary = isInLibrary[0];
+				});
 		});
     
 	
