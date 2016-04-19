@@ -1368,7 +1368,8 @@ h1 .flag {
 .square-panel .info .name,
 .square-panel .info .tracks {
 	overflow: hidden;
-	max-height: 2.6em;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 
