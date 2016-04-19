@@ -991,6 +991,23 @@ angular.module('spotmop.directives', [])
         // no thumbnail that suits? just get the first (and highest res) one then        
 		return images[0].url;
 	}
+})
+
+// get the appropriate sized image
+.filter('shuffle', function(){
+	return function( array ){
+		var i, j, tmp;
+		
+		// swap elements in array randomly using Fisher-Yates (aka Knuth) Shuffle
+		for ( i = array.length - 1; i > 0; i-- ) { 
+			j = Math.floor( Math.random() * (i + 1) );
+			tmp = array[i];
+			array[i] = array[j];
+			array[j] = tmp;
+		}
+		
+		return array;
+	}
 });
 
 

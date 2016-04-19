@@ -29172,6 +29172,7 @@ angular.module('spotmop', [
 	 
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
+		$rootScope.$broadcast('spotmop:contextMenu:hide');
 	});
 	
 	
@@ -29498,7 +29499,18 @@ angular.module('spotmop.browse.album', [])
 	
 	// add album to library
 	$scope.addToLibrary = function(){		
-		SpotifyService.addAlbumsToLibrary( $scope.album.id );
+		SpotifyService.addAlbumsToLibrary( $scope.album.id )
+			.then( function(){
+				$scope.isInLibrary = true;
+			});
+	}
+	
+	// remove from library
+	$scope.removeFromLibrary = function(){		
+		SpotifyService.removeAlbumsFromLibrary($scope.album.id)
+			.then( function(){
+				$scope.isInLibrary = false;
+			});
 	}
 	
 	// get the album
@@ -29533,6 +29545,12 @@ angular.module('spotmop.browse.album', [])
 						$scope.artist = response;
 					});
 			}
+			
+			// figure out if we have this album in our library already
+			SpotifyService.isAlbumInLibrary([$scope.album.id])
+				.then( function( isInLibrary ){
+					$scope.isInLibrary = isInLibrary[0];
+				});
 		});
     
 	
@@ -30434,6 +30452,24 @@ angular.module('spotmop.common.contextmenu', [
 		link: function( $scope, element, attrs ){
 		},
 		controller: ['$scope', '$rootScope', '$element', '$timeout', function( $scope, $rootScope, $element, $timeout ){
+		
+			$(document).on('click', function(event){
+			
+				// only interested in left-clicks, right-clicks will be addressed accordingly
+				if( event.which === 1 ){
+					
+					var contextMenu = $(event.target);
+					
+					// track down the click event's context menu
+					if( !contextMenu.is('contextmenu') ) contextMenu = contextMenu.closest('contextmenu');
+					
+					// still no context menu? then we have clicked outside of one, so hide 'em
+					if( !contextMenu.is('contextmenu') ){
+						$rootScope.$broadcast('spotmop:contextMenu:hide');
+					}
+				}
+			});
+			
 			
 			/**
 			 * Menu item functionality
@@ -31579,6 +31615,23 @@ angular.module('spotmop.directives', [])
         // no thumbnail that suits? just get the first (and highest res) one then        
 		return images[0].url;
 	}
+})
+
+// get the appropriate sized image
+.filter('shuffle', function(){
+	return function( array ){
+		var i, j, tmp;
+		
+		// swap elements in array randomly using Fisher-Yates (aka Knuth) Shuffle
+		for ( i = array.length - 1; i > 0; i-- ) { 
+			j = Math.floor( Math.random() * (i + 1) );
+			tmp = array[i];
+			array[i] = array[j];
+			array[j] = tmp;
+		}
+		
+		return array;
+	}
 });
 
 
@@ -32237,15 +32290,44 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', ['$scope', '$rootScope', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
 	$scope.sections = [];
 	
-	SpotifyService.getMyFavorites('artists').then( function(response){		
+	// get my old favorites
+	SpotifyService.getMyFavorites('artists', false, false, 'long_term').then( function(response){		
 		$scope.favorites.items = response.items;
 	});
+	
+	
+	// get my short-term top tracks
+	SpotifyService.getMyFavorites('tracks', false, false, 'short_term').then( function(response){
+		
+		// shuffle our tracks for interest, and limit to 5
+		var favoriteTracks = response.items;
+		favoriteTracks = $filter('shuffle')(response.items);
+		favoriteTracks = $filter('limitTo')(response.items, 5);
+		
+		angular.forEach( favoriteTracks, function(track){
+			SpotifyService.getRecommendations(false, false, false, false, track.id).then( function(recommendations){
+				var items = [];
+				angular.forEach( recommendations.tracks, function( track ){
+					var item = track.album;
+					item.artists = track.artists;
+					items.push( item );
+				});
+				var section = {
+					title: 'Because you listened to ',
+					artists: track.artists,
+					items: items
+				}
+				$scope.sections.push( section );
+			});
+		});
+	});
+	
 		
 	/**
 	 * Recommendations based on the currently playing track
@@ -35863,9 +35945,9 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyFavorites: function( type, limit, offset, time_range ){
 			
-			if( typeof( limit ) === 'undefined' ) 			var limit = 25;
-			if( typeof( offset ) === 'undefined' )			var offset = 0;
-			if( typeof( time_range ) === 'undefined' ) 		var time_range = 'long_term';
+			if( typeof( limit ) === 'undefined' || !limit ) 			var limit = 25;
+			if( typeof( offset ) === 'undefined' || !offset )			var offset = 0;
+			if( typeof( time_range ) === 'undefined' || !time_range ) 	var time_range = 'long_term';
 			
             var deferred = $q.defer();
 
@@ -35973,6 +36055,53 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
+		getTopTracks: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );			
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		getRelatedArtists: function( artisturi ){
+		
+			var artistid = this.getFromUri( 'artistid', artisturi );
+            var deferred = $q.defer();
+
+            $http({
+					cache: true,
+					method: 'GET',
+					url: urlBase+'artists/'+artistid+'/related-artists'
+				})
+                .success(function( response ){
+                    deferred.resolve( response );
+                })
+                .error(function( response ){
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+		
+		/** 
+		 * Albums
+		 **/
+		
 		getAlbum: function( albumuri ){
 						
             var deferred = $q.defer();			
@@ -36040,41 +36169,35 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		
-		getTopTracks: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );			
+		isAlbumInLibrary: function( albumids ){
+			
             var deferred = $q.defer();
+			
+			var albumids_string = '';
+			for( var i = 0; i < albumids.length; i++ ){
+				if( i > 0 )
+					albumids_string += ','
+				albumids_string += albumids[i];
+			}
+			
+			if( !this.isAuthorized() ){
+                deferred.reject();
+				return deferred.promise;
+			}
 
             $http({
-					cache: true,
 					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/top-tracks?country='+country
+					url: urlBase+'me/albums/contains?ids='+albumids_string,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
 				})
                 .success(function( response ){
+					
                     deferred.resolve( response );
                 })
                 .error(function( response ){
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-				
-            return deferred.promise;
-		},
-		
-		getRelatedArtists: function( artisturi ){
-		
-			var artistid = this.getFromUri( 'artistid', artisturi );
-            var deferred = $q.defer();
-
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'artists/'+artistid+'/related-artists'
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){
+					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });

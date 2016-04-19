@@ -18,15 +18,44 @@ angular.module('spotmop.discover', [])
 /**
  * Main controller
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverController', function DiscoverController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
 	$scope.sections = [];
 	
-	SpotifyService.getMyFavorites('artists').then( function(response){		
+	// get my old favorites
+	SpotifyService.getMyFavorites('artists', false, false, 'long_term').then( function(response){		
 		$scope.favorites.items = response.items;
 	});
+	
+	
+	// get my short-term top tracks
+	SpotifyService.getMyFavorites('tracks', false, false, 'short_term').then( function(response){
+		
+		// shuffle our tracks for interest, and limit to 5
+		var favoriteTracks = response.items;
+		favoriteTracks = $filter('shuffle')(response.items);
+		favoriteTracks = $filter('limitTo')(response.items, 5);
+		
+		angular.forEach( favoriteTracks, function(track){
+			SpotifyService.getRecommendations(false, false, false, false, track.id).then( function(recommendations){
+				var items = [];
+				angular.forEach( recommendations.tracks, function( track ){
+					var item = track.album;
+					item.artists = track.artists;
+					items.push( item );
+				});
+				var section = {
+					title: 'Because you listened to ',
+					artists: track.artists,
+					items: items
+				}
+				$scope.sections.push( section );
+			});
+		});
+	});
+	
 		
 	/**
 	 * Recommendations based on the currently playing track

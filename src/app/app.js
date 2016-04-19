@@ -206,6 +206,7 @@ angular.module('spotmop', [
 	 
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
+		$rootScope.$broadcast('spotmop:contextMenu:hide');
 	});
 	
 	
