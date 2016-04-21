@@ -31,7 +31,7 @@ angular.module('spotmop.discover', [])
 	
 	
 	// get my short-term top tracks
-	SpotifyService.getMyFavorites('tracks', false, false, 'short_term').then( function(response){
+	SpotifyService.getMyFavorites('tracks', 50, false, 'short_term').then( function(response){
 		
 		// shuffle our tracks for interest, and limit to 5
 		var favoriteTracks = response.items;
