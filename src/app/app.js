@@ -12,6 +12,7 @@ angular.module('spotmop', [
 	'ui.router',	
 	'angular-loading-bar',
 	'angular-google-analytics',
+	'ngclipboard',
 	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',

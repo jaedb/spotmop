@@ -19,6 +19,26 @@ angular.module('spotmop.common.tracklist', [])
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+						
+			// store our selected track uris
+			$rootScope.selectedTrackURIs = [];
+			
+			function updateSelectedTracksArray(){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = [];
+				
+				angular.forEach( selectedTracks, function(track){
+				
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris.push( track.track.uri );
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris.push( track.uri );
+				});
+				
+				$rootScope.selectedTrackURIs = selectedTracksUris;
+			}
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -132,6 +152,9 @@ angular.module('spotmop.common.tracklist', [])
 						else
 							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
+					
+					// store our updated selected track uris
+					updateSelectedTracksArray();
 				}
 			};
 			
@@ -378,6 +401,30 @@ angular.module('spotmop.common.tracklist', [])
 					track.selected = false;
 				});
 			}
+			
+			
+			/**
+			 * Misc other tracklist events
+			 **/
+			 
+			$scope.$on('spotmop:tracklist:copyURIsToClipboard', function(event){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = '';
+				
+				angular.forEach( selectedTracks, function(track){
+					
+					if( selectedTracksUris != '' ) selectedTracksUris += ',';
+					
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris += track.track.uri;
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris += track.uri;
+				});
+				
+				console.log( selectedTracksUris );
+			});
 		}
 	}
 });

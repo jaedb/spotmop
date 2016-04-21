@@ -10,7 +10,7 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $scope, $rootScope, $element, $timeout ){
+		controller: function( $scope, $rootScope, $element, $timeout, NotifyService ){
 		
 			$(document).on('click', function(event){
 			
@@ -88,6 +88,16 @@ angular.module('spotmop.common.contextmenu', [
 				$rootScope.$broadcast('spotmop:tracklist:addSelectedTracksToLibrary');
 				$element.fadeOut('fast');
 			}
+			
+			$scope.copyURIs = function(){
+				$rootScope.$broadcast('spotmop:tracklist:copyURIsToClipboard');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.copiedToClipboard = function(event){
+				NotifyService.notify('Copied selected track URIs to clipboard');
+				$element.fadeOut('fast');
+			};
 			
 			$scope.selectAll = function(){
 				$rootScope.$broadcast('spotmop:tracklist:selectAll');
