@@ -43,33 +43,7 @@ angular.module('spotmop.common.track', [])
 			 * Double click
 			 **/
 			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracks.length; i++ ){
-					var track = $scope.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
+				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
 		}
 	}
@@ -186,33 +160,7 @@ angular.module('spotmop.common.track', [])
 			 * Double click
 			 **/
 			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracks.length; i++ ){
-					var track = $scope.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
+				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
 		}
 	}

@@ -252,7 +252,7 @@ angular.module('spotmop.common.tracklist', [])
 						// more tracks to add
 						if( selectedTracksUris.length > 0 ){
 							// add the following tracks to the tracklist
-							MopidyService.addToTrackList( selectedTracksUris );
+							MopidyService.addToTrackList( selectedTracksUris, 1 );
 						}
 					});
 				}
