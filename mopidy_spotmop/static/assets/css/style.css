@@ -1500,7 +1500,8 @@ h1 .flag {
 .square-panel .info .name,
 .square-panel .info .tracks {
 	overflow: hidden;
-	max-height: 2.6em;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 
@@ -3355,6 +3356,19 @@ slider .item-container > .square-panel {
 	.square-panel.category .name {
 		padding-bottom: 12%;
 	}
+    
+    slider {
+        margin-bottom: 10px;
+        margin-right: -20px;
+    }
+    
+    slider .controls {
+        display: none;
+    }
+    
+    slider .slides-content {
+        width: 1100%;
+    }
 	
 	
 	/**

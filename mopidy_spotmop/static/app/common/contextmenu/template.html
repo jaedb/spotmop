@@ -54,6 +54,9 @@
 		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToLibrary()">
             Add to library
         </span>
+		<span class="menu-item" ng-show="context != 'localtrack'" ngclipboard data-clipboard-text="stuff" ngclipboard-success="copiedToClipboard(e);">
+            Copy URI(s)
+        </span>
 		<span class="menu-item" ng-show="context == 'tltrack'" singleclick="unqueue()">
             Delete
         </span>
