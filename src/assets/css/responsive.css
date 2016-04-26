@@ -408,7 +408,7 @@
 		padding-bottom: 12%;
 	}
     
-    slider {
+    slider.square-panels {
         margin-bottom: 10px;
         margin-right: -20px;
     }
@@ -416,6 +416,11 @@
     slider .controls {
         display: none;
     }
+    
+    slider .slides {
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
     
     slider .slides-content {
         width: 1100%;
@@ -473,6 +478,14 @@
 		float: left;
 		margin-right: 20px;
 		margin-left: -10px;
+	}
+	
+	.discover-section .section-title {
+		text-align: center;
+	}
+	
+	.discover-section .section-title .artist-list {
+		display: block;
 	}
 }
 

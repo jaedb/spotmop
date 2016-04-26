@@ -15,7 +15,7 @@ angular.module('spotmop.common.contextmenu', [
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
-				if( event.which === 1 ){
+				if( !$rootScope.isTouchDevice() && event.which === 1 ){
 					
 					var contextMenu = $(event.target);
 					
