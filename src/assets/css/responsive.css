@@ -327,8 +327,8 @@
 	
 	.playlist-page .info,
     .album-page .info {
-        margin-top: 0;
-        background: #EEEEEE;
+        margin-top: -1px !important;
+        background: #DDDDDD;
     }
 	
 	.playlist-page .info:not(.show),
