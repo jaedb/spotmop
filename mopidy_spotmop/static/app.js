@@ -30517,7 +30517,7 @@ angular.module('spotmop.common.contextmenu', [
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
-				if( event.which === 1 ){
+				if( !$rootScope.isTouchDevice() && event.which === 1 ){
 					
 					var contextMenu = $(event.target);
 					
@@ -32748,7 +32748,21 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
+	$scope.settings = SettingsService.getSettings();
 	$scope.playlists = { items: [] };
+	$scope.show = function( playlist ){
+        
+        if(
+				typeof($scope.settings.playlists) === 'undefined' ||
+				typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
+				!$scope.settings.playlists.onlyshowowned ){
+            return true;
+        }
+        
+        if( playlist.owner.id == 'jaedb' ) return true;
+		
+		return false;
+	};
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;

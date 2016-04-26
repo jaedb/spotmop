@@ -92,10 +92,12 @@ contextmenu .sub-menu > .menu-item:hover {
 .touchDevice contextmenu {
 	padding-left: 5px;
 	position: fixed;
-	top: 0;
+	top: auto;
 	right: 0;
+	bottom: 0;
 	left: 0;
 	z-index: 99;
+	background: #32b5f2;
 }
 
 .touchDevice contextmenu .menu-item {
@@ -1267,8 +1269,8 @@ h1 .flag {
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
 
-.body .button.tertiary {				background: #EEEEEE; color: #AAAAAA; }
-.body .button.tertiary:hover {		    background: #DDDDDD; }
+.body .button.tertiary {				background: #DDDDDD; color: #AAAAAA; }
+.body *:not(.touchDevice) .button.tertiary:hover {		    background: #DDDDDD; }
 
 
 .body .button.disabled,
@@ -2766,6 +2768,16 @@ slider .item-container > .square-panel {
     background: #08d58f;
 }
 
+.switch-button-wrapper {
+	display: block;
+	padding: 3px 16px 0 0;
+}
+
+.switch-button-wrapper label {
+	vertical-align: top;
+	display: inline-block;
+	margin: 7px 5px 0 5px
+}
 
 
 
@@ -3276,8 +3288,8 @@ slider .item-container > .square-panel {
 	
 	.playlist-page .info,
     .album-page .info {
-        margin-top: 0;
-        background: #EEEEEE;
+        margin-top: -1px !important;
+        background: #DDDDDD;
     }
 	
 	.playlist-page .info:not(.show),
@@ -3357,7 +3369,7 @@ slider .item-container > .square-panel {
 		padding-bottom: 12%;
 	}
     
-    slider {
+    slider.square-panels {
         margin-bottom: 10px;
         margin-right: -20px;
     }
@@ -3365,6 +3377,11 @@ slider .item-container > .square-panel {
     slider .controls {
         display: none;
     }
+    
+    slider .slides {
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
     
     slider .slides-content {
         width: 1100%;
@@ -3422,6 +3439,14 @@ slider .item-container > .square-panel {
 		float: left;
 		margin-right: 20px;
 		margin-left: -10px;
+	}
+	
+	.discover-section .section-title {
+		text-align: center;
+	}
+	
+	.discover-section .section-title .artist-list {
+		display: block;
 	}
 }
 

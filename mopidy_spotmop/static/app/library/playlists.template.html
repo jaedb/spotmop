@@ -10,17 +10,23 @@
 			<h1>Playlists</h1>		
 		</div>
 		
-		<a class="button create-playlist float-right primary mobile-hide"
-			  ng-click="createPlaylist()">
-			<i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
-		</a>
+        <div class="utilities">
+            <a class="button create-playlist primary mobile-hide pull-right"
+                  ng-click="createPlaylist()">
+                <i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
+            </a>
+            <div class="switch-button-wrapper pull-right">
+                <switch class="switch-button" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned"></switch>
+                <label>Only my playlists</label>
+            </div>
+        </div>
 		
 		<h1 class="mobile-hide">Playlists</h1>
 	
 		<div class="playlist-items square-panels">
 			
 			<div ng-if="playlists.items.length">
-				<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
+				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by $index">
 					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 						<div class="image-container" ng-if="playlist.images">
 							<thumbnail images="playlist.images"></thumbnail>
