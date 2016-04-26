@@ -124,6 +124,16 @@
     background: #08d58f;
 }
 
+.switch-button-wrapper {
+	display: block;
+	padding: 3px 16px 0 0;
+}
+
+.switch-button-wrapper label {
+	vertical-align: top;
+	display: inline-block;
+	margin: 7px 5px 0 5px
+}
 
 
 
