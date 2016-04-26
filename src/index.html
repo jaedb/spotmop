@@ -81,11 +81,11 @@
 </head>
 <body>
 
-	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
+	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
 	
 		<div id="notifications"></div>
 		
-		<div id="sidebar" class="animate">
+		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
 			<div class="background-image">
 				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.image }}"></preloadedimage>
 			</div>
