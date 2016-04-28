@@ -29930,7 +29930,7 @@ angular.module('spotmop.browse.featured', [])
 			return 'late';
 	};
 	
-	SpotifyService.featuredPlaylists()
+	SpotifyService.featuredPlaylists( 50 )
 		.then(function( response ) {
 			$scope.message = response.message;
 			$scope.playlists = response.playlists.items;
@@ -31134,6 +31134,7 @@ angular.module('spotmop.directives', [])
 		restrict: 'E',
 		scope: {
 			name: '@',
+			label: '@',
 			value: '='
 		},
 		replace: true, // Replace with the template below
@@ -31150,7 +31151,7 @@ angular.module('spotmop.directives', [])
 				});
 			});
 		}],
-		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
+		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch-track"><span class="indicator animate"></span></span><span class="label" ng-if="label" ng-bind="label"></span></span>'
 	}
 }])
 
@@ -32663,6 +32664,7 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'NotifyService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
+	$scope.settings = SettingsService.getSettings();
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
