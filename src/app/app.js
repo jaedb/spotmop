@@ -207,7 +207,11 @@ angular.module('spotmop', [
 	 
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
-		$rootScope.$broadcast('spotmop:contextMenu:hide');
+			
+		// only hide the contextmenu if we're NOT a touch device
+		if( !$rootScope.isTouchDevice() ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		};
 	});
 	
 	
