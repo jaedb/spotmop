@@ -91,6 +91,10 @@
 }
  
 .switch-button {
+	cursor: pointer;
+}
+ 
+.switch-button > .switch-track {
     margin-top: 6px;
     width: 30px;
     height: 14px;
@@ -98,12 +102,11 @@
     padding: 3px;
     border-radius: 20px;
     position: relative;
-    cursor: pointer;
     display: inline-block;
     box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
 }
 
-.switch-button > .switch {
+.switch-button > .switch-track > .indicator {
     width: 14px;
     height: 14px;
     position: absolute;
@@ -113,12 +116,12 @@
     border-radius: 14px;
 }
 
-.switch-button.on {
+.switch-button.on > .switch-track {
     background: rgba(0,0,0,0.8);
     box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
 }
 
-.switch-button.on > .switch {
+.switch-button.on > .switch-track > .indicator {
     left: auto;
     right: 3px;
     background: #08d58f;
@@ -126,13 +129,13 @@
 
 .switch-button-wrapper {
 	display: block;
-	padding: 3px 16px 0 0;
+	padding: 4px 16px 0 0;
 }
 
-.switch-button-wrapper label {
+.switch-button-wrapper .label {
 	vertical-align: top;
 	display: inline-block;
-	margin: 7px 5px 0 5px
+	margin: 7px 5px 0 10px
 }
 
 
