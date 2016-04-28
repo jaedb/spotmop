@@ -12,9 +12,17 @@
 			Please authorize Spotify (under Settings) to browse Your Albums
 		</div>
 		
+        <div class="utilities">
+            <div class="switch-button-wrapper pull-right">
+                <switch name="albums.gridview" value="settings.albums.gridview" label="View as grid"></switch>
+            </div>
+        </div>
+		
 		<h1 class="mobile-hide">Albums</h1>
 		
-		<div class="album-items">
+        <!-- FULL VIEW -->
+        
+		<div class="album-items" ng-if="!settings.albums.gridview">
 			
 			<div class="item-container full-album" ng-repeat="album in albums.items track by album.uri" ng-class="{ transitioning: album.transitioning }">
             
@@ -61,6 +69,24 @@
 			
 			<div class="clear-both"></div>
 		
+		</div>
+        
+        <!-- GRID VIEW -->
+		
+		<div class="album-items square-panels" ng-if="settings.albums.gridview">
+			<div class="item-container" ng-repeat="album in albums.items track by $index">
+				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+					<div class="image-container">
+						<thumbnail images="album.images"></thumbnail>
+					</div>
+					<div class="info smaller animate">
+						<div class="name" ng-bind="album.name"></div>
+                        <div class="secondary">
+                            <artistlist artists="album.artists"></artistlist>
+                        </div>
+					</div>
+				</a>
+			</div>		
 		</div>
 		
 		<div ng-hide="albums.items.length" class="no-items">

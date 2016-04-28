@@ -210,6 +210,7 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
+	$scope.settings = SettingsService.getSettings();
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
