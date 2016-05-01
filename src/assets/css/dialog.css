@@ -119,8 +119,8 @@
     box-shadow: inset 0px 0px 0px 5px #111111;
 }
 
-.dialog .switch-button,
-.dialog .switch-button.on {
+.dialog .switch-button > .switch-track,
+.dialog .switch-button.on > .switch-track {
 	background: rgba(255,255,255,0.2);
 }
 
