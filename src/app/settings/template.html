@@ -186,7 +186,7 @@
                     <div class="input">
                         <label>
                             <input type="radio" name="spotmop.pointerMode" ng-model="settings.spotmop.pointerMode" value="default" />
-                            <span class="label">Device default</span>
+                            <span class="label">Device default (<span ng-if="isTouchDevice()">touch</span><span ng-if="!isTouchDevice()">click</span>)</span>
                         </label>
                         <label>
                             <input type="radio" name="spotmop.pointerMode" ng-model="settings.spotmop.pointerMode" value="click" />

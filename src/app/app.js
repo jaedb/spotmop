@@ -86,7 +86,7 @@ angular.module('spotmop', [
 		else if( pointerMode == 'click' ) return false;
 		
 		// no override, so use device defaults
-		$rootScope.isTouchDevice();
+		return $rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
@@ -217,7 +217,7 @@ angular.module('spotmop', [
 		$scope.checkForLazyLoading();
 			
 		// only hide the contextmenu if we're NOT a touch device
-		if( !$rootScope.isTouchDevice() ){
+		if( !$rootScope.isTouchMode() ){
 			$rootScope.$broadcast('spotmop:contextMenu:hide');
 		};
 	});

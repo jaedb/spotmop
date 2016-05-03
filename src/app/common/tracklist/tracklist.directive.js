@@ -88,7 +88,7 @@ angular.module('spotmop.common.tracklist', [])
 				if( !$rootScope.dragging ){
 					
 					// if ctrl key held down
-					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
 						
 						// toggle selection for this track
 						if( $track.track.selected ){
@@ -146,7 +146,7 @@ angular.module('spotmop.common.tracklist', [])
 					/**
 					 * Hide/show mobile version of the context menu
 					 **/
-					if( $rootScope.isTouchDevice() ){
+					if( $rootScope.isTouchMode() ){
 						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
 							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
 						else

@@ -16,7 +16,7 @@ angular.module('spotmop.common.contextmenu', [
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
-				if( !$rootScope.isTouchDevice() && event.which === 1 ){
+				if( !$rootScope.isTouchMode() && event.which === 1 ){
 					
 					var contextMenu = $(event.target);
 					
@@ -44,7 +44,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -53,7 +53,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -62,7 +62,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -71,7 +71,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -124,7 +124,7 @@ angular.module('spotmop.common.contextmenu', [
 			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
 				// disable click-driven contextmenu on touch devices
-				if( $rootScope.isTouchDevice() ){
+				if( $rootScope.isTouchMode() ){
 					return false;
 				}
 				

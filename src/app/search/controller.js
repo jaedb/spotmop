@@ -39,7 +39,7 @@ angular.module('spotmop.search', [])
 	var searchDelayer;
 
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
-	if( !$scope.isTouchDevice() )
+	if( !$scope.isTouchMode() )
 		$(document).find('.search-form input.query').focus();
 	
 	// if we've just loaded this page, and we have params, let's perform a search
