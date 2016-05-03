@@ -10,7 +10,7 @@
 /* ============================================================================ BASE STYLES ======== */
 /* ================================================================================================= */
 
-contextmenu {
+.contextmenu {
 	position: fixed;
 	display: none;
 	top: 0;
@@ -21,29 +21,29 @@ contextmenu {
 	min-width: 110px;
 }
 
-contextmenu .menu-item {
+.contextmenu .menu-item {
 	display: block;
 	padding: 8px 14px 8px 10px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
     position: relative;
 }
 
-contextmenu .menu-item.has-submenu i {
+.contextmenu .menu-item.has-submenu i {
     position: absolute;
     top: 8px;
     right: 8px;
 }
 
-contextmenu .menu-item:hover {
+.contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
 }
 
-contextmenu .menu-item:hover > .sub-menu{
+.contextmenu .menu-item:hover > .sub-menu{
 	display: block;
 }
 
-contextmenu .sub-menu {
+.contextmenu .sub-menu {
     display: none;
     position: absolute;
     right: -150px;
@@ -54,19 +54,19 @@ contextmenu .sub-menu {
 	overflow-y: scroll;
 }
 
-contextmenu.hard-right .sub-menu,
-contextmenu.close-right .sub-menu {
+.contextmenu.hard-right .sub-menu,
+.contextmenu.close-right .sub-menu {
 	right: auto;
 	left: -150px;
 }
 
-contextmenu.hard-bottom .sub-menu,
-contextmenu.close-bottom .sub-menu {
+.contextmenu.hard-bottom .sub-menu,
+.contextmenu.close-bottom .sub-menu {
 	top: auto;
 	bottom: 0px;
 }
 
-contextmenu .sub-menu > .menu-item:hover {
+.contextmenu .sub-menu > .menu-item:hover {
     background: #414141;
 }
 
@@ -76,7 +76,7 @@ contextmenu .sub-menu > .menu-item:hover {
  * Non-touch device only
  **/
 
-#app:not(.touchDevice) contextmenu .menu-item i {
+.contextmenu.click .menu-item i {
 	font-size: 8px;
 	padding-right: 5px;
 	vertical-align: top;
@@ -89,7 +89,7 @@ contextmenu .sub-menu > .menu-item:hover {
  * Touch-device friendly
  * This provides a sticky toolbar while tracks are selected
  **/
-.touchDevice contextmenu {
+.contextmenu.touch  {
 	padding-left: 5px;
 	position: fixed;
 	top: auto;
@@ -100,7 +100,7 @@ contextmenu .sub-menu > .menu-item:hover {
 	background: #32b5f2;
 }
 
-.touchDevice contextmenu .menu-item {
+.contextmenu.touch  .menu-item {
 	display: block;
 	float: left;
 	padding: 14px 0 12px;
@@ -109,16 +109,16 @@ contextmenu .sub-menu > .menu-item:hover {
 	border: 0;
 }
 
-.touchDevice contextmenu .menu-item.cancel {
+.contextmenu.touch  .menu-item.cancel {
 	opacity: 0.5;
 	float: right;
 }
 
-.touchDevice contextmenu .menu-item .icon {
+.contextmenu.touch  .menu-item .icon {
 	font-size: 16px;
 }
 
-.touchDevice contextmenu .menu-item .text {
+.contextmenu.touch  .menu-item .text {
 	font-size: 8px;
 	display: block;
 	text-transform: uppercase;
@@ -2564,9 +2564,13 @@ slider .item-container > .square-panel {
     box-shadow: inset 0px 0px 0px 5px #111111;
 }
 
-.dialog .switch-button,
-.dialog .switch-button.on {
-	background: rgba(255,255,255,0.2);
+.dialog .switch-button:not(.on) > .switch-track > .indicator {
+	background: #FFFFFF;
+}
+
+.dialog .switch-button > .switch-track,
+.dialog .switch-button.on > .switch-track {
+	border-color: #FFFFFF;
 }
 
 .dialog .actions {
@@ -2741,28 +2745,22 @@ slider .item-container > .square-panel {
 .switch-button > .switch-track {
     margin-top: 6px;
     width: 30px;
-    height: 14px;
-    background: rgba(0,0,0,0.3);
+    height: 12px;
     padding: 3px;
     border-radius: 20px;
     position: relative;
     display: inline-block;
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+	border: 2px solid #000000;
 }
 
 .switch-button > .switch-track > .indicator {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     position: absolute;
     top: 3px;
     left: 3px;
-    background: #DDDDDD;
+    background: #000000;
     border-radius: 14px;
-}
-
-.switch-button.on > .switch-track {
-    background: rgba(0,0,0,0.8);
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
 }
 
 .switch-button.on > .switch-track > .indicator {
@@ -2781,6 +2779,50 @@ slider .item-container > .square-panel {
 	display: inline-block;
 	margin: 7px 5px 0 10px
 }
+
+
+
+/**
+ * Options field
+ * Basically a glorified radio field
+ **/
+
+.field.radio .input label {
+	padding-top: 2px;
+	display: inline-block;
+}
+
+.field.radio input {
+	display: none;
+}
+
+.field.radio label .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+    border-radius: 50%;
+	border: 2px solid #000000;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.field.radio input:checked + .label:before {
+    background: #000000;
+    box-shadow: inset 0px 0px 0px 3px #f5f5f5;
+}
+
+
 
 
 

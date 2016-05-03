@@ -97,28 +97,22 @@
 .switch-button > .switch-track {
     margin-top: 6px;
     width: 30px;
-    height: 14px;
-    background: rgba(0,0,0,0.3);
+    height: 12px;
     padding: 3px;
     border-radius: 20px;
     position: relative;
     display: inline-block;
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+	border: 2px solid #000000;
 }
 
 .switch-button > .switch-track > .indicator {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     position: absolute;
     top: 3px;
     left: 3px;
-    background: #DDDDDD;
+    background: #000000;
     border-radius: 14px;
-}
-
-.switch-button.on > .switch-track {
-    background: rgba(0,0,0,0.8);
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
 }
 
 .switch-button.on > .switch-track > .indicator {
@@ -144,6 +138,11 @@
  * Options field
  * Basically a glorified radio field
  **/
+
+.field.radio .input label {
+	padding-top: 2px;
+	display: inline-block;
+}
 
 .field.radio input {
 	display: none;

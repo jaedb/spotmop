@@ -29102,9 +29102,17 @@ angular.module('spotmop', [
 	Analytics.trackEvent('Spotmop', 'Started');
 		
     $rootScope.isTouchDevice = function(){
-		if( SettingsService.getSetting('spotmop',false,'emulateTouchDevice') )
-			return true;
 		return !!('ontouchstart' in window);
+	}		
+    $rootScope.isTouchMode = function(){
+		
+		// detect our manual override
+		var pointerMode = SettingsService.getSetting('spotmop',false,'pointerMode');
+		if( pointerMode == 'touch' ) return true;
+		else if( pointerMode == 'click' ) return false;
+		
+		// no override, so use device defaults
+		return $rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
@@ -29233,7 +29241,11 @@ angular.module('spotmop', [
 	 
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
-		$rootScope.$broadcast('spotmop:contextMenu:hide');
+			
+		// only hide the contextmenu if we're NOT a touch device
+		if( !$rootScope.isTouchMode() ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		};
 	});
 	
 	
@@ -30509,6 +30521,7 @@ angular.module('spotmop.common.contextmenu', [
 .directive('contextmenu', function() {
 	return {
 		restrict: 'E',
+		replace: true,
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
@@ -30517,7 +30530,7 @@ angular.module('spotmop.common.contextmenu', [
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
-				if( !$rootScope.isTouchDevice() && event.which === 1 ){
+				if( !$rootScope.isTouchMode() && event.which === 1 ){
 					
 					var contextMenu = $(event.target);
 					
@@ -30532,6 +30545,11 @@ angular.module('spotmop.common.contextmenu', [
 			});
 			
 			
+			// holds the event type (click or touch)
+			// we use this to define positioning and menu items
+			$scope.triggerEvent = '';
+			
+			
 			/**
 			 * Menu item functionality
 			 **/
@@ -30540,7 +30558,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -30549,7 +30567,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -30558,7 +30576,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -30567,7 +30585,7 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 				
 				// if we're a touch device, hide the menu now we're done with it (aka unselect all)
-				if( $scope.isTouchDevice() )
+				if( $scope.isTouchMode() )
 					$rootScope.$broadcast('spotmop:tracklist:unselectAll');
 			}
 			
@@ -30619,11 +30637,17 @@ angular.module('spotmop.common.contextmenu', [
 			 **/
 			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
+				// disable click-driven contextmenu on touch devices
+				if( $rootScope.isTouchMode() ){
+					return false;
+				}
+				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){
-				
+					
 					// apply our context, which ultimately defines what options are available
 					$scope.context = context;
+					$scope.triggerEvent = 'click';
 					
 					// wait for angular to render the dom, then we position the menu
 					$timeout(function(){
@@ -30675,6 +30699,14 @@ angular.module('spotmop.common.contextmenu', [
 				
 				// position and reveal our element
 				$element.show();
+				$scope.triggerEvent = 'touch';
+				
+				// ditch all the right-click context menu formatting that may have been applied from a click
+				$element.removeClass('hard-bottom close-bottom hard-right close-right');
+				$element.css({
+					top: 'auto',
+					left: 0
+				});	
 				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){
@@ -31752,7 +31784,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -31803,7 +31835,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -31868,7 +31900,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -31993,7 +32025,7 @@ angular.module('spotmop.common.tracklist', [])
 				if( !$rootScope.dragging ){
 					
 					// if ctrl key held down
-					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
 						
 						// toggle selection for this track
 						if( $track.track.selected ){
@@ -32051,7 +32083,7 @@ angular.module('spotmop.common.tracklist', [])
 					/**
 					 * Hide/show mobile version of the context menu
 					 **/
-					if( $rootScope.isTouchDevice() ){
+					if( $rootScope.isTouchMode() ){
 						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
 							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
 						else
@@ -33616,7 +33648,7 @@ angular.module('spotmop.search', [])
 	var searchDelayer;
 
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
-	if( !$scope.isTouchDevice() )
+	if( !$scope.isTouchMode() )
 		$(document).find('.search-form input.query').focus();
 	
 	// if we've just loaded this page, and we have params, let's perform a search
@@ -34084,6 +34116,7 @@ angular.module('spotmop.services.dialog', [])
 			
 			// default to on
 			SettingsService.setSetting('spotify',true,'authorizationenabled');
+			SettingsService.setSetting('spotmop','default','pointerMode');
 		
             $scope.saving = false;
             $scope.save = function(){          
@@ -34794,6 +34827,7 @@ angular.module('spotmop.services.pusher', [
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
                                 SettingsService.setSetting('version', data.version, 'installed');
+								SettingsService.runUpgrade();
                             }
 							
                             // notify server of our actual username
@@ -36731,6 +36765,14 @@ angular.module('spotmop.services.settings', [])
                     deferred.reject( response.error.message );
                 });				
             return deferred.promise;
+		},
+		
+		// perform post-upgrade commands
+		runUpgrade: function(){
+			
+			// depreciated settings
+			SettingsService.setSetting('spotmop','','emulateTouchDevice');
+			SettingsService.setSetting('spotmop','default','pointerMode');
 		},
 		
 		

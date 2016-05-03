@@ -278,6 +278,7 @@ angular.module('spotmop.services.dialog', [])
 			
 			// default to on
 			SettingsService.setSetting('spotify',true,'authorizationenabled');
+			SettingsService.setSetting('spotmop','default','pointerMode');
 		
             $scope.saving = false;
             $scope.save = function(){          
