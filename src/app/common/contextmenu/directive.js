@@ -7,6 +7,7 @@ angular.module('spotmop.common.contextmenu', [
 .directive('contextmenu', function() {
 	return {
 		restrict: 'E',
+		replace: true,
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
@@ -28,6 +29,11 @@ angular.module('spotmop.common.contextmenu', [
 					}
 				}
 			});
+			
+			
+			// holds the event type (click or touch)
+			// we use this to define positioning and menu items
+			$scope.triggerEvent = '';
 			
 			
 			/**
@@ -117,11 +123,17 @@ angular.module('spotmop.common.contextmenu', [
 			 **/
 			$scope.$on('spotmop:contextMenu:show', function(event, originalEvent, context){
 				
+				// disable click-driven contextmenu on touch devices
+				if( $rootScope.isTouchDevice() ){
+					return false;
+				}
+				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){
-				
+					
 					// apply our context, which ultimately defines what options are available
 					$scope.context = context;
+					$scope.triggerEvent = 'click';
 					
 					// wait for angular to render the dom, then we position the menu
 					$timeout(function(){
@@ -173,6 +185,14 @@ angular.module('spotmop.common.contextmenu', [
 				
 				// position and reveal our element
 				$element.show();
+				$scope.triggerEvent = 'touch';
+				
+				// ditch all the right-click context menu formatting that may have been applied from a click
+				$element.removeClass('hard-bottom close-bottom hard-right close-right');
+				$element.css({
+					top: 'auto',
+					left: 0
+				});	
 				
 				// use the clicked element to define what kind of context menu to show
 				$scope.$apply( function(){

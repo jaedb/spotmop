@@ -140,6 +140,45 @@
 
 
 
+/**
+ * Options field
+ * Basically a glorified radio field
+ **/
+
+.field.radio input {
+	display: none;
+}
+
+.field.radio label .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+    border-radius: 50%;
+	border: 2px solid #000000;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.field.radio input:checked + .label:before {
+    background: #000000;
+    box-shadow: inset 0px 0px 0px 3px #f5f5f5;
+}
+
+
+
+
+
 
 /* ============================================================================== SEARCH FORMS ========= */
 /* ===================================================================================================== */

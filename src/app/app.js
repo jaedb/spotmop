@@ -76,9 +76,17 @@ angular.module('spotmop', [
 	Analytics.trackEvent('Spotmop', 'Started');
 		
     $rootScope.isTouchDevice = function(){
-		if( SettingsService.getSetting('spotmop',false,'emulateTouchDevice') )
-			return true;
 		return !!('ontouchstart' in window);
+	}		
+    $rootScope.isTouchMode = function(){
+		
+		// detect our manual override
+		var pointerMode = SettingsService.getSetting('spotmop',false,'pointerMode');
+		if( pointerMode == 'touch' ) return true;
+		else if( pointerMode == 'click' ) return false;
+		
+		// no override, so use device defaults
+		$rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
