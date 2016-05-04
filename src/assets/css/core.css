@@ -788,7 +788,7 @@ input[type='submit'],
 .si.doublesize {
 	width: 32px;
 	height: 32px;
-	background-size: 32px 512px;
+	background-size: 32px 640px;
 }
  
 .si.play {			background-position: 0 0; }
@@ -805,6 +805,9 @@ input[type='submit'],
 .si.find {			background-position: 0 -176px; }
 .si.next {			background-position: 0 -192px; }
 .si.prev {			background-position: 0 -208px; }
+.si.section {		background-position: 0 -224px; }
+.si.grid.black {	background-position: 0 -240px; }
+.si.list {			background-position: 0 -256px; }
  
 .si.play.doublesize {			background-position: 0 0; }
 .si.explore.doublesize {		background-position: 0 -32px; }
@@ -820,6 +823,9 @@ input[type='submit'],
 .si.find.doublesize {			background-position: 0 -352px; }
 .si.next.doublesize {			background-position: 0 -384px; }
 .si.prev.doublesize {			background-position: 0 -416px; }
+.si.section.doublesize {		background-position: 0 -448px; }
+.si.grid.black.doublesize {		background-position: 0 -480px; }
+.si.list.doublesize {			background-position: 0 -512px; }
 
 
 .ssi {
@@ -1889,6 +1895,10 @@ slider .item-container > .square-panel {
 /**
  * Library
  **/
+ 
+.library-albums .utilities {
+	float: right;
+}
  
 .library-albums .library-album {}
 

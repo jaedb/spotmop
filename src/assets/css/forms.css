@@ -176,6 +176,40 @@
 
 
 
+/**
+ * Options via icons field
+ * Basically a glorified radio field, but using icons instead of radios
+ **/
+
+.field.icon-radio {
+	padding: 0;
+}
+
+.field.icon-radio input {
+	display: none;
+}
+
+.field.icon-radio label {
+	display: inline-block;
+}
+
+.field.icon-radio .label {
+	opacity: 0.3;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+}
+
+.field.icon-radio .label:hover {
+	opacity: 0.5;
+}
+
+.field.icon-radio input:checked + .label {
+	opacity: 1;
+}
+
+
 
 
 
