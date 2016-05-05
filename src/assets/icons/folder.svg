@@ -5,7 +5,10 @@
 	 width="16px" height="16px" viewBox="0 0 16 16" enable-background="new 0 0 16 16" xml:space="preserve">
 <g>
 	<g>
-		<path d="M4.181,3.19l7.152,4.749l-7.152,4.748V3.19 M2.764,0.548v14.779l11.132-7.389L2.764,0.548L2.764,0.548z"/>
+		<path fill="none" stroke="#000000" stroke-width="1.4173" stroke-miterlimit="10" d="M13.94,13.125c0,0.274-0.225,0.5-0.5,0.5
+			H2.612c-0.275,0-0.5-0.226-0.5-0.5v-7.75c0-0.275,0.225-0.5,0.5-0.5H13.44c0.275,0,0.5,0.225,0.5,0.5V13.125z"/>
 	</g>
+	
+		<rect x="2.706" y="2.25" fill="none" stroke="#000000" stroke-width="1.4173" stroke-miterlimit="10" width="4.854" height="2.625"/>
 </g>
 </svg>

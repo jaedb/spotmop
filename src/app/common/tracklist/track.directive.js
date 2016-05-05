@@ -60,6 +60,24 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
+			// figure out if this track is currently playing
+			$scope.isCurrentlyPlaying = function(){
+				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
+			}
+			
+			// figure out what the classes are for our source icon
+			$scope.sourceIconClasses = function(){
+				if( typeof($scope.track.track) === 'undefined' ) return false;
+				var source = $scope.track.track.uri.split(':')[0];
+				var state = 'light';
+				if( $scope.isCurrentlyPlaying() ){
+					if( source == 'spotify' ) state = 'green';
+					if( source == 'local' ) state = 'yellow';
+					if( source == 'soundcloud' ) state = 'red';
+				}
+				return source +' '+ state;
+			}
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
