@@ -388,7 +388,11 @@ body.dragging .body * {
 .sub-page-navigation .menu-item.active {
 	border-color: #08d58f;
 }
-
+ 
+.utilities {
+	float: right;
+	margin-top: -10px;
+}
 
 
 
@@ -1814,7 +1818,17 @@ slider .item-container > .square-panel {
  **/
  
 .library-albums .utilities {
-	float: right;
+	padding: 10px 12px;
+	background: #EEEEEE;
+}
+ 
+.library-albums .utilities .view-options label {
+	padding: 0 5px;
+}
+ 
+.library-albums .utilities .si {
+	width: 22px;
+	height: 22px;
 }
  
 .library-albums .library-album {}
