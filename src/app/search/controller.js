@@ -29,6 +29,38 @@ angular.module('spotmop.search', [])
 	$scope.playlists = [];
 	$scope.other = {tracks: [], type: 'track'};
 	$scope.type = $stateParams.type;
+	$scope.typeFilterOptions = [
+			{
+				type: 'all',
+				icon: 'list',
+				label: 'All'
+			},
+			{
+				type: 'artist',
+				icon: 'mic',
+				label: 'Artists'
+			},
+			{
+				type: 'album',
+				icon: 'cd',
+				label: 'Albums'
+			},
+			{
+				type: 'playlist',
+				icon: 'playlist',
+				label: 'Playlists'
+			},
+			{
+				type: 'track',
+				icon: 'music',
+				label: 'Tracks'
+			},
+			{
+				type: 'other',
+				icon: 'folder',
+				label: 'Other'
+			}
+		];
 	$scope.query = '';
     if( $stateParams.query )
         $scope.query = $filter('stripAccents')( $stateParams.query );

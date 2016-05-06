@@ -1551,9 +1551,26 @@ slider .item-container > .square-panel {
 	padding: 0 5px;
 }
  
-.library-albums .utilities .si {
+.utilities .si {
 	width: 22px;
 	height: 22px;
+}
+ 
+.utilities .filter-option.active,
+.utilities .filter-option:hover {
+	opacity: 1;	
+	border: none !important;
+}
+ 
+.utilities .filter-option {
+	margin-left: 15px;
+	opacity: 0.5;
+}
+ 
+.utilities .filter-option .label {
+	display: inline-block;
+	vertical-align: bottom;
+	margin-bottom: 3px;
 }
  
 .page-header .flag {

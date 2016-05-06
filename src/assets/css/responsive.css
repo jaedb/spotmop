@@ -259,7 +259,6 @@
 		padding: 1px 0 0 30px;
 		margin: 0;
 		font-size: 18px;
-		text-align: center;
 	}
 	
 	.page-header .button,
@@ -267,6 +266,17 @@
 		margin: -5px -10px 0 0;
 		padding: 8px;
 		background: transparent;
+	}
+	
+	.page-header .utilities .filter-option {
+		opacity: 1;
+		margin-left: 0;
+	}
+	
+	.page-header .utilities .filter-option .si {
+		-webkit-filter: invert(1);
+		-moz-filter: invert(1);
+		filter: invert(1);
 	}
 	
 	

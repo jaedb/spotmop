@@ -7,8 +7,19 @@
             
             <h1>
                 <span class="si search mobile-hide"></span>
-                Search
+                Search<span class="mobile-hide"> results</span>
             </h1>
+
+            <div class="utilities">
+                <a class="filter-option"
+                    ng-repeat="option in typeFilterOptions"
+                    ui-sref="search({ query: query, type: option.type })"
+                    ng-class="{active: type == option.type}">
+                        <span class="si {{ option.icon }}"></span>
+                        <span class="label mobile-hide" ng-bind="option.label"></span>
+                </a>
+                <div class="clear-both"></div>
+            </div>
             
         </div>
 		
@@ -19,16 +30,6 @@
 					<i class="fa fa-search"></i>
 				</button>
 			</form>
-		</div>
-
-		<div class="sub-page-navigation">
-			<a class="menu-item"
-				ng-repeat="typename in ['all','artist','album','playlist','track','other']"
-				ui-sref="search({ query: query, type: typename })"
-				ng-class="{active: type == typename}">
-					{{ typename }}<span ng-hide="typename == 'all' || typename == 'other'">s</span>
-			</a>
-			<div class="clear-both"></div>
 		</div>
 		
 		<div ng-if="query">
