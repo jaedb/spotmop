@@ -1,12 +1,16 @@
 <div class="page search-page scrolling-panel">
 	<div class="inner">
-	
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Search Results</h1>
-		</div>
 		
-		<h1 class="mobile-hide">Search results</h1>
+        <div class="page-header">
+        
+            <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si search mobile-hide"></span>
+                Search
+            </h1>
+            
+        </div>
 		
 		<div class="search-form mobile-show">
 			<form ng-submit="searchSubmit( query )">
