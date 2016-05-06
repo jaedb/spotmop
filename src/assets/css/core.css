@@ -388,11 +388,6 @@ body.dragging .body * {
 .sub-page-navigation .menu-item.active {
 	border-color: #08d58f;
 }
- 
-.utilities {
-	float: right;
-	margin-top: -10px;
-}
 
 
 
@@ -1524,6 +1519,56 @@ slider .item-container > .square-panel {
 }
  
  
+.page-header {
+	margin: -40px -40px 40px -40px;
+	background: #EEEEEE;
+	padding: 20px 40px;
+}
+ 
+.page-header h1 {
+	padding: 0;
+	margin: 0;
+	font-size: 22px;
+	display: inline-block;
+}
+ 
+.page-header h1 .si {
+	width: 1em;
+	height: 1em;
+	margin: 3px 5px 0 0;
+}
+ 
+.page-header .utilities {
+	margin: 0;
+	float: right;
+}
+ 
+.page-header .utilities.has-buttons {
+	margin-top: -8px;
+}
+ 
+.library-albums .utilities .view-options label {
+	padding: 0 5px;
+}
+ 
+.library-albums .utilities .si {
+	width: 22px;
+	height: 22px;
+}
+ 
+.page-header .flag {
+	display: inline-block;
+	padding: 3px 6px;
+	background: #CCCCCC;
+	color: #666666;
+	margin-top: 4px;
+	vertical-align: top;
+}
+ 
+.page-header .flag.bad {
+	background: rgb(214,47,47);
+	color: #FFFFFF;
+}
  
 
 
@@ -1816,20 +1861,6 @@ slider .item-container > .square-panel {
 /**
  * Library
  **/
- 
-.library-albums .utilities {
-	padding: 10px 12px;
-	background: #EEEEEE;
-}
- 
-.library-albums .utilities .view-options label {
-	padding: 0 5px;
-}
- 
-.library-albums .utilities .si {
-	width: 22px;
-	height: 22px;
-}
  
 .library-albums .library-album {}
 

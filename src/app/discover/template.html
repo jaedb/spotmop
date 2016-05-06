@@ -2,15 +2,23 @@
 	<div class="inner">
 
 		<div class="discover">
-			
-			<div class="page-header mobile-show">
-				<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-				<h1>Discover</h1>
-			</div>
-			
-			<div class="page-header mobile-hide">
-				<h1>Discover</h1>
-			</div>
+		
+            <div class="page-header">
+            
+                <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+                
+                <h1>
+                    <span class="si compass"></span>
+                    Discover
+                </h1>
+		
+                <div class="flag bad" ng-show="!spotifyAuthorized">
+                    <i class="fa fa-exclamation-triangle white-text"></i>
+                    &nbsp;
+                    Please authorize Spotify
+                </div>
+                
+            </div>
 			
 			<div class="discover-section" ng-if="current.items.length > 0">
 				<h4 class="section-title">

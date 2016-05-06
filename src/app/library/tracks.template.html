@@ -1,18 +1,22 @@
 <div class="page library-tracks-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Tracks</h1>
-		</div>
+        <div class="page-header">
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si music"></span>
+                Tracks
+            </h1>
 		
-		<div class="page-notification red-background white-text" ng-show="!spotifyAuthorized">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			Please authorize Spotify (under Settings) to browse Your Tracks
-		</div>
-		
-		<h1 class="mobile-hide">Tracks</h1>
+            <div class="flag bad" ng-show="!spotifyAuthorized">
+                <i class="fa fa-exclamation-triangle white-text"></i>
+                &nbsp;
+                Please authorize Spotify
+            </div>
+            
+        </div>
         
 		<tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist library-tracks"></tracklist>
 		

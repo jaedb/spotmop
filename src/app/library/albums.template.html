@@ -1,35 +1,39 @@
 <div class="page library-albums scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Albums</h1>
-		</div>
+        <div class="page-header">
 		
-		<div class="page-notification red-background white-text" ng-show="!spotifyAuthorized">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			Please authorize Spotify (under Settings) to browse Your Albums
-		</div>
-		
-        <div class="utilities">
-            <div class="field icon-radio view-options">
-                <label>
-                    <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="default" />
-                    <span class="label animate"><span class="si doublesize sections"></span></span>
-                </label>
-                <label>
-                    <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="grid" />
-                    <span class="label animate"><span class="si doublesize grid"></span></span>
-                </label>
-                <label>
-                    <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="list" />
-                    <span class="label animate"><span class="si doublesize list"></span></span>
-                </label>
+            <div class="utilities">
+                <div class="field icon-radio view-options">
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="default" />
+                        <span class="label animate"><span class="si doublesize sections"></span></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="grid" />
+                        <span class="label animate"><span class="si doublesize grid"></span></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="list" />
+                        <span class="label animate"><span class="si doublesize list"></span></span>
+                    </label>
+                </div>
             </div>
-        </div>
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si cd"></span>
+                Albums
+            </h1>
 		
-		<h1 class="mobile-hide">Albums</h1>
+            <div class="flag bad" ng-show="!spotifyAuthorized">
+                <i class="fa fa-exclamation-triangle white-text"></i>
+                &nbsp;
+                Please authorize Spotify
+            </div>
+            
+        </div>
 		
         <!-- FULL VIEW -->
         
