@@ -628,16 +628,17 @@
 	}
 	
 	
-	
 	/**
-	 * Notifications
+	 * Search results page
 	 **/
-	
-	.page-notification {
-		margin-top: -20px;
-		margin-right: -20px;
-		margin-left: -20px;
-		padding: 10px 20px;
+	.search-page .search-results-section {
+		float: none;
+		width: 100%;
+		margin-right: 0;
+		padding-right: 0;
+	}
+	.search-page .search-results-section .square-panel {
+		width: 21%;
 	}
 }
 

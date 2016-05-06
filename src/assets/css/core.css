@@ -868,7 +868,7 @@ h4 {
 h4.section-title {
 	text-transform: uppercase;
 	font-weight: 600;
-	padding-bottom: 5px;
+	padding-bottom: 20px;
 }
 
 .underline {
@@ -1556,15 +1556,15 @@ slider .item-container > .square-panel {
 	height: 22px;
 }
  
-.utilities .filter-option.active,
-.utilities .filter-option:hover {
-	opacity: 1;	
-	border: none !important;
-}
- 
 .utilities .filter-option {
 	margin-left: 15px;
 	opacity: 0.5;
+	border: none !important;
+}
+ 
+.utilities .filter-option.active,
+.utilities .filter-option:hover {
+	opacity: 1;	
 }
  
 .utilities .filter-option .label {

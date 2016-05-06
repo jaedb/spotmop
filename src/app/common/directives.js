@@ -652,7 +652,7 @@ angular.module('spotmop.directives', [])
 		scope: {
 			items: '='
 		},
-        link: function( $scope, $element ){		
+        link: function( $scope, $element ){
 			
 			var sliderContent = $element.find('.slides-content');
 			var currentSlide = 0;

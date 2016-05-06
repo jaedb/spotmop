@@ -7,11 +7,11 @@
             
             <h1>
                 <span class="si search mobile-hide"></span>
-                Search<span class="mobile-hide"> results</span>
+                Search results
             </h1>
 
             <div class="utilities">
-                <a class="filter-option"
+                <a class="filter-option animate"
                     ng-repeat="option in typeFilterOptions"
                     ui-sref="search({ query: query, type: option.type })"
                     ng-class="{active: type == option.type}">
@@ -118,7 +118,7 @@
 				<div ng-show="loading" class="loading">
 					<img src="assets/svg/spinner-black.svg" />
 				</div>
-			
+				
 				<div class="search-results-section artists" ng-hide="loading">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
 					<div class="artist-items square-panels">
@@ -137,7 +137,7 @@
 						</div>
 					</div>
 					<div class="clear-both"></div>
-				</div>
+				</div>	
 				
 				<div class="search-results-section albums" ng-hide="loading">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
