@@ -151,6 +151,10 @@
 		display: block !important;
 	}
 
+	span.mobile-show {
+		display: inline-block !important;
+	}
+
 	.button.mobile-show {
 		display: inline-block !important;
 	}
@@ -263,8 +267,8 @@
 	
 	.page-header .button,
 	.page-header .button:hover {
-		margin: -5px -10px 0 0;
-		padding: 8px;
+		margin: 3px -10px 0 0;
+		padding: 8px 11px;
 		background: transparent;
 	}
 	
@@ -273,12 +277,41 @@
 		margin-left: 0;
 	}
 	
-	.page-header .utilities .filter-option .si {
+	.page-header .utilities .filter .trigger {
+        display: block;
+        color: #FFFFFF;
+    }
+	
+	.page-header .utilities .filter .options-wrapper {
+        display: none;
+        position: absolute;
+        top: 40px;
+        right: 0px;
+        width: 100%;
+    }
+	
+	.page-header .utilities .filter:hover .options-wrapper {
+        display: block;
+    }
+	
+	.page-header .utilities .filter .filter-option {
+        display: block;
+        float: none;
+    }
+	
+	.page-header .utilities .filter .filter-option .si {
 		-webkit-filter: invert(1);
 		-moz-filter: invert(1);
 		filter: invert(1);
 	}
+    
+    .page-header .utilities .switch-button > .switch-track {
+        border-color: #FFFFFF;
+    }
 	
+    .page-header .utilities .switch-button:not(.on) > .switch-track > .indicator {
+        background: #FFFFFF;
+    }
 	
 	/**
 	 * Notifications

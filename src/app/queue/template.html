@@ -71,7 +71,7 @@
 			</div>
 		</div>
 		
-        <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="tltrack" class="tracklist queue-tracks droppable" dropaccept='["tltrack"]' droptype="queuetracklist"></tracklist>
+        <tracklist ng-if="tracks" tracks="tracks" type="tltrack" class="tracklist queue-tracks droppable" dropaccept='["tltrack"]' droptype="queuetracklist" limit="{{ limit }}"></tracklist>
 		
 	</div>
 </div>

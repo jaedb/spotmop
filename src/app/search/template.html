@@ -11,14 +11,19 @@
             </h1>
 
             <div class="utilities">
-                <a class="filter-option animate"
-                    ng-repeat="option in typeFilterOptions"
-                    ui-sref="search({ query: query, type: option.type })"
-                    ng-class="{active: type == option.type}">
-                        <span class="si {{ option.icon }}"></span>
-                        <span class="label mobile-hide" ng-bind="option.label"></span>
-                </a>
-                <div class="clear-both"></div>
+                <div class="filter">
+                    <div class="trigger">Filter</div>
+                    <div class="options-wrapper">
+                        <a class="filter-option animate"
+                            ng-repeat="option in typeFilterOptions"
+                            ui-sref="search({ query: query, type: option.type })"
+                            ng-class="{active: type == option.type}">
+                                <span class="si {{ option.icon }}"></span>
+                                <span class="label" ng-bind="option.label"></span>
+                        </a>
+                        <div class="clear-both"></div>
+                    </div>
+                </div>
             </div>
             
         </div>

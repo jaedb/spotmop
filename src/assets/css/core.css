@@ -1543,6 +1543,10 @@ slider .item-container > .square-panel {
 	float: right;
 }
  
+.page-header .utilities .filter .trigger {
+    display: none;
+}
+ 
 .page-header .utilities.has-buttons {
 	margin-top: -8px;
 }
@@ -1558,7 +1562,7 @@ slider .item-container > .square-panel {
  
 .utilities .filter-option {
 	margin-left: 15px;
-	opacity: 0.5;
+	opacity: 0.3;
 	border: none !important;
 }
  

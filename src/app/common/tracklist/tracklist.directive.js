@@ -14,7 +14,8 @@ angular.module('spotmop.common.tracklist', [])
 		templateUrl: 'app/common/tracklist/template.html',
 		scope: {
 			tracks: '=',		// = means to pass through an array/object
-			type: '@'			// @ means to listen for a string
+			type: '@',			// @ means to listen for a string
+            limit: '@'
 		},
 		link: function( $scope, element, attrs ){
 		},
@@ -48,6 +49,19 @@ angular.module('spotmop.common.tracklist', [])
 					return false;
 			});
 			
+            
+            /**
+             * Limits on tracklist display
+             * This allows us to limit the number of tracks visible within this tracklist
+             * Used on the QueueController to handle huge tracklists
+             **/
+            $scope.tracksWrapper = function(){
+                if( $scope.limit && $scope.limit > 0 ){
+                    return $filter('limitTo')($scope.tracks, parseInt($scope.limit));
+                }else{
+                    return $scope.tracks;
+                }
+            }
 			
 			/**
 			 * Dragging a track

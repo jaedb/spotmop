@@ -4,12 +4,13 @@
         <div class="page-header">
 		
             <div class="utilities has-buttons">
-                <a class="button create-playlist primary mobile-hide pull-right"
+                <a class="button create-playlist primary pull-right"
                       ng-click="createPlaylist()">
-                    <i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
+                    <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span><span class="mobile-show">New</span>
                 </a>
                 <div class="switch-button-wrapper pull-right">
-                    <switch name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
+                    <switch class="mobile-hide" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
+                    <switch class="mobile-show" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only mine"></switch>
                 </div>
             </div>
         
