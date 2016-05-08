@@ -40,6 +40,7 @@
 .si.spotify {			background-image: url('../icons/spotify.svg'); }
 .si.soundcloud {		background-image: url('../icons/soundcloud.svg'); }
 .si.local {				background-image: url('../icons/local.svg'); }
+.si.filter {			background-image: url('../icons/filter.svg'); }
 
 .si.white {
 	-webkit-filter: invert(1);

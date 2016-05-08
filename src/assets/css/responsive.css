@@ -272,37 +272,46 @@
 		background: transparent;
 	}
 	
-	.page-header .utilities .filter-option {
-		opacity: 1;
-		margin-left: 0;
-	}
-	
 	.page-header .utilities .filter .trigger {
         display: block;
         color: #FFFFFF;
     }
 	
 	.page-header .utilities .filter .options-wrapper {
-        display: none;
-        position: absolute;
-        top: 40px;
+		display: none;
+		position: absolute;
+        top: 52px;
         right: 0px;
-        width: 100%;
+		left: 0px;
+		background: #EEEEEE;
+		padding: 10px;
+		z-index: 5;
     }
 	
 	.page-header .utilities .filter:hover .options-wrapper {
         display: block;
     }
 	
-	.page-header .utilities .filter .filter-option {
-        display: block;
-        float: none;
-    }
+	.page-header .utilities .filter-option {
+		color: #000000;
+		display: block;
+		float: left;
+		width: 55px;
+		margin: 0;
+		border: 0;
+		padding: 5px 0;
+		text-align: center;
+	}
 	
-	.page-header .utilities .filter .filter-option .si {
-		-webkit-filter: invert(1);
-		-moz-filter: invert(1);
-		filter: invert(1);
+	.page-header .utilities .filter-option .si {
+		display: inline-block;
+		margin: 0;
+	}
+	
+	.page-header .utilities .filter-option .label {
+		display: block;
+		text-align: center;
+		margin: 3px 0 0 0;
 	}
     
     .page-header .utilities .switch-button > .switch-track {
