@@ -868,7 +868,7 @@ h4 {
 h4.section-title {
 	text-transform: uppercase;
 	font-weight: 600;
-	padding-bottom: 20px;
+	padding-bottom: 5px;
 }
 
 .underline {
@@ -1439,6 +1439,46 @@ body.dragging .tracklist .track.dropping {
 	width: auto;
 }
 
+
+/**
+ * List (based on tracks also)
+ **/
+ 
+.list .list-item {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+ 
+.list .list-item.header {
+	text-transform: uppercase;
+	color: #CCCCCC;
+	border-top: 0;
+	font-size: 11px;
+	padding-bottom: 2px;
+}
+
+.list .list-item:not(.header):hover {
+	background: #F4F4F4;
+	border-color: #EEEEEE;
+	cursor: pointer;
+}
+
+.list .list-item .info {
+	width: 5%;
+	text-align: right;
+	float: right;
+}
  
  
 /**
@@ -1543,10 +1583,6 @@ slider .item-container > .square-panel {
 	float: right;
 }
  
-.page-header .utilities .filter .trigger {
-    display: none;
-}
- 
 .page-header .utilities.has-buttons {
 	margin-top: -8px;
 }
@@ -1560,15 +1596,15 @@ slider .item-container > .square-panel {
 	height: 22px;
 }
  
-.utilities .filter-option {
-	margin-left: 15px;
-	opacity: 0.3;
-	border: none !important;
-}
- 
 .utilities .filter-option.active,
 .utilities .filter-option:hover {
 	opacity: 1;	
+	border: none !important;
+}
+ 
+.utilities .filter-option {
+	margin-left: 15px;
+	opacity: 0.5;
 }
  
 .utilities .filter-option .label {
