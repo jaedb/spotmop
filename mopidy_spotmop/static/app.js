@@ -31379,7 +31379,7 @@ angular.module('spotmop.directives', [])
 		scope: {
 			items: '='
 		},
-        link: function( $scope, $element ){		
+        link: function( $scope, $element ){
 			
 			var sliderContent = $element.find('.slides-content');
 			var currentSlide = 0;
@@ -31826,6 +31826,24 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
+			// figure out if this track is currently playing
+			$scope.isCurrentlyPlaying = function(){
+				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
+			}
+			
+			// figure out what the classes are for our source icon
+			$scope.sourceIconClasses = function(){
+				if( typeof($scope.track.track) === 'undefined' ) return false;
+				var source = $scope.track.track.uri.split(':')[0];
+				var state = 'light';
+				if( $scope.isCurrentlyPlaying() ){
+					if( source == 'spotify' ) state = 'green';
+					if( source == 'local' ) state = 'yellow';
+					if( source == 'soundcloud' ) state = 'red';
+				}
+				return source +' '+ state;
+			}
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -31951,7 +31969,8 @@ angular.module('spotmop.common.tracklist', [])
 		templateUrl: 'app/common/tracklist/template.html',
 		scope: {
 			tracks: '=',		// = means to pass through an array/object
-			type: '@'			// @ means to listen for a string
+			type: '@',			// @ means to listen for a string
+            limit: '@'
 		},
 		link: function( $scope, element, attrs ){
 		},
@@ -31985,6 +32004,19 @@ angular.module('spotmop.common.tracklist', [])
 					return false;
 			});
 			
+            
+            /**
+             * Limits on tracklist display
+             * This allows us to limit the number of tracks visible within this tracklist
+             * Used on the QueueController to handle huge tracklists
+             **/
+            $scope.tracksWrapper = function(){
+                if( $scope.limit && $scope.limit > 0 ){
+                    return $filter('limitTo')($scope.tracks, parseInt($scope.limit));
+                }else{
+                    return $scope.tracks;
+                }
+            }
 			
 			/**
 			 * Dragging a track
@@ -33548,7 +33580,26 @@ angular.module('spotmop.queue', [])
 .controller('QueueController', ['$scope', '$rootScope', '$filter', '$timeout', '$state', 'MopidyService', 'SpotifyService', 'DialogService', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
 	$scope.totalTime = 0;
-	$scope.tracklist = { type: 'tltrack', tracks: $rootScope.currentTracklist };
+	$scope.tracks = $rootScope.currentTracklist;
+    $scope.limit = 50;
+    
+	// once we're told we're ready to show more tracks
+    var loadingMoreTracks = false;
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loadingMoreTracks && $scope.tracks.length >= $scope.limit ){
+            
+            $scope.limit += 50;
+            loadingMoreTracks = true;
+            
+            // apply a timeout so we don't load all of the extra tracks in one digest
+            $timeout(
+                    function(){
+                        loadingMoreTracks = false;
+                    },
+                    100
+                );
+        }
+	});
 
 	$scope.addByUri = function(){
 		DialogService.create('addbyuri',$scope);
@@ -33564,7 +33615,7 @@ angular.module('spotmop.queue', [])
             return $rootScope.currentTracklist;
         },
         function(newTracklist, oldTracklist){
-			$scope.tracklist.tracks = newTracklist;
+			$scope.tracks = newTracklist;
 			calculateTotalTime( newTracklist );
         }
     );
@@ -33589,7 +33640,7 @@ angular.module('spotmop.queue', [])
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var selectedTracks = $filter('filter')( $scope.tracks, { selected: true } );
 		var tracksToDelete = [];
 		
 		// build an array of tlids to remove
@@ -33600,7 +33651,7 @@ angular.module('spotmop.queue', [])
 		// remove tracks from DOM (for snappier UX)
 		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
 		$scope.$apply( function(){
-			$scope.tracklist.tracks = $filter('filter')( $scope.tracklist.tracks, { selected: false } );
+			$scope.tracks = $filter('filter')( $scope.tracks, { selected: false } );
 		});
 		
 		MopidyService.removeFromTrackList( tracksToDelete );
@@ -33638,6 +33689,38 @@ angular.module('spotmop.search', [])
 	$scope.playlists = [];
 	$scope.other = {tracks: [], type: 'track'};
 	$scope.type = $stateParams.type;
+	$scope.typeFilterOptions = [
+			{
+				type: 'all',
+				icon: 'list',
+				label: 'All'
+			},
+			{
+				type: 'artist',
+				icon: 'mic',
+				label: 'Artists'
+			},
+			{
+				type: 'album',
+				icon: 'cd',
+				label: 'Albums'
+			},
+			{
+				type: 'playlist',
+				icon: 'playlist',
+				label: 'Playlists'
+			},
+			{
+				type: 'track',
+				icon: 'music',
+				label: 'Tracks'
+			},
+			{
+				type: 'other',
+				icon: 'folder',
+				label: 'Other'
+			}
+		];
 	$scope.query = '';
     if( $stateParams.query )
         $scope.query = $filter('stripAccents')( $stateParams.query );

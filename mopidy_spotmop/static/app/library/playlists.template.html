@@ -1,26 +1,27 @@
 <div class="page my-playlists-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<a class="create-playlist button pull-right"
-				  ng-click="createPlaylist()">
-				<i class="fa fa-plus"></i>
-			</a>
-			<h1>Playlists</h1>		
-		</div>
+        <div class="page-header">
 		
-        <div class="utilities">
-            <a class="button create-playlist primary mobile-hide pull-right"
-                  ng-click="createPlaylist()">
-                <i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
-            </a>
-            <div class="switch-button-wrapper pull-right">
-                <switch name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
+            <div class="utilities has-buttons">
+                <a class="button create-playlist primary pull-right"
+                      ng-click="createPlaylist()">
+                    <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span><span class="mobile-show">New</span>
+                </a>
+                <div class="switch-button-wrapper pull-right">
+                    <switch class="mobile-hide" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
+                    <switch class="mobile-show" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only mine"></switch>
+                </div>
             </div>
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si playlist mobile-hide"></span>
+                Playlists
+            </h1>
+            
         </div>
-		
-		<h1 class="mobile-hide">Playlists</h1>
 	
 		<div class="playlist-items square-panels">
 			

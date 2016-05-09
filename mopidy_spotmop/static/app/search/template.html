@@ -1,12 +1,35 @@
 <div class="page search-page scrolling-panel">
 	<div class="inner">
-	
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Search Results</h1>
-		</div>
 		
-		<h1 class="mobile-hide">Search results</h1>
+        <div class="page-header">
+        
+            <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si search mobile-hide"></span>
+                Search results
+            </h1>
+
+            <div class="utilities">
+                <div class="filter" ng-class="{'expanded': filterExpanded}">
+                    <div class="trigger mobile-show" ng-click="filterExpanded = !filterExpanded">
+                        <span class="si filter white"></span>
+                        <span class="label">Filter</span>
+                    </div>
+                    <div class="options-wrapper">
+                        <a class="filter-option animate"
+                            ng-repeat="option in typeFilterOptions"
+                            ui-sref="search({ query: query, type: option.type })"
+                            ng-class="{active: type == option.type}">
+                                <span class="si {{ option.icon }}"></span>
+                                <span class="label" ng-bind="option.label"></span>
+                        </a>
+                        <div class="clear-both"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
 		
 		<div class="search-form mobile-show">
 			<form ng-submit="searchSubmit( query )">
@@ -15,16 +38,6 @@
 					<i class="fa fa-search"></i>
 				</button>
 			</form>
-		</div>
-
-		<div class="sub-page-navigation">
-			<a class="menu-item"
-				ng-repeat="typename in ['all','artist','album','playlist','track','other']"
-				ui-sref="search({ query: query, type: typename })"
-				ng-class="{active: type == typename}">
-					{{ typename }}<span ng-hide="typename == 'all' || typename == 'other'">s</span>
-			</a>
-			<div class="clear-both"></div>
 		</div>
 		
 		<div ng-if="query">
@@ -109,12 +122,8 @@
 			</div>
 			
 			<div ng-if="type == 'all'">
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
-			
-				<div class="search-results-section artists" ng-hide="loading">
+				
+				<div class="search-results-section artists" ng-if="artist.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
 					<div class="artist-items square-panels">
 						<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4 track by $index">
@@ -132,9 +141,9 @@
 						</div>
 					</div>
 					<div class="clear-both"></div>
-				</div>
+				</div>	
 				
-				<div class="search-results-section albums" ng-hide="loading">
+				<div class="search-results-section albums" ng-if="albums.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
 					<div class="album-items square-panels">
 						<div class="item-container" ng-repeat="album in albums.items | limitTo: 4 track by $index">
@@ -159,7 +168,7 @@
 					<div class="clear-both"></div>
 				</div>	
 				
-				<div class="search-results-section playlists" ng-hide="loading">
+				<div class="search-results-section playlists" ng-if="playlists.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'playlist' })">Playlists</a></h4>		
 					<div class="playlist-items square-panels">
 						<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4 track by $index">
@@ -182,7 +191,7 @@
 				
 				<div class="clear-both"></div>
 				
-				<div class="search-results-section tracks" ng-hide="loading">
+				<div class="search-results-section tracks" ng-if="tracklist.tracks.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>
                     <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
 				</div>

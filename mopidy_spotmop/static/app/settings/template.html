@@ -1,21 +1,28 @@
 <div ng-controller="SettingsController" class="page settings-page scrolling-panel">
 	<div class="inner">
-			
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Settings</h1>
-		</div>
 		
-		<div class="page-notification red-background white-text" ng-show="!mopidyOnline || !spotifyOnline">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			<span ng-show="!mopidyOnline">Mopidy is offline - check your settings or restart Mopidy server</span>
-			<span ng-show="!spotifyOnline">Spotify is offline - please authenticate (make sure your browser allows popups)</span>
-		</div>
-			
-		<div class="page-header mobile-hide">
-			<h1>Settings</h1>
-		</div>
+        <div class="page-header">
+        
+            <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si cog mobile-hide"></span>
+                Settings
+            </h1>
+		
+            <div class="flag bad" ng-show="!mopidyOnline">
+                <i class="fa fa-exclamation-triangle white-text"></i>
+                &nbsp;
+                Mopidy offline
+            </div>
+		
+            <div class="flag bad" ng-show="!spotifyOnline">
+                <i class="fa fa-exclamation-triangle white-text"></i>
+                &nbsp;
+                Spotify offline
+            </div>
+            
+        </div>
 		
 		<div class="settings">
 			
@@ -87,8 +94,7 @@
 			
 				<h4 class="section-title underline">
 					Mopidy Server
-					<span class="state-label green-background white-text" ng-if="mopidyOnline">Connected</span>
-					<span class="state-label red-background white-text" ng-if="!mopidyOnline">Offline</span>
+                    &nbsp;<i class="fa fa-exclamation-triangle red-text" ng-if="!mopidyOnline"></i>
 				</h4>
 
 				<div class="field">
@@ -123,8 +129,7 @@
 			
 				<h4 class="section-title underline">
 					Spotify
-					<span class="state-label green-background white-text" ng-if="spotifyOnline">Connected</span>
-					<span class="state-label red-background white-text" ng-if="!spotifyOnline">Offline</span>
+                    &nbsp;<i class="fa fa-exclamation-triangle red-text" ng-if="!spotifyOnline"></i>
 				</h4>
                 
                 <div class="field">

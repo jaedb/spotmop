@@ -525,7 +525,6 @@ body.dragging .body * {
 
 
 
-
 /**
  * Critical services (Mopidy + Spotify)
  * Alerts shown under services menu item if offline
@@ -898,83 +897,6 @@ input[type='submit'],
 .popularity:hover .bar-track {
     background: #FFFFFF;
 }
-    
-   
-	
-/**
- * Icons
- * These use a single sprite image grid of 8x5
- **/
- 
-.si {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	background-image: url('../icons/icons.svg');
-	background-position: 0 0;
-	background-repeat: no-repeat;
-	vertical-align: top;
-	margin-top: 2px;
-	margin-right: 5px;
-	padding: 0;
-}
- 
-.si.doublesize {
-	width: 32px;
-	height: 32px;
-	background-size: 32px 512px;
-}
- 
-.si.play {			background-position: 0 0; }
-.si.explore {		background-position: 0 -16px; }
-.si.playlist {		background-position: 0 -32px; }
-.si.music {			background-position: 0 -48px; }
-.si.cog {			background-position: 0 -64px; }
-.si.folder {		background-position: 0 -80px; }
-.si.leaf {			background-position: 0 -96px; }
-.si.star {			background-position: 0 -112px; }
-.si.mic {			background-position: 0 -128px; }
-.si.album {			background-position: 0 -144px; }
-.si.grid {			background-position: 0 -160px; }
-.si.find {			background-position: 0 -176px; }
-.si.next {			background-position: 0 -192px; }
-.si.prev {			background-position: 0 -208px; }
- 
-.si.play.doublesize {			background-position: 0 0; }
-.si.explore.doublesize {		background-position: 0 -32px; }
-.si.playlist.doublesize {		background-position: 0 -64px; }
-.si.music.doublesize {			background-position: 0 -96px; }
-.si.cog.doublesize {			background-position: 0 -128px; }
-.si.folder.doublesize {			background-position: 0 -160px; }
-.si.leaf.doublesize {			background-position: 0 -192px; }
-.si.star.doublesize {			background-position: 0 -224px; }
-.si.mic.doublesize {			background-position: 0 -256px; }
-.si.album.doublesize {			background-position: 0 -288px; }
-.si.grid.doublesize {			background-position: 0 -320px; }
-.si.find.doublesize {			background-position: 0 -352px; }
-.si.next.doublesize {			background-position: 0 -384px; }
-.si.prev.doublesize {			background-position: 0 -416px; }
-
-
-.ssi {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	background-image: url('../icons/source-icons.svg');
-	background-position: 0 0;
-	background-repeat: no-repeat;
-	vertical-align: top;
-	margin-top: 1px;
-	padding: 0;
-}
-
-.ssi.local {				background-position: 0 0; }
-.ssi.soundcloud {			background-position: 0 -16px; }
-.ssi.spotify {				background-position: 0 -32px; }
-
-.playing .ssi.local	{		background-position: -16px 0; }
-.playing .ssi.soundcloud {	background-position: -16px -16px; }
-.playing .ssi.spotify {		background-position: -16px -32px; }
 
 
 /**
@@ -1080,7 +1002,7 @@ h4 {
 h4.section-title {
 	text-transform: uppercase;
 	font-weight: 600;
-	padding-bottom: 5px;
+	padding-bottom: 20px;
 }
 
 .underline {
@@ -1651,6 +1573,46 @@ body.dragging .tracklist .track.dropping {
 	width: auto;
 }
 
+
+/**
+ * List (based on tracks also)
+ **/
+ 
+.list .list-item {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+ 
+.list .list-item.header {
+	text-transform: uppercase;
+	color: #CCCCCC;
+	border-top: 0;
+	font-size: 11px;
+	padding-bottom: 2px;
+}
+
+.list .list-item:not(.header):hover {
+	background: #F4F4F4;
+	border-color: #EEEEEE;
+	cursor: pointer;
+}
+
+.list .list-item .info {
+	width: 5%;
+	text-align: right;
+	float: right;
+}
  
  
 /**
@@ -1731,6 +1693,73 @@ slider .item-container > .square-panel {
 }
  
  
+.page-header {
+	margin: -40px -40px 40px -40px;
+	background: #EEEEEE;
+	padding: 20px 40px;
+}
+ 
+.page-header h1 {
+	padding: 0;
+	margin: 0;
+	font-size: 22px;
+	display: inline-block;
+}
+ 
+.page-header h1 .si {
+	width: 1em;
+	height: 1em;
+	margin: 3px 5px 0 0;
+}
+ 
+.page-header .utilities {
+	margin: 0;
+	float: right;
+}
+ 
+.page-header .utilities.has-buttons {
+	margin-top: -8px;
+}
+ 
+.library-albums .utilities .view-options label {
+	padding: 0 5px;
+}
+ 
+.utilities .si {
+	width: 22px;
+	height: 22px;
+}
+ 
+.utilities .filter-option.active,
+.utilities .filter-option:hover {
+	opacity: 1;	
+	border: none !important;
+}
+ 
+.utilities .filter-option {
+	margin-left: 15px;
+	opacity: 0.5;
+}
+ 
+.utilities .filter-option .label {
+	display: inline-block;
+	vertical-align: bottom;
+	margin-bottom: 3px;
+}
+ 
+.page-header .flag {
+	display: inline-block;
+	padding: 3px 6px;
+	background: #CCCCCC;
+	color: #666666;
+	margin-top: 4px;
+	vertical-align: top;
+}
+ 
+.page-header .flag.bad {
+	background: rgb(214,47,47);
+	color: #FFFFFF;
+}
  
 
 
@@ -2824,6 +2853,40 @@ slider .item-container > .square-panel {
 
 
 
+/**
+ * Options via icons field
+ * Basically a glorified radio field, but using icons instead of radios
+ **/
+
+.field.icon-radio {
+	padding: 0;
+}
+
+.field.icon-radio input {
+	display: none;
+}
+
+.field.icon-radio label {
+	display: inline-block;
+}
+
+.field.icon-radio .label {
+	opacity: 0.3;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+}
+
+.field.icon-radio .label:hover {
+	opacity: 0.5;
+}
+
+.field.icon-radio input:checked + .label {
+	opacity: 1;
+}
+
+
 
 
 
@@ -2889,6 +2952,83 @@ slider .item-container > .square-panel {
 
 
 
+
+
+
+
+/**
+ * Spotmop
+ * Icons
+ **/
+ 
+.si {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	margin-top: 2px;
+	margin-right: 5px;
+	padding: 0;
+	background-size: contain;
+}
+ 
+.si.doublesize {
+	width: 32px;
+	height: 32px;
+}
+ 
+.si.play {				background-image: url('../icons/play.svg'); }
+.si.compass {			background-image: url('../icons/compass.svg'); }
+.si.playlist {			background-image: url('../icons/playlist.svg'); }
+.si.music {				background-image: url('../icons/music.svg'); }
+.si.cog {				background-image: url('../icons/cog.svg'); }
+.si.folder {			background-image: url('../icons/folder.svg'); }
+.si.leaf {				background-image: url('../icons/leaf.svg'); }
+.si.star {				background-image: url('../icons/star.svg'); }
+.si.mic {				background-image: url('../icons/mic.svg'); }
+.si.cd {				background-image: url('../icons/cd.svg'); }
+.si.grid {				background-image: url('../icons/grid.svg'); }
+.si.search {			background-image: url('../icons/search.svg'); }
+.si.chevron-right {		background-image: url('../icons/chevron-right.svg'); }
+.si.chevron-left {		background-image: url('../icons/chevron-left.svg'); }
+.si.sections {			background-image: url('../icons/sections.svg'); }
+.si.list {				background-image: url('../icons/list.svg'); }
+.si.spotify {			background-image: url('../icons/spotify.svg'); }
+.si.soundcloud {		background-image: url('../icons/soundcloud.svg'); }
+.si.local {				background-image: url('../icons/local.svg'); }
+.si.filter {			background-image: url('../icons/filter.svg'); }
+
+.si.white {
+	-webkit-filter: invert(1);
+	-moz-filter: invert(1);
+	filter: invert(1);
+}
+
+.si.light {
+	-webkit-filter: invert(1) brightness(75%);
+	-moz-filter: invert(1) brightness(75%);
+	filter: invert(1) brightness(75%);
+}
+
+.si.yellow {
+	-webkit-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+	-moz-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+	filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+}
+
+.si.red {
+	-webkit-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+	-moz-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+	filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+}
+
+.si.green {
+	-webkit-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+	-moz-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+	filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+}
 
 
 
@@ -3157,6 +3297,10 @@ slider .item-container > .square-panel {
 		display: block !important;
 	}
 
+	span.mobile-show {
+		display: inline-block !important;
+	}
+
 	.button.mobile-show {
 		display: inline-block !important;
 	}
@@ -3219,13 +3363,26 @@ slider .item-container > .square-panel {
 	}
 	
 	#loading-bar .bar {
-		left: 0px !important;
-		right: 0px !important;
+		display: none;
 	}
 	
 	#loading-bar-spinner {
-		right: 10px !important;
-		left: auto !important;
+		top: 50% !important;
+		left: 50% !important;
+		right: auto !important;
+		margin-left: -40px;
+		margin-top: -40px;
+		background: #29d;
+		padding: 20px;
+		border-radius: 50px;
+		width: 50px;
+		height: 50px;
+	}
+	
+	#loading-bar-spinner .spinner-icon {
+		width: 90% !important;
+		height: 90% !important;
+		border-color: #FFFFFF transparent transparent #FFFFFF !important;
 	}
 	
 	#sidebar .main-menu {
@@ -3262,19 +3419,73 @@ slider .item-container > .square-panel {
 	}
 	
 	.page-header h1 {
-		padding: 0;
+		padding: 1px 0 0 30px;
 		margin: 0;
 		font-size: 18px;
-		text-align: center;
 	}
 	
 	.page-header .button,
 	.page-header .button:hover {
-		margin: -5px -10px 0 0;
-		padding: 8px;
+		margin: 3px -10px 0 0;
+		padding: 8px 11px;
 		background: transparent;
 	}
 	
+	.page-header .utilities .filter .trigger {
+        display: block;
+        color: #FFFFFF;
+		cursor: pointer;
+    }
+	
+	.page-header .utilities .filter .trigger .label {
+		display: inline-block;
+		padding-top: 3px;
+	}
+	
+	.page-header .utilities .filter .options-wrapper {
+		display: none;
+		position: absolute;
+        top: 52px;
+        right: 0px;
+		left: 0px;
+		background: #EEEEEE;
+		padding: 10px;
+		z-index: 5;
+    }
+	
+	.page-header .utilities .filter.expanded .options-wrapper {
+        display: block;
+    }
+	
+	.page-header .utilities .filter-option {
+		color: #000000;
+		display: block;
+		float: left;
+		width: 55px;
+		margin: 0;
+		border: 0;
+		padding: 5px 0;
+		text-align: center;
+	}
+	
+	.page-header .utilities .filter-option .si {
+		display: inline-block;
+		margin: 0;
+	}
+	
+	.page-header .utilities .filter-option .label {
+		display: block;
+		text-align: center;
+		margin: 3px 0 0 0;
+	}
+    
+    .page-header .utilities .switch-button > .switch-track {
+        border-color: #FFFFFF;
+    }
+	
+    .page-header .utilities .switch-button:not(.on) > .switch-track > .indicator {
+        background: #FFFFFF;
+    }
 	
 	/**
 	 * Notifications
@@ -3624,16 +3835,17 @@ slider .item-container > .square-panel {
 	}
 	
 	
-	
 	/**
-	 * Notifications
+	 * Search results page
 	 **/
-	
-	.page-notification {
-		margin-top: -20px;
-		margin-right: -20px;
-		margin-left: -20px;
-		padding: 10px 20px;
+	.search-page .search-results-section {
+		float: none;
+		width: 100%;
+		margin-right: 0;
+		padding-right: 0;
+	}
+	.search-page .search-results-section .square-panel {
+		width: 21%;
 	}
 }
 
