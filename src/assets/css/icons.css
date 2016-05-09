@@ -48,6 +48,14 @@
 	filter: invert(1);
 }
 
+@media ( max-width: 800px ){
+    .si.mobile-white {
+        -webkit-filter: invert(1);
+        -moz-filter: invert(1);
+        filter: invert(1);
+    }
+}
+
 .si.light {
 	-webkit-filter: invert(1) brightness(75%);
 	-moz-filter: invert(1) brightness(75%);

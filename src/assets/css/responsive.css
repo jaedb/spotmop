@@ -279,7 +279,9 @@
 	}
 	
 	.page-header .button,
-	.page-header .button:hover {
+	.page-header .button:hover,
+	.page-header .button.primary,
+	.page-header .button.primary:hover {
 		margin: 3px -10px 0 0;
 		padding: 8px 11px;
 		background: transparent;

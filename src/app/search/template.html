@@ -123,7 +123,7 @@
 			
 			<div ng-if="type == 'all'">
 				
-				<div class="search-results-section artists" ng-if="artist.items.length > 0">
+				<div class="search-results-section artists" ng-if="artists.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
 					<div class="artist-items square-panels">
 						<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4 track by $index">
