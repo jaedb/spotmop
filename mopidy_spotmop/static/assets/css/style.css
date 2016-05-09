@@ -3006,6 +3006,14 @@ slider .item-container > .square-panel {
 	filter: invert(1);
 }
 
+@media ( max-width: 800px ){
+    .si.mobile-white {
+        -webkit-filter: invert(1);
+        -moz-filter: invert(1);
+        filter: invert(1);
+    }
+}
+
 .si.light {
 	-webkit-filter: invert(1) brightness(75%);
 	-moz-filter: invert(1) brightness(75%);
@@ -3425,7 +3433,9 @@ slider .item-container > .square-panel {
 	}
 	
 	.page-header .button,
-	.page-header .button:hover {
+	.page-header .button:hover,
+	.page-header .button.primary,
+	.page-header .button.primary:hover {
 		margin: 3px -10px 0 0;
 		padding: 8px 11px;
 		background: transparent;
