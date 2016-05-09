@@ -11,8 +11,11 @@
             </h1>
 
             <div class="utilities">
-                <div class="filter">
-                    <div class="trigger mobile-show"><span class="si filter white"></span>Filter</div>
+                <div class="filter" ng-class="{'expanded': filterExpanded}">
+                    <div class="trigger mobile-show" ng-click="filterExpanded = !filterExpanded">
+                        <span class="si filter white"></span>
+                        <span class="label">Filter</span>
+                    </div>
                     <div class="options-wrapper">
                         <a class="filter-option animate"
                             ng-repeat="option in typeFilterOptions"
@@ -119,12 +122,8 @@
 			</div>
 			
 			<div ng-if="type == 'all'">
-			
-				<div ng-show="loading" class="loading">
-					<img src="assets/svg/spinner-black.svg" />
-				</div>
 				
-				<div class="search-results-section artists" ng-hide="loading">
+				<div class="search-results-section artists" ng-if="artist.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
 					<div class="artist-items square-panels">
 						<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4 track by $index">
@@ -144,7 +143,7 @@
 					<div class="clear-both"></div>
 				</div>	
 				
-				<div class="search-results-section albums" ng-hide="loading">
+				<div class="search-results-section albums" ng-if="albums.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
 					<div class="album-items square-panels">
 						<div class="item-container" ng-repeat="album in albums.items | limitTo: 4 track by $index">
@@ -169,7 +168,7 @@
 					<div class="clear-both"></div>
 				</div>	
 				
-				<div class="search-results-section playlists" ng-hide="loading">
+				<div class="search-results-section playlists" ng-if="playlists.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'playlist' })">Playlists</a></h4>		
 					<div class="playlist-items square-panels">
 						<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4 track by $index">
@@ -192,7 +191,7 @@
 				
 				<div class="clear-both"></div>
 				
-				<div class="search-results-section tracks" ng-hide="loading">
+				<div class="search-results-section tracks" ng-if="tracklist.tracks.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>
                     <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
 				</div>

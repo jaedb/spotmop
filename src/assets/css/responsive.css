@@ -217,13 +217,26 @@
 	}
 	
 	#loading-bar .bar {
-		left: 0px !important;
-		right: 0px !important;
+		display: none;
 	}
 	
 	#loading-bar-spinner {
-		right: 10px !important;
-		left: auto !important;
+		top: 50% !important;
+		left: 50% !important;
+		right: auto !important;
+		margin-left: -40px;
+		margin-top: -40px;
+		background: #29d;
+		padding: 20px;
+		border-radius: 50px;
+		width: 50px;
+		height: 50px;
+	}
+	
+	#loading-bar-spinner .spinner-icon {
+		width: 90% !important;
+		height: 90% !important;
+		border-color: #FFFFFF transparent transparent #FFFFFF !important;
 	}
 	
 	#sidebar .main-menu {
@@ -275,7 +288,13 @@
 	.page-header .utilities .filter .trigger {
         display: block;
         color: #FFFFFF;
+		cursor: pointer;
     }
+	
+	.page-header .utilities .filter .trigger .label {
+		display: inline-block;
+		padding-top: 3px;
+	}
 	
 	.page-header .utilities .filter .options-wrapper {
 		display: none;
@@ -288,7 +307,7 @@
 		z-index: 5;
     }
 	
-	.page-header .utilities .filter:hover .options-wrapper {
+	.page-header .utilities .filter.expanded .options-wrapper {
         display: block;
     }
 	
