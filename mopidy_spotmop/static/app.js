@@ -32031,15 +32031,19 @@ angular.module('spotmop.common.tracklist', [])
 			 * This is useful for when we have multiple tracklists in one state (ie My Albums)
 			 * NOTE: We need to run as $rootScope otherwise we only ever listen to ourselves
 			 **/
-			$rootScope.$on('spotmop:tracklist:focusChanged', function( event, tracklistID ){
+			var listenForFocusChange = $rootScope.$on('spotmop:tracklist:focusChanged', function( event, tracklistID ){
 				
 				$rootScope.tracklistInFocus = tracklistID;
 				
 				// if the focus has changed to a tracklist OTHER than me, I need to deselect all my tracks
 				if( $scope.$id != tracklistID ){
 					unselectAllTracks();
-				}				
+				}
 			});
+            
+            // Clean up our $rootScope listeners when this $scope is destroyed (ie page navigation)
+            // This is essential to avoid memory leaks and dirty listeners. Nobody likes dirty listeners.
+            $scope.$on('$destroy', listenForFocusChange);
 			
 			
 			/**
@@ -32055,10 +32059,10 @@ angular.module('spotmop.common.tracklist', [])
 				// if we're in a drag event, then we don't do nothin'
 				// this drag event will be handled by the 'candrag' directive
 				if( !$rootScope.dragging ){
-					
+                    
 					// if ctrl key held down
 					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
-						
+                        
 						// toggle selection for this track
 						if( $track.track.selected ){
 							$track.$apply( function(){ $track.track.selected = false; });

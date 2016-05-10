@@ -3618,7 +3618,9 @@ slider .item-container > .square-panel {
 	}
 	
 	.field input {
-		width: 98%;
+		width: 94%;
+		padding-left: 3%;
+		padding-right: 3%;
 	}
 	
 	
