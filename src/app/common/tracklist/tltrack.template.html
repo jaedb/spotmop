@@ -1,5 +1,5 @@
 <div class="track"
-    ng-class="{ 'playing': track.tlid == state().currentTlTrack.tlid, 'selected': track.selected }"
+    ng-class="{ 'playing': isCurrentlyPlaying(), 'selected': track.selected }"
     candrag
     dragobj="track"
     draggable="false"
@@ -28,7 +28,7 @@
             </span>
         
             <div class="source">
-                <span class="ssi {{ track.track.uri | splitstring:0 }}"></span>
+                <span class="si {{ sourceIconClasses() }}"></span>
             </div>
             
         </div>

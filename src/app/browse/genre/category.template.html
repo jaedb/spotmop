@@ -1,12 +1,16 @@
 <div class="page category-genre-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1 ng-bind="category.name"></h1>
-		</div>
-		
-		<h1 class="mobile-hide" ng-bind="category.name"></h1>
+        <div class="page-header">
+        
+            <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si grid mobile-hide"></span>
+                <span ng-bind="category.name"></span>
+            </h1>
+            
+        </div>
 		
 		<div class="playlist-items square-panels">
 			

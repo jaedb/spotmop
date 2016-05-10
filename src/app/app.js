@@ -12,6 +12,7 @@ angular.module('spotmop', [
 	'ui.router',	
 	'angular-loading-bar',
 	'angular-google-analytics',
+	'ngclipboard',
 	
 	'spotmop.directives',
 	'spotmop.common.contextmenu',
@@ -75,9 +76,17 @@ angular.module('spotmop', [
 	Analytics.trackEvent('Spotmop', 'Started');
 		
     $rootScope.isTouchDevice = function(){
-		if( SettingsService.getSetting('spotmop',false,'emulateTouchDevice') )
-			return true;
 		return !!('ontouchstart' in window);
+	}		
+    $rootScope.isTouchMode = function(){
+		
+		// detect our manual override
+		var pointerMode = SettingsService.getSetting('spotmop',false,'pointerMode');
+		if( pointerMode == 'touch' ) return true;
+		else if( pointerMode == 'click' ) return false;
+		
+		// no override, so use device defaults
+		return $rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
 		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
@@ -206,7 +215,11 @@ angular.module('spotmop', [
 	 
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
-		$rootScope.$broadcast('spotmop:contextMenu:hide');
+			
+		// only hide the contextmenu if we're NOT a touch device
+		if( !$rootScope.isTouchMode() ){
+			$rootScope.$broadcast('spotmop:contextMenu:hide');
+		};
 	});
 	
 	

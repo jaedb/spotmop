@@ -391,7 +391,6 @@ body.dragging .body * {
 
 
 
-
 /**
  * Critical services (Mopidy + Spotify)
  * Alerts shown under services menu item if offline
@@ -764,83 +763,6 @@ input[type='submit'],
 .popularity:hover .bar-track {
     background: #FFFFFF;
 }
-    
-   
-	
-/**
- * Icons
- * These use a single sprite image grid of 8x5
- **/
- 
-.si {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	background-image: url('../icons/icons.svg');
-	background-position: 0 0;
-	background-repeat: no-repeat;
-	vertical-align: top;
-	margin-top: 2px;
-	margin-right: 5px;
-	padding: 0;
-}
- 
-.si.doublesize {
-	width: 32px;
-	height: 32px;
-	background-size: 32px 512px;
-}
- 
-.si.play {			background-position: 0 0; }
-.si.explore {		background-position: 0 -16px; }
-.si.playlist {		background-position: 0 -32px; }
-.si.music {			background-position: 0 -48px; }
-.si.cog {			background-position: 0 -64px; }
-.si.folder {		background-position: 0 -80px; }
-.si.leaf {			background-position: 0 -96px; }
-.si.star {			background-position: 0 -112px; }
-.si.mic {			background-position: 0 -128px; }
-.si.album {			background-position: 0 -144px; }
-.si.grid {			background-position: 0 -160px; }
-.si.find {			background-position: 0 -176px; }
-.si.next {			background-position: 0 -192px; }
-.si.prev {			background-position: 0 -208px; }
- 
-.si.play.doublesize {			background-position: 0 0; }
-.si.explore.doublesize {		background-position: 0 -32px; }
-.si.playlist.doublesize {		background-position: 0 -64px; }
-.si.music.doublesize {			background-position: 0 -96px; }
-.si.cog.doublesize {			background-position: 0 -128px; }
-.si.folder.doublesize {			background-position: 0 -160px; }
-.si.leaf.doublesize {			background-position: 0 -192px; }
-.si.star.doublesize {			background-position: 0 -224px; }
-.si.mic.doublesize {			background-position: 0 -256px; }
-.si.album.doublesize {			background-position: 0 -288px; }
-.si.grid.doublesize {			background-position: 0 -320px; }
-.si.find.doublesize {			background-position: 0 -352px; }
-.si.next.doublesize {			background-position: 0 -384px; }
-.si.prev.doublesize {			background-position: 0 -416px; }
-
-
-.ssi {
-	display: inline-block;
-	width: 16px;
-	height: 16px;
-	background-image: url('../icons/source-icons.svg');
-	background-position: 0 0;
-	background-repeat: no-repeat;
-	vertical-align: top;
-	margin-top: 1px;
-	padding: 0;
-}
-
-.ssi.local {				background-position: 0 0; }
-.ssi.soundcloud {			background-position: 0 -16px; }
-.ssi.spotify {				background-position: 0 -32px; }
-
-.playing .ssi.local	{		background-position: -16px 0; }
-.playing .ssi.soundcloud {	background-position: -16px -16px; }
-.playing .ssi.spotify {		background-position: -16px -32px; }
 
 
 /**
@@ -946,7 +868,7 @@ h4 {
 h4.section-title {
 	text-transform: uppercase;
 	font-weight: 600;
-	padding-bottom: 5px;
+	padding-bottom: 20px;
 }
 
 .underline {
@@ -1135,8 +1057,8 @@ h1 .flag {
 .body .button.destructive {				background: #cf2d2d; }
 .body .button.destructive:hover {		background: #bc1f1f; }
 
-.body .button.tertiary {				background: #EEEEEE; color: #AAAAAA; }
-.body .button.tertiary:hover {		    background: #DDDDDD; }
+.body .button.tertiary {				background: #DDDDDD; color: #AAAAAA; }
+.body *:not(.touchDevice) .button.tertiary:hover {		    background: #DDDDDD; }
 
 
 .body .button.disabled,
@@ -1368,7 +1290,8 @@ h1 .flag {
 .square-panel .info .name,
 .square-panel .info .tracks {
 	overflow: hidden;
-	max-height: 2.6em;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 
@@ -1516,6 +1439,46 @@ body.dragging .tracklist .track.dropping {
 	width: auto;
 }
 
+
+/**
+ * List (based on tracks also)
+ **/
+ 
+.list .list-item {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+ 
+.list .list-item.header {
+	text-transform: uppercase;
+	color: #CCCCCC;
+	border-top: 0;
+	font-size: 11px;
+	padding-bottom: 2px;
+}
+
+.list .list-item:not(.header):hover {
+	background: #F4F4F4;
+	border-color: #EEEEEE;
+	cursor: pointer;
+}
+
+.list .list-item .info {
+	width: 5%;
+	text-align: right;
+	float: right;
+}
  
  
 /**
@@ -1596,6 +1559,73 @@ slider .item-container > .square-panel {
 }
  
  
+.page-header {
+	margin: -40px -40px 40px -40px;
+	background: #EEEEEE;
+	padding: 20px 40px;
+}
+ 
+.page-header h1 {
+	padding: 0;
+	margin: 0;
+	font-size: 22px;
+	display: inline-block;
+}
+ 
+.page-header h1 .si {
+	width: 1em;
+	height: 1em;
+	margin: 3px 5px 0 0;
+}
+ 
+.page-header .utilities {
+	margin: 0;
+	float: right;
+}
+ 
+.page-header .utilities.has-buttons {
+	margin-top: -8px;
+}
+ 
+.library-albums .utilities .view-options label {
+	padding: 0 5px;
+}
+ 
+.utilities .si {
+	width: 22px;
+	height: 22px;
+}
+ 
+.utilities .filter-option.active,
+.utilities .filter-option:hover {
+	opacity: 1;	
+	border: none !important;
+}
+ 
+.utilities .filter-option {
+	margin-left: 15px;
+	opacity: 0.5;
+}
+ 
+.utilities .filter-option .label {
+	display: inline-block;
+	vertical-align: bottom;
+	margin-bottom: 3px;
+}
+ 
+.page-header .flag {
+	display: inline-block;
+	padding: 3px 6px;
+	background: #CCCCCC;
+	color: #666666;
+	margin-top: 4px;
+	vertical-align: top;
+}
+ 
+.page-header .flag.bad {
+	background: rgb(214,47,47);
+	color: #FFFFFF;
+}
  
 
 

@@ -439,6 +439,7 @@ angular.module('spotmop.directives', [])
 		restrict: 'E',
 		scope: {
 			name: '@',
+			label: '@',
 			value: '='
 		},
 		replace: true, // Replace with the template below
@@ -455,7 +456,7 @@ angular.module('spotmop.directives', [])
 				});
 			});
 		},
-		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch animate"></span></span>'
+		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch-track"><span class="indicator animate"></span></span><span class="label" ng-if="label" ng-bind="label"></span></span>'
 	}
 })
 
@@ -651,7 +652,7 @@ angular.module('spotmop.directives', [])
 		scope: {
 			items: '='
 		},
-        link: function( $scope, $element ){		
+        link: function( $scope, $element ){
 			
 			var sliderContent = $element.find('.slides-content');
 			var currentSlide = 0;

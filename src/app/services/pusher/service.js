@@ -54,6 +54,7 @@ angular.module('spotmop.services.pusher', [
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
                                 SettingsService.setSetting('version', data.version, 'installed');
+								SettingsService.runUpgrade();
                             }
 							
                             // notify server of our actual username

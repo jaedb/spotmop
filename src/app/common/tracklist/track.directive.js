@@ -18,7 +18,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -43,33 +43,7 @@ angular.module('spotmop.common.track', [])
 			 * Double click
 			 **/
 			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracks.length; i++ ){
-					var track = $scope.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
+				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
 		}
 	}
@@ -86,6 +60,24 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
+			// figure out if this track is currently playing
+			$scope.isCurrentlyPlaying = function(){
+				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
+			}
+			
+			// figure out what the classes are for our source icon
+			$scope.sourceIconClasses = function(){
+				if( typeof($scope.track.track) === 'undefined' ) return false;
+				var source = $scope.track.track.uri.split(':')[0];
+				var state = 'light';
+				if( $scope.isCurrentlyPlaying() ){
+					if( source == 'spotify' ) state = 'green';
+					if( source == 'local' ) state = 'yellow';
+					if( source == 'soundcloud' ) state = 'red';
+				}
+				return source +' '+ state;
+			}
+			
 			/**
 			 * Single click
 			 * Click of any mouse button. Figure out which button, and behave accordingly
@@ -95,7 +87,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -160,7 +152,7 @@ angular.module('spotmop.common.track', [])
 				// left click
 				if( event.which === 1 ){
 				
-					if( !$rootScope.isTouchDevice() )
+					if( !$rootScope.isTouchMode() )
 						$scope.$emit('spotmop:contextMenu:hide');
 					
 					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
@@ -186,33 +178,7 @@ angular.module('spotmop.common.track', [])
 			 * Double click
 			 **/
 			$element.dblclick( function( event ){
-				
-				// what position track am I in the tracklist
-				var myIndex = $scope.tracks.indexOf( $scope.track );
-				var trackUrisToAdd = [];
-				
-				// loop me, and all my following tracks, fetching their uris
-				for( var i = myIndex+1; i < $scope.tracks.length; i++ ){
-					var track = $scope.tracks[i];					
-					if( typeof( track ) !== 'undefined' && typeof( track.uri ) !== 'undefined' )
-						trackUrisToAdd.push( track.uri );
-				}
-				
-				// play me (the double-clicked track) immediately
-				MopidyService.playTrack( [ $scope.track.uri ], 0 ).then( function(){
-					
-					if( trackUrisToAdd.length > 0 ){
-					
-						// notify user that this could take some time			
-						var message = 'Adding '+trackUrisToAdd.length+' tracks';
-						if( trackUrisToAdd.length > 10 )
-							message += '... this could take some time';
-						NotifyService.notify( message );
-
-						// add the following tracks to the tracklist
-						MopidyService.addToTrackList( trackUrisToAdd );
-					}
-				});
+				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
 		}
 	}

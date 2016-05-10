@@ -1,5 +1,5 @@
 <div class="controls">
-    <span class="si invert prev" ng-click="prev()"></span><span class="si invert next" ng-click="next()"></span>
+    <span class="si chevron-left" ng-click="prev()"></span><span class="si chevron-right next" ng-click="next()"></span>
 </div>
 <div class="slides">
     <div class="slides-content">
@@ -31,6 +31,22 @@
                     <div class="secondary">
                         <artistlist artists="item.artists" nolinks="false"></artistlist>
                     </div>
+                </div>
+            </a>
+            <a ui-sref="browse.playlist({ uri: item.uri })" ng-if="item.type == 'playlist'"
+                class="square-panel album draggable"
+                data-id="{{ item.id }}"
+                draggable="false"
+                candrag
+                dragobj="item">
+                <div class="image-container">
+                    <thumbnail images="item.images"></thumbnail>
+                </div>
+                <div class="info animate">
+                    <div class="name" ng-bind="item.name"></div>
+                    <div class="secondary">
+						<span ng-bind="item.tracks.total"></span> tracks
+					</div>
                 </div>
             </a>
         </div>

@@ -171,6 +171,14 @@ angular.module('spotmop.services.settings', [])
             return deferred.promise;
 		},
 		
+		// perform post-upgrade commands
+		runUpgrade: function(){
+			
+			// depreciated settings
+			SettingsService.setSetting('spotmop','','emulateTouchDevice');
+			SettingsService.setSetting('spotmop','default','pointerMode');
+		},
+		
 		
 		/**
 		 * Identify our current Spotmop version

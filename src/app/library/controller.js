@@ -210,6 +210,7 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
+	$scope.settings = SettingsService.getSettings();
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
@@ -295,7 +296,21 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
+	$scope.settings = SettingsService.getSettings();
 	$scope.playlists = { items: [] };
+	$scope.show = function( playlist ){
+        
+        if(
+				typeof($scope.settings.playlists) === 'undefined' ||
+				typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
+				!$scope.settings.playlists.onlyshowowned ){
+            return true;
+        }
+        
+        if( playlist.owner.id == 'jaedb' ) return true;
+		
+		return false;
+	};
 	
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;

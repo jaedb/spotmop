@@ -1,13 +1,13 @@
 <ul class="main-menu">
 	<li class="menu-item top-level {{ linkingMode('queue') }}">
 		<a ui-sref="queue">
-			<i class="si play"></i>
+			<i class="si play white"></i>
 			Now playing
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('search') }} mobile-show">
 		<a ui-sref="search">
-			<i class="si find"></i>
+			<i class="si search white"></i>
 			Search
 		</a>
 	</li>
@@ -16,25 +16,25 @@
 	</li>
 	<li class="menu-item top-level {{ linkingMode('discover') }}">
 		<a ui-sref="discover">
-			<i class="si explore"></i>
+			<i class="si compass white"></i>
 			Discover
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.featured','browse.featuredplaylist']) }}">
 		<a ui-sref="browse.featured">
-			<i class="si star"></i>
+			<i class="si star white"></i>
 			Featured playlists
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.genre','browse.genrecategory','browse.categoryplaylist']) }}">
 		<a ui-sref="browse.genre">
-			<i class="si grid"></i>
+			<i class="si grid white"></i>
 			Genre / Mood
 		</a>
 	</li>
 	<li class="menu-item {{ linkingMode(['browse.new','browse.newalbum']) }}">
 		<a ui-sref="browse.new">
-			<i class="si leaf"></i>
+			<i class="si leaf white"></i>
 			New releases
 		</a>
 	</li>
@@ -43,38 +43,38 @@
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.albums') }}">
 		<a ui-sref="library.albums" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="si album"></i>
+			<i class="si cd white"></i>
 			Albums
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
 		<a ui-sref="library.tracks" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="si music"></i>
+			<i class="si music white"></i>
 			Tracks
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
 		<a ui-sref="library.artists" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
-			<i class="si mic"></i>
+			<i class="si mic white"></i>
 			Artists
 		</a>
 	</li>
 	<li class="menu-item top-level playlists {{ linkingMode(['library.playlists', 'library.playlist']) }}">
 		<a ui-sref="library.playlists">
-			<i class="si playlist"></i>
+			<i class="si playlist white"></i>
 			Playlists
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.files']) }}">
 		<a ui-sref="library.files({ folder: 'local:directory' })">
-			<i class="si folder"></i>
+			<i class="si folder white"></i>
 			Files
 		</a>
 	</li>
 	<li class="divider spacer"></li>
 	<li class="menu-item top-level {{ linkingMode('settings') }}">
 		<a ui-sref="settings">
-			<i class="si cog"></i>
+			<i class="si cog white"></i>
 			Settings
 			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotifyOnline || !mopidyOnline"></i>
 		</a>

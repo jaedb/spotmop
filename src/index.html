@@ -16,6 +16,8 @@
 	<script type="text/javascript" src="vendor/angular-storage.min.js"></script>
 	<script type="text/javascript" src="vendor/angular-touch.min.js"></script>
 	<script type="text/javascript" src="vendor/mopidy.min.js"></script>
+	<script type="text/javascript" src="vendor/clipboard.min.js"></script>
+	<script type="text/javascript" src="vendor/ngclipboard.js"></script>
 	<script type="text/javascript" src="vendor/background-check.min.js"></script>
 	<script type="text/javascript" src="vendor/loading-bar.js"></script>
 	<script type="text/javascript" src="vendor/angular-google-analytics.min.js"></script>
@@ -66,6 +68,7 @@
 	<link rel="stylesheet" type="text/css" href="assets/css/touch-devices.css" />
 	<link rel="stylesheet" type="text/css" href="assets/css/responsive.css" />
 	<link rel="stylesheet" type="text/css" href="assets/css/loading-bar.css" />
+	<link rel="stylesheet" type="text/css" href="assets/css/icons.css" />
 	<!-- /build -->
     
 	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scaleable=no" name="viewport" />
@@ -79,11 +82,11 @@
 </head>
 <body>
 
-	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchDevice() }">
+	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }">
 	
 		<div id="notifications"></div>
 		
-		<div id="sidebar" class="animate">
+		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
 			<div class="background-image">
 				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.image }}"></preloadedimage>
 			</div>
@@ -103,12 +106,12 @@
         <div id="dropzones" class="animate fadereveal">
             <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack"]' droptype="queue">
                 <div class="liner default-content">
-                    <i class="si play doublesize"></i>
+                    <i class="si play white doublesize"></i>
                     <div class="label">Add to queue</div>
                 </div>
                 <div class="liner hover-content animate fadereveal">
                     <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
-                        <i class="si play doublesize"></i>
+                        <i class="si play doublesize white"></i>
                         <div class="label">Add to queue</div>
                     </div>
                     <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack"]' droptype="queuenext">
@@ -118,13 +121,13 @@
             </div>
             <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album","artist","playlist"]' droptype="library">
                 <div class="liner">
-                    <i class="si music doublesize"></i>
+                    <i class="si music white doublesize"></i>
                     <div class="label">Add to library</div>
                 </div>
             </div>
             <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist" ng-if="spotifyAuthorized">
                 <div class="liner default-content">
-                    <i class="si playlist doublesize"></i>
+                    <i class="si playlist white doublesize"></i>
                     <div class="label">Add to playlist</div>
                 </div>
                 <div class="liner hover-content animate fadereveal">

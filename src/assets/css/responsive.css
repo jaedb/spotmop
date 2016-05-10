@@ -151,6 +151,10 @@
 		display: block !important;
 	}
 
+	span.mobile-show {
+		display: inline-block !important;
+	}
+
 	.button.mobile-show {
 		display: inline-block !important;
 	}
@@ -213,13 +217,26 @@
 	}
 	
 	#loading-bar .bar {
-		left: 0px !important;
-		right: 0px !important;
+		display: none;
 	}
 	
 	#loading-bar-spinner {
-		right: 10px !important;
-		left: auto !important;
+		top: 50% !important;
+		left: 50% !important;
+		right: auto !important;
+		margin-left: -40px;
+		margin-top: -40px;
+		background: #29d;
+		padding: 20px;
+		border-radius: 50px;
+		width: 50px;
+		height: 50px;
+	}
+	
+	#loading-bar-spinner .spinner-icon {
+		width: 90% !important;
+		height: 90% !important;
+		border-color: #FFFFFF transparent transparent #FFFFFF !important;
 	}
 	
 	#sidebar .main-menu {
@@ -256,19 +273,75 @@
 	}
 	
 	.page-header h1 {
-		padding: 0;
+		padding: 1px 0 0 30px;
 		margin: 0;
 		font-size: 18px;
-		text-align: center;
 	}
 	
 	.page-header .button,
-	.page-header .button:hover {
-		margin: -5px -10px 0 0;
-		padding: 8px;
+	.page-header .button:hover,
+	.page-header .button.primary,
+	.page-header .button.primary:hover {
+		margin: 3px -10px 0 0;
+		padding: 8px 11px;
 		background: transparent;
 	}
 	
+	.page-header .utilities .filter .trigger {
+        display: block;
+        color: #FFFFFF;
+		cursor: pointer;
+    }
+	
+	.page-header .utilities .filter .trigger .label {
+		display: inline-block;
+		padding-top: 3px;
+	}
+	
+	.page-header .utilities .filter .options-wrapper {
+		display: none;
+		position: absolute;
+        top: 52px;
+        right: 0px;
+		left: 0px;
+		background: #EEEEEE;
+		padding: 10px;
+		z-index: 5;
+    }
+	
+	.page-header .utilities .filter.expanded .options-wrapper {
+        display: block;
+    }
+	
+	.page-header .utilities .filter-option {
+		color: #000000;
+		display: block;
+		float: left;
+		width: 55px;
+		margin: 0;
+		border: 0;
+		padding: 5px 0;
+		text-align: center;
+	}
+	
+	.page-header .utilities .filter-option .si {
+		display: inline-block;
+		margin: 0;
+	}
+	
+	.page-header .utilities .filter-option .label {
+		display: block;
+		text-align: center;
+		margin: 3px 0 0 0;
+	}
+    
+    .page-header .utilities .switch-button > .switch-track {
+        border-color: #FFFFFF;
+    }
+	
+    .page-header .utilities .switch-button:not(.on) > .switch-track > .indicator {
+        background: #FFFFFF;
+    }
 	
 	/**
 	 * Notifications
@@ -327,8 +400,8 @@
 	
 	.playlist-page .info,
     .album-page .info {
-        margin-top: 0;
-        background: #EEEEEE;
+        margin-top: -1px !important;
+        background: #DDDDDD;
     }
 	
 	.playlist-page .info:not(.show),
@@ -391,7 +464,9 @@
 	}
 	
 	.field input {
-		width: 98%;
+		width: 94%;
+		padding-left: 3%;
+		padding-right: 3%;
 	}
 	
 	
@@ -407,6 +482,24 @@
 	.square-panel.category .name {
 		padding-bottom: 12%;
 	}
+    
+    slider.square-panels {
+        margin-bottom: 10px;
+        margin-right: -20px;
+    }
+    
+    slider .controls {
+        display: none;
+    }
+    
+    slider .slides {
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+    
+    slider .slides-content {
+        width: 1100%;
+    }
 	
 	
 	/**
@@ -460,6 +553,14 @@
 		float: left;
 		margin-right: 20px;
 		margin-left: -10px;
+	}
+	
+	.discover-section .section-title {
+		text-align: center;
+	}
+	
+	.discover-section .section-title .artist-list {
+		display: block;
 	}
 }
 
@@ -592,16 +693,17 @@
 	}
 	
 	
-	
 	/**
-	 * Notifications
+	 * Search results page
 	 **/
-	
-	.page-notification {
-		margin-top: -20px;
-		margin-right: -20px;
-		margin-left: -20px;
-		padding: 10px 20px;
+	.search-page .search-results-section {
+		float: none;
+		width: 100%;
+		margin-right: 0;
+		padding-right: 0;
+	}
+	.search-page .search-results-section .square-panel {
+		width: 21%;
 	}
 }
 

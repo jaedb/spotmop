@@ -1,20 +1,43 @@
 <div class="page library-albums scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<h1>Albums</h1>
-		</div>
+        <div class="page-header">
 		
-		<div class="page-notification red-background white-text" ng-show="!spotifyAuthorized">
-			<i class="fa fa-exclamation-triangle white-text"></i>
-			&nbsp;
-			Please authorize Spotify (under Settings) to browse Your Albums
-		</div>
+            <div class="utilities">
+                <div class="field icon-radio view-options">
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="default" />
+                        <span class="label animate"><span class="si sections mobile-white"></span></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="grid" />
+                        <span class="label animate"><span class="si grid mobile-white"></span></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="list" />
+                        <span class="label animate"><span class="si list mobile-white"></span></span>
+                    </label>
+                </div>
+            </div>
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si cd mobile-hide"></span>
+                Albums
+            </h1>
 		
-		<h1 class="mobile-hide">Albums</h1>
+            <div class="flag bad" ng-show="!spotifyAuthorized">
+                <i class="fa fa-exclamation-triangle white-text"></i>
+                &nbsp;
+                Please authorize Spotify
+            </div>
+            
+        </div>
 		
-		<div class="album-items">
+        <!-- FULL VIEW -->
+        
+		<div class="album-items" ng-if="!settings.spotmop.albumlayout || settings.spotmop.albumlayout == 'default'">
 			
 			<div class="item-container full-album" ng-repeat="album in albums.items track by album.uri" ng-class="{ transitioning: album.transitioning }">
             
@@ -61,6 +84,59 @@
 			
 			<div class="clear-both"></div>
 		
+		</div>
+        
+        <!-- GRID VIEW -->
+		
+		<div class="album-items square-panels" ng-if="settings.spotmop.albumlayout == 'grid'">
+			<div class="item-container" ng-repeat="album in albums.items track by $index">
+				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+					<div class="image-container">
+						<thumbnail images="album.images"></thumbnail>
+					</div>
+					<div class="info smaller animate">
+						<div class="name" ng-bind="album.name"></div>
+                        <div class="secondary">
+                            <artistlist artists="album.artists"></artistlist>
+                        </div>
+					</div>
+				</a>
+			</div>
+            <div class="clear-both"></div>
+		</div>
+        
+        <!-- LIST VIEW -->
+		
+		<div class="album-items list" ng-if="settings.spotmop.albumlayout == 'list'">
+            <div class="list-item header">
+                <div class="col w35 name">Name</div>
+                <div class="col w35 artists">Artists</div>
+                <div class="col w15 release-date">Release date</div>
+                <div class="col w10 track-count">Tracks</div>
+                <div class="info">Rating</div>
+                <div class="clear-both"></div>
+            </div>
+			<div class="item-container" ng-repeat="album in albums.items track by $index">
+				<a ui-sref="browse.album({ uri: album.uri })" class="list-item">
+                    <div class="col w35 name" ng-bind="album.name"></div>
+                    <div class="col w35 artists">
+                        <artistlist artists="album.artists"></artistlist>
+                    </div>
+                    <div class="col w15 release-date" ng-bind="album.release_date"></div>
+                    <div class="col w10 track-count" ng-bind="album.tracks.total"></div>
+
+                    <div class="info">                        
+                        <div class="popularity tooltip-wrapper" ng-if="album.popularity >= 0">
+                            <span class="bar-track">
+                                <span class="bar" style="height: {{ album.popularity }}%;"></span>
+                            </span>
+                            <span class="tooltip"><span ng-bind="album.popularity"></span>%</span>
+                        </div>                        
+                    </div>
+                    
+                    <div class="clear-both"></div>
+				</a>
+			</div>		
 		</div>
 		
 		<div ng-hide="albums.items.length" class="no-items">

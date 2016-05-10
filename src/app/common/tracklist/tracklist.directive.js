@@ -14,11 +14,32 @@ angular.module('spotmop.common.tracklist', [])
 		templateUrl: 'app/common/tracklist/template.html',
 		scope: {
 			tracks: '=',		// = means to pass through an array/object
-			type: '@'			// @ means to listen for a string
+			type: '@',			// @ means to listen for a string
+            limit: '@'
 		},
 		link: function( $scope, element, attrs ){
 		},
 		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+						
+			// store our selected track uris
+			$rootScope.selectedTrackURIs = [];
+			
+			function updateSelectedTracksArray(){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = [];
+				
+				angular.forEach( selectedTracks, function(track){
+				
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris.push( track.track.uri );
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris.push( track.uri );
+				});
+				
+				$rootScope.selectedTrackURIs = selectedTracksUris;
+			}
 			
 			// prevent right-click menus
 			$(document).contextmenu( function(evt){
@@ -28,6 +49,19 @@ angular.module('spotmop.common.tracklist', [])
 					return false;
 			});
 			
+            
+            /**
+             * Limits on tracklist display
+             * This allows us to limit the number of tracks visible within this tracklist
+             * Used on the QueueController to handle huge tracklists
+             **/
+            $scope.tracksWrapper = function(){
+                if( $scope.limit && $scope.limit > 0 ){
+                    return $filter('limitTo')($scope.tracks, parseInt($scope.limit));
+                }else{
+                    return $scope.tracks;
+                }
+            }
 			
 			/**
 			 * Dragging a track
@@ -42,15 +76,19 @@ angular.module('spotmop.common.tracklist', [])
 			 * This is useful for when we have multiple tracklists in one state (ie My Albums)
 			 * NOTE: We need to run as $rootScope otherwise we only ever listen to ourselves
 			 **/
-			$rootScope.$on('spotmop:tracklist:focusChanged', function( event, tracklistID ){
+			var listenForFocusChange = $rootScope.$on('spotmop:tracklist:focusChanged', function( event, tracklistID ){
 				
 				$rootScope.tracklistInFocus = tracklistID;
 				
 				// if the focus has changed to a tracklist OTHER than me, I need to deselect all my tracks
 				if( $scope.$id != tracklistID ){
 					unselectAllTracks();
-				}				
+				}
 			});
+            
+            // Clean up our $rootScope listeners when this $scope is destroyed (ie page navigation)
+            // This is essential to avoid memory leaks and dirty listeners. Nobody likes dirty listeners.
+            $scope.$on('$destroy', listenForFocusChange);
 			
 			
 			/**
@@ -66,10 +104,10 @@ angular.module('spotmop.common.tracklist', [])
 				// if we're in a drag event, then we don't do nothin'
 				// this drag event will be handled by the 'candrag' directive
 				if( !$rootScope.dragging ){
-					
+                    
 					// if ctrl key held down
-					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchDevice() ){
-						
+					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
+                        
 						// toggle selection for this track
 						if( $track.track.selected ){
 							$track.$apply( function(){ $track.track.selected = false; });
@@ -126,12 +164,15 @@ angular.module('spotmop.common.tracklist', [])
 					/**
 					 * Hide/show mobile version of the context menu
 					 **/
-					if( $rootScope.isTouchDevice() ){
+					if( $rootScope.isTouchMode() ){
 						if( $filter('filter')($scope.tracks, {selected: true}).length > 0 )
 							$rootScope.$broadcast('spotmop:touchContextMenu:show', $scope.type );
 						else
 							$rootScope.$broadcast('spotmop:contextMenu:hide' );
 					}
+					
+					// store our updated selected track uris
+					updateSelectedTracksArray();
 				}
 			};
 			
@@ -229,7 +270,7 @@ angular.module('spotmop.common.tracklist', [])
 						// more tracks to add
 						if( selectedTracksUris.length > 0 ){
 							// add the following tracks to the tracklist
-							MopidyService.addToTrackList( selectedTracksUris );
+							MopidyService.addToTrackList( selectedTracksUris, 1 );
 						}
 					});
 				}
@@ -378,6 +419,30 @@ angular.module('spotmop.common.tracklist', [])
 					track.selected = false;
 				});
 			}
+			
+			
+			/**
+			 * Misc other tracklist events
+			 **/
+			 
+			$scope.$on('spotmop:tracklist:copyURIsToClipboard', function(event){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = '';
+				
+				angular.forEach( selectedTracks, function(track){
+					
+					if( selectedTracksUris != '' ) selectedTracksUris += ',';
+					
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris += track.track.uri;
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris += track.uri;
+				});
+				
+				console.log( selectedTracksUris );
+			});
 		}
 	}
 });

@@ -1,6 +1,6 @@
-<div>
+<div class="contextmenu {{ triggerEvent }}">
 
-	<div ng-if="isTouchDevice()" class="touch-menu">
+	<div ng-if="triggerEvent == 'touch'" class="touch-menu">
 		<span class="menu-item" singleclick="play()">
 			<i class="fa fa-play"></i>
 			<span class="text">Play</span>
@@ -35,7 +35,7 @@
 		</span>
 	</div>
 	
-	<div ng-if="!isTouchDevice()" class="non-touch-menu">
+	<div ng-if="triggerEvent == 'click'" class="non-touch-menu">
 		<span class="menu-item" singleclick="play()">
             Play
         </span>
@@ -53,6 +53,9 @@
         </span>
 		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToLibrary()">
             Add to library
+        </span>
+		<span class="menu-item" ng-show="context != 'localtrack'" ngclipboard data-clipboard-text="stuff" ngclipboard-success="copiedToClipboard(e);">
+            Copy URI(s)
         </span>
 		<span class="menu-item" ng-show="context == 'tltrack'" singleclick="unqueue()">
             Delete

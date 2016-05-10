@@ -10,7 +10,7 @@
 /* ============================================================================ BASE STYLES ======== */
 /* ================================================================================================= */
 
-contextmenu {
+.contextmenu {
 	position: fixed;
 	display: none;
 	top: 0;
@@ -21,29 +21,29 @@ contextmenu {
 	min-width: 110px;
 }
 
-contextmenu .menu-item {
+.contextmenu .menu-item {
 	display: block;
 	padding: 8px 14px 8px 10px;
 	border-bottom: 1px solid rgba(255,255,255,0.05);
     position: relative;
 }
 
-contextmenu .menu-item.has-submenu i {
+.contextmenu .menu-item.has-submenu i {
     position: absolute;
     top: 8px;
     right: 8px;
 }
 
-contextmenu .menu-item:hover {
+.contextmenu .menu-item:hover {
 	background: #333333;
 	cursor: pointer;
 }
 
-contextmenu .menu-item:hover > .sub-menu{
+.contextmenu .menu-item:hover > .sub-menu{
 	display: block;
 }
 
-contextmenu .sub-menu {
+.contextmenu .sub-menu {
     display: none;
     position: absolute;
     right: -150px;
@@ -54,19 +54,19 @@ contextmenu .sub-menu {
 	overflow-y: scroll;
 }
 
-contextmenu.hard-right .sub-menu,
-contextmenu.close-right .sub-menu {
+.contextmenu.hard-right .sub-menu,
+.contextmenu.close-right .sub-menu {
 	right: auto;
 	left: -150px;
 }
 
-contextmenu.hard-bottom .sub-menu,
-contextmenu.close-bottom .sub-menu {
+.contextmenu.hard-bottom .sub-menu,
+.contextmenu.close-bottom .sub-menu {
 	top: auto;
 	bottom: 0px;
 }
 
-contextmenu .sub-menu > .menu-item:hover {
+.contextmenu .sub-menu > .menu-item:hover {
     background: #414141;
 }
 
@@ -76,7 +76,7 @@ contextmenu .sub-menu > .menu-item:hover {
  * Non-touch device only
  **/
 
-#app:not(.touchDevice) contextmenu .menu-item i {
+.contextmenu.click .menu-item i {
 	font-size: 8px;
 	padding-right: 5px;
 	vertical-align: top;
@@ -89,16 +89,18 @@ contextmenu .sub-menu > .menu-item:hover {
  * Touch-device friendly
  * This provides a sticky toolbar while tracks are selected
  **/
-.touchDevice contextmenu {
+.contextmenu.touch  {
 	padding-left: 5px;
 	position: fixed;
-	top: 0;
+	top: auto;
 	right: 0;
+	bottom: 0;
 	left: 0;
 	z-index: 99;
+	background: #32b5f2;
 }
 
-.touchDevice contextmenu .menu-item {
+.contextmenu.touch  .menu-item {
 	display: block;
 	float: left;
 	padding: 14px 0 12px;
@@ -107,16 +109,16 @@ contextmenu .sub-menu > .menu-item:hover {
 	border: 0;
 }
 
-.touchDevice contextmenu .menu-item.cancel {
+.contextmenu.touch  .menu-item.cancel {
 	opacity: 0.5;
 	float: right;
 }
 
-.touchDevice contextmenu .menu-item .icon {
+.contextmenu.touch  .menu-item .icon {
 	font-size: 16px;
 }
 
-.touchDevice contextmenu .menu-item .text {
+.contextmenu.touch  .menu-item .text {
 	font-size: 8px;
 	display: block;
 	text-transform: uppercase;

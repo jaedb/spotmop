@@ -50,7 +50,7 @@ angular.module('spotmop.browse.featured', [])
 			return 'late';
 	};
 	
-	SpotifyService.featuredPlaylists()
+	SpotifyService.featuredPlaylists( 50 )
 		.then(function( response ) {
 			$scope.message = response.message;
 			$scope.playlists = response.playlists.items;

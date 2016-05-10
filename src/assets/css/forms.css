@@ -91,37 +91,122 @@
 }
  
 .switch-button {
+	cursor: pointer;
+}
+ 
+.switch-button > .switch-track {
     margin-top: 6px;
     width: 30px;
-    height: 14px;
-    background: rgba(0,0,0,0.3);
+    height: 12px;
     padding: 3px;
     border-radius: 20px;
     position: relative;
-    cursor: pointer;
     display: inline-block;
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.1);
+	border: 2px solid #000000;
 }
 
-.switch-button > .switch {
-    width: 14px;
-    height: 14px;
+.switch-button > .switch-track > .indicator {
+    width: 12px;
+    height: 12px;
     position: absolute;
     top: 3px;
     left: 3px;
-    background: #DDDDDD;
+    background: #000000;
     border-radius: 14px;
 }
 
-.switch-button.on {
-    background: rgba(0,0,0,0.8);
-    box-shadow: inset 1px 1px 4px 4px rgba(0,0,0,0.4);
-}
-
-.switch-button.on > .switch {
+.switch-button.on > .switch-track > .indicator {
     left: auto;
     right: 3px;
     background: #08d58f;
+}
+
+.switch-button-wrapper {
+	display: block;
+	padding: 4px 16px 0 0;
+}
+
+.switch-button-wrapper .label {
+	vertical-align: top;
+	display: inline-block;
+	margin: 7px 5px 0 10px
+}
+
+
+
+/**
+ * Options field
+ * Basically a glorified radio field
+ **/
+
+.field.radio .input label {
+	padding-top: 2px;
+	display: inline-block;
+}
+
+.field.radio input {
+	display: none;
+}
+
+.field.radio label .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+    border-radius: 50%;
+	border: 2px solid #000000;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.field.radio input:checked + .label:before {
+    background: #000000;
+    box-shadow: inset 0px 0px 0px 3px #f5f5f5;
+}
+
+
+
+/**
+ * Options via icons field
+ * Basically a glorified radio field, but using icons instead of radios
+ **/
+
+.field.icon-radio {
+	padding: 0;
+}
+
+.field.icon-radio input {
+	display: none;
+}
+
+.field.icon-radio label {
+	display: inline-block;
+}
+
+.field.icon-radio .label {
+	opacity: 0.3;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+}
+
+.field.icon-radio .label:hover {
+	opacity: 0.5;
+}
+
+.field.icon-radio input:checked + .label {
+	opacity: 1;
 }
 
 

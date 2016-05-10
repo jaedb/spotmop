@@ -1,26 +1,31 @@
 <div class="page my-playlists-page scrolling-panel">
 	<div class="inner">
 		
-		<div class="page-header mobile-show">
-			<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
-			<a class="create-playlist button pull-right"
-				  ng-click="createPlaylist()">
-				<i class="fa fa-plus"></i>
-			</a>
-			<h1>Playlists</h1>		
-		</div>
+        <div class="page-header">
 		
-		<a class="button create-playlist float-right primary mobile-hide"
-			  ng-click="createPlaylist()">
-			<i class="fa fa-plus"></i>&nbsp; <span>Create playlist</span>
-		</a>
-		
-		<h1 class="mobile-hide">Playlists</h1>
+            <div class="utilities has-buttons">
+                <a class="button create-playlist primary pull-right" ng-click="createPlaylist()">
+                    <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span>
+                </a>
+                <div class="switch-button-wrapper pull-right">
+                    <switch class="mobile-hide" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
+                    <switch class="mobile-show" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only mine"></switch>
+                </div>
+            </div>
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si playlist mobile-hide"></span>
+                Playlists
+            </h1>
+            
+        </div>
 	
 		<div class="playlist-items square-panels">
 			
 			<div ng-if="playlists.items.length">
-				<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
+				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by $index">
 					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
 						<div class="image-container" ng-if="playlist.images">
 							<thumbnail images="playlist.images"></thumbnail>
