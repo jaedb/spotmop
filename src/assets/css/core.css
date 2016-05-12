@@ -1474,6 +1474,11 @@ body.dragging .tracklist .track.dropping {
 	cursor: pointer;
 }
 
+.list .list-item .si {
+	margin-top: 0;
+	vertical-align: bottom;
+}
+
 .list .list-item .info {
 	width: 5%;
 	text-align: right;

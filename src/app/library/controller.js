@@ -396,29 +396,33 @@ angular.module('spotmop.library', [])
 /**
  * Local files
  **/
-.controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.folders = [];
-	$scope.tracklist = {tracks: []};
-	
+	$scope.tracklist = {tracks: []};	
 	var folder, parentFolder;
 	
-	if( $stateParams.folder ){
+	// rip out any slashes and pipes
+	if( $stateParams.folder ){	
+		folder = $stateParams.folder.replace('|','/');
+	}
 	
-		folder = $stateParams.folder;
-		var parentFolders = folder.split('|');
-		parentFolder = '';
-		for( var i = 0; i < parentFolders.length-1; i++ ){
-			showParentFolderLink = true;
-			parentFolder += parentFolders[i];
-			if( i < parentFolders.length-2 )
-				parentFolder += '|';
+	// figure out our parent folder (provided we're not at the top-level already)
+	if( !folder || folder != 'local:directory' ){
+		
+		console.log( 'In folder: '+ folder );
+		
+		// viewing top-level folders
+		if(
+			folder.indexOf('local:directory?type=date&') > -1 ||
+			folder.indexOf('local:directory?max-age=') > -1 ){
+				parentFolder = 'local:directory';
 		}
 		
-		if( parentFolder == '' )
-			parentFolder = 'local:directory';
-		
-		folder = folder.replace('|','/');
+		// release years
+		if( folder.indexOf('local:directory?date=') > -1 ){
+			parentFolder = 'local:directory?type=date&format=%25Y';
+		}
 	}
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -429,8 +433,7 @@ angular.module('spotmop.library', [])
 	
 	
 	// go get em
-	function getItems(){
-			
+	function getItems(){		
 		MopidyService.getLibraryItems( folder )
 			.then( function( response ){
 			
@@ -463,10 +466,12 @@ angular.module('spotmop.library', [])
 					
 					// fetch the folders
 					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
-
-					if( $stateParams.folder != 'local:directory' )
+					
+					// plug in our parent folder item
+					if( parentFolder )
 						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
 					
+					// store our folders to the template-accessible variable
 					$scope.folders = folders;
 				});
 	}
