@@ -402,27 +402,24 @@ angular.module('spotmop.library', [])
 	$scope.tracklist = {tracks: []};	
 	var folder, parentFolder;
 	
-	// rip out any slashes and pipes
+	// provided we've been given a folder to start with
 	if( $stateParams.folder ){	
-		folder = $stateParams.folder.replace('|','/');
-	}
-	
-	// figure out our parent folder (provided we're not at the top-level already)
-	if( !folder || folder != 'local:directory' ){
 		
-		console.log( 'In folder: '+ folder );
-		
-		// viewing top-level folders
-		if(
-			folder.indexOf('local:directory?type=date&') > -1 ||
-			folder.indexOf('local:directory?max-age=') > -1 ){
-				parentFolder = 'local:directory';
+		folder = $stateParams.folder;
+		var parentFolders = folder.split('|');
+		parentFolder = '';
+		for( var i = 0; i < parentFolders.length-1; i++ ){
+			showParentFolderLink = true;
+			parentFolder += parentFolders[i];
+			if( i < parentFolders.length-2 )
+				parentFolder += '|';
 		}
 		
-		// release years
-		if( folder.indexOf('local:directory?date=') > -1 ){
-			parentFolder = 'local:directory?type=date&format=%25Y';
-		}
+		// if we're just one level up from root
+		if( parentFolder == '' && folder != 'local:directory' )
+			parentFolder = 'local:directory';
+		
+		folder = folder.replace('|','/');
 	}
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -433,7 +430,8 @@ angular.module('spotmop.library', [])
 	
 	
 	// go get em
-	function getItems(){		
+	function getItems(){
+	
 		MopidyService.getLibraryItems( folder )
 			.then( function( response ){
 			
