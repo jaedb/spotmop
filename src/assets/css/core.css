@@ -1484,6 +1484,19 @@ body.dragging .tracklist .track.dropping {
 	text-align: right;
 	float: right;
 }
+
+@media ( max-width: 800px ){
+	.list.album-items .release-date {
+		display: none;
+	}
+	.list.album-items .name .si {
+		display: none;
+	}
+	.list.album-items .name,
+	.list.album-items .artists {
+		width: 40%;
+	}
+}
  
  
 /**

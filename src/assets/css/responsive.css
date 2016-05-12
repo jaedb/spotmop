@@ -181,6 +181,7 @@
 	 * Tracklists
 	 **/
 	
+	.list .list-item,
 	.tracklist .track {
 		padding-right: 20px;
 		margin-left: -20px;
@@ -416,7 +417,7 @@
 	}
 	
 	.thumbnail-wrapper.slim-intro-wrapper > .thumbnail {
-		opacity: 0.1;
+		opacity: 0.25;
 		padding-bottom: 0;
 		width: auto;
 		border-position: 50% 50%;

@@ -12,7 +12,7 @@
                 <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
                 <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
 				
-				<div class="slim-intro mobile-show">
+				<div class="slim-intro mobile-show" ng-if="mediumScreen()">
 					<preloadedimage ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" class="thumbnail album" url="{{ image.url }}" useproxy="true"></preloadedimage>					
 					<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
