@@ -5,12 +5,20 @@
 	<div class="asset-sidebar">
         
         <div
-            class="thumbnail-wrapper album" 
+            class="thumbnail-wrapper album slim-intro-wrapper" 
             draggable="false"
             candrag
             dragobj="album">
                 <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
                 <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
+				
+				<div class="slim-intro mobile-show">
+					<preloadedimage ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" class="thumbnail album" url="{{ image.url }}" useproxy="true"></preloadedimage>					
+					<h1 ng-bind="album.name"></h1>
+					<h2 class="description">
+						<artistlist artists="album.artists"></artistlist>
+					</h2>	
+				</div>
 		</div>
         
         <div class="clear-left"><!-- clear --></div>
@@ -62,7 +70,7 @@
 	<div class="content has-asset-sidebar">
 		<div class="inner">
 		
-			<div class="intro">
+			<div class="intro mobile-hide">
 				<div class="breadcrumbs">
 					<span ng-if="linkingMode('browse.newalbum')">
 						<a class="item" ui-sref="browse.new">New releases</a>
@@ -76,9 +84,7 @@
 				</div>
 				<h1 ng-bind="album.name"></h1>
 				<h2 class="description">
-					<span ng-repeat="artist in album.artists">
-						<a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-					</span>
+					<artistlist artists="album.artists"></artistlist>
 				</h2>	
 			</div>
             

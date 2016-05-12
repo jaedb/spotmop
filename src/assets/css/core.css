@@ -287,7 +287,7 @@ body.dragging .body * {
 .main-menu .dragging-note {
 	display: none;
 	float: right;
-	color: #333333;
+	color: #222222;
 	font-size: 12px;
 	padding-right: 7px;
 	padding-top: 2px;
@@ -744,7 +744,7 @@ input[type='submit'],
     top: 0;
     right: 0;
     background: #DDDDDD;
-    color: #333333;
+    color: #222222;
     font-size: 11px;
     padding: 2px 5px;
 }
