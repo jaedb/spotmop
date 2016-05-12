@@ -402,24 +402,34 @@ angular.module('spotmop.library', [])
 	$scope.tracklist = {tracks: []};	
 	var folder, parentFolder;
 	
-	// provided we've been given a folder to start with
+	
+	// rip out any slashes and pipes
 	if( $stateParams.folder ){	
+		folder = $stateParams.folder.replace('|','/');
+	}
+	
+	// figure out our parent folder (provided we're not at the top-level already)
+	if( !folder || folder != 'local:directory' ){
 		
-		folder = $stateParams.folder;
-		var parentFolders = folder.split('|');
-		parentFolder = '';
-		for( var i = 0; i < parentFolders.length-1; i++ ){
-			showParentFolderLink = true;
-			parentFolder += parentFolders[i];
-			if( i < parentFolders.length-2 )
-				parentFolder += '|';
+		console.log( 'In folder: '+ folder );
+		
+		// viewing top-level folders
+		if(
+			folder == 'local:directory?type=track' ||
+			folder.indexOf('local:directory?type=date&') > -1 ||
+			folder.indexOf('local:directory?max-age=') > -1 ){
+				parentFolder = 'local:directory';
 		}
 		
-		// if we're just one level up from root
-		if( parentFolder == '' && folder != 'local:directory' )
-			parentFolder = 'local:directory';
+		// release years
+		if( folder.indexOf('local:directory?date=') > -1 ){
+			parentFolder = 'local:directory?type=date&format=%25Y';
+		}
 		
-		folder = folder.replace('|','/');
+		// artist
+		if( folder.indexOf('local:directory?artist=') > -1 ){
+			parentFolder = 'local:directory?type=artist';
+		}
 	}
 	
 	// on init, go get the items (or wait for mopidy to be online)
