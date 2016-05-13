@@ -411,8 +411,6 @@ angular.module('spotmop.library', [])
 	// figure out our parent folder (provided we're not at the top-level already)
 	if( !folder || folder != 'local:directory' ){
 		
-		console.log( 'In folder: '+ folder );
-		
 		// viewing top-level folders
 		if(
 			folder == 'local:directory?type=track' ||
@@ -469,6 +467,8 @@ angular.module('spotmop.library', [])
 								}
 								
 								$scope.tracklist.tracks = tracks;
+								
+								console.table( tracks );
 							});
 					}
 					
