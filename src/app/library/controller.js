@@ -398,11 +398,16 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
-	$scope.folders = [];
 	$scope.path = [{title: 'Files', uri: 'local:directory'}];
-	$scope.tracklist = {tracks: []};	
+	$scope.allFolders = [];
+	$scope.allTracks = [];	
 	var folder;
 	
+	// watch for filter input
+	$scope.$watch('filterTerm', function(val){
+        $scope.tracks = $filter('filter')($scope.allTracks, val);
+        $scope.folders = $filter('filter')($scope.allFolders, val);
+    });
 	
 	if( $stateParams.folder ){
 		
@@ -438,6 +443,7 @@ angular.module('spotmop.library', [])
 	}
 	
 	/*
+	 COMMENTED OUT AS THIS WILL BE USED FOR LOCAL-SQLITE EXTENSION (not yet supported)
 	// rip out any slashes and pipes
 	if( $stateParams.folder ){	
 		folder = $stateParams.folder.replace('|','/');
@@ -502,7 +508,8 @@ angular.module('spotmop.library', [])
 									tracks.push( track );
 								}
 								
-								$scope.tracklist.tracks = tracks;
+								$scope.tracks = tracks;
+								$scope.allTracks = tracks;
 							});
 					}
 					
@@ -511,8 +518,7 @@ angular.module('spotmop.library', [])
 					
 					// store our folders to the template-accessible variable
 					$scope.folders = folders;
-		
-		console.table( $scope.path );
+					$scope.allFolders = folders;
 				});
 	}
 	

@@ -13,8 +13,12 @@
                 </span>
             </h1>
             
+            <div class="utilities">
+                <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
+            </div>
+            
         </div>
-		
+        
 		<div class="library-folders tracklist">
 			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.files({ folder: folder.uri })">
 				<i class="fa fa-folder icon" ng-hide="folder.isParentFolder"></i>
@@ -24,7 +28,7 @@
 			</a>
 		</div>
         
-		<tracklist ng-if="tracklist.tracks.length > 0" tracks="tracklist.tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
+		<tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
 		
 	</div>
 </div>
