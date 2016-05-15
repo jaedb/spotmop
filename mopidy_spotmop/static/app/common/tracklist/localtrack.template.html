@@ -13,10 +13,19 @@
         <div class="title"><span ng-bind="track.name"></span></div>
         
         <div class="artist">
-            <artistlist artists="track.artists"></artistlist>
+            <span class="artist-list">
+                <span ng-repeat="artist in track.artists">
+                    <a ui-sref="library.files({ folder: 'local:directory?artist='+artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a>
+                    <span ng-bind="artist.name" ng-if="!artist.uri"></span>
+                    <span ng-if="!$last">, </span>
+                </span>
+            </span>
         </div>
         
-        <div class="album"><a ui-sref="library.files({ folder: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a><span ng-bind="track.album.name" ng-if="!track.album.uri"></span></div>
+        <div class="album">
+            <a ui-sref="library.files({ folder: 'local:directory?album='+track.album.uri+'&type=track' })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
+            <span ng-bind="track.album.name" ng-if="!track.album.uri"></span>
+        </div>
         
         <div class="info">	
             <span class="duration" ng-show="track.length">{{ track.length | formatMilliseconds }}</span>
