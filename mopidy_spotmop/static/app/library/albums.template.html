@@ -111,18 +111,21 @@
             <div class="list-item header">
                 <div class="col w35 name">Name</div>
                 <div class="col w35 artists">Artists</div>
-                <div class="col w15 release-date">Release date</div>
+                <div class="col w15 release-date">Released</div>
                 <div class="col w10 track-count">Tracks</div>
                 <div class="info">Rating</div>
                 <div class="clear-both"></div>
             </div>
 			<div class="item-container" ng-repeat="album in albums.items track by $index">
 				<a ui-sref="browse.album({ uri: album.uri })" class="list-item">
-                    <div class="col w35 name" ng-bind="album.name"></div>
+                    <div class="col w35 name"> 
+                        <span class="si cd"></span>
+                        <span ng-bind="album.name"></span>
+                    </div>
                     <div class="col w35 artists">
                         <artistlist artists="album.artists"></artistlist>
                     </div>
-                    <div class="col w15 release-date" ng-bind="album.release_date"></div>
+                    <div class="col w15 release-date" ng-bind="album.release_date | date:'yyyy'"></div>
                     <div class="col w10 track-count" ng-bind="album.tracks.total"></div>
 
                     <div class="info">                        

@@ -287,7 +287,7 @@ body.dragging .body * {
 .main-menu .dragging-note {
 	display: none;
 	float: right;
-	color: #333333;
+	color: #222222;
 	font-size: 12px;
 	padding-right: 7px;
 	padding-top: 2px;
@@ -744,7 +744,7 @@ input[type='submit'],
     top: 0;
     right: 0;
     background: #DDDDDD;
-    color: #333333;
+    color: #222222;
     font-size: 11px;
     padding: 2px 5px;
 }
@@ -1474,10 +1474,28 @@ body.dragging .tracklist .track.dropping {
 	cursor: pointer;
 }
 
+.list .list-item .si {
+	margin-top: 0;
+	vertical-align: bottom;
+}
+
 .list .list-item .info {
 	width: 5%;
 	text-align: right;
 	float: right;
+}
+
+@media ( max-width: 800px ){
+	.list.album-items .release-date {
+		display: none;
+	}
+	.list.album-items .name .si {
+		display: none;
+	}
+	.list.album-items .name,
+	.list.album-items .artists {
+		width: 40%;
+	}
 }
  
  

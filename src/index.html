@@ -14,7 +14,7 @@
 	<script type="text/javascript" src="vendor/angular-ui-router.min.js"></script>
 	<script type="text/javascript" src="vendor/angular-resource.min.js"></script>
 	<script type="text/javascript" src="vendor/angular-storage.min.js"></script>
-	<script type="text/javascript" src="vendor/angular-touch.min.js"></script>
+	<script type="text/javascript" src="vendor/angular-touch.js"></script>
 	<script type="text/javascript" src="vendor/mopidy.min.js"></script>
 	<script type="text/javascript" src="vendor/clipboard.min.js"></script>
 	<script type="text/javascript" src="vendor/ngclipboard.js"></script>
@@ -82,12 +82,12 @@
 </head>
 <body>
 
-	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }">
+	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()">
 	
 		<div id="notifications"></div>
 		
 		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
-			<div class="background-image">
+			<div class="background-image" ng-if="!mediumScreen()">
 				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.image }}"></preloadedimage>
 			</div>
 			<div class="inner">

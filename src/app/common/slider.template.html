@@ -1,7 +1,7 @@
 <div class="controls">
     <span class="si chevron-left" ng-click="prev()"></span><span class="si chevron-right next" ng-click="next()"></span>
 </div>
-<div class="slides">
+<div class="slides swipedisabled">
     <div class="slides-content">
         <div class="item-container" ng-repeat="item in items track by $index">
             <a ui-sref="browse.artist.overview({ uri: item.uri })" ng-if="item.type == 'artist'"

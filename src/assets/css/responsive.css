@@ -181,6 +181,7 @@
 	 * Tracklists
 	 **/
 	
+	.list .list-item,
 	.tracklist .track {
 		padding-right: 20px;
 		margin-left: -20px;
@@ -263,7 +264,7 @@
 		display: block;
 		position: relative;
 		margin: -20px -20px 20px -20px;
-		background: #333333;
+		background: #222222;
 		color: #FFFFFF;
 		padding: 15px 20px;
 	}
@@ -385,7 +386,7 @@
 	}
     
     .content.has-asset-sidebar > .inner {
-        padding-top: 10px;
+        padding-top: 25px;
     }
 	
 	.playlist-page .artist-grid,
@@ -408,7 +409,52 @@
     .album-page .info:not(.show) {
         display: none;
     }
-    
+	
+	.thumbnail-wrapper.slim-intro-wrapper {
+		background: #222222;
+		overflow: hidden;
+		position: relative;
+	}
+	
+	.thumbnail-wrapper.slim-intro-wrapper > .thumbnail {
+		opacity: 0.25;
+		padding-bottom: 0;
+		width: auto;
+		border-position: 50% 50%;
+		position: absolute;
+		top: -20px;
+		right: -20px;
+		bottom: -20px;
+		left: -20px;
+		filter: url('../svg/blur.svg#blur');
+		-webkit-filter: blur(10px);
+		filter: blur(10px);
+	}
+	
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro {
+		z-index: 2;
+		text-align: center;
+		position: relative;
+		padding: 60px 20px 40px;
+	}
+	
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro .thumbnail {
+		display: block;
+		width: 180px;
+		height: 180px;
+		margin: 0 auto;
+		padding-bottom: 0;
+		margin-bottom: 10px;
+	}
+	
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro h1 {
+		color: #FFFFFF;
+		font-size: 20px
+	}
+	
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro h2 {
+		font-size: 16px;
+	}
     
 	
 	/**
@@ -427,7 +473,7 @@
 	}
 	
 	.artist-page .title-panel {
-		padding-left: 40px;
+		padding-left: 20px;
 	}
 	
 	.artist-page .info-panel {
@@ -473,6 +519,11 @@
 	/**
 	 * Square panels
 	 **/
+	.square-panels {
+        margin-left: -3.5%;
+        margin-right: -3.5%;
+    }
+    
 	.square-panel {
 		width: 21%;
 		margin-bottom: 5%;
@@ -678,10 +729,6 @@
 	
 	.sub-page-navigation {
 		margin-top: 0;
-	}
-	
-	.sub-page-navigation .menu-item {
-		margin-right: 10px;
 	}
 	
 	.search-page .sub-page-navigation .menu-item {
