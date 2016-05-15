@@ -399,10 +399,45 @@ angular.module('spotmop.library', [])
 .controller('LibraryFilesController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.folders = [];
+	$scope.path = [{title: 'Files', uri: 'local:directory'}];
 	$scope.tracklist = {tracks: []};	
-	var folder, parentFolder;
+	var folder;
 	
 	
+	if( $stateParams.folder ){
+		
+		folder = $stateParams.folder;
+		
+		// drop the local:directory: bit
+		var path = folder.substring(16,folder.length);
+		
+		// split string into array elements (provided we're not viewing the root level already)
+		if( path != '' ) path = path.split('|');
+		
+		// loop each 'folder' within the string
+		if( path.length > 0 ){
+			for( var i = 0; i < path.length; i++ ){
+			
+				var uri = 'local:directory:';
+				
+				// loop the whole path to re-build the uri
+				for( var j = 0; j <= i; j++ ){
+					if( uri != 'local:directory:' )	uri += '|';
+					uri += path[j];
+				}
+				
+				// plug our path into the template array
+				$scope.path.push({
+					title: decodeURIComponent( path[i] ),
+					uri: uri
+				});
+			}
+		}
+		
+		folder = folder.replace('|','/');
+	}
+	
+	/*
 	// rip out any slashes and pipes
 	if( $stateParams.folder ){	
 		folder = $stateParams.folder.replace('|','/');
@@ -429,6 +464,7 @@ angular.module('spotmop.library', [])
 			parentFolder = 'local:directory?type=artist';
 		}
 	}
+	*/
 	
 	// on init, go get the items (or wait for mopidy to be online)
 	if( $scope.mopidyOnline )
@@ -467,20 +503,16 @@ angular.module('spotmop.library', [])
 								}
 								
 								$scope.tracklist.tracks = tracks;
-								
-								console.table( tracks );
 							});
 					}
 					
 					// fetch the folders
 					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
 					
-					// plug in our parent folder item
-					if( parentFolder )
-						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
-					
 					// store our folders to the template-accessible variable
 					$scope.folders = folders;
+		
+		console.table( $scope.path );
 				});
 	}
 	
