@@ -1,0 +1,35 @@
+<div class="page library-tracks-page scrolling-panel">
+	<div class="inner">
+		
+        <div class="page-header">
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si folder mobile-hide"></span>
+                <span class="path-item" ng-repeat="item in path">
+                    <a ui-sref="library.local({ uri: item.uri })" ng-bind="item.title" ng-if="item.uri"></a>
+                    <span ng-bind="item.title" ng-if="!item.uri"></span>
+                    <span ng-if="!$last && path.length > 0" class="grey-text"> &nbsp;/&nbsp; </span>
+                </span>
+            </h1>
+            
+            <div class="utilities">
+                <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
+            </div>
+            
+        </div>
+        
+		<div class="library-folders tracklist">
+			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.local({ uri: folder.uri })">
+				<i class="fa fa-folder icon" ng-hide="folder.isParentFolder"></i>
+				<i class="fa fa-reply icon" ng-show="folder.isParentFolder"></i>
+				<div class="title" ng-bind="folder.name" ng-class="{ empty: !folder.name }"></div>
+				<div class="clear-both"></div>
+			</a>
+		</div>
+        
+		<tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
+		
+	</div>
+</div>
