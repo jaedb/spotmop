@@ -74,6 +74,7 @@
 	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scaleable=no" name="viewport" />
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="theme-color" content="#222222">
 	
 	<link rel="shortcut icon" type="image/ico" href="assets/favicon.ico" />
 	<link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico" />
@@ -82,7 +83,7 @@
 </head>
 <body>
 
-	<div id="app" version="2.5.7" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()">
+	<div id="app" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()">
 	
 		<div id="notifications"></div>
 		

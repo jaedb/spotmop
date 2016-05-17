@@ -2968,9 +2968,20 @@ slider .item-container > .square-panel {
 
 
 
-
-
-
+/**
+ * List filter
+ * Used on our Local Files view
+ **/
+ 
+.list-filter {
+	padding: 10px;
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif;
+}
+ 
+.utilities .list-filter {
+	margin: -5px -25px 0 0;
+	width: 200px;
+}
 
 
 
@@ -3515,6 +3526,14 @@ slider .item-container > .square-panel {
     .page-header .utilities .switch-button:not(.on) > .switch-track > .indicator {
         background: #FFFFFF;
     }
+	
+	.page-header .utilities input[type="text"]{
+		margin: -7px -12px 0 0;
+		width: 100px;
+		background: rgba(255,255,255,0.15);
+		color: #FFFFFF;
+	}
+	
 	
 	/**
 	 * Notifications

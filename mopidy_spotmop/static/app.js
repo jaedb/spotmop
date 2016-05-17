@@ -33176,8 +33176,8 @@ angular.module('spotmop.discover', [])
 	$scope.sections = [];
 	
 	// get my old favorites
-	SpotifyService.getMyFavorites('artists', false, false, 'long_term').then( function(response){		
-		$scope.favorites.items = response.items;
+	SpotifyService.getMyFavorites('artists', 50, false, 'long_term').then( function(response){		
+		$scope.favorites.items = $filter('shuffle')(response.items);
 	});
 	
 	
@@ -33300,10 +33300,10 @@ angular.module('spotmop.library', [])
 			templateUrl: "app/library/albums.template.html",
 			controller: 'LibraryAlbumsController'
 		})
-		.state('library.files', {
-			url: "/files/:folder",
-			templateUrl: "app/library/files.template.html",
-			controller: 'LibraryFilesController'
+		.state('library.local', {
+			url: "/local/:uri",
+			templateUrl: "app/library/local.template.html",
+			controller: 'LibraryLocalController'
 		});
 }])
 	
@@ -33662,37 +33662,89 @@ angular.module('spotmop.library', [])
 /**
  * Local files
  **/
-.controller('LibraryFilesController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LibraryLocalController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
-	$scope.folders = [];
-	$scope.tracklist = {tracks: []};	
-	var folder, parentFolder;
+	$scope.path = [{title: 'Files', uri: 'local:directory'}];
+	$scope.allFolders = [];
+	$scope.allTracks = [];	
+	var uri;
+	
+	// watch for filter input
+	$scope.$watch('filterTerm', function(val){
+        $scope.tracks = $filter('filter')($scope.allTracks, val);
+        $scope.folders = $filter('filter')($scope.allFolders, val);
+    });
 	
 	
-	// rip out any slashes and pipes
-	if( $stateParams.folder ){	
-		folder = $stateParams.folder.replace('|','/');
-	}
-	
-	// figure out our parent folder (provided we're not at the top-level already)
-	if( !folder || folder != 'local:directory' ){
+	if( $stateParams.uri ){
 		
-		// viewing top-level folders
-		if(
-			folder == 'local:directory?type=track' ||
-			folder.indexOf('local:directory?type=date&') > -1 ||
-			folder.indexOf('local:directory?max-age=') > -1 ){
-				parentFolder = 'local:directory';
+		uri = $stateParams.uri;
+		
+		// handle use of pipes to separate actual folders
+		// this method is used by the json backend library, but is not needed for local-sqlite
+		if( uri.indexOf('|') > -1 || uri.indexOf('local:directory:') > -1 ){
+		
+			// drop the local:directory: bit
+			var path = uri.substring(16,uri.length);
+			
+			// split string into array elements (provided we're not viewing the root level already)
+			if( path != '' ) path = path.split('|');
+			
+			// loop each 'folder' within the uri string
+			if( path.length > 0 ){
+				for( var i = 0; i < path.length; i++ ){
+				
+					var uri = 'local:directory:';
+					
+					// loop the whole path to re-build the uri
+					for( var j = 0; j <= i; j++ ){
+						if( uri != 'local:directory:' )	uri += '|';
+						uri += path[j];
+					}
+					
+					// plug our path into the template array
+					$scope.path.push({
+						title: decodeURIComponent( path[i] ),
+						uri: uri
+					});
+				}
+			}
+			
+			uri = uri.replace('|','/');
 		}
 		
-		// release years
-		if( folder.indexOf('local:directory?date=') > -1 ){
-			parentFolder = 'local:directory?type=date&format=%25Y';
-		}
+		// manually setup path structure
+		if(uri == 'local:directory?type=track' ){
+			$scope.path.push({title: 'Tracks', uri: 'local:directory'});
+		}else if( uri.indexOf('local:directory?date=') > -1 ){
+			$scope.path.push({title: 'History', uri: 'local:directory'});
+			
+		// albums
+		}else if( uri.indexOf('local:directory?type=album') > -1 ){
+			$scope.path.push({title: 'Albums'});
 		
+		// individual album
+		}else if( uri.indexOf('album=') > -1 || uri.indexOf('local:album:') > -1 ){
+			$scope.path.push({title: 'Albums', uri: 'local:directory?type=album'});
+			$scope.path.push({title: 'Album'});
+			
 		// artist
-		if( folder.indexOf('local:directory?artist=') > -1 ){
-			parentFolder = 'local:directory?type=artist';
+		}else if( uri.indexOf('local:directory?type=artist') > -1 ){
+			$scope.path.push({title: 'Artists'});
+		
+		// individual artist
+		}else if( uri.indexOf('local:artist:') > -1 ){
+			$scope.path.push({title: 'Artists', uri: 'local:directory?type=artist'});
+			$scope.path.push({title: 'Artist'});
+			
+		// genre
+		}else if( uri.indexOf('local:directory?type=genre') > -1 ){
+			$scope.path.push({title: 'Genres'});
+		
+		// individual genre
+		}else if( uri.indexOf('genre=') > -1 ){
+			$scope.path.push({title: 'Genres', uri: 'local:directory?type=genre'});
+			$scope.path.push({title: 'Genre'});
 		}
 	}
 	
@@ -33705,8 +33757,8 @@ angular.module('spotmop.library', [])
 	
 	// go get em
 	function getItems(){
-	
-		MopidyService.getLibraryItems( folder )
+		
+		MopidyService.getLibraryItems( uri )
 			.then( function( response ){
 			
 					// load tracks
@@ -33732,21 +33784,23 @@ angular.module('spotmop.library', [])
 									tracks.push( track );
 								}
 								
-								$scope.tracklist.tracks = tracks;
-								
-								console.table( tracks );
+								$scope.tracks = tracks;
+								$scope.allTracks = tracks;
 							});
 					}
 					
-					// fetch the folders
-					var folders = formatFolders( $filter('filter')(response, {type: 'directory'}) );
+					// organise the folders					
+					var folders = [];
+					for( i = 0; i < response.length; i++ ){
+						if( response[i].type != 'track' )
+							folders.push( response[i] );
+					}
 					
-					// plug in our parent folder item
-					if( parentFolder )
-						folders.unshift({ name: '..', uri: parentFolder, type: 'directory', isParentFolder: true });
+					var folders = formatFolders( folders );
 					
 					// store our folders to the template-accessible variable
 					$scope.folders = folders;
+					$scope.allFolders = folders;
 				});
 	}
 	
