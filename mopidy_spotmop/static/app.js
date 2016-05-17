@@ -33176,8 +33176,8 @@ angular.module('spotmop.discover', [])
 	$scope.sections = [];
 	
 	// get my old favorites
-	SpotifyService.getMyFavorites('artists', false, false, 'long_term').then( function(response){		
-		$scope.favorites.items = response.items;
+	SpotifyService.getMyFavorites('artists', 50, false, 'long_term').then( function(response){		
+		$scope.favorites.items = $filter('shuffle')(response.items);
 	});
 	
 	

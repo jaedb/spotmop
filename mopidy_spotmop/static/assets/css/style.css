@@ -3527,6 +3527,14 @@ slider .item-container > .square-panel {
         background: #FFFFFF;
     }
 	
+	.page-header .utilities input[type="text"]{
+		margin: -7px -12px 0 0;
+		width: 100px;
+		background: rgba(255,255,255,0.15);
+		color: #FFFFFF;
+	}
+	
+	
 	/**
 	 * Notifications
 	 **/
