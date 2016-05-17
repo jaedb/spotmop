@@ -11,6 +11,10 @@ angular.module('spotmop.settings', [])
 		.state('settings', {
 			url: "/settings",
 			templateUrl: "app/settings/template.html"
+		})
+		.state('testing', {
+			url: "/testing",
+			templateUrl: "app/settings/testing.template.html"
 		});
 })
 	
@@ -90,4 +94,26 @@ angular.module('spotmop.settings', [])
         .then( function(connections){
             $scope.clientConnections = connections;
         });
+})
+
+
+/**
+ * Testing controller
+ * Accessed only by direct URL (/testing) for testing the system
+ **/	
+.controller('TestingController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
+	
+	$scope.method = 'mopidy.library.browse';
+	$scope.payload = '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}';
+	$scope.data = {};
+	
+	$scope.run = function(){
+		console.info('Testing method: '+$scope.method);
+		MopidyService.testMethod($scope.method, JSON.parse( $scope.payload ) )
+			.then( function(response){
+				console.table(response);
+				$scope.data = response;
+			});
+	}
+	
 });
