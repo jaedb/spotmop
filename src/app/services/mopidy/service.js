@@ -169,6 +169,9 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
+		getImages: function(uris){
+			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
+		},
 		search: function(searchterm, type, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
 			if( typeof(type) === 'undefined' || !type ) var type = 'any';

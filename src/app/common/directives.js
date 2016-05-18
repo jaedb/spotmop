@@ -1009,6 +1009,21 @@ angular.module('spotmop.directives', [])
 		
 		return array;
 	}
+})
+
+// identify what the asset's origin is (ie spotify, local)
+// return string
+.filter('assetOrigin', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 0 ){
+			return false;
+		}
+		return uriElements[0];
+	}
 });
 
 

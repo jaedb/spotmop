@@ -17,121 +17,199 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService ){	
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {tracks: []};
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
+	
     $scope.convertedDate = function(){
-		if( $scope.mediumScreen() ){
-			return $filter('date')($scope.album.release_date, "yyyy");
-		}else{
-			if( $scope.album.release_date_precision == 'day' )
-				return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
-			if( $scope.album.release_date_precision == 'month' )
-				return $filter('date')($scope.album.release_date, "MMMM yyyy");
-			if( $scope.album.release_date_precision == 'year' )
-				return $scope.album.release_date;
+		
+		// spotify-style date
+		if( typeof($scope.album.release_date) !== 'undefined' ){
+		
+			if( $scope.mediumScreen() ){
+				return $filter('date')($scope.album.release_date, "yyyy");
+			}else{
+				if( $scope.album.release_date_precision == 'day' )
+					return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
+				if( $scope.album.release_date_precision == 'month' )
+					return $filter('date')($scope.album.release_date, "MMMM yyyy");
+				if( $scope.album.release_date_precision == 'year' )
+					return $scope.album.release_date;
+			}
+		
+		// mopidy-style date
+		}else if( typeof($scope.album.date) !== 'undefined' ){		
+			return $scope.album.date;
 		}
+		
         return null;
     }
 	
     // figure out the total time for all tracks
     $scope.totalTime = function(){
+	
         var totalTime = 0;
         if( typeof($scope.tracklist.tracks) !== 'undefined' ){
             angular.forEach( $scope.tracklist.tracks, function( track ){
-                totalTime += track.duration_ms;
+			
+				// spotify-style duration
+				if( typeof(track.duration_ms) !== 'undefined' ){
+				    totalTime += track.duration_ms;
+					
+				// mopidy-style duration
+				}else if( typeof(track.length) !== 'undefined' ){
+				    totalTime += track.length;
+				}
             });
         }
-        return Math.round(totalTime / 100000);   
+        return Math.round(totalTime / 100000); 
     }
-    
-	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
-	 **/
-    $(document).find('.browse > .content').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
     
 	// play the whole album
 	$scope.playAlbum = function(){
-		MopidyService.playStream( $scope.album.uri );
+		MopidyService.playStream( uri );
 	}
 	
-	// add album to library
-	$scope.addToLibrary = function(){		
-		SpotifyService.addAlbumsToLibrary( $scope.album.id )
-			.then( function(){
-				$scope.isInLibrary = true;
-			});
-	}
+	/**
+	 * Spotify type albums
+	 **/
+	if( $scope.origin == 'spotify' ){
 	
-	// remove from library
-	$scope.removeFromLibrary = function(){		
-		SpotifyService.removeAlbumsFromLibrary($scope.album.id)
-			.then( function(){
-				$scope.isInLibrary = false;
-			});
-	}
-	
-	// get the album
-	SpotifyService.getAlbum( $stateParams.uri )
-		.then(function( response ) {
+		// add album to library
+		$scope.addToLibrary = function(){		
+			SpotifyService.addAlbumsToLibrary( $scope.album.id )
+				.then( function(){
+					$scope.isInLibrary = true;
+				});
+		}
 		
-			$scope.album = response;
-			$scope.tracklist = response.tracks;
-			$scope.tracklist.type = 'track';
-			$scope.tracklist.tracks = response.tracks.items;
-			
-			angular.forEach( $scope.tracklist.tracks, function(track){
-				track.album = $scope.album;
+		// remove from library
+		$scope.removeFromLibrary = function(){		
+			SpotifyService.removeAlbumsFromLibrary($scope.album.id)
+				.then( function(){
+					$scope.isInLibrary = false;
+				});
+		}
+		
+		getAlbumFromSpotify();
+	
+		// once we're told we're ready to load more tracks
+		$scope.$on('spotmop:loadMore', function(){
+			if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+				loadMoreTracks( $scope.tracklist.next );
+			}
+		});
+	
+	/**
+	 * Not a spotify album, just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getAlbumFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getAlbumFromMopidy() 
 			});
-			
-			var artisturis = [];
-			angular.forEach( response.artists, function( artist ){
-				artisturis.push( artist.uri );
-			});
-			
-			// now get the artist objects
-			SpotifyService.getArtists( artisturis )
-				.then( function( response ){
-					$scope.album.artists = response.artists;
+		}
+	}
+	
+		
+	/**
+	 * Fetch the album from spotify
+	 **/
+	function getAlbumFromSpotify(){
+	
+		SpotifyService.getAlbum( uri )
+			.then(function( response ) {
+				
+				$scope.album = response;
+				$scope.album.totalTracks = response.tracks.total;
+				$scope.tracklist = response.tracks;
+				$scope.tracklist.type = 'track';
+				$scope.tracklist.tracks = response.tracks.items;
+				
+				angular.forEach( $scope.tracklist.tracks, function(track){
+					track.album = $scope.album;
 				});
 				
-			// if we're viewing from within an individual artist, get 'em
-			if( typeof($stateParams.artisturi) !== 'undefined' ){		
-				// get the artist from Spotify
-				SpotifyService.getArtist( $stateParams.artisturi )
-					.then( function( response ){
-						$scope.artist = response;
-					});
-			}
-			
-			// figure out if we have this album in our library already
-			SpotifyService.isAlbumInLibrary([$scope.album.id])
-				.then( function( isInLibrary ){
-					$scope.isInLibrary = isInLibrary[0];
+				var artisturis = [];
+				angular.forEach( response.artists, function( artist ){
+					artisturis.push( artist.uri );
 				});
-		});
-    
+				
+				// now get the artist objects
+				SpotifyService.getArtists( artisturis )
+					.then( function( response ){
+						$scope.album.artists = response.artists;
+					});
+					
+				// if we're viewing from within an individual artist, get 'em
+				if( typeof($stateParams.artisturi) !== 'undefined' ){		
+					// get the artist from Spotify
+					SpotifyService.getArtist( $stateParams.artisturi )
+						.then( function( response ){
+							$scope.artist = response;
+						});
+				}
+				
+				// figure out if we have this album in our library already
+				SpotifyService.isAlbumInLibrary([$scope.album.id])
+					.then( function( isInLibrary ){
+						$scope.isInLibrary = isInLibrary[0];
+					});
+			});
+	}
+		
+	
+	/** 
+	 * Fetch the album using Mopidy core
+	 **/
+	function getAlbumFromMopidy(){
+	
+		MopidyService.getAlbum( uri )
+			.then(function( response ) {
+				
+				// an empty response from Mopidy
+				if( response.length <= 0 ){
+					NotifyService.error('Could not load uri: '+uri);
+					return;
+				}
+				
+				$scope.album = response[0].album;
+				$scope.album.artists = response[0].artists;
+				$scope.album.totalTracks = $scope.album.num_tracks;
+				$scope.tracklist = { type: 'localtrack', tracks: response };
+				
+				console.log( response );
+				
+				MopidyService.getImages( [uri] )
+					.then( function(images){
+					
+						// provided we got some images, load them into our album
+						if( typeof(images[uri]) !== 'undefined' && images[uri].length > 0 ){ 
+							$scope.album.images = images[uri];
+							
+							// rename all our uri parameters into url parameters for consistency
+							for( var i = 0; i < $scope.album.images.length; i++ ){
+								$scope.album.images[i].url = $scope.album.images[i].uri;
+							}
+						}
+						
+					});
+			});
+	}
 	
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+	 
     var loadingMoreTracks = false;
     
     // go off and get more of this playlist's tracks
@@ -157,11 +235,4 @@ angular.module('spotmop.browse.album', [])
                 loadingMoreTracks = false;
             });
     }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
-            loadMoreTracks( $scope.tracklist.next );
-        }
-	});
 });

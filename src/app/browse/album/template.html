@@ -49,13 +49,13 @@
 			
 		<div class="info" ng-class="{ show: showInfo }">
 			<div class="info-item capitalize">
-				<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
+				<span ng-bind="album.totalTracks"></span> track<span ng-hide="album.totalTracks <= 1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
 			</div>
 			<div class="info-item capitalize">
 				<span class="label">Released: </span>
 				<span class="date" ng-bind="convertedDate()"></span>
 			</div>
-			<div class="info-item capitalize">
+			<div class="info-item capitalize" ng-if="album.popularity">
 				Popularity: 
 				<span class="bar-track">
 					<span class="bar" style="width: {{ album.popularity }}%;"></span>
@@ -80,7 +80,7 @@
 						<a class="item" ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
-					<span class="item">Album</span>
+					<span class="item"><span ng-bind="origin"></span> Album</span>
 				</div>
 				<h1 ng-bind="album.name"></h1>
 				<h2 class="description">
