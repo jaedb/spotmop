@@ -17,7 +17,7 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService ){	
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService, LastfmService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {tracks: []};
@@ -181,25 +181,19 @@ angular.module('spotmop.browse.album', [])
 					return;
 				}
 				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
 				$scope.album = response[0].album;
 				$scope.album.artists = [];
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
 				
-				MopidyService.getImages( [uri] )
-					.then( function(images){
-					
-						// provided we got some images, load them into our album
-						if( typeof(images[uri]) !== 'undefined' && images[uri].length > 0 ){ 
-							$scope.album.images = images[uri];
-							
-							// rename all our uri parameters into url parameters for consistency
-							for( var i = 0; i < $scope.album.images.length; i++ ){
-								$scope.album.images[i].url = $scope.album.images[i].uri;
-							}
-						}
-						
-					});
+				// get artwork from LastFM
+				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
+						.then( function( info ){
+							$scope.album.images = $filter('lastFmImages')(info.album.image);
+						});
+				}
 				
 				// get all our album artist and compile into an array
 				var uniqueArtists = [];

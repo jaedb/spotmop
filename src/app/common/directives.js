@@ -994,6 +994,32 @@ angular.module('spotmop.directives', [])
 	}
 })
 
+// lastFM image
+.filter('lastFmImages', function(){
+	return function( images, size ){
+        
+        // what if there are no images? then nada
+        if( images.length <= 0 )
+            return false;
+			
+		var actualImages = [];
+		
+        // loop all the images
+        for( var i = 0; i < images.length; i++){
+            var image = images[i];
+			
+			if( image['#text'] && image['#text'] != '' && image.size != '' ){
+				actualImages.unshift({
+					url: image['#text'],
+					size: image.size
+				});
+			}			
+		}
+		
+		return actualImages;
+	}
+})
+
 // get the appropriate sized image
 .filter('shuffle', function(){
 	return function( array ){
