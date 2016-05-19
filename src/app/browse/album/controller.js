@@ -187,7 +187,7 @@ angular.module('spotmop.browse.album', [])
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
 				
-				// get artwork from LastFM
+				// get album artwork from LastFM
 				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
 						.then( function( info ){
@@ -207,7 +207,23 @@ angular.module('spotmop.browse.album', [])
 				
 				// flatten out our dictionary-style array
 				for( var index in uniqueArtists ){
-					$scope.album.artists.push( uniqueArtists[index] );
+					
+					// if we have a musicbrainz_id, get imagery from LastFM
+					if( typeof(uniqueArtists[index].musicbrainz_id) !== 'undefined' ){
+						LastfmService.artistInfoByMbid( uniqueArtists[index].musicbrainz_id )
+							.then( function( response ){
+								if( typeof(response.artist) !== 'undefined' ){
+									var artist = response.artist;
+									artist.images = $filter('lastFmImages')(artist.image);
+									artist.uri = 'local:artist:mbid:'+artist.mbid;
+									$scope.album.artists.push( artist );
+								}
+							});
+					
+					// no mbid, so just plug it in as-is-where-is
+					}else{
+						$scope.album.artists.push( uniqueArtists[index] );
+					}
 				}
 			});
 	}

@@ -44,13 +44,15 @@ angular.module('spotmop.services.lastfm', [])
 		albumInfo: function( artist, album ){
 			return this.sendRequest('method=album.getInfo&album='+album+'&artist='+artist);
 		},
-
 		albumInfoByMbid: function( mbid ){
 			return this.sendRequest('method=album.getInfo&mbid='+mbid);
 		},
 
 		artistInfo: function( artist ){
 			return this.sendRequest('method=artist.getInfo&artist='+artist);
+		},
+		artistInfoByMbid: function( mbid ){
+			return this.sendRequest('method=artist.getInfo&mbid='+mbid);
 		}
 	};
 	
