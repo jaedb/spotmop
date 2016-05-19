@@ -16,7 +16,7 @@
 					<preloadedimage ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" class="thumbnail album" url="{{ image.url }}" useproxy="true"></preloadedimage>					
 					<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
-						<artistlist artists="album.artists"></artistlist>
+						<artistlist artists="album.artists" sentence></artistlist>
 					</h2>	
 				</div>
 		</div>
@@ -32,6 +32,7 @@
                 candrag
                 dragobj="artist">
 					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
+                    <div class="image" ng-if="!album.images || album.images.length <= 0"></div>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
 		</div>
@@ -40,8 +41,10 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized && !isInLibrary">Add to library</a>
-			<a class="button" ng-click="removeFromLibrary()" ng-if="spotifyAuthorized && isInLibrary">Remove from library</a>
+            <span ng-if="spotifyAuthorized && origin == 'spotify'">
+                <a class="button" ng-click="addToLibrary()" ng-if="!isInLibrary">Add to library</a>
+                <a class="button" ng-click="removeFromLibrary()" ng-if="isInLibrary">Remove from library</a>
+            </span>
 			<a class="button mobile-show tertiary" ng-click="showInfo = !showInfo" ng-class="{ showing: showInfo }">Info</a>
 		</div>
 		
@@ -80,11 +83,15 @@
 						<a class="item" ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
-					<span class="item"><span ng-bind="origin"></span> Album</span>
+					<span ng-if="linkingMode('library.localalbum')">
+						<a class="item" ui-sref="library.local({ uri: 'local:directory?type=album' })">Local files</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
+					<span class="item">Album</span>
 				</div>
 				<h1 ng-bind="album.name"></h1>
 				<h2 class="description">
-					<artistlist artists="album.artists"></artistlist>
+					<artistlist artists="album.artists" sentence></artistlist>
 				</h2>	
 			</div>
             

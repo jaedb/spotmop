@@ -38,6 +38,11 @@ angular.module('spotmop.library', [])
 			url: "/local/:uri",
 			templateUrl: "app/library/local.template.html",
 			controller: 'LibraryLocalController'
+		})
+		.state('library.localalbum', {
+			url: "/local/album/:uri",
+			templateUrl: "app/browse/album/template.html",
+			controller: 'AlbumController'
 		});
 })
 	

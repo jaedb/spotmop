@@ -182,11 +182,9 @@ angular.module('spotmop.browse.album', [])
 				}
 				
 				$scope.album = response[0].album;
-				$scope.album.artists = response[0].artists;
+				$scope.album.artists = [];
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
-				
-				console.log( response );
 				
 				MopidyService.getImages( [uri] )
 					.then( function(images){
@@ -202,6 +200,21 @@ angular.module('spotmop.browse.album', [])
 						}
 						
 					});
+				
+				// get all our album artist and compile into an array
+				var uniqueArtists = [];
+				for( var i = 0; i < $scope.tracklist.tracks.length; i++ ){
+					var artists = $scope.tracklist.tracks[i].artists;
+					
+					for( var j = 0; j < artists.length; j++ ){
+						uniqueArtists[artists[j].uri] = artists[j];
+					}
+				}
+				
+				// flatten out our dictionary-style array
+				for( var index in uniqueArtists ){
+					$scope.album.artists.push( uniqueArtists[index] );
+				}
 			});
 	}
 	
