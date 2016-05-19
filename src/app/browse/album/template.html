@@ -9,11 +9,13 @@
             draggable="false"
             candrag
             dragobj="album">
-                <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
+            
+                <div class="thumbnail album" ng-if="album.images.length > 0" style="background-image: url({{ ( album.images | sizedImages ).medium }});"></div>
+                
                 <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
 				
 				<div class="slim-intro mobile-show" ng-if="mediumScreen()">
-					<preloadedimage ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" class="thumbnail album" url="{{ image.url }}" useproxy="true"></preloadedimage>					
+					<preloadedimage ng-if="album.images.length > 0" class="thumbnail album" url="{{ ( album.images | sizedImages ).medium }}" useproxy="true"></preloadedimage>					
 					<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
 						<artistlist artists="album.artists" sentence></artistlist>
@@ -31,7 +33,7 @@
                 draggable="false"
                 candrag
                 dragobj="artist">
-					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
+                    <div class="image animate" ng-if="artist.images && artist.images.length > 0" style="background-image: url({{ ( artist.images | sizedImages ).small }});"></div>
                     <div class="image" ng-if="!album.images || album.images.length <= 0"></div>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>

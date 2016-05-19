@@ -191,7 +191,7 @@ angular.module('spotmop.browse.album', [])
 				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
 						.then( function( info ){
-							$scope.album.images = $filter('lastFmImages')(info.album.image);
+							$scope.album.images = info.album.image;
 						});
 				}
 				
@@ -214,7 +214,7 @@ angular.module('spotmop.browse.album', [])
 							.then( function( response ){
 								if( typeof(response.artist) !== 'undefined' ){
 									var artist = response.artist;
-									artist.images = $filter('lastFmImages')(artist.image);
+									artist.images = response.artist.image;
 									artist.uri = 'local:artist:mbid:'+artist.mbid;
 									$scope.album.artists.push( artist );
 								}

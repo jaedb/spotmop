@@ -20,13 +20,23 @@
             
         </div>
         
-		<div class="library-folders tracklist">
-			<a class="track folder" ng-repeat="folder in folders" ui-sref="library.local({ uri: folder.uri })">
-				<i class="fa fa-folder icon" ng-hide="folder.isParentFolder"></i>
-				<i class="fa fa-reply icon" ng-show="folder.isParentFolder"></i>
-				<div class="title" ng-bind="folder.name" ng-class="{ empty: !folder.name }"></div>
-				<div class="clear-both"></div>
-			</a>
+		<div class="list">
+			<div class="item-container" ng-repeat="folder in folders">
+                <a class="list-item folder" ng-if="(folder.uri|assetType) != 'album'" ui-sref="library.local({ uri: folder.uri })">
+                    <div class="title col w50">
+                        <i class="fa fa-folder icon"></i>
+                        <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
+                    </div>
+                    <div class="clear-both"></div>
+                </a>
+                <a class="list-item folder" ng-if="(folder.uri|assetType) == 'album'" ui-sref="library.localalbum({ uri: folder.uri })">
+                    <div class="title col w50">
+                        <i class="si cd"></i>
+                        <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
+                    </div>
+                    <div class="clear-both"></div>
+                </a>
+            </div>
 		</div>
         
 		<tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
