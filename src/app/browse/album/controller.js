@@ -187,14 +187,6 @@ angular.module('spotmop.browse.album', [])
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
 				
-				// get album artwork from LastFM
-				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
-					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
-						.then( function( info ){
-							$scope.album.images = info.album.image;
-						});
-				}
-				
 				// get all our album artist and compile into an array
 				var uniqueArtists = [];
 				for( var i = 0; i < $scope.tracklist.tracks.length; i++ ){
@@ -214,16 +206,32 @@ angular.module('spotmop.browse.album', [])
 							.then( function( response ){
 								if( typeof(response.artist) !== 'undefined' ){
 									var artist = response.artist;
-									artist.images = response.artist.image;
+									artist.images = $filter('sizedImages')(response.artist.image);
 									artist.uri = 'local:artist:mbid:'+artist.mbid;
 									$scope.album.artists.push( artist );
 								}
 							});
 					
 					// no mbid, so just plug it in as-is-where-is
+					// we could get artwork, but need to handle non-mbid uri link for artist as we inject
+					// within the promise resolve (ie .then()) method
 					}else{
 						$scope.album.artists.push( uniqueArtists[index] );
 					}
+				}
+				
+				// get album artwork from LastFM
+				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
+						.then( function( response ){
+							$scope.album.images = $filter('sizedImages')(response.album.image);
+						});
+				}else{
+					var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
+					LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
+						.then( function( response ){
+							$scope.album.images = $filter('sizedImages')(response.album.image);
+						});
 				}
 			});
 	}

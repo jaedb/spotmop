@@ -1028,7 +1028,7 @@ angular.module('spotmop.directives', [])
 			}else if( typeof(image['#text']) !== 'undefined' ){
 				
 				// making sure the image actually exists...
-				if( image['#text'] && image['#text'] != '' && image.size != '' ){
+				if( image['#text'] && image['#text'].length > 0 && image.size != '' ){
 					
 					switch( image.size ){
 						case 'mega':
