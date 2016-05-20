@@ -194,15 +194,18 @@ angular.module('spotmop.services.player', [])
 		
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
-						
+			
+			/*
+			REMOVED AS WE DON'T WANT TO USE BAKED-IN IMAGES FOR NOW
+			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
 			
-				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				state.currentTlTrack.track.images = tlTrack.track.album.images;
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
-			}else{
+			}else{*/
 			
 				// if this is a Spotify track, get the track image from Spotify
 				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
@@ -210,7 +213,7 @@ angular.module('spotmop.services.player', [])
 					SpotifyService.getTrack( tlTrack.track.uri )
 						.then(function( response ){
 							if( typeof(response.album) !== 'undefined' ){
-								state.currentTlTrack.track.image = response.album.images[0].url;
+								state.currentTlTrack.track.images = response.album.images;
 							}
 							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
@@ -230,14 +233,12 @@ angular.module('spotmop.services.player', [])
 									
 									// if we got an album match, plug in the 'extralarge' image to our state()
 									if( typeof(response.album) !== 'undefined' ){
-										var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-										if( largest )
-											state.currentTlTrack.track.image = largest['#text'];
+										state.currentTlTrack.track.images = response.album.image;
 									}
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
-				}
+				// }
 			}
 			
 			// update ui

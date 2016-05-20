@@ -994,6 +994,73 @@ angular.module('spotmop.directives', [])
 	}
 })
 
+// standardize our images into a large/medium/small structure for template usage
+.filter('sizedImages', function(){
+	return function( images ){
+        
+        // what if there are no images? then nada
+        if( images.length <= 0 )
+            return false;
+			
+		var standardised = {};
+		
+        // loop all the images
+        for( var i = 0; i < images.length; i++){
+            var image = images[i];
+		
+			// spotify-styled images
+			if( typeof(image.height) !== 'undefined' ){
+				
+				// large
+				if( image.height > 500 ){
+					standardised.large = image.url;
+				
+				// medium
+				}else if( image.height > 200 && image.height < 500 ){
+					standardised.medium = image.url;
+				
+				// small
+				}else{
+					standardised.small = image.url;
+				}
+			
+			// lastFM styled images
+			}else if( typeof(image['#text']) !== 'undefined' ){
+				
+				// making sure the image actually exists...
+				if( image['#text'] && image['#text'].length > 0 && image.size != '' ){
+					
+					switch( image.size ){
+						case 'mega':
+							standardised.large = image['#text'];
+							break;
+						case 'extralarge':
+							standardised.medium = image['#text'];
+							break;
+						case 'large':
+							standardised.small = image['#text'];
+							break;
+						case 'medium':
+							standardised.small = image['#text'];
+							break;
+						case 'small':
+							standardised.small = image['#text'];
+							break;
+					}
+				}
+			
+			// none of the above, assume mopidy core-styled images
+			}else{
+				standardised.large = image;
+				standardised.medium = image;
+				standardised.small = image;
+			}
+		}
+		
+		return standardised;
+	}
+})
+
 // get the appropriate sized image
 .filter('shuffle', function(){
 	return function( array ){
@@ -1008,6 +1075,37 @@ angular.module('spotmop.directives', [])
 		}
 		
 		return array;
+	}
+})
+
+// identify what the asset's origin is (ie spotify, local)
+// return string
+.filter('assetOrigin', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 0 ){
+			return false;
+		}
+		return uriElements[0];
+	}
+})
+
+// identify what the asset type is
+// we rely on this being the second attribute in a URI (ie origin:type:id)
+// return string
+.filter('assetType', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 1 ){
+			return false;
+		}
+		return uriElements[1];
 	}
 });
 
