@@ -130,6 +130,7 @@ angular.module('spotmop.browse.album', [])
 				
 				$scope.album = response;
 				$scope.album.totalTracks = response.tracks.total;
+                $scope.album.images = $filter('sizedImages')(response.images);
 				$scope.tracklist = response.tracks;
 				$scope.tracklist.type = 'track';
 				$scope.tracklist.tracks = response.tracks.items;
@@ -146,7 +147,14 @@ angular.module('spotmop.browse.album', [])
 				// now get the artist objects
 				SpotifyService.getArtists( artisturis )
 					.then( function( response ){
-						$scope.album.artists = response.artists;
+                        $scope.album.artists = [];
+                        if( response.artists ){
+                            for( var i = 0; i < response.artists.length; i++ ){
+                                var artist = response.artists[i];
+                                artist.images = $filter('sizedImages')(artist.images);
+                                $scope.album.artists.push( artist );
+                            };
+                        }
 					});
 					
 				// if we're viewing from within an individual artist, get 'em
