@@ -5,8 +5,8 @@
 
 		<div class="intro artist-intro">
 		
-			<div class="image-container" ng-repeat="image in artist.images | limitTo:1">
-				<backgroundparallax class="image" image="{{ image }}" useproxy="true" detectbackground="true" opacity="0.5"></backgroundparallax>
+			<div class="image-container">
+				<backgroundparallax ng-if="artist.images.large" class="image" image="{{ artist.images.large }}" useproxy="true" detectbackground="true" opacity="0.5"></backgroundparallax>
 			</div>
 			
 			<div class="inner" text-over-image>
@@ -28,12 +28,11 @@
 		</div>
 				
 		<div class="info-panel">
-			
             <div class="thumbnail-wrapper"
                 candrag
                 dragobj="artist"
                 draggable="false">
-                    <preloadedimage ng-if="artist.images.length > 0" ng-repeat="image in artist.images | limitTo:1" class="thumbnail artist" url="{{ image.url }}" useproxy="true"></preloadedimage>
+                    <preloadedimage ng-if="artist.images.medium" class="thumbnail artist" url="{{ artist.images.medium }}" useproxy="true"></preloadedimage>
                     <div class="thumbnail artist placeholder" ng-if="!artist.images || artist.images.length <= 0"></div>
             </div>
 			

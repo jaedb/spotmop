@@ -805,24 +805,31 @@ angular.module('spotmop.directives', [])
 			var	scrollTop = 0;
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
-			
-			// load our image data from the json string attribute
-			var image = $.parseJSON($scope.image);
+			var image = {
+					width: 0,
+					height: 0,
+					url: $scope.image
+				}
 		
 			/*
 			REBUILD THIS TO USE TORNADO
 			if( $scope.useproxy )
 				image.url = '/vendor/resource-proxy.php?url='+image.url;
 			*/
+			
 			// create our new image object (to be plugged into canvas)
-			image.asObject = new Image();
-			image.asObject.src = image.url;
-			image.asObject.onload = function(){
+			var imageObject = new Image();
+			imageObject.src = image.url;
+			imageObject.onload = function(){
 				
 				// load destination opacity from attribute (if specified)
 				var destinationOpacity = 1;				
 				if( typeof($scope.opacity) !== 'undefined' )
 					destinationOpacity = $scope.opacity;
+				
+				// store the actual image dimensions into our image object
+				image.width = imageObject.naturalWidth;
+				image.height = imageObject.naturalHeight;
 				
 				// plug our image into the canvas
 				positionArtistBackground( image );
@@ -868,7 +875,7 @@ angular.module('spotmop.directives', [])
 				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
 				
 				// actually draw the image on the canvas
-				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+				context.drawImage(imageObject, image.x, image.y, image.width, image.height);		
 			}
 			
 			// poll for scroll changes
@@ -964,6 +971,7 @@ angular.module('spotmop.directives', [])
 })
 
 // get the appropriate sized image
+// DEPRECIATED 
 .filter('thumbnailImage', function(){
 	return function( images ){
         
@@ -1011,17 +1019,17 @@ angular.module('spotmop.directives', [])
 			// spotify-styled images
 			if( typeof(image.height) !== 'undefined' ){
 				
-				// large
-				if( image.height > 500 ){
-					standardised.large = image.url;
+				// small
+				if( image.height <= 200 ){
+					standardised.small = image.url;
 				
 				// medium
-				}else if( image.height > 200 && image.height < 500 ){
+				}else if( image.height <= 650 && image.height >= 200 ){
 					standardised.medium = image.url;
 				
-				// small
+				// large
 				}else{
-					standardised.small = image.url;
+					standardised.large = image.url;
 				}
 			
 			// lastFM styled images
