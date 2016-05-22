@@ -1019,17 +1019,22 @@ angular.module('spotmop.directives', [])
 			// spotify-styled images
 			if( typeof(image.height) !== 'undefined' ){
 				
-				// small
-				if( image.height <= 200 ){
-					standardised.small = image.url;
+				if( image.height >= 650 ){
 				
-				// medium
-				}else if( image.height <= 650 && image.height >= 200 ){
-					standardised.medium = image.url;
-				
-				// large
-				}else{
 					standardised.large = image.url;
+					
+				}else if( image.height <= 650 && image.height >= 200 ){
+				
+					standardised.medium = image.url;
+					
+					if( !standardised.large ) standardised.large = image.url;
+					
+				}else{
+				
+					standardised.small = image.url;
+					
+					if( !standardised.medium ) standardised.medium = image.url;
+					if( !standardised.large ) standardised.large = image.url;
 				}
 			
 			// lastFM styled images
@@ -1044,15 +1049,22 @@ angular.module('spotmop.directives', [])
 							break;
 						case 'extralarge':
 							standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'large':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'medium':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'small':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 					}
 				}

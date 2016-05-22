@@ -88,8 +88,8 @@
 		<div id="notifications"></div>
 		
 		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
-			<div class="background-image" ng-if="!mediumScreen() && state().currentTlTrack.track && state().currentTlTrack.track.images.length > 0">
-				<preloadedimage watch="true" class="image blur" url="{{ ( state().currentTlTrack.track.images | sizedImages ).large }}"></preloadedimage>
+			<div class="background-image" ng-if="!mediumScreen() && state().currentTlTrack.track.images.medium">
+				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.images.medium }}"></preloadedimage>
 			</div>
 			<div class="inner">
 				<div class="search-form mobile-hide">
