@@ -1,4 +1,4 @@
-<div class="page library-tracks-page scrolling-panel">
+<div class="page">
 	<div class="inner">
 		
         <div class="page-header">
@@ -7,10 +7,8 @@
             
             <h1>
                 <span class="si folder mobile-hide"></span>
-                <span class="path-item" ng-repeat="item in path">
-                    <a ui-sref="library.local({ uri: item.uri })" ng-bind="item.title" ng-if="item.uri"></a>
-                    <span ng-bind="item.title" ng-if="!item.uri"></span>
-                    <span ng-if="!$last && path.length > 0" class="grey-text"> &nbsp;/&nbsp; </span>
+                <span class="path-item">
+                    Local
                 </span>
             </h1>
             
@@ -20,16 +18,18 @@
             
         </div>
         
-		<div class="list">
-			<div class="item-container" ng-repeat="folder in folders">
-                <a class="list-item folder" ng-if="(folder.uri|assetType) != 'album'" ui-sref="library.local({ uri: folder.uri })">
+        <h2><a ui-sref="local.albums">Albums</a></h2>
+        
+        <div class="list">
+            <div class="item-container" ng-repeat="folder in folders">
+                <a class="list-item folder" ng-if="(folder.uri|assetType) != 'album'" ui-sref="local.directory({ uri: folder.uri })">
                     <div class="title col w50">
                         <i class="fa fa-folder icon"></i>
                         <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
                     </div>
                     <div class="clear-both"></div>
                 </a>
-                <a class="list-item folder" ng-if="(folder.uri|assetType) == 'album'" ui-sref="library.localalbum({ uri: folder.uri })">
+                <a class="list-item folder" ng-if="(folder.uri|assetType) == 'album'" ui-sref="local.album({ uri: folder.uri })">
                     <div class="title col w50">
                         <i class="si cd"></i>
                         <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
@@ -37,9 +37,10 @@
                     <div class="clear-both"></div>
                 </a>
             </div>
-		</div>
-        
-		<tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
+        </div>
+
+        <tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
+
 		
 	</div>
 </div>

@@ -1,0 +1,39 @@
+<div class="page">
+	<div class="inner">
+		
+        <div class="page-header">
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si folder mobile-hide"></span>
+                <span class="path-item">
+                    <a ui-sref="local.index">Local</a> &nbsp;/&nbsp; Albums
+                </span>
+            </h1>
+            
+            <div class="utilities">
+                <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
+            </div>
+            
+        </div>
+
+        <div class="album-items square-panels">
+            <div class="item-container" ng-repeat="album in albums track by $index">
+                <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
+                    candrag
+                    dragobj="album"
+                    draggable="false">
+                        <div class="image-container">
+                            <div class="image animate" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
+                            <div ng-if="!album.images.medium" class="image placeholder"></div>
+                        </div>
+                        <div class="info smaller animate">
+                            <div class="name" ng-bind="album.name"></div>
+                        </div>
+                </a>
+            </div>
+        </div>
+		
+	</div>
+</div>

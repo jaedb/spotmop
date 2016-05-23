@@ -31,6 +31,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
+	'spotmop.local',
 	'spotmop.search',
 	'spotmop.settings',	
 	'spotmop.discover',
