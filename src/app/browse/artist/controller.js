@@ -161,11 +161,30 @@ angular.module('spotmop.browse.artist', [])
 		// get the albums
 		MopidyService.getLibraryItems( uri )
 			.then( function( response ){
-				var albums = [];
-				for( var i = 0; i < response.length; i++ ){
-					var album = response[i];
-					album.artist = { name: $scope.artist.name };
-					$scope.albums.items.push( album );
+			
+				$scope.albums.items = response;
+				
+				for( var i = 0; i < $scope.albums.items.length; i++ ){
+					
+					$scope.albums.items[i].artist = { name: $scope.artist.name };
+					
+					// once we get the info from lastFM
+					// process it and add to our $scope
+					var callback = function(n){
+						return function( response ){
+							$scope.albums.items[n].images = $filter('sizedImages')(response.album.image);
+						};
+					}(i);
+					
+					// get album artwork from LastFM
+					if( $scope.albums.items[i].mbid ){
+						LastfmService.albumInfoByMbid( $scope.albums.items[i].mbid )
+							.then( callback );
+					}else{
+						LastfmService
+							.albumInfo( $scope.albums.items[i].artist.name.trim(), $scope.albums.items[i].name.trim() )
+							.then( callback );
+					}
 				}
 			});
 	}

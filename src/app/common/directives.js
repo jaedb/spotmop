@@ -1127,6 +1127,22 @@ angular.module('spotmop.directives', [])
 		}
 		return uriElements[1];
 	}
+})
+
+/**
+ * Get the MBID from a URI
+ * @return string
+**/
+.filter('mbid', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var start = uri.indexOf(':mbid:') + 6;
+		var end = uri.length;
+		
+		return uri.substr(start, end);
+	}
 });
 
 
