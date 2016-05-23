@@ -129,52 +129,28 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
 					
-					switch( $scope.dragobj.type ){
+					if(
+						$scope.dragobj.type == 'album' ||
+						$scope.dragobj.type == 'localalbum' ||
+						$scope.dragobj.type == 'artist' ||
+						$scope.dragobj.type == 'localartist' ||
+						$scope.dragobj.type == 'playlist' ){
 						
-						case 'album':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							if( $scope.dragobj.images.small ){
+								var image = $scope.dragobj.images.small;
 								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
 							}
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'artist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'playlist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'track':
+							
+					}else if(
+						$scope.dragobj.type == 'track' ||
+						$scope.dragobj.type == 'tltrack' ||
+						$scope.dragobj.type == 'localtrack' ){
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
 							}
-							break;
 						
-						case 'tltrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
-						
-						case 'localtrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -278,6 +254,9 @@ angular.module('spotmop.directives', [])
 			
 				switch( $scope.dragobj.type ){
 					case 'album':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
+					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':

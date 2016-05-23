@@ -212,13 +212,11 @@ angular.module('spotmop.browse.album', [])
                 
                 // get artwork for the artists
                 for( var i = 0; i < $scope.album.artists.length; i++ ){
-                    
+				
                     // once we get the info from lastFM
                     // process it and add to our $scope
                     var callback = function(n){
                         return function( response ){
-							$scope.album.artists[n] = response.artist;
-							$scope.album.artists[n].uri = 'local:artist:mbid:'+response.artist.mbid;
                             $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
                         };
                     }(i);

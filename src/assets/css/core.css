@@ -386,7 +386,7 @@ body.dragging .body * {
 }
 
 .sub-page-navigation .menu-item.active {
-	border-color: #08d58f;
+	border-color: #f5f5f5;
 }
 
 
@@ -965,11 +965,17 @@ h4.section-title {
 }
 
 h1 .flag {
-    vertical-align: top;
-    margin-top: 13px;
+    vertical-align: bottom;
+    margin-bottom: 8px;
 }
 
 .flag.blue{
+	background: #32b5f2;
+	color: #FFFFFF;
+}
+
+.flag.green,
+.flag.primary {
 	background: #08d58f;
 	color: #FFFFFF;
 }

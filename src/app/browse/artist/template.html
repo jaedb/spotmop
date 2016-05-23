@@ -20,7 +20,7 @@
 					
 					<div class="sub-page-navigation">
 						<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
-						<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active">Related<span class="mobile-hide"> artists</span></a>
+						<a class="menu-item" ui-sref="browse.artist.related" ui-sref-active="active" ng-if="origin == 'spotify'">Related<span class="mobile-hide"> artists</span></a>
 						<a class="menu-item" ui-sref="browse.artist.biography" ui-sref-active="active">Biography</a>
 					</div>
 					
@@ -31,6 +31,7 @@
 		</div>
 				
 		<div class="info-panel">
+        
             <div class="thumbnail-wrapper"
                 candrag
                 dragobj="artist"
@@ -43,7 +44,7 @@
 			
 				<a class="button primary" ng-click="playArtistRadio()"><i class="fa fa-play"></i>&nbsp; Play</a>		
 				
-				<span class="follow-unfollow" ng-class="{ 'following': following }" ng-if="spotifyAuthorized">
+				<span class="follow-unfollow" ng-class="{ 'following': following }" ng-if="spotifyAuthorized && origin == 'spotify'">
 					<a class="button unfollow"
 						  ng-class="{destructive: hovering}"
 						  ng-click="unfollowArtist()"
@@ -64,8 +65,11 @@
 				<div class="info-item capitalize">
 					<span class="albums" ng-bind="albums.items.length"></span> albums
 				</div>
-				<div class="info-item capitalize">
+				<div class="info-item capitalize" ng-if="origin == 'spotify'">
 					<span class="followers" ng-bind="artist.followers.total | number:0"></span> followers
+				</div>
+				<div class="info-item capitalize" ng-if="artist.stats.listeners && origin != 'spotify'">
+					<span class="listeners" ng-bind="artist.stats.listeners | number:0"></span> listeners
 				</div>
 			</span>	
 			

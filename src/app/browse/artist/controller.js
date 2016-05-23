@@ -134,19 +134,28 @@ angular.module('spotmop.browse.artist', [])
 		MopidyService.getArtist( uri )
 			.then(function( response ){
 				
+				// an empty response from Mopidy
+				if( response.length <= 0 ){
+					NotifyService.error('Could not load artist: '+uri);
+					return;
+				}
+				
 				// this is not strictly accurate, but the only way to get the actual album data is from the track object
 				$scope.artist = response[0].artists[0];
+				$scope.artist.type = 'localartist';
 				
 				// get artwork from LastFM
 				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
 						.then( function( response ){
 							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+							$scope.artist.stats = response.artist.stats;
 						});
 				}else{
 					LastfmService.artistInfo( $scope.artist.name )
 						.then( function( response ){
 							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+							$scope.artist.stats = response.artist.stats;
 						});
                 }
 				
@@ -171,15 +180,21 @@ angular.module('spotmop.browse.artist', [])
 				
 				for( var i = 0; i < $scope.albums.items.length; i++ ){
                     
+					$scope.albums.items[i].artist = { name: $scope.artist.name };
+					$scope.albums.items[i].type = 'localalbum';
+                    
                     // get the album URI from the url query (ie local:directory?album=uri&type=track...)
                     var getAlbumUri = function( uri ) {
                         return decodeURI(
                             (RegExp('album=' + '(.+?)(&|$)').exec(uri)||[,null])[1]
                         );
                     }
-                    
-					$scope.albums.items[i].artist = { name: $scope.artist.name };
-                    $scope.albums.items[i].uri = getAlbumUri( $scope.albums.items[i].uri );
+					
+					// handle "Directory" uris
+					// for some reason Mopidy sometimes detects albums as directory "type" instead
+					if( $scope.albums.items[i].uri.indexOf( 'album=' ) > -1 ){
+						$scope.albums.items[i].uri = getAlbumUri( $scope.albums.items[i].uri );
+					}
 					
 					// once we get the info from lastFM
 					// process it and add to our $scope
