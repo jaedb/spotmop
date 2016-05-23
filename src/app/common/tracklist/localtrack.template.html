@@ -23,7 +23,7 @@
         </div>
         
         <div class="album">
-            <a ui-sref="library.localalbum({ uri: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
+            <a ui-sref="browse.album({ uri: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
             <span ng-bind="track.album.name" ng-if="!track.album.uri"></span>
         </div>
         
