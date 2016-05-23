@@ -143,7 +143,12 @@ angular.module('spotmop.browse.artist', [])
 						.then( function( response ){
 							$scope.artist.images = $filter('sizedImages')(response.artist.image);
 						});
-				}
+				}else{
+					LastfmService.artistInfo( $scope.artist.name )
+						.then( function( response ){
+							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+						});
+                }
 				
 				$scope.tracklist.type = 'localtrack';
 				$scope.tracklist.tracks = $filter('limitTo')(response,10);
@@ -165,8 +170,16 @@ angular.module('spotmop.browse.artist', [])
 				$scope.albums.items = response;
 				
 				for( var i = 0; i < $scope.albums.items.length; i++ ){
-					
+                    
+                    // get the album URI from the url query (ie local:directory?album=uri&type=track...)
+                    var getAlbumUri = function( uri ) {
+                        return decodeURI(
+                            (RegExp('album=' + '(.+?)(&|$)').exec(uri)||[,null])[1]
+                        );
+                    }
+                    
 					$scope.albums.items[i].artist = { name: $scope.artist.name };
+                    $scope.albums.items[i].uri = getAlbumUri( $scope.albums.items[i].uri );
 					
 					// once we get the info from lastFM
 					// process it and add to our $scope

@@ -207,26 +207,31 @@ angular.module('spotmop.browse.album', [])
 				
 				// flatten out our dictionary-style array
 				for( var index in uniqueArtists ){
+                    $scope.album.artists.push( uniqueArtists[index] );
+                }
+                
+                // get artwork for the artists
+                for( var i = 0; i < $scope.album.artists.length; i++ ){
+                    
+                    // once we get the info from lastFM
+                    // process it and add to our $scope
+                    var callback = function(n){
+                        return function( response ){
+							$scope.album.artists[n] = response.artist;
+							$scope.album.artists[n].uri = 'local:artist:mbid:'+response.artist.mbid;
+                            $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
+                        };
+                    }(i);
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
-					if( typeof(uniqueArtists[index].musicbrainz_id) !== 'undefined' ){
-						LastfmService.artistInfoByMbid( uniqueArtists[index].musicbrainz_id )
-							.then( function( response ){
-								if( typeof(response.artist) !== 'undefined' ){
-									var artist = response.artist;
-									artist.images = $filter('sizedImages')(response.artist.image);
-									artist.uri = 'local:artist:mbid:'+artist.mbid;
-									$scope.album.artists.push( artist );
-								}
-							});
-					
-					// no mbid, so just plug it in as-is-where-is
-					// we could get artwork, but need to handle non-mbid uri link for artist as we inject
-					// within the promise resolve (ie .then()) method
-					}else{
-						$scope.album.artists.push( uniqueArtists[index] );
-					}
-				}
+					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
+						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
+							.then( callback );
+                    }else{
+						LastfmService.artistInfo( $scope.album.artists[i].name )
+							.then( callback );
+                    }
+                }
 				
 				// get album artwork from LastFM
 				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){

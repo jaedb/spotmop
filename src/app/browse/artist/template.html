@@ -13,7 +13,10 @@
 				
 				<div class="title-panel">
 				
-					<h1 ng-bind="artist.name" class="background-check"></h1>
+					<h1>
+                        <span ng-bind="artist.name"></span>
+                        <span ng-if="origin != 'spotify'" class="flag blue">LOCAL</span>
+                    </h1>
 					
 					<div class="sub-page-navigation">
 						<a class="menu-item" ui-sref="browse.artist.overview" ui-sref-active="active">Overview</a>
