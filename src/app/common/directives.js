@@ -1002,16 +1002,13 @@ angular.module('spotmop.directives', [])
 				
 					standardised.large = image.url;
 					
-				}else if( image.height <= 650 && image.height >= 200 ){
+				}else if( image.height <= 650 && image.height >= 250 ){
 				
-					standardised.medium = image.url;
-					
+					standardised.medium = image.url;					
 					if( !standardised.large ) standardised.large = image.url;
 					
-				}else{
-				
-					standardised.small = image.url;
-					
+				}else{					
+					if( !standardised.small ) standardised.small = image.url;
 					if( !standardised.medium ) standardised.medium = image.url;
 					if( !standardised.large ) standardised.large = image.url;
 				}

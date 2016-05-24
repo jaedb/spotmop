@@ -213,8 +213,6 @@ angular.module('spotmop.browse.album', [])
                 // get artwork for the artists
                 for( var i = 0; i < $scope.album.artists.length; i++ ){
                     
-                    console.log( $scope.album.artists[i] );
-                    
                     // once we get the info from lastFM
                     // process it and add to our $scope
                     var callback = function(n){
@@ -240,13 +238,17 @@ angular.module('spotmop.browse.album', [])
 				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
 						.then( function( response ){
-							$scope.album.images = $filter('sizedImages')(response.album.image);
+							if( typeof(response.album) !== 'undefined' ){
+								$scope.album.images = $filter('sizedImages')(response.album.image);
+							}
 						});
 				}else{
 					var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
 					LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
 						.then( function( response ){
-							$scope.album.images = $filter('sizedImages')(response.album.image);
+							if( typeof(response.album) !== 'undefined' ){
+								$scope.album.images = $filter('sizedImages')(response.album.image);
+							}
 						});
 				}
 			});
