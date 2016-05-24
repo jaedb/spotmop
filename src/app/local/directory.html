@@ -22,16 +22,9 @@
                 
         <div class="list">
             <div class="item-container" ng-repeat="folder in folders">
-                <a class="list-item folder" ng-if="(folder.uri|assetType) != 'album'" ui-sref="local.directory({ uri: folder.uri })">
+                <a class="list-item folder" ui-sref="local.directory({ uri: folder.uri })">
                     <div class="title col w50">
                         <i class="fa fa-folder icon"></i>
-                        <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
-                    </div>
-                    <div class="clear-both"></div>
-                </a>
-                <a class="list-item folder" ng-if="(folder.uri|assetType) == 'album'" ui-sref="local.album({ uri: folder.uri })">
-                    <div class="title col w50">
-                        <i class="si cd"></i>
                         <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
                     </div>
                     <div class="clear-both"></div>

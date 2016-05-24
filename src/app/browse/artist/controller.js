@@ -200,7 +200,9 @@ angular.module('spotmop.browse.artist', [])
 					// process it and add to our $scope
 					var callback = function(n){
 						return function( response ){
-							$scope.albums.items[n].images = $filter('sizedImages')(response.album.image);
+                            if( typeof(response.album) !== 'undefined' ){
+                                $scope.albums.items[n].images = $filter('sizedImages')(response.album.image);
+                            }
 						};
 					}(i);
 					

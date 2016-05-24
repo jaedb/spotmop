@@ -1485,6 +1485,10 @@ body.dragging .tracklist .track.dropping {
 	vertical-align: bottom;
 }
 
+.list .list-item .fa {
+	margin-right: 6px;
+}
+
 .list .list-item .info {
 	width: 5%;
 	text-align: right;

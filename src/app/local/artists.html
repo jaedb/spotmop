@@ -8,7 +8,7 @@
             <h1>
                 <span class="si folder mobile-hide"></span>
                 <span class="path-item">
-                    <a ui-sref="local.index">Local</a> &nbsp;/&nbsp; Albums
+                    <a ui-sref="local.index">Local</a> &nbsp;/&nbsp; Artists
                 </span>
             </h1>
             
@@ -18,19 +18,19 @@
             
         </div>
 
-        <div class="album-items square-panels">
-            <div class="item-container" ng-repeat="album in albums track by $index">
-                <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
+        <div class="artist-items square-panels">
+            <div class="item-container" ng-repeat="artist in artists track by $index">
+                <a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
                     candrag
-                    dragobj="album"
+                    dragobj="artist"
                     draggable="false">
                         <div class="image-container">
-                            <div class="image animate" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
-                            <div ng-if="!album.images.medium" class="image placeholder"></div>
+                            <div class="image animate" ng-if="artist.images.medium" style="background-image: url({{ artist.images.medium }});"></div>
+                            <div ng-if="!artist.images.medium" class="image placeholder"></div>
                             <!-- TODO: Use built-in image library to get these images -->
                         </div>
                         <div class="info smaller animate">
-                            <div class="name" ng-bind="album.name"></div>
+                            <div class="name" ng-bind="artist.name"></div>
                         </div>
                 </a>
             </div>

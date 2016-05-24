@@ -38,10 +38,13 @@ angular.module('spotmop.services.lastfm', [])
 		},
 
 		trackInfo: function( artist, track ){
+            artist = encodeURIComponent( artist );
 			return this.sendRequest('method=track.getInfo&track='+track+'&artist='+artist);
 		},
 
 		albumInfo: function( artist, album ){
+            artist = encodeURIComponent( artist );
+            album = encodeURIComponent( album );
 			return this.sendRequest('method=album.getInfo&album='+album+'&artist='+artist);
 		},
 		albumInfoByMbid: function( mbid ){
@@ -49,6 +52,7 @@ angular.module('spotmop.services.lastfm', [])
 		},
 
 		artistInfo: function( artist ){
+            artist = encodeURIComponent( artist );
 			return this.sendRequest('method=artist.getInfo&artist='+artist);
 		},
 		artistInfoByMbid: function( mbid ){

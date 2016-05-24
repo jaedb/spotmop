@@ -18,7 +18,31 @@
             
         </div>
         
-        <h2><a ui-sref="local.albums">Albums</a></h2>
+		<div class="category-items square-panels">
+        
+			<div class="item-container">
+                <a ui-sref="local.albums" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('https://t.scdn.co/media/derived/toplists_11160599e6a04ac5d6f2757f5511778f_0_0_275_275.jpg');"></div>
+						<div class="name animate">Albums</div>
+					</div>
+                </a>
+            </div>
+        
+			<div class="item-container">
+                <a ui-sref="local.artists" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('https://t.scdn.co/media/derived/toplists_11160599e6a04ac5d6f2757f5511778f_0_0_275_275.jpg');"></div>
+						<div class="name animate">Artists</div>
+					</div>
+                </a>
+            </div>
+			
+			<div class="clear-both"></div>
+		
+		</div>
+        
+        <h4 class="section-title">Folders</h4>
         
         <div class="list">
             <div class="item-container" ng-repeat="folder in folders">

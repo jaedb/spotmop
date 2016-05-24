@@ -48,7 +48,7 @@
                     <div class="name" ng-bind="album.name"></div>
                 </div>
         </a>
-        <a ui-sref="library.localalbum({ uri: album.uri })" class="square-panel album"
+        <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
             ng-if="origin != 'spotify'"
             candrag
             dragobj="album"

@@ -212,17 +212,22 @@ angular.module('spotmop.browse.album', [])
                 
                 // get artwork for the artists
                 for( var i = 0; i < $scope.album.artists.length; i++ ){
-				
+                    
+                    console.log( $scope.album.artists[i] );
+                    
                     // once we get the info from lastFM
                     // process it and add to our $scope
                     var callback = function(n){
                         return function( response ){
-                            $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
+                            if( typeof(response.artist) !== 'undefined'){
+                                $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
+                            }
                         };
                     }(i);
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
 					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
+                        console.log( ' Getting artist by MBID: '+$scope.album.artists[i].musicbrainz_id );
 						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
 							.then( callback );
                     }else{
