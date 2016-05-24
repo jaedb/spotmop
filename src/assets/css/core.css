@@ -1607,7 +1607,7 @@ slider .item-container > .square-panel {
 }
  
 .page-header .utilities {
-	margin: 0;
+	margin: 0 -25px 0 0;
 	float: right;
 }
  

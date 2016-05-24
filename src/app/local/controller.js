@@ -117,68 +117,12 @@ angular.module('spotmop.local', [])
 })
 
 
-
-/**
- * Albums
- **/
-.controller('LocalAlbumsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
-	
-	$scope.path = [{title: 'Files', uri: 'local:directory'}];
-	$scope.allAlbums = [];
-    var limit = 50;
-	var uri;
-	
-	// watch for filter input
-	$scope.$watch('filterTerm', function(val){
-        limit = 50;
-        $scope.albums = $filter('filter')($scope.allAlbums, val);
-        $scope.albums = $filter('limitTo')($scope.albums, limit);
-    });
-	
-	// on init, go get the items (or wait for mopidy to be online)
-	if( $scope.mopidyOnline )
-		getItems();
-	else
-		$scope.$on('mopidy:state:online', function(){ getItems() });
-	
-	// go get em
-	function getItems(){
-		
-		MopidyService.getLibraryItems( 'local:directory?type=album' )
-			.then( function( response ){
-				$scope.albums = $filter('limitTo')(response, 50);
-				$scope.allAlbums = response;
-			});
-	}
-    
-    // once we're told we're ready to load more
-    var loading = false;
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loading ){
-            loading = true;
-            limit += 50;
-            if( $scope.filterTerm ){
-                $scope.albums = $filter('filter')($scope.allAlbums, $scope.filterTerm);
-                $scope.albums = $filter('limitTo')($scope.albums, limit);
-            }else{
-                $scope.albums = $filter('limitTo')($scope.allAlbums, limit);
-            }
-            $timeout(
-                function(){
-                    loading = false;
-                }, 1 );
-        }
-    });
-})
-
-
-
 /**
  * Artists
  **/
-.controller('LocalArtistsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+.controller('LocalArtistsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
-	$scope.path = [{title: 'Files', uri: 'local:directory'}];
+	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     var limit = 50;
 	var uri;
@@ -217,6 +161,60 @@ angular.module('spotmop.local', [])
                 $scope.artists = $filter('limitTo')($scope.artists, limit);
             }else{
                 $scope.artists = $filter('limitTo')($scope.allArtists, limit);
+            }
+            $timeout(
+                function(){
+                    loading = false;
+                }, 1 );
+        }
+    });
+})
+
+
+/**
+ * Albums
+ **/
+.controller('LocalAlbumsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+	
+	$scope.settings = SettingsService.getSettings();
+	$scope.allAlbums = [];
+    var limit = 50;
+	var uri;
+	
+	// watch for filter input
+	$scope.$watch('filterTerm', function(val){
+        limit = 50;
+        $scope.albums = $filter('filter')($scope.allAlbums, val);
+        $scope.albums = $filter('limitTo')($scope.albums, limit);
+    });
+	
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	// go get em
+	function getItems(){
+		
+		MopidyService.getLibraryItems( 'local:directory?type=album' )
+			.then( function( response ){
+				$scope.albums = $filter('limitTo')(response, 50);
+				$scope.allAlbums = response;
+			});
+	}
+    
+    // once we're told we're ready to load more
+    var loading = false;
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loading ){
+            loading = true;
+            limit += 50;
+            if( $scope.filterTerm ){
+                $scope.albums = $filter('filter')($scope.allAlbums, $scope.filterTerm);
+                $scope.albums = $filter('limitTo')($scope.albums, limit);
+            }else{
+                $scope.albums = $filter('limitTo')($scope.allAlbums, limit);
             }
             $timeout(
                 function(){

@@ -1,4 +1,4 @@
-<div class="col" ng-class="{'w70': !mediumScreen(), 'w100': mediumScreen()}">
+<div class="col" ng-class="{'w70': (!mediumScreen() && origin == 'spotify'), 'w100': (mediumScreen() || origin != 'spotify') }">
 
 	<h4 class="section-title">Top tracks</h4>
 	<tracklist ng-if="tracklist.tracks && origin == 'spotify'" tracks="tracklist.tracks" type="track" class="tracklist top-tracks"></tracklist>
@@ -6,7 +6,7 @@
     
 </div>
 
-<div class="col w25 pull-right" ng-hide="mediumScreen()">
+<div class="col w25 pull-right" ng-if="!mediumScreen() && origin == 'spotify'">
 
 	<h4 class="section-title">Related Artists</h4>
 	

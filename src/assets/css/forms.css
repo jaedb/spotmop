@@ -284,8 +284,13 @@
 }
  
 .utilities .list-filter {
-	margin: -5px -25px 0 0;
+	vertical-align: top;
+	margin: -5px 20px 0 0;
 	width: 200px;
+}
+ 
+.utilities .field {
+	display: inline-block;
 }
 
 
