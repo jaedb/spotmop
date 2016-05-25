@@ -15,7 +15,7 @@
         <div class="artist">
             <span class="artist-list">
                 <span ng-repeat="artist in track.artists">
-                    <a ui-sref="library.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a>
+                    <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name" ng-if="artist.uri"></a>
                     <span ng-bind="artist.name" ng-if="!artist.uri"></span>
                     <span ng-if="!$last">, </span>
                 </span>
@@ -23,7 +23,7 @@
         </div>
         
         <div class="album">
-            <a ui-sref="library.localalbum({ uri: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
+            <a ui-sref="browse.album({ uri: track.album.uri })" ng-bind="track.album.name" ng-if="track.album.uri"></a>
             <span ng-bind="track.album.name" ng-if="!track.album.uri"></span>
         </div>
         

@@ -91,7 +91,10 @@
 					</span>
 					<span class="item">Album</span>
 				</div>
-				<h1 ng-bind="album.name"></h1>
+                <h1>
+                    <span ng-bind="album.name"></span>
+                    <span ng-if="origin != 'spotify'" class="flag blue">LOCAL</span>
+                </h1>
 				<h2 class="description">
 					<artistlist artists="album.artists" sentence></artistlist>
 				</h2>	

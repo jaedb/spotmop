@@ -19,7 +19,7 @@
         
         <div class="col w35 album" ng-if="source != 'local'"><a ui-sref="browse.album({ uri: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
         
-        <div class="col w35 album" ng-if="source == 'local'"><a ui-sref="library.files({ folder: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
+        <div class="col w35 album" ng-if="source == 'local'"><a ui-sref="library.localalbum({ uri: track.track.album.uri })" ng-bind="track.track.album.name" ng-if="track.track.album.uri"></a><span ng-bind="track.track.album.name" ng-if="!track.track.album.uri"></span></div>
 
         <div class="info">
             

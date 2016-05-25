@@ -31,8 +31,8 @@
 		<div id="notifications"></div>
 		
 		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
-			<div class="background-image" ng-if="!mediumScreen()">
-				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.image }}"></preloadedimage>
+			<div class="background-image" ng-if="!mediumScreen() && state().currentTlTrack.track.images.medium">
+				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.images.medium }}"></preloadedimage>
 			</div>
 			<div class="inner">
 				<div class="search-form mobile-hide">
@@ -48,17 +48,17 @@
 		</div>
             
         <div id="dropzones" class="animate fadereveal">
-            <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack"]' droptype="queue">
+            <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack","localalbum"]' droptype="queue">
                 <div class="liner default-content">
                     <i class="si play white doublesize"></i>
                     <div class="label">Add to queue</div>
                 </div>
                 <div class="liner hover-content animate fadereveal">
-                    <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack"]' droptype="queue">
+                    <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack","localalbum"]' droptype="queue">
                         <i class="si play doublesize white"></i>
                         <div class="label">Add to queue</div>
                     </div>
-                    <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack"]' droptype="queuenext">
+                    <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack","localalbum"]' droptype="queuenext">
                         <div class="label">... and play next</div>
                     </div>
                 </div>

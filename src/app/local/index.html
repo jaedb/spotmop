@@ -1,0 +1,51 @@
+<div class="page">
+	<div class="inner">
+		
+        <div class="page-header">
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si folder mobile-hide"></span>
+                <span class="path-item">
+                    Local
+                </span>
+            </h1>
+            
+        </div>
+        
+		<div class="category-items square-panels">
+        
+			<div class="item-container">
+                <a ui-sref="local.artists" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('assets/backgrounds/category-artists.jpg');"></div>
+						<div class="name animate">Artists</div>
+					</div>
+                </a>
+            </div>
+        
+			<div class="item-container">
+                <a ui-sref="local.albums" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('assets/backgrounds/category-albums.jpg');"></div>
+						<div class="name animate">Albums</div>
+					</div>
+                </a>
+            </div>
+        
+			<div class="item-container">
+                <a ui-sref="local.directory({ uri: 'local:directory' })" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('assets/backgrounds/category-directory.jpg');"></div>
+						<div class="name animate">Folders</div>
+					</div>
+                </a>
+            </div>
+			
+			<div class="clear-both"></div>
+		
+		</div>
+		
+	</div>
+</div>

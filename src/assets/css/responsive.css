@@ -743,8 +743,12 @@
 		padding: 5px 0;
 	}
 	
-	.touchDevice #utilities {
-		right: 5px;
+	.page-header .utilities {
+		margin-right: 0;
+	}
+	
+	.page-header .utilities .list-filter {
+		display: none;
 	}
 	
 	

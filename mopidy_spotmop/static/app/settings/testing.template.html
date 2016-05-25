@@ -1,0 +1,45 @@
+<div ng-controller="TestingController" class="page settings-page scrolling-panel">
+	<div class="inner">
+		
+        <div class="page-header">
+        
+            <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si cog mobile-hide"></span>
+                Testing
+            </h1>
+            
+        </div>
+        
+        <h4 class="section-title underline">Input</h4>       
+        <form ng-submit="run()">
+
+            <div class="field">
+                <div class="label">Method</div>
+                <div class="input">
+                    <input type="text" name="method" placeholder="mopidy.library.browse" ng-model="method" />
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label">Payload (JSON string)</div>
+                <div class="input">
+                    <input type="text" name="method" placeholder="{ uri: '1234' }" ng-model="payload" />
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label"></div>
+                <div class="input">
+                    <button class="button primary" type="submit">Run</button>
+                </div>
+            </div>
+            
+        </form>
+        
+        <h4 class="section-title underline">Response</h4>        
+        <pre ng-bind="data | json"></pre>
+        
+	</div>
+</div>

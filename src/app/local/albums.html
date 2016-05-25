@@ -1,0 +1,74 @@
+<div class="page">
+	<div class="inner">
+		
+        <div class="page-header">
+		
+            <div class="utilities">
+                <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
+                <div class="field icon-radio view-options">
+                    <label>
+                        <input type="radio" name="spotmop.localalbumlayout" ng-model="settings.spotmop.localalbumlayout" value="grid" />
+                        <span class="label animate"><span class="si grid mobile-white"></span></span>
+                    </label>
+                    <label>
+                        <input type="radio" name="spotmop.localalbumlayout" ng-model="settings.spotmop.localalbumlayout" value="list" />
+                        <span class="label animate"><span class="si list mobile-white"></span></span>
+                    </label>
+                </div>
+            </div>
+        
+			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+            
+            <h1>
+                <span class="si folder mobile-hide"></span>
+                <span class="path-item">
+                    Albums
+                </span>
+            </h1>
+            
+        </div>
+        
+        <!-- GRID VIEW -->
+        
+        <div class="album-items square-panels" ng-if="!settings.spotmop.localalbumlayout || settings.spotmop.localalbumlayout == 'grid'">
+            <div class="item-container" ng-repeat="album in albums track by $index">
+                <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
+                    candrag
+                    dragobj="album"
+                    draggable="false">
+                        <div class="image-container">
+                            <div class="image animate" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
+                            <div ng-if="!album.images.medium" class="image placeholder"></div>
+                            <!-- TODO: Use built-in image library to get these images -->
+                        </div>
+                        <div class="info smaller animate">
+                            <div class="name" ng-bind="album.name"></div>
+                        </div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- LIST VIEW -->
+		
+		<div class="album-items list" ng-if="settings.spotmop.localalbumlayout == 'list'">
+            <div class="list-item header">
+                <div class="col w100 name">Name</div>
+                <div class="clear-both"></div>
+            </div>
+			<div class="item-container" ng-repeat="album in albums track by $index">
+				<a ui-sref="browse.album({ uri: album.uri })" class="list-item">
+                    <div class="col w100 name"> 
+                        <span class="si cd"></span>
+                        <span ng-bind="album.name"></span>
+                    </div>
+                    <div class="clear-both"></div>
+				</a>
+			</div>	
+		</div>
+		
+		<div ng-hide="albums.length" class="no-items">
+			No items. Have you installed the SQLite local library?
+		</div>	
+		
+	</div>
+</div>

@@ -129,52 +129,28 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
 					
-					switch( $scope.dragobj.type ){
+					if(
+						$scope.dragobj.type == 'album' ||
+						$scope.dragobj.type == 'localalbum' ||
+						$scope.dragobj.type == 'artist' ||
+						$scope.dragobj.type == 'localartist' ||
+						$scope.dragobj.type == 'playlist' ){
 						
-						case 'album':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
+							if( $scope.dragobj.images.small ){
+								var image = $scope.dragobj.images.small;
 								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
 							}
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'artist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'playlist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'track':
+							
+					}else if(
+						$scope.dragobj.type == 'track' ||
+						$scope.dragobj.type == 'tltrack' ||
+						$scope.dragobj.type == 'localtrack' ){
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
 							}
-							break;
 						
-						case 'tltrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
-						
-						case 'localtrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -278,6 +254,9 @@ angular.module('spotmop.directives', [])
 			
 				switch( $scope.dragobj.type ){
 					case 'album':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
+					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
@@ -805,24 +784,31 @@ angular.module('spotmop.directives', [])
 			var	scrollTop = 0;
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
-			
-			// load our image data from the json string attribute
-			var image = $.parseJSON($scope.image);
+			var image = {
+					width: 0,
+					height: 0,
+					url: $scope.image
+				}
 		
 			/*
 			REBUILD THIS TO USE TORNADO
 			if( $scope.useproxy )
 				image.url = '/vendor/resource-proxy.php?url='+image.url;
 			*/
+			
 			// create our new image object (to be plugged into canvas)
-			image.asObject = new Image();
-			image.asObject.src = image.url;
-			image.asObject.onload = function(){
+			var imageObject = new Image();
+			imageObject.src = image.url;
+			imageObject.onload = function(){
 				
 				// load destination opacity from attribute (if specified)
 				var destinationOpacity = 1;				
 				if( typeof($scope.opacity) !== 'undefined' )
 					destinationOpacity = $scope.opacity;
+				
+				// store the actual image dimensions into our image object
+				image.width = imageObject.naturalWidth;
+				image.height = imageObject.naturalHeight;
 				
 				// plug our image into the canvas
 				positionArtistBackground( image );
@@ -868,7 +854,7 @@ angular.module('spotmop.directives', [])
 				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
 				
 				// actually draw the image on the canvas
-				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+				context.drawImage(imageObject, image.x, image.y, image.width, image.height);		
 			}
 			
 			// poll for scroll changes
@@ -964,6 +950,7 @@ angular.module('spotmop.directives', [])
 })
 
 // get the appropriate sized image
+// DEPRECIATED 
 .filter('thumbnailImage', function(){
 	return function( images ){
         
@@ -1011,17 +998,19 @@ angular.module('spotmop.directives', [])
 			// spotify-styled images
 			if( typeof(image.height) !== 'undefined' ){
 				
-				// large
-				if( image.height > 500 ){
+				if( image.height >= 650 ){
+				
 					standardised.large = image.url;
+					
+				}else if( image.height <= 650 && image.height >= 250 ){
 				
-				// medium
-				}else if( image.height > 200 && image.height < 500 ){
-					standardised.medium = image.url;
-				
-				// small
-				}else{
-					standardised.small = image.url;
+					standardised.medium = image.url;					
+					if( !standardised.large ) standardised.large = image.url;
+					
+				}else{					
+					if( !standardised.small ) standardised.small = image.url;
+					if( !standardised.medium ) standardised.medium = image.url;
+					if( !standardised.large ) standardised.large = image.url;
 				}
 			
 			// lastFM styled images
@@ -1036,15 +1025,22 @@ angular.module('spotmop.directives', [])
 							break;
 						case 'extralarge':
 							standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'large':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'medium':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 						case 'small':
 							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
 							break;
 					}
 				}
@@ -1106,6 +1102,22 @@ angular.module('spotmop.directives', [])
 			return false;
 		}
 		return uriElements[1];
+	}
+})
+
+/**
+ * Get the MBID from a URI
+ * @return string
+**/
+.filter('mbid', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var start = uri.indexOf(':mbid:') + 6;
+		var end = uri.length;
+		
+		return uri.substr(start, end);
 	}
 });
 

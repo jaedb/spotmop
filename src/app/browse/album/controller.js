@@ -130,6 +130,7 @@ angular.module('spotmop.browse.album', [])
 				
 				$scope.album = response;
 				$scope.album.totalTracks = response.tracks.total;
+                $scope.album.images = $filter('sizedImages')(response.images);
 				$scope.tracklist = response.tracks;
 				$scope.tracklist.type = 'track';
 				$scope.tracklist.tracks = response.tracks.items;
@@ -146,7 +147,14 @@ angular.module('spotmop.browse.album', [])
 				// now get the artist objects
 				SpotifyService.getArtists( artisturis )
 					.then( function( response ){
-						$scope.album.artists = response.artists;
+                        $scope.album.artists = [];
+                        if( response.artists ){
+                            for( var i = 0; i < response.artists.length; i++ ){
+                                var artist = response.artists[i];
+                                artist.images = $filter('sizedImages')(artist.images);
+                                $scope.album.artists.push( artist );
+                            };
+                        }
 					});
 					
 				// if we're viewing from within an individual artist, get 'em
@@ -199,38 +207,48 @@ angular.module('spotmop.browse.album', [])
 				
 				// flatten out our dictionary-style array
 				for( var index in uniqueArtists ){
+                    $scope.album.artists.push( uniqueArtists[index] );
+                }
+                
+                // get artwork for the artists
+                for( var i = 0; i < $scope.album.artists.length; i++ ){
+                    
+                    // once we get the info from lastFM
+                    // process it and add to our $scope
+                    var callback = function(n){
+                        return function( response ){
+                            if( typeof(response.artist) !== 'undefined'){
+                                $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
+                            }
+                        };
+                    }(i);
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
-					if( typeof(uniqueArtists[index].musicbrainz_id) !== 'undefined' ){
-						LastfmService.artistInfoByMbid( uniqueArtists[index].musicbrainz_id )
-							.then( function( response ){
-								if( typeof(response.artist) !== 'undefined' ){
-									var artist = response.artist;
-									artist.images = $filter('sizedImages')(response.artist.image);
-									artist.uri = 'local:artist:mbid:'+artist.mbid;
-									$scope.album.artists.push( artist );
-								}
-							});
-					
-					// no mbid, so just plug it in as-is-where-is
-					// we could get artwork, but need to handle non-mbid uri link for artist as we inject
-					// within the promise resolve (ie .then()) method
-					}else{
-						$scope.album.artists.push( uniqueArtists[index] );
-					}
-				}
+					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
+                        console.log( ' Getting artist by MBID: '+$scope.album.artists[i].musicbrainz_id );
+						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
+							.then( callback );
+                    }else{
+						LastfmService.artistInfo( $scope.album.artists[i].name )
+							.then( callback );
+                    }
+                }
 				
 				// get album artwork from LastFM
 				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
 						.then( function( response ){
-							$scope.album.images = $filter('sizedImages')(response.album.image);
+							if( typeof(response.album) !== 'undefined' ){
+								$scope.album.images = $filter('sizedImages')(response.album.image);
+							}
 						});
 				}else{
 					var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
 					LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
 						.then( function( response ){
-							$scope.album.images = $filter('sizedImages')(response.album.image);
+							if( typeof(response.album) !== 'undefined' ){
+								$scope.album.images = $filter('sizedImages')(response.album.image);
+							}
 						});
 				}
 			});

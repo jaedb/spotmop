@@ -213,7 +213,7 @@ angular.module('spotmop.services.player', [])
 					SpotifyService.getTrack( tlTrack.track.uri )
 						.then(function( response ){
 							if( typeof(response.album) !== 'undefined' ){
-								state.currentTlTrack.track.images = response.album.images;
+								state.currentTlTrack.track.images = $filter('sizedImages')(response.album.images);
 							}
 							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
@@ -233,7 +233,7 @@ angular.module('spotmop.services.player', [])
 									
 									// if we got an album match, plug in the 'extralarge' image to our state()
 									if( typeof(response.album) !== 'undefined' ){
-										state.currentTlTrack.track.images = response.album.image;
+										state.currentTlTrack.track.images = $filter('sizedImages')(response.album.image);
 									}
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
