@@ -744,7 +744,11 @@
 	}
 	
 	.page-header .utilities {
-		margin-right: -10px;
+		margin-right: 0;
+	}
+	
+	.page-header .utilities .list-filter {
+		display: none;
 	}
 	
 	

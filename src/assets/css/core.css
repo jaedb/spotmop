@@ -979,6 +979,11 @@ h1 .flag {
 	background: #08d58f;
 	color: #FFFFFF;
 }
+ 
+.flag.bad {
+	background: rgb(214,47,47);
+	color: #FFFFFF;
+}
 
 .flag.clickable:hover{
 	background: rgba(0,0,0,0.65);
@@ -1648,11 +1653,6 @@ slider .item-container > .square-panel {
 	color: #666666;
 	margin-top: 4px;
 	vertical-align: top;
-}
- 
-.page-header .flag.bad {
-	background: rgb(214,47,47);
-	color: #FFFFFF;
 }
  
 

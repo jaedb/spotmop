@@ -12,10 +12,6 @@
                 </span>
             </h1>
             
-            <div class="utilities">
-                <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
-            </div>
-            
         </div>
         
 		<div class="category-items square-panels">
@@ -37,34 +33,19 @@
 					</div>
                 </a>
             </div>
+        
+			<div class="item-container">
+                <a ui-sref="local.directory({ uri: 'local:directory' })" class="square-panel category">
+					<div class="image-container">
+						<div class="image animate" style="background-image: url('assets/backgrounds/category-directory.jpg');"></div>
+						<div class="name animate">Folders</div>
+					</div>
+                </a>
+            </div>
 			
 			<div class="clear-both"></div>
 		
 		</div>
-        
-        <h4 class="section-title">Folders</h4>
-        
-        <div class="list">
-            <div class="item-container" ng-repeat="folder in folders">
-                <a class="list-item folder" ng-if="(folder.uri|assetType) != 'album'" ui-sref="local.directory({ uri: folder.uri })">
-                    <div class="title col w50">
-                        <i class="fa fa-folder icon"></i>
-                        <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
-                    </div>
-                    <div class="clear-both"></div>
-                </a>
-                <a class="list-item folder" ng-if="(folder.uri|assetType) == 'album'" ui-sref="local.album({ uri: folder.uri })">
-                    <div class="title col w50">
-                        <i class="si cd"></i>
-                        <span ng-bind="folder.name" ng-class="{ empty: !folder.name }"></span>
-                    </div>
-                    <div class="clear-both"></div>
-                </a>
-            </div>
-        </div>
-
-        <tracklist ng-if="tracks.length > 0" tracks="tracks" type="localtrack" class="tracklist library-tracks"></tracklist>
-
 		
 	</div>
 </div>
