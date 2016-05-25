@@ -520,7 +520,7 @@ body.dragging .body * {
 }
 
 .sub-page-navigation .menu-item.active {
-	border-color: #08d58f;
+	border-color: #f5f5f5;
 }
 
 
@@ -1099,12 +1099,23 @@ h4.section-title {
 }
 
 h1 .flag {
-    vertical-align: top;
-    margin-top: 13px;
+    vertical-align: bottom;
+    margin-bottom: 8px;
 }
 
 .flag.blue{
+	background: #32b5f2;
+	color: #FFFFFF;
+}
+
+.flag.green,
+.flag.primary {
 	background: #08d58f;
+	color: #FFFFFF;
+}
+ 
+.flag.bad {
+	background: rgb(214,47,47);
 	color: #FFFFFF;
 }
 
@@ -1613,6 +1624,10 @@ body.dragging .tracklist .track.dropping {
 	vertical-align: bottom;
 }
 
+.list .list-item .fa {
+	margin-right: 6px;
+}
+
 .list .list-item .info {
 	width: 5%;
 	text-align: right;
@@ -1731,7 +1746,7 @@ slider .item-container > .square-panel {
 }
  
 .page-header .utilities {
-	margin: 0;
+	margin: 0 -25px 0 0;
 	float: right;
 }
  
@@ -1772,11 +1787,6 @@ slider .item-container > .square-panel {
 	color: #666666;
 	margin-top: 4px;
 	vertical-align: top;
-}
- 
-.page-header .flag.bad {
-	background: rgb(214,47,47);
-	color: #FFFFFF;
 }
  
 
@@ -2979,8 +2989,13 @@ slider .item-container > .square-panel {
 }
  
 .utilities .list-filter {
-	margin: -5px -25px 0 0;
+	vertical-align: top;
+	margin: -5px 20px 0 0;
 	width: 200px;
+}
+ 
+.utilities .field {
+	display: inline-block;
 }
 
 
@@ -3926,8 +3941,12 @@ slider .item-container > .square-panel {
 		padding: 5px 0;
 	}
 	
-	.touchDevice #utilities {
-		right: 5px;
+	.page-header .utilities {
+		margin-right: 0;
+	}
+	
+	.page-header .utilities .list-filter {
+		display: none;
 	}
 	
 	
