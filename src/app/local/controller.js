@@ -145,8 +145,26 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=artist' )
 			.then( function( response ){
-				$scope.artists = $filter('limitTo')(response, limit);
-				$scope.allArtists = response;
+				
+				var artists = response;
+				
+				// once we get the info from lastFM
+				// process it and add to our $scope
+				var callback = function(n){
+					return function( response ){
+						console.log( response );
+						if( typeof(response) !== 'undefined' ){
+							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
+						}
+					};
+				}(i);
+				
+				// get the artwork
+				for( var i = 0; i < artists.length; i++ ){
+				}
+				
+				$scope.artists = $filter('limitTo')(artists, limit);
+				$scope.allArtists = artists;
 			});
 	}
     

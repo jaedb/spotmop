@@ -195,6 +195,11 @@ angular.module('spotmop.browse.album', [])
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
 				
+				MopidyService.testMethod( 'mopidy.library.getImages', {uris: [uri] } )
+					.then( function( response ){
+						console.log(response); 
+					});
+				
 				// get all our album artist and compile into an array
 				var uniqueArtists = [];
 				for( var i = 0; i < $scope.tracklist.tracks.length; i++ ){
@@ -225,7 +230,6 @@ angular.module('spotmop.browse.album', [])
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
 					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
-                        console.log( ' Getting artist by MBID: '+$scope.album.artists[i].musicbrainz_id );
 						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
 							.then( callback );
                     }else{
