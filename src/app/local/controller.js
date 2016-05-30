@@ -219,9 +219,40 @@ angular.module('spotmop.local', [])
 			.then( function( response ){
 				$scope.albums = $filter('limitTo')(response, 50);
 				$scope.allAlbums = response;
+				getArtwork();
 			});
 	}
-    
+	
+	// fetch artwork from Mopidy
+    function getArtwork(){
+	
+		var uris = [];
+		
+		for( var i = 0; i < $scope.albums.length; i++ ){
+			uris.push( $scope.albums[i].uri );
+		}
+		
+		// chat with Mopidy and get the images for all these URIs
+		MopidyService.getImages( uris )
+			.then( function(response){
+				
+				// loop all the response uris
+				for( var key in response ){
+				
+					// make sure this key is valid, and we actually got some images
+					if( response.hasOwnProperty(key) && response[key].length > 0 ){
+						
+						// find the album that this URI matches, and store it's index
+						var albumByUri = $filter('filter')($scope.allAlbums, {uri: key});						
+						var index = $scope.allAlbums.indexOf( albumByUri[0] );
+						
+						// update the album's images
+						$scope.allAlbums[index].images = $filter('sizedImages')( response[key] );
+					}
+				}
+			});
+	}
+	
     // once we're told we're ready to load more
     var loading = false;
     $scope.$on('spotmop:loadMore', function(){
