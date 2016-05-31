@@ -225,7 +225,6 @@ angular.module('spotmop.browse.album', [])
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
 					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
-                        console.log( ' Getting artist by MBID: '+$scope.album.artists[i].musicbrainz_id );
 						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
 							.then( callback );
                     }else{
@@ -234,23 +233,37 @@ angular.module('spotmop.browse.album', [])
                     }
                 }
 				
-				// get album artwork from LastFM
-				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
-					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
-						.then( function( response ){
-							if( typeof(response.album) !== 'undefined' ){
-								$scope.album.images = $filter('sizedImages')(response.album.image);
-							}
-						});
-				}else{
-					var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
-					LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
-						.then( function( response ){
-							if( typeof(response.album) !== 'undefined' ){
-								$scope.album.images = $filter('sizedImages')(response.album.image);
-							}
-						});
-				}
+				// initiate request for album artwork from mopidy
+				MopidyService.getImages( [uri] )
+					.then( function( response ){
+						
+						var albumImages = response[uri];
+						
+						// we got images from mopidy!
+						if( albumImages.length > 0 ){
+						
+							$scope.album.images = $filter('sizedImages')( albumImages );
+				
+						// no mopidy artwork, so get album artwork from LastFM
+						}else if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
+							LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = $filter('sizedImages')(response.album.image);
+									}
+								});
+						
+						// no musicbrainz id, so let's just use album/artist strings
+						}else{
+							var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
+							LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = $filter('sizedImages')(response.album.image);
+									}
+								});
+						}
+					});
 			});
 	}
 	

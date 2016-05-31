@@ -74,11 +74,14 @@ angular.module('spotmop.services.mopidy', [
 		isConnected: false,
 		
 		testMethod: function( method, payload ){
+			console.info( 'Performing test method: '+method+' with payload:'+ payload);
 			return wrapMopidyFunc(method, this)( payload );
 		},
 		
-		getImages: function( uri ){
-			return wrapMopidyFunc('mopidy.library.getImages', this)( uri );
+		getImages: function( uris ){
+			if( typeof(uris) !== 'array' )
+				uris = [uris];
+			return wrapMopidyFunc('mopidy.library.getImages', this)( { uris: uris } );
 		},
 		
 		/*
