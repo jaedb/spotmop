@@ -64,8 +64,6 @@ def spotmop_client_factory(config, core):
     ])
     application.listen(pusherport)
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
-    
-    logger.info( artworklocation )
 	
     return [
 		(r'/upgrade', upgrade.UpgradeRequestHandler, {
