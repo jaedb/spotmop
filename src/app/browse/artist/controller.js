@@ -175,9 +175,12 @@ angular.module('spotmop.browse.artist', [])
 		// get the albums
 		MopidyService.getLibraryItems( uri )
 			.then( function( response ){
-			
-				$scope.albums.items = response;
 				
+				// get only the directories and albums
+				// Mopidy will dish up tracks that aren't recognised in an album or directory and that breaks stuff
+				$scope.albums.items = $filter('filter')(response, ( { type: 'directory' } && { type: 'album' } ));
+				
+				// loop each of the albums (or directories, depending on the backend)
 				for( var i = 0; i < $scope.albums.items.length; i++ ){
                     
 					$scope.albums.items[i].artist = { name: $scope.artist.name };

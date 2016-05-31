@@ -982,7 +982,7 @@ angular.module('spotmop.directives', [])
 })
 
 // standardize our images into a large/medium/small structure for template usage
-.filter('sizedImages', function(){
+.filter('sizedImages', function( SettingsService ){
 	return function( images ){
         
         // what if there are no images? then nada
@@ -995,8 +995,30 @@ angular.module('spotmop.directives', [])
         for( var i = 0; i < images.length; i++){
             var image = images[i];
 		
+			// mopidy-styled images
+			if( typeof(image.__model__) !== 'undefined' ){
+			
+				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				image.url = baseUrl +'/spotmop'+ image.uri;
+				
+				if( image.height >= 650 ){
+				
+					standardised.large = image.url;
+					
+				}else if( image.height <= 650 && image.height >= 250 ){
+				
+					standardised.medium = image.url;					
+					if( !standardised.large ) standardised.large = image.url;
+					
+				}else{					
+					if( !standardised.small ) standardised.small = image.url;
+					if( !standardised.medium ) standardised.medium = image.url;
+					if( !standardised.large ) standardised.large = image.url;
+				}
+		
 			// spotify-styled images
-			if( typeof(image.height) !== 'undefined' ){
+			}else if( typeof(image.height) !== 'undefined' ){
 				
 				if( image.height >= 650 ){
 				

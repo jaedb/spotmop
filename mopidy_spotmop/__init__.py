@@ -31,6 +31,7 @@ class SpotmopExtension(ext.Extension):
         schema['debug'] = config.Boolean()
         schema['pusherport'] = config.String()
         schema['pusherclientmap'] = config.String()
+        schema['artworklocation'] = config.String()
         return schema
 
     def setup(self, registry):
@@ -43,10 +44,15 @@ class SpotmopExtension(ext.Extension):
 
         logger.info('Starting Spotmop web client '+ self.version)
 
+class ArtworkHandler(tornado.web.RequestHandler):
+    def get(self, file):
+        self.write("You requested the file " + file)
+        
 def spotmop_client_factory(config, core):
 
 	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
+    artworklocation = config.get(__ext_name__)['artworklocation']
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
 
     # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
@@ -58,23 +64,28 @@ def spotmop_client_factory(config, core):
     ])
     application.listen(pusherport)
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
+    
+    logger.info( artworklocation )
 	
     return [
-		('/upgrade', upgrade.UpgradeRequestHandler, {
+		(r'/upgrade', upgrade.UpgradeRequestHandler, {
 				'core': core,
 				'config': config,
 				'version': __version__ 
 			}),
-		('/pusher/([^/]+)', pusher.PusherRequestHandler, {
+		(r'/pusher/([^/]+)', pusher.PusherRequestHandler, {
 				'core': core,
 				'config': config,
 				'version': __version__
 			}),
-		('/auth', auth.AuthRequestHandler, {
+		(r'/auth', auth.AuthRequestHandler, {
 				'core': core,
 				'config': config,
 				'version': __version__
 			}),
+        (r"/artwork/(.*)", tornado.web.StaticFileHandler, {
+            "path": artworklocation
+        }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
 				"path": spotmoppath,
 				"default_filename": "index.html"
