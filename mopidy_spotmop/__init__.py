@@ -81,7 +81,7 @@ def spotmop_client_factory(config, core):
 				'config': config,
 				'version': __version__
 			}),
-        (r"/artwork/(.*)", tornado.web.StaticFileHandler, {
+        (r"/images/(.*)", tornado.web.StaticFileHandler, {
             "path": artworklocation
         }),
         (r'/(.*)', tornado.web.StaticFileHandler, {

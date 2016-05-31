@@ -204,6 +204,9 @@ angular.module('spotmop.local', [])
         limit = 50;
         $scope.albums = $filter('filter')($scope.allAlbums, val);
         $scope.albums = $filter('limitTo')($scope.albums, limit);
+		if( $scope.albums.length > 0 ){
+			getArtwork( $scope.albums );
+		}
     });
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -219,17 +222,17 @@ angular.module('spotmop.local', [])
 			.then( function( response ){
 				$scope.albums = $filter('limitTo')(response, 50);
 				$scope.allAlbums = response;
-				getArtwork();
+				getArtwork( $scope.albums );
 			});
 	}
 	
 	// fetch artwork from Mopidy
-    function getArtwork(){
+    function getArtwork( $albums ){
 	
 		var uris = [];
 		
-		for( var i = 0; i < $scope.albums.length; i++ ){
-			uris.push( $scope.albums[i].uri );
+		for( var i = 0; i < $albums.length; i++ ){
+			uris.push( $albums[i].uri );
 		}
 		
 		// chat with Mopidy and get the images for all these URIs
@@ -268,6 +271,9 @@ angular.module('spotmop.local', [])
             $timeout(
                 function(){
                     loading = false;
+					if( $scope.albums.length > 0 ){
+						getArtwork( $scope.albums );
+					}
                 }, 1 );
         }
     });
