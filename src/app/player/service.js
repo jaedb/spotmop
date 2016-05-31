@@ -195,17 +195,19 @@ angular.module('spotmop.services.player', [])
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
 			
-			/*
-			REMOVED AS WE DON'T WANT TO USE BAKED-IN IMAGES FOR NOW
 			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
-			
-				state.currentTlTrack.track.images = tlTrack.track.album.images;
+				
+				// convert our singular image into the expected mopidy image model
+				var images = [{ __model__: 'Image', uri: tlTrack.track.album.images }];
+				
+				// plug it in
+				state.currentTlTrack.track.images = $filter('sizedImages')( images );
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
-			}else{*/
+			}else{
 			
 				// if this is a Spotify track, get the track image from Spotify
 				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
@@ -238,7 +240,7 @@ angular.module('spotmop.services.player', [])
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
-				// }
+				}
 			}
 			
 			// update ui
