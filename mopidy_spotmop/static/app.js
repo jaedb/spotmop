@@ -30470,7 +30470,6 @@ angular.module('spotmop.browse.album', [])
 					
 					// if we have a musicbrainz_id, get imagery from LastFM
 					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
-                        console.log( ' Getting artist by MBID: '+$scope.album.artists[i].musicbrainz_id );
 						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
 							.then( callback );
                     }else{
@@ -30479,23 +30478,37 @@ angular.module('spotmop.browse.album', [])
                     }
                 }
 				
-				// get album artwork from LastFM
-				if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
-					LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
-						.then( function( response ){
-							if( typeof(response.album) !== 'undefined' ){
-								$scope.album.images = $filter('sizedImages')(response.album.image);
-							}
-						});
-				}else{
-					var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
-					LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
-						.then( function( response ){
-							if( typeof(response.album) !== 'undefined' ){
-								$scope.album.images = $filter('sizedImages')(response.album.image);
-							}
-						});
-				}
+				// initiate request for album artwork from mopidy
+				MopidyService.getImages( [uri] )
+					.then( function( response ){
+						
+						var albumImages = response[uri];
+						
+						// we got images from mopidy!
+						if( albumImages.length > 0 ){
+						
+							$scope.album.images = $filter('sizedImages')( albumImages );
+				
+						// no mopidy artwork, so get album artwork from LastFM
+						}else if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
+							LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = $filter('sizedImages')(response.album.image);
+									}
+								});
+						
+						// no musicbrainz id, so let's just use album/artist strings
+						}else{
+							var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
+							LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = $filter('sizedImages')(response.album.image);
+									}
+								});
+						}
+					});
 			});
 	}
 	
@@ -30707,9 +30720,12 @@ angular.module('spotmop.browse.artist', [])
 		// get the albums
 		MopidyService.getLibraryItems( uri )
 			.then( function( response ){
-			
-				$scope.albums.items = response;
 				
+				// get only the directories and albums
+				// Mopidy will dish up tracks that aren't recognised in an album or directory and that breaks stuff
+				$scope.albums.items = $filter('filter')(response, ( { type: 'directory' } && { type: 'album' } ));
+				
+				// loop each of the albums (or directories, depending on the backend)
 				for( var i = 0; i < $scope.albums.items.length; i++ ){
                     
 					$scope.albums.items[i].artist = { name: $scope.artist.name };
@@ -32731,7 +32747,7 @@ angular.module('spotmop.directives', [])
 })
 
 // standardize our images into a large/medium/small structure for template usage
-.filter('sizedImages', function(){
+.filter('sizedImages', ['SettingsService', function( SettingsService ){
 	return function( images ){
         
         // what if there are no images? then nada
@@ -32744,8 +32760,30 @@ angular.module('spotmop.directives', [])
         for( var i = 0; i < images.length; i++){
             var image = images[i];
 		
+			// mopidy-styled images
+			if( typeof(image.__model__) !== 'undefined' ){
+			
+				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				image.url = baseUrl +'/spotmop'+ image.uri;
+				
+				if( image.height >= 650 ){
+				
+					standardised.large = image.url;
+					
+				}else if( image.height <= 650 && image.height >= 250 ){
+				
+					standardised.medium = image.url;					
+					if( !standardised.large ) standardised.large = image.url;
+					
+				}else{					
+					if( !standardised.small ) standardised.small = image.url;
+					if( !standardised.medium ) standardised.medium = image.url;
+					if( !standardised.large ) standardised.large = image.url;
+				}
+		
 			// spotify-styled images
-			if( typeof(image.height) !== 'undefined' ){
+			}else if( typeof(image.height) !== 'undefined' ){
 				
 				if( image.height >= 650 ){
 				
@@ -32804,7 +32842,7 @@ angular.module('spotmop.directives', [])
 		
 		return standardised;
 	}
-})
+}])
 
 // get the appropriate sized image
 .filter('shuffle', function(){
@@ -34190,8 +34228,26 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=artist' )
 			.then( function( response ){
-				$scope.artists = $filter('limitTo')(response, limit);
-				$scope.allArtists = response;
+				
+				var artists = response;
+				
+				// once we get the info from lastFM
+				// process it and add to our $scope
+				var callback = function(n){
+					return function( response ){
+						console.log( response );
+						if( typeof(response) !== 'undefined' ){
+							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
+						}
+					};
+				}(i);
+				
+				// get the artwork
+				for( var i = 0; i < artists.length; i++ ){
+				}
+				
+				$scope.artists = $filter('limitTo')(artists, limit);
+				$scope.allArtists = artists;
 			});
 	}
     
@@ -34231,6 +34287,9 @@ angular.module('spotmop.local', [])
         limit = 50;
         $scope.albums = $filter('filter')($scope.allAlbums, val);
         $scope.albums = $filter('limitTo')($scope.albums, limit);
+		if( $scope.albums.length > 0 ){
+			getArtwork( $scope.albums );
+		}
     });
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -34246,9 +34305,40 @@ angular.module('spotmop.local', [])
 			.then( function( response ){
 				$scope.albums = $filter('limitTo')(response, 50);
 				$scope.allAlbums = response;
+				getArtwork( $scope.albums );
 			});
 	}
-    
+	
+	// fetch artwork from Mopidy
+    function getArtwork( $albums ){
+	
+		var uris = [];
+		
+		for( var i = 0; i < $albums.length; i++ ){
+			uris.push( $albums[i].uri );
+		}
+		
+		// chat with Mopidy and get the images for all these URIs
+		MopidyService.getImages( uris )
+			.then( function(response){
+				
+				// loop all the response uris
+				for( var key in response ){
+				
+					// make sure this key is valid, and we actually got some images
+					if( response.hasOwnProperty(key) && response[key].length > 0 ){
+						
+						// find the album that this URI matches, and store it's index
+						var albumByUri = $filter('filter')($scope.allAlbums, {uri: key});						
+						var index = $scope.allAlbums.indexOf( albumByUri[0] );
+						
+						// update the album's images
+						$scope.allAlbums[index].images = $filter('sizedImages')( response[key] );
+					}
+				}
+			});
+	}
+	
     // once we're told we're ready to load more
     var loading = false;
     $scope.$on('spotmop:loadMore', function(){
@@ -34264,6 +34354,9 @@ angular.module('spotmop.local', [])
             $timeout(
                 function(){
                     loading = false;
+					if( $scope.albums.length > 0 ){
+						getArtwork( $scope.albums );
+					}
                 }, 1 );
         }
     });
@@ -34706,17 +34799,19 @@ angular.module('spotmop.services.player', [])
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
 			
-			/*
-			REMOVED AS WE DON'T WANT TO USE BAKED-IN IMAGES FOR NOW
 			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
-			
-				state.currentTlTrack.track.images = tlTrack.track.album.images;
+				
+				// convert our singular image into the expected mopidy image model
+				var images = [{ __model__: 'Image', uri: tlTrack.track.album.images }];
+				
+				// plug it in
+				state.currentTlTrack.track.images = $filter('sizedImages')( images );
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
-			}else{*/
+			}else{
 			
 				// if this is a Spotify track, get the track image from Spotify
 				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
@@ -34749,7 +34844,7 @@ angular.module('spotmop.services.player', [])
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
-				// }
+				}
 			}
 			
 			// update ui
@@ -35821,11 +35916,14 @@ angular.module('spotmop.services.mopidy', [
 		isConnected: false,
 		
 		testMethod: function( method, payload ){
+			console.info( 'Performing test method: '+method+' with payload:'+ payload);
 			return wrapMopidyFunc(method, this)( payload );
 		},
 		
-		getImages: function( uri ){
-			return wrapMopidyFunc('mopidy.library.getImages', this)( uri );
+		getImages: function( uris ){
+			if( typeof(uris) !== 'array' )
+				uris = [uris];
+			return wrapMopidyFunc('mopidy.library.getImages', this)( { uris: uris } );
 		},
 		
 		/*
