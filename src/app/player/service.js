@@ -276,6 +276,13 @@ angular.module('spotmop.services.player', [])
 	function updateTracklist(){
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$rootScope.currentTracklist = tlTracks;
+			
+			// no tracks? make sure we don't have anything 'playing'
+			// this would typically be called when we clear our tracklist, or have got to the end
+			if( !tlTracks || tlTracks.length <= 0 ){
+				state.currentTlTrack = false;
+				updateWindowTitle();
+			}
 		});
 	}
 		
