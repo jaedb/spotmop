@@ -83,36 +83,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
-            $scope.saving = false;
+		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistPublic == 'true' )
-					$scope.playlistPublic = true;
-				else
-					$scope.playlistPublic = false;
-                
-                // perform the creation
-                SpotifyService.createPlaylist(
-						$scope.$parent.spotifyUser.id,
-						{ name: $scope.playlistName, public: $scope.playlistPublic } 
-					)
-                    .then( function(response){
-                    
-                        // save new playlist to our playlist array
-                        $scope.$parent.playlists.items.push( response );
+				if( $scope.playlistName && $scope.playlistName != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistPublic == 'true' )
+						$scope.playlistPublic = true;
+					else
+						$scope.playlistPublic = false;
+					
+					// perform the creation
+					SpotifyService.createPlaylist(
+							$scope.$parent.spotifyUser.id,
+							{ name: $scope.playlistName, public: $scope.playlistPublic } 
+						)
+						.then( function(response){
 						
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+							// save new playlist to our playlist array
+							$scope.$parent.playlists.items.push( response );
+							
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}
 	};
