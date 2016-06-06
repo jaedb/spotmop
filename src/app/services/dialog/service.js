@@ -138,35 +138,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
+		
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
             $scope.saving = false;
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistNewPublic == 'true' )
-					$scope.playlistNewPublic = true;
-				else
-					$scope.playlistNewPublic = false;
+				if( $scope.playlistNewName && $scope.playlistNewName != '' ){
                 
-                // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .then( function(response){
-                    
-                        // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.playlistNewName;
-                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
-                    
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistNewPublic == 'true' )
+						$scope.playlistNewPublic = true;
+					else
+						$scope.playlistNewPublic = false;
+					
+					// actually perform the rename
+					SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
+						.then( function(response){
+						
+							// update the playlist's name
+							$scope.$parent.playlist.name = $scope.playlistNewName;
+							$scope.$parent.playlist.public = $scope.playlistNewPublic;
+						
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}
 	};
