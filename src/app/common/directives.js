@@ -39,7 +39,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
+.directive('candrag', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -135,11 +135,20 @@ angular.module('spotmop.directives', [])
 						$scope.dragobj.type == 'artist' ||
 						$scope.dragobj.type == 'localartist' ||
 						$scope.dragobj.type == 'playlist' ){
-						
-							if( $scope.dragobj.images.small ){
-								var image = $scope.dragobj.images.small;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							
+							// figure out if we need to apply the sizing filter or if it's already applied
+							var images = false;							
+							if( typeof($scope.dragobj.images.small) !== 'undefined' ){
+								var images = $scope.dragobj.images;
+							}else if( $scope.dragobj.images.length > 0 ){
+								var images = $filter('sizedImages')( $scope.dragobj.images );
 							}
+							
+							// if we got some images, plug in a purrty thumbnail
+							if( images ){
+								tracerContent = '<div class="thumbnail" style="background-image: url('+images.small+');"></div>';
+							}
+							
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							
 					}else if(
