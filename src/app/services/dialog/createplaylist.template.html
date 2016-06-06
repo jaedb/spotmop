@@ -2,7 +2,7 @@
 	
 	<h4 class="section-title dialog-title">Create playlist</h4>
 
-	<form>
+	<form ng-submit="savePlaylist()">
 		
 		<div class="field text large">
 			<input name="name" placeholder="Playlist name" ng-model="playlistName" />
@@ -21,9 +21,9 @@
 		</div>
 
 		<div class="actions">
-			<span class="button save primary" ng-click="savePlaylist()" ng-hide="saving">
+			<button type="submit" class="button save primary" ng-hide="saving">
 				<i class="fa fa-check"></i>&nbsp; Save
-			</span>			
+			</button>			
 			<span ng-show="saving" class="saving">
 				<img src="assets/svg/spinner.svg" class="working" />
 			</span>
