@@ -195,17 +195,19 @@ angular.module('spotmop.services.player', [])
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
 			
-			/*
-			REMOVED AS WE DON'T WANT TO USE BAKED-IN IMAGES FOR NOW
 			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
-			
-				state.currentTlTrack.track.images = tlTrack.track.album.images;
+				
+				// convert our singular image into the expected mopidy image model
+				var images = [{ __model__: 'Image', uri: tlTrack.track.album.images }];
+				
+				// plug it in
+				state.currentTlTrack.track.images = $filter('sizedImages')( images );
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
-			}else{*/
+			}else{
 			
 				// if this is a Spotify track, get the track image from Spotify
 				if( tlTrack.track.uri.substring(0,8) == 'spotify:' ){
@@ -238,7 +240,7 @@ angular.module('spotmop.services.player', [])
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 								});
-				// }
+				}
 			}
 			
 			// update ui
@@ -274,6 +276,13 @@ angular.module('spotmop.services.player', [])
 	function updateTracklist(){
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$rootScope.currentTracklist = tlTracks;
+			
+			// no tracks? make sure we don't have anything 'playing'
+			// this would typically be called when we clear our tracklist, or have got to the end
+			if( !tlTracks || tlTracks.length <= 0 ){
+				state.currentTlTrack = false;
+				updateWindowTitle();
+			}
 		});
 	}
 		
@@ -312,7 +321,7 @@ angular.module('spotmop.services.player', [])
 	 **/
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
 				state.playPosition += 1000;
 			}
 		},
@@ -389,8 +398,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){		
-			MopidyService.play();
+		next: function(){
 			MopidyService.next();
 		},
 		

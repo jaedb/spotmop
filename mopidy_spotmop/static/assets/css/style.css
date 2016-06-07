@@ -1047,19 +1047,19 @@ h4.section-title {
  * Text colour variations
  **/
 
-.white-text {						color: #FFFFFF; }
-.black-text {						color: #000000; }
-.grey-text {						color: #AAAAAA; }
-.red-text {							color: rgb(214,47,47); }
-.green-text {						color: rgb(53,204,53); }
-.primary-colour-text {				color: #08d58f; }
+.white-text {						color: #FFFFFF !important; }
+.black-text {						color: #000000 !important; }
+.grey-text {						color: #AAAAAA !important; }
+.red-text {							color: rgb(214,47,47) !important; }
+.green-text {						color: rgb(53,204,53) !important; }
+.primary-colour-text {				color: #08d58f !important; }
 
-.white-background {					background-color: #FFFFFF; }
-.grey-background {					background-color: #DDDDDD; }
-.black-background {					background-color: #000000; }
-.red-background {					background-color: rgb(214,47,47); }
-.green-background {					background-color: rgb(53,204,53); }
-.primary-colour-background {		background-color: #08d58f; }
+.white-background {					background-color: #FFFFFF !important; }
+.grey-background {					background-color: #DDDDDD !important; }
+.black-background {					background-color: #000000 !important; }
+.red-background {					background-color: rgb(214,47,47) !important; }
+.green-background {					background-color: rgb(53,204,53) !important; }
+.primary-colour-background {		background-color: #08d58f !important; }
 
 
 /**
@@ -1783,8 +1783,6 @@ slider .item-container > .square-panel {
 .page-header .flag {
 	display: inline-block;
 	padding: 3px 6px;
-	background: #CCCCCC;
-	color: #666666;
 	margin-top: 4px;
 	vertical-align: top;
 }
@@ -2747,6 +2745,11 @@ slider .item-container > .square-panel {
 	font-size: 12px;
 	width: 50%;
 	background: #FFFFFF;
+}
+
+button,
+input[type="submit"]{
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif
 }
 
 .field input[readonly="true"]{

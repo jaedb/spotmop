@@ -11,7 +11,7 @@ from services.pusher import pusher
 from services.auth import auth
 from mopidy import config, ext
 
-__version__ = '2.7.0'
+__version__ = '2.7.1'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -64,8 +64,6 @@ def spotmop_client_factory(config, core):
     ])
     application.listen(pusherport)
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
-    
-    logger.info( artworklocation )
 	
     return [
 		(r'/upgrade', upgrade.UpgradeRequestHandler, {
@@ -83,7 +81,7 @@ def spotmop_client_factory(config, core):
 				'config': config,
 				'version': __version__
 			}),
-        (r"/artwork/(.*)", tornado.web.StaticFileHandler, {
+        (r"/images/(.*)", tornado.web.StaticFileHandler, {
             "path": artworklocation
         }),
         (r'/(.*)', tornado.web.StaticFileHandler, {

@@ -44,6 +44,11 @@
 	background: #FFFFFF;
 }
 
+button,
+input[type="submit"]{
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif
+}
+
 .field input[readonly="true"]{
 	border-color: #999999;
 	background: #EEEEEE;

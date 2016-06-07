@@ -175,8 +175,8 @@ angular.module('spotmop.services.settings', [])
 		runUpgrade: function(){
 			
 			// depreciated settings
-			SettingsService.setSetting('spotmop','','emulateTouchDevice');
-			SettingsService.setSetting('spotmop','default','pointerMode');
+			service.setSetting('spotmop','','emulateTouchDevice');
+			service.setSetting('spotmop','default','pointerMode');
 		},
 		
 		

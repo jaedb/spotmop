@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService ){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService, NotifyService, cfpLoadingBar ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -26,26 +26,17 @@ angular.module('spotmop.services.mopidy', [
 			var deferred = $q.defer();
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
-            
-			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
 
-			if (self.isConnected) {
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}else{
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
+				cfpLoadingBar.complete();
+				deferred.resolve(data);
+			}, function(err) {
+				NotifyService.error( err );
+				deferred.reject(err);
+			});
+			
 			return deferred.promise;
 		};
 	}
@@ -76,12 +67,6 @@ angular.module('spotmop.services.mopidy', [
 		testMethod: function( method, payload ){
 			console.info( 'Performing test method: '+method+' with payload:'+ payload);
 			return wrapMopidyFunc(method, this)( payload );
-		},
-		
-		getImages: function( uris ){
-			if( typeof(uris) !== 'array' )
-				uris = [uris];
-			return wrapMopidyFunc('mopidy.library.getImages', this)( { uris: uris } );
 		},
 		
 		/*
@@ -230,35 +215,6 @@ angular.module('spotmop.services.mopidy', [
 							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
 						}, consoleError );
 				}, consoleError);
-
-			/*
-			// stop playback
-			return self.mopidy.playback.stop()
-				.then(function() {
-
-					// clear the current tracklist
-					return self.mopidy.tracklist.clear();
-
-				}, consoleError)
-				.then(function() {
-
-					// add the surrounding tracks (ie the whole tracklist in focus)
-					return self.mopidy.tracklist.add({ uris: newTracklistUris });
-
-				}, consoleError)
-				.then(function() {
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-				}, consoleError);
-			}, consoleError);
-			*/
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
@@ -274,10 +230,10 @@ angular.module('spotmop.services.mopidy', [
 					// if we haven't got as many tracks as expected
 					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
 					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
-						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 2 seconds for server to pre-load playlist...');
+						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 1 second for server to pre-load playlist...');
 						$timeout( function(){
 							playStream();
-						}, 2000 );
+						}, 1000 );
 						
 					// we have the expected track count already (already loaded/cached), go-go-gadget!
 					}else{
@@ -342,6 +298,9 @@ angular.module('spotmop.services.mopidy', [
 		},
 		getCurrentTrackList: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+		},
+		clearCurrentTrackList: function () {
+			return wrapMopidyFunc("mopidy.tracklist.clear", this)();
 		},
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
