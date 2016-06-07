@@ -31804,7 +31804,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', ['$rootScope', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
+.directive('candrag', ['$rootScope', '$filter', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -31900,11 +31900,20 @@ angular.module('spotmop.directives', [])
 						$scope.dragobj.type == 'artist' ||
 						$scope.dragobj.type == 'localartist' ||
 						$scope.dragobj.type == 'playlist' ){
-						
-							if( $scope.dragobj.images.small ){
-								var image = $scope.dragobj.images.small;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							
+							// figure out if we need to apply the sizing filter or if it's already applied
+							var images = false;							
+							if( typeof($scope.dragobj.images.small) !== 'undefined' ){
+								var images = $scope.dragobj.images;
+							}else if( $scope.dragobj.images.length > 0 ){
+								var images = $filter('sizedImages')( $scope.dragobj.images );
 							}
+							
+							// if we got some images, plug in a purrty thumbnail
+							if( images ){
+								tracerContent = '<div class="thumbnail" style="background-image: url('+images.small+');"></div>';
+							}
+							
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
 							
 					}else if(
@@ -34925,7 +34934,7 @@ angular.module('spotmop.services.player', [])
 	 **/
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
 				state.playPosition += 1000;
 			}
 		},
@@ -35002,8 +35011,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){		
-			MopidyService.play();
+		next: function(){
 			MopidyService.next();
 		},
 		
@@ -35503,36 +35511,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SettingsService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
-            $scope.saving = false;
+		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistPublic == 'true' )
-					$scope.playlistPublic = true;
-				else
-					$scope.playlistPublic = false;
-                
-                // perform the creation
-                SpotifyService.createPlaylist(
-						$scope.$parent.spotifyUser.id,
-						{ name: $scope.playlistName, public: $scope.playlistPublic } 
-					)
-                    .then( function(response){
-                    
-                        // save new playlist to our playlist array
-                        $scope.$parent.playlists.items.push( response );
+				if( $scope.playlistName && $scope.playlistName != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistPublic == 'true' )
+						$scope.playlistPublic = true;
+					else
+						$scope.playlistPublic = false;
+					
+					// perform the creation
+					SpotifyService.createPlaylist(
+							$scope.$parent.spotifyUser.id,
+							{ name: $scope.playlistName, public: $scope.playlistPublic } 
+						)
+						.then( function(response){
 						
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+							// save new playlist to our playlist array
+							$scope.$parent.playlists.items.push( response );
+							
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}]
 	};
@@ -35552,35 +35566,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SpotifyService ){
+		
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
             $scope.saving = false;
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistNewPublic == 'true' )
-					$scope.playlistNewPublic = true;
-				else
-					$scope.playlistNewPublic = false;
+				if( $scope.playlistNewName && $scope.playlistNewName != '' ){
                 
-                // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .then( function(response){
-                    
-                        // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.playlistNewName;
-                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
-                    
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistNewPublic == 'true' )
+						$scope.playlistNewPublic = true;
+					else
+						$scope.playlistNewPublic = false;
+					
+					// actually perform the rename
+					SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
+						.then( function(response){
+						
+							// update the playlist's name
+							$scope.$parent.playlist.name = $scope.playlistNewName;
+							$scope.$parent.playlist.public = $scope.playlistNewPublic;
+						
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}]
 	};
