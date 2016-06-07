@@ -321,7 +321,7 @@ angular.module('spotmop.services.player', [])
 	 **/
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
 				state.playPosition += 1000;
 			}
 		},
@@ -398,8 +398,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){		
-			MopidyService.play();
+		next: function(){
 			MopidyService.next();
 		},
 		
