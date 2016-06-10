@@ -203,7 +203,7 @@ angular.module('spotmop', [
 	 * Lazy loading
 	 **/
 
-	$scope.checkForLazyLoading = function(){		
+	$scope.checkForLazyLoading = function(){
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -213,7 +213,13 @@ angular.module('spotmop', [
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
 	}
+	
+	// listen for completion from our loading bar (which intercepts all http requests)
+	$rootScope.$on('cfpLoadingBar:completed', function(event){
+		$scope.checkForLazyLoading();
+	});
 	 
+	// listen for scrolling to load more stuff
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
 			
