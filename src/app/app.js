@@ -299,9 +299,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
-		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){

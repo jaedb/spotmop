@@ -72,6 +72,9 @@ angular.module('spotmop.player', [
     $scope.toggleMute = function(){
 		PlayerService.toggleMute();
     };
+    $scope.toggleConsume = function(){
+		PlayerService.toggleConsume();
+    };
 	
     
 	/**

@@ -14,6 +14,7 @@ angular.module('spotmop.services.player', [])
 		isRepeat: false,
 		isRandom: false,
 		isMute: false,
+		isConsume: false,
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
@@ -57,6 +58,11 @@ angular.module('spotmop.services.player', [])
 				state.playing = true;
 			else
 				state.playing = false;
+		});
+		
+		// get consume mode
+		MopidyService.getConsume().then( function( isConsume ){
+			state.isConsume = isConsume;
 		});
 	});
 	
@@ -437,6 +443,12 @@ angular.module('spotmop.services.player', [])
 				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
 			else
 				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
+		},
+		toggleConsume: function(){
+			if( state.isConsume )
+				MopidyService.setConsume( false ).then( function(response){ state.isConsume = false; } );
+			else
+				MopidyService.setConsume( true ).then( function(response){ state.isConsume = true; } );
 		}
 		
 	};

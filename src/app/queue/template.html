@@ -39,6 +39,9 @@
 				</div>
 				
 				<div class="pull-right">
+					<span class="button consume" ng-click="toggleConsume()" ng-class="{active: state().isConsume}">
+						<i class="fa fa-fire"></i>
+					</span>
 					<span class="button random" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
 						<i class="fa fa-random"></i>
 					</span>
