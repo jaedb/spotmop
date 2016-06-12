@@ -59,11 +59,6 @@ angular.module('spotmop.services.player', [])
 			else
 				state.playing = false;
 		});
-		
-		// get consume mode
-		MopidyService.getConsume().then( function( isConsume ){
-			state.isConsume = isConsume;
-		});
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
@@ -99,6 +94,9 @@ angular.module('spotmop.services.player', [])
         MopidyService.getMute().then( function(isMute){
             state.isMute = isMute;
         });
+		MopidyService.getConsume().then( function( isConsume ){
+			state.isConsume = isConsume;
+		});
 	}
 	
 	// listen for current track changes

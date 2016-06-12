@@ -1653,6 +1653,48 @@ slider .item-container > .square-panel {
 	vertical-align: top;
 }
  
+ 
+/**
+ * Tooltips
+ * Revealed on hover of parental .has-tooltip
+ **/
+
+.tooltip {
+	position: absolute;
+	top: -25px;
+	left: 50%;
+	min-width: 66px;
+	margin-left: -37px;
+	padding: 4px;
+	background: #333333;
+	color: #FFFFFF;
+	font-size: 11px;
+	display: none;
+} 
+
+.tooltip:before {
+	content: '';
+	width: 6px;
+	height: 6px;
+	background: #333333;
+	position: absolute;
+	bottom: -3px;
+	left: 50%;
+	margin-left: -3px;
+    -webkit-transform: rotate(45deg);
+       -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+		    transform: rotate(45deg);
+}
+
+.has-tooltip {
+	position: relative;
+}
+
+#app:not(.touchDevice) .has-tooltip:hover .tooltip {
+	display: block;
+}
+ 
 
 
 /* ====================================================================== PAGE-SPECIFIC =========== */
