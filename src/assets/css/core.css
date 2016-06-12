@@ -1031,7 +1031,8 @@ h1 .flag {
 
 .body .button,
 .dialog .button.primary,
-.dialog .button.secondary {
+.dialog .button.secondary,
+.dialog .button.transparent {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -1042,9 +1043,12 @@ h1 .flag {
 }
 
 .body .button,
-.dialog .button.secondary { 						background: #9b9b9b; }
+.dialog .button.secondary { 					background: #9b9b9b; }
 .body .button:hover,
 .dialog .button.secondary:hover { 				background: #8B8B8B; }
+
+.body .button.transparent,
+.body .button.transparent:hover { 				background: transparent; color: #000000; }
 
 .body .button .fa {
 	margin-top: 2px;

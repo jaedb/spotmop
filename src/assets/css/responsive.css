@@ -279,10 +279,16 @@
 		font-size: 18px;
 	}
 	
+	.page-header .fa {
+		color: #FFFFFF;
+	}
+	
 	.page-header .button,
 	.page-header .button:hover,
 	.page-header .button.primary,
-	.page-header .button.primary:hover {
+	.page-header .button.primary:hover
+	.page-header .button.transparent,
+	.page-header .button.transparent:hover {
 		margin: 3px -10px 0 0;
 		padding: 8px 11px;
 		background: transparent;
