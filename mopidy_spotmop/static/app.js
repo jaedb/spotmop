@@ -29973,7 +29973,7 @@ angular.module('spotmop', [
 	 * Lazy loading
 	 **/
 
-	$scope.checkForLazyLoading = function(){		
+	$scope.checkForLazyLoading = function(){
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -29983,7 +29983,13 @@ angular.module('spotmop', [
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
 	}
+	
+	// listen for completion from our loading bar (which intercepts all http requests)
+	$rootScope.$on('cfpLoadingBar:completed', function(event){
+		$scope.checkForLazyLoading();
+	});
 	 
+	// listen for scrolling to load more stuff
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
 			
@@ -30063,9 +30069,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
-		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -34584,6 +34587,9 @@ angular.module('spotmop.player', [
     $scope.toggleMute = function(){
 		PlayerService.toggleMute();
     };
+    $scope.toggleConsume = function(){
+		PlayerService.toggleConsume();
+    };
 	
     
 	/**
@@ -34627,6 +34633,7 @@ angular.module('spotmop.services.player', [])
 		isRepeat: false,
 		isRandom: false,
 		isMute: false,
+		isConsume: false,
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
@@ -34706,6 +34713,9 @@ angular.module('spotmop.services.player', [])
         MopidyService.getMute().then( function(isMute){
             state.isMute = isMute;
         });
+		MopidyService.getConsume().then( function( isConsume ){
+			state.isConsume = isConsume;
+		});
 	}
 	
 	// listen for current track changes
@@ -35050,6 +35060,12 @@ angular.module('spotmop.services.player', [])
 				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
 			else
 				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
+		},
+		toggleConsume: function(){
+			if( state.isConsume )
+				MopidyService.setConsume( false ).then( function(response){ state.isConsume = false; } );
+			else
+				MopidyService.setConsume( true ).then( function(response){ state.isConsume = true; } );
 		}
 		
 	};
