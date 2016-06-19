@@ -36111,39 +36111,24 @@ angular.module('spotmop.services.mopidy', [
 		},
 		playStream: function( streamUri, expectedTrackCount ){
 			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);			
+				
 			var self = this;
 			
-			// pre-fetch our playlist tracks
-			self.mopidy.library.lookup({ uri: streamUri })
-				.then( function(tracks){
-					
-					// if we haven't got as many tracks as expected
-					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
-					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
-						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 1 second for server to pre-load playlist...');
-						$timeout( function(){
-							playStream();
-						}, 1000 );
-						
-					// we have the expected track count already (already loaded/cached), go-go-gadget!
-					}else{
-						playStream();
-					}
-				}, consoleError );
-			
-			// play the stream
-			function playStream(){
-				self.stopPlayback(true)
-					.then(function() {
-						self.mopidy.tracklist.clear();
-					}, consoleError)
-					.then(function() {
-						self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
-					}, consoleError)
-					.then(function() {
-						self.mopidy.playback.play();
-					}, consoleError);			
-			}
+			self.stopPlayback(true)
+				.then(function() {
+					self.mopidy.tracklist.clear();
+				}, consoleError)
+				.then(function() {
+					self.mopidy.tracklist.add({ at_position: 0, uri: streamUri })
+						.then( function(){
+							cfpLoadingBar.complete();
+						});
+				}, consoleError)
+				.then(function() {
+					self.mopidy.playback.play();
+				}, consoleError);
 		},
 		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
@@ -37047,6 +37032,8 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyAlbums: function( userid, limit, offset ){
 			
+            var deferred = $q.defer();
+			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
@@ -37054,8 +37041,6 @@ angular.module('spotmop.services.spotify', [])
 			
 			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
 			if( typeof( offset ) === 'undefined' ) offset = 0;
-			
-            var deferred = $q.defer();
 
             $http({
 					cache: true,
