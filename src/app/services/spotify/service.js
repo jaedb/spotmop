@@ -545,6 +545,8 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyAlbums: function( userid, limit, offset ){
 			
+            var deferred = $q.defer();
+			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
@@ -552,8 +554,6 @@ angular.module('spotmop.services.spotify', [])
 			
 			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
 			if( typeof( offset ) === 'undefined' ) offset = 0;
-			
-            var deferred = $q.defer();
 
             $http({
 					cache: true,
