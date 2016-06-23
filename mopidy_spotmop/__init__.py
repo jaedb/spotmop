@@ -30,7 +30,6 @@ class SpotmopExtension(ext.Extension):
         schema = super(SpotmopExtension, self).get_config_schema()
         schema['debug'] = config.Boolean()
         schema['pusherport'] = config.String()
-        schema['pusherclientmap'] = config.String()
         schema['artworklocation'] = config.String()
         return schema
 
@@ -63,6 +62,7 @@ def spotmop_client_factory(config, core):
             }),
     ])
     application.listen(pusherport)
+    
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
 	
     return [
