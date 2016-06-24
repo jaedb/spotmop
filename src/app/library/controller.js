@@ -318,8 +318,13 @@ angular.module('spotmop.library', [])
 					$scope.playlists = response;
 					
 					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
 						Spotify.refreshToken();
+                    }else{
+                        for( var i = 0; i < $scope.playlists.items.length; i++ ){
+                            $scope.playlists.items[i].images = $filter('sizedImages')($scope.playlists.items[i].images);
+                        };
+                    }
 				});
 	
 	// not authorized, so have to fetch via backend first
