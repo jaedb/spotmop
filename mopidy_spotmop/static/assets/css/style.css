@@ -892,6 +892,11 @@ input[type='submit'],
     top: -5px;
     right: -8px;
     padding: 5px 16px 5px 8px;
+	min-width: 0;
+}
+
+.popularity .tooltip:before {
+	display: none;
 }
 
 .popularity:hover .bar-track {

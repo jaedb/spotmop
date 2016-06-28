@@ -34000,10 +34000,10 @@ angular.module('spotmop.library', [])
 	$scope.show = function( playlist ){
         
         if(
-				typeof($scope.settings.playlists) === 'undefined' ||
-				typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
-				!$scope.settings.playlists.onlyshowowned ){
-            return true;
+			typeof($scope.settings.playlists) === 'undefined' ||
+			typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
+			!$scope.settings.playlists.onlyshowowned ){
+				return true;
         }
         
         if( playlist.owner.id == 'jaedb' ) return true;
@@ -34027,19 +34027,38 @@ angular.module('spotmop.library', [])
 				});
 	
 	// not authorized, so have to fetch via backend first
-	}else{	
-        
-        NotifyService.notify('Fetching from Mopidy as you haven\'t authorized Spotify. This will take a while!');
+	}else{
         
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
-				.then( function( response ){				
-					// fetch more detail from each playlist (individually, d'oh!)
-					angular.forEach( response, function(value, key){
-						SpotifyService.getPlaylist( value.uri )
-							.then( function( playlist ){
-								$scope.playlists.items.push( playlist );
-							});
+				.then( function( response ){
+					
+					// add them to our list
+					$scope.playlists.items = response;
+					
+					// now go get the extra info (and artwork) from Spotify
+					// need to do this individually as there is no bulk endpoint, curses!
+					angular.forEach( response, function(playlist, i){
+					
+						// process it and add to our $scope
+						var callback = function(i){
+							return function( response ){
+								
+								// make sure our response was not an error
+								if( typeof(response.error) === 'undefined' ){
+								
+									// construct our image-ified and updated playlist
+									var playlist = response;
+									playlist.images = $filter('sizedImages')(response.images);
+									
+									// update the existing playlist item with our updated data
+									$scope.playlists.items[i] = playlist;
+								}
+							};
+						}(i);
+						
+						// run the actual request
+						SpotifyService.getPlaylist( playlist.uri ).then( callback );
 					});
 				});
 		}
@@ -34050,6 +34069,7 @@ angular.module('spotmop.library', [])
 		else
 			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
     }
+	
 	
     /**
      * Load more of the album's tracks
