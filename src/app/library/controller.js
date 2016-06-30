@@ -315,16 +315,13 @@ angular.module('spotmop.library', [])
     
 		SpotifyService.getPlaylists( userid )
 			.then( function( response ){ // successful
-					$scope.playlists = response;
 					
 					// if it was 401, refresh token
 					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
 						Spotify.refreshToken();
                     }else{
-                        for( var i = 0; i < $scope.playlists.items.length; i++ ){
-                            $scope.playlists.items[i].images = $filter('sizedImages')($scope.playlists.items[i].images);
-                        };
-                    }
+						$scope.playlists = response;
+					}
 				});
 	
 	// not authorized, so have to fetch via backend first
@@ -347,13 +344,9 @@ angular.module('spotmop.library', [])
 								
 								// make sure our response was not an error
 								if( typeof(response.error) === 'undefined' ){
-								
-									// construct our image-ified and updated playlist
-									var playlist = response;
-									playlist.images = $filter('sizedImages')(response.images);
 									
 									// update the existing playlist item with our updated data
-									$scope.playlists.items[i] = playlist;
+									$scope.playlists.items[i] = response;
 								}
 							};
 						}(i);

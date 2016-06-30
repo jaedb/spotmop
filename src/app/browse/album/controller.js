@@ -151,7 +151,6 @@ angular.module('spotmop.browse.album', [])
                         if( response.artists ){
                             for( var i = 0; i < response.artists.length; i++ ){
                                 var artist = response.artists[i];
-                                artist.images = $filter('sizedImages')(artist.images);
                                 $scope.album.artists.push( artist );
                             };
                         }
@@ -218,7 +217,7 @@ angular.module('spotmop.browse.album', [])
                     var callback = function(n){
                         return function( response ){
                             if( typeof(response.artist) !== 'undefined'){
-                                $scope.album.artists[n].images = $filter('sizedImages')(response.artist.image);
+                                $scope.album.artists[n].images = response.artist.image;
                             }
                         };
                     }(i);
@@ -242,14 +241,14 @@ angular.module('spotmop.browse.album', [])
 						// we got images from mopidy!
 						if( albumImages.length > 0 ){
 						
-							$scope.album.images = $filter('sizedImages')( albumImages );
+							$scope.album.images = albumImages;
 				
 						// no mopidy artwork, so get album artwork from LastFM
 						}else if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
 							LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
 								.then( function( response ){
 									if( typeof(response.album) !== 'undefined' ){
-										$scope.album.images = $filter('sizedImages')(response.album.image);
+										$scope.album.images = response.album.image;
 									}
 								});
 						
@@ -259,7 +258,7 @@ angular.module('spotmop.browse.album', [])
 							LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
 								.then( function( response ){
 									if( typeof(response.album) !== 'undefined' ){
-										$scope.album.images = $filter('sizedImages')(response.album.image);
+										$scope.album.images = response.album.image;
 									}
 								});
 						}

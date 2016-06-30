@@ -476,12 +476,13 @@ angular.module('spotmop.directives', [])
  * Figure out the best image to use for this set of image sizes
  * @return image obj
  **/
-.directive('thumbnail', function( $timeout, $http ){
+.directive('thumbnail', function( $timeout, $http, $filter ){
 	return {
 		restrict: 'E',
 		scope: {
 			images: '=',
-			size: '='
+			size: '@',
+			debugging: '@'
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
@@ -490,7 +491,7 @@ angular.module('spotmop.directives', [])
 			// load thumbnail on init
 			loadThumbnail();
 			
-			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			// listen for changes to our image array and update when necessary
 			$scope.$watch('images', function(oldValue,newValue){
 				loadThumbnail();
 			});
@@ -498,74 +499,34 @@ angular.module('spotmop.directives', [])
 			// perform core functionality
 			function loadThumbnail(){
 			
-				// fetch this instance's best thumbnail
-				$scope.image = getThumbnailImage( $scope.images );
+				if( !$scope.images ){
+					return false;
+				}
 				
-				// now actually go get the image
-				if( $scope.image ){
+				// fetch this instance's best thumbnail
+				var image = $filter('sizedImages')($scope.images);
+				
+				// if we've been told a specific size (small|medium|large), get it
+				if( $scope.size ){
+					image = image[$scope.size];
+				
+				// otherwise just default to the smallest
+				}else{
+					image = image.small;
+				}
+				
+				// if we have an image
+				if( image && image != '' ){
 					$http({
 						method: 'GET',
-						url: $scope.image.url,
+						url: image,
 						cache: true
 						}).success( function(){
 						
 							// inject to DOM once loaded
-							$element.css('background-image', 'url('+$scope.image.url+')' );
+							$element.css('background-image', 'url('+image+')' );
 						});
 				}
-			}
-			
-			/**
-			 * Get the most appropriate thumbnail image
-			 * @param images = array of image urls
-			 * @return string (image url)
-			 **/
-			function getThumbnailImage( images ){
-				
-				// what if there are no images? then nada
-				if( images.length <= 0 )
-					return false;
-
-				// loop all the images
-				for( var i = 0; i < images.length; i++){
-					var image = images[i];
-					
-					// small thumbnails (ie search results)
-					if( $scope.size == 'small' ){
-						
-						// this is our preferred size
-						if( image.height >= 100 && image.height <= 200 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 200 && image.height <= 300 ){
-							return image;
-
-						// nope? let's take it the next notch up
-						}else if( image.height > 300 && image.height < 400 ){
-							return image;
-						}
-					
-					// standard thumbnails (ie playlists, full related artists, etc)
-					}else{
-						
-						// this is our preferred size
-						if( image.height >= 200 && image.height <= 300 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 300 && image.height <= 500 ){
-							return image;
-
-						// nope? let's take it a notch down then
-						}else if( image.height >= 150 && image.height < 200 ){
-							return image;
-						}						
-					}
-				};
-
-				// no thumbnail that suits? just get the first (and highest res) one then        
-				return images[0];
 			}
 			
 		},
@@ -768,14 +729,13 @@ angular.module('spotmop.directives', [])
 
 /**
  **/
-.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http ){
+.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http, $filter ){
     return {
 		restrict: 'E',
         terminal: true,
 		scope: {
-			image: '@',				// object
-			useproxy: '@',
-			detectbackground: '@',
+			images: '=',
+			image: '@',
 			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
@@ -793,17 +753,22 @@ angular.module('spotmop.directives', [])
 			var	scrollTop = 0;
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
+			var url = '';
+			
+			// if we're using an explicit url, just use that
+			if( $scope.image ){
+				url = $scope.image;
+				
+			// we're getting an array of images, so size 'em and get the largest
+			}else if( $scope.images ){
+				var images = $filter('sizedImages')($scope.images);
+				url = images.large;
+			}
 			var image = {
 					width: 0,
 					height: 0,
-					url: $scope.image
+					url: url
 				}
-		
-			/*
-			REBUILD THIS TO USE TORNADO
-			if( $scope.useproxy )
-				image.url = '/vendor/resource-proxy.php?url='+image.url;
-			*/
 			
 			// create our new image object (to be plugged into canvas)
 			var imageObject = new Image();
@@ -995,7 +960,7 @@ angular.module('spotmop.directives', [])
 	return function( images ){
         
         // what if there are no images? then nada
-        if( images.length <= 0 )
+        if( typeof(images) === 'undefined' || images.length <= 0 )
             return false;
 			
 		var standardised = {};
@@ -1011,38 +976,36 @@ angular.module('spotmop.directives', [])
 				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
 				image.url = baseUrl +'/spotmop'+ image.uri;
 				
-				if( image.height >= 650 ){
-				
-					standardised.large = image.url;
-					
-				}else if( image.height <= 650 && image.height >= 250 ){
-				
-					standardised.medium = image.url;					
-					if( !standardised.large ) standardised.large = image.url;
-					
-				}else{					
-					if( !standardised.small ) standardised.small = image.url;
-					if( !standardised.medium ) standardised.medium = image.url;
-					if( !standardised.large ) standardised.large = image.url;
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;
+					}else if( image.height >= 250 ){
+						standardised.medium = image.url;
+					}else{		
+						standardised.small = image.url;			
+					}
 				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
 		
 			// spotify-styled images
 			}else if( typeof(image.height) !== 'undefined' ){
-				
-				if( image.height >= 650 ){
-				
-					standardised.large = image.url;
-					
-				}else if( image.height <= 650 && image.height >= 250 ){
-				
-					standardised.medium = image.url;					
-					if( !standardised.large ) standardised.large = image.url;
-					
-				}else{					
-					if( !standardised.small ) standardised.small = image.url;
-					if( !standardised.medium ) standardised.medium = image.url;
-					if( !standardised.large ) standardised.large = image.url;
+			
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;		
+					}else if( image.height >= 300 ){				
+						standardised.medium = image.url;		
+					}else{
+						standardised.small = image.url;
+					}
 				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
 			
 			// lastFM styled images
 			}else if( typeof(image['#text']) !== 'undefined' ){

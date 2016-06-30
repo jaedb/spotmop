@@ -1143,7 +1143,7 @@ h1 .flag {
 	border: 0 !important;
 }
 
-.artist-list .artist .thumbnail {
+.artist-list .artist .image {
 	display: block;
 	width: 50px;
 	height: 50px;
@@ -1158,7 +1158,7 @@ h1 .flag {
 	border: 2px solid #f5f5f5;
 }
 
-.artist-list .artist:hover .thumbnail {
+.artist-list .artist:hover .image {
 	opacity: 0.75;
 	border-color: #08d58f;
 }
@@ -1935,7 +1935,7 @@ slider .item-container > .square-panel {
 	position: relative;
 }
 
-.artist-page .info-panel .thumbnail {
+.artist-page .info-panel .thumbnail-wrapper .image {
 	width: 250px;
 	height: 250px;
 	background-image: url('../svg/no-image.svg');

@@ -6,7 +6,7 @@
 		<div class="intro artist-intro">
 		
 			<div class="image-container">
-				<backgroundparallax ng-if="artist.images.large" class="image" image="{{ artist.images.large }}" useproxy="true" detectbackground="true" opacity="0.5"></backgroundparallax>
+				<backgroundparallax ng-if="artist.images" class="image" images="artist.images" detectbackground="true" opacity="0.5"></backgroundparallax>
 			</div>
 			
 			<div class="inner" text-over-image>
@@ -31,13 +31,11 @@
 		</div>
 				
 		<div class="info-panel">
-        
             <div class="thumbnail-wrapper"
                 candrag
                 dragobj="artist"
                 draggable="false">
-                    <preloadedimage ng-if="artist.images.medium" class="thumbnail artist" url="{{ artist.images.medium }}" useproxy="true"></preloadedimage>
-                    <div class="thumbnail artist placeholder" ng-if="!artist.images || artist.images.length <= 0"></div>
+                    <thumbnail size="medium" debugging="artist thumbnail" images="artist.images"></thumbnail>
             </div>
 			
 			<span class="buttons">

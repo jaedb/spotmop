@@ -45,7 +45,7 @@
                     <div class="album-header">
                         <a class="library-album album square-panel" ui-sref="browse.album({ uri: album.uri })">
                             <div class="image-container">
-                                <thumbnail images="album.images"></thumbnail>
+                                <thumbnail size="medium" images="album.images"></thumbnail>
                             </div>
                         </a>
                         <div class="album-title mobile-show">
@@ -92,7 +92,7 @@
 			<div class="item-container" ng-repeat="album in albums.items track by $index">
 				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
 					<div class="image-container">
-						<thumbnail images="album.images"></thumbnail>
+                        <thumbnail size="medium" images="album.images"></thumbnail>
 					</div>
 					<div class="info smaller animate">
 						<div class="name" ng-bind="album.name"></div>
