@@ -39,26 +39,26 @@
         
 		<div class="album-items" ng-if="!settings.spotmop.albumlayout || settings.spotmop.albumlayout == 'default'">
 			
-			<div class="item-container full-album" ng-repeat="album in albums.items track by album.uri" ng-class="{ transitioning: album.transitioning }">
+			<div class="item-container full-album" ng-repeat="album in albums.items track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
             
                 <div class="col w20 info">
                     <div class="album-header">
-                        <a class="library-album album square-panel" ui-sref="browse.album({ uri: album.uri })">
+                        <a class="library-album album square-panel" ui-sref="browse.album({ uri: album.album.uri })">
                             <div class="image-container">
-                                <thumbnail size="medium" images="album.images"></thumbnail>
+                                <thumbnail size="medium" images="album.album.images"></thumbnail>
                             </div>
                         </a>
                         <div class="album-title mobile-show">
-                            <h3 class="name" ng-bind="album.name"></h3>
+                            <h3 class="name" ng-bind="album.album.name"></h3>
                             <p class="grey-text">
-                                <span ng-repeat="artist in album.artists">
+                                <span ng-repeat="artist in album.album.artists">
                                     <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
                                 </span>
                             </p>
                         </div>
                         <div class="buttons">
-                            <a class="button primary" ng-click="playAlbum( album )"><i class="fa fa-play"></i>&nbsp; Play</a>
-                            <a class="button" ng-click="removeFromLibrary( album )" ng-if="spotifyAuthorized">Remove</a>
+                            <a class="button primary" ng-click="playAlbum( album.album )"><i class="fa fa-play"></i>&nbsp; Play</a>
+                            <a class="button" ng-click="removeFromLibrary( album.album )" ng-if="spotifyAuthorized">Remove</a>
                         </div>
                     </div>
                 </div>
@@ -66,15 +66,13 @@
                 <div class="col w80 main">
                 
                     <div class="album-title mobile-hide">
-                        <h3 class="name"><a ui-sref="browse.album({ uri: album.uri })" ng-bind="album.name"></a></h3>
+                        <h3 class="name"><a ui-sref="browse.album({ uri: album.album.uri })" ng-bind="album.album.name"></a></h3>
                         <p class="grey-text">
-                            <span ng-repeat="artist in album.artists">
-                                <a ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a><span ng-if="!$last">, </span>
-                            </span>
+                            <artistlist artists="album.album.artists"></artistlist>
                         </p>
                     </div>
                     
-                    <tracklist tracks="album.tracks.items" type="track" class="tracklist album-tracks"></tracklist>
+                    <tracklist tracks="album.album.tracks.items" type="track" class="tracklist album-tracks"></tracklist>
                     
                 </div>
                 
@@ -89,15 +87,15 @@
         <!-- GRID VIEW -->
 		
 		<div class="album-items square-panels" ng-if="settings.spotmop.albumlayout == 'grid'">
-			<div class="item-container" ng-repeat="album in albums.items track by $index">
-				<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album">
+			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
+				<a ui-sref="browse.album({ uri: album.album.uri })" class="square-panel album">
 					<div class="image-container">
-                        <thumbnail size="medium" images="album.images"></thumbnail>
+                        <thumbnail size="medium" images="album.album.images"></thumbnail>
 					</div>
 					<div class="info smaller animate">
-						<div class="name" ng-bind="album.name"></div>
+						<div class="name" ng-bind="album.album.name"></div>
                         <div class="secondary">
-                            <artistlist artists="album.artists"></artistlist>
+                            <artistlist artists="album.album.artists"></artistlist>
                         </div>
 					</div>
 				</a>
@@ -110,30 +108,32 @@
 		<div class="album-items list" ng-if="settings.spotmop.albumlayout == 'list'">
             <div class="list-item header">
                 <div class="col w35 name">Name</div>
-                <div class="col w35 artists">Artists</div>
-                <div class="col w15 release-date">Released</div>
+                <div class="col w30 artists">Artists</div>
+                <div class="col w10 release-date">Released</div>
                 <div class="col w10 track-count">Tracks</div>
+                <div class="col w10 added-date">Added</div>
                 <div class="info">Rating</div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="album in albums.items track by $index">
-				<a ui-sref="browse.album({ uri: album.uri })" class="list-item">
+			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
+				<a ui-sref="browse.album({ uri: album.album.uri })" class="list-item">
                     <div class="col w35 name"> 
                         <span class="si cd"></span>
-                        <span ng-bind="album.name"></span>
+                        <span ng-bind="album.album.name"></span>
                     </div>
-                    <div class="col w35 artists">
-                        <artistlist artists="album.artists"></artistlist>
+                    <div class="col w30 artists">
+                        <artistlist artists="album.album.artists"></artistlist>
                     </div>
-                    <div class="col w15 release-date" ng-bind="album.release_date | date:'yyyy'"></div>
-                    <div class="col w10 track-count" ng-bind="album.tracks.total"></div>
+                    <div class="col w10 release-date" ng-bind="album.album.release_date | date:'yyyy'"></div>
+                    <div class="col w10 track-count" ng-bind="album.album.tracks.total"></div>
+                    <div class="col w10 added-date" ng-bind="album.added_at | date:'MMM d, y'"></div>
 
                     <div class="info">                        
-                        <div class="popularity tooltip-wrapper" ng-if="album.popularity >= 0">
+                        <div class="popularity tooltip-wrapper" ng-if="album.album.popularity >= 0">
                             <span class="bar-track">
-                                <span class="bar" style="height: {{ album.popularity }}%;"></span>
+                                <span class="bar" style="height: {{ album.album.popularity }}%;"></span>
                             </span>
-                            <span class="tooltip"><span ng-bind="album.popularity"></span>%</span>
+                            <span class="tooltip"><span ng-bind="album.album.popularity"></span>%</span>
                         </div>                        
                     </div>
                     
