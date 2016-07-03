@@ -37,9 +37,7 @@
                     dragobj="artist"
                     draggable="false">
                         <div class="image-container">
-                            <div class="image animate" ng-if="artist.images.medium" style="background-image: url({{ artist.images.medium }});"></div>
-                            <div ng-if="!artist.images.medium" class="image placeholder"></div>
-                            <!-- TODO: Use built-in image library to get these images -->
+                            <thumbnail size="medium" images="artist.images"></thumbnail>
                         </div>
                         <div class="info smaller animate">
                             <div class="name" ng-bind="artist.name"></div>
