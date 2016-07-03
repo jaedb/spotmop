@@ -750,7 +750,11 @@ angular.module('spotmop.directives', [])
 			);
 				
 			// setup initial variables
-			var	scrollTop = 0;
+			var	state = {
+				scrollTop: 0,
+				windowWidth: $(window).width(),
+				windowHeight: $(window).height()
+			};
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
 			var url = '';
@@ -768,7 +772,7 @@ angular.module('spotmop.directives', [])
 					width: 0,
 					height: 0,
 					url: url
-				}
+				};
 			
 			// create our new image object (to be plugged into canvas)
 			var imageObject = new Image();
@@ -821,7 +825,7 @@ angular.module('spotmop.directives', [])
 				}
 				
 				// figure out where we want the image to be, based on scroll position
-				var percent = Math.round( scrollTop / canvasHeight * 100 );
+				var percent = Math.round( state.scrollTop / canvasHeight * 100 );
 				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
 				
 				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
@@ -838,18 +842,25 @@ angular.module('spotmop.directives', [])
 						
 						var bannerPanel = $(document).find('.intro');
 						
-						// if we've scrolled
-						if( scrollTop != $(document).scrollTop() ){
-							scrollTop = $(document).scrollTop();
-							
-							var bannerHeight = bannerPanel.outerHeight();
+						// if we've scrolled or resized
+						if(
+							state.scrollTop != $(document).scrollTop() ||
+							state.windowWidth != $(window).width() || 
+							state.windowHeight != $(window).height() ){
+								
+								// update our state
+								state.scrollTop = $(document).scrollTop();
+								state.windowWidth = $(window).width();
+								state.windowHeight = $(window).height();
+								
+								var bannerHeight = bannerPanel.outerHeight();
 
-							// and if we're within the bounds of our document
-							// this helps prevent us animating when the objects in question are off-screen
-							if( scrollTop < bannerHeight ){								
-								positionArtistBackground( image );
+								// and if we're within the bounds of our document
+								// this helps prevent us animating when the objects in question are off-screen
+								if( state.scrollTop < bannerHeight ){								
+									positionArtistBackground( image );
+								}
 							}
-						}
 					});
 				},
 				10
