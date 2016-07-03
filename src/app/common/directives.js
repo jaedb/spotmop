@@ -530,7 +530,7 @@ angular.module('spotmop.directives', [])
 			}
 			
 		},
-		template: '<div class="image animate"></div>'
+		template: '<div class="thumbnail-image image animate"></div>'
 	};
 })
 

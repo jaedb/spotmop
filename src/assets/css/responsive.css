@@ -454,7 +454,7 @@
 		position: relative;
 	}
 	
-	.thumbnail-wrapper.slim-intro-wrapper > .thumbnail {
+	.thumbnail-wrapper.slim-intro-wrapper .primary-thumbnail > .image {
 		opacity: 0.25;
 		padding-bottom: 0;
 		width: auto;
@@ -476,7 +476,7 @@
 		padding: 60px 20px 40px;
 	}
 	
-	.thumbnail-wrapper.slim-intro-wrapper .slim-intro .thumbnail {
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro .image {
 		display: block;
 		width: 180px;
 		height: 180px;
@@ -506,7 +506,7 @@
         margin-top: -20px;
 	}
 	 
-	.artist-page .info-panel .thumbnail {
+	.artist-page .info-panel .image {
 		display: none;
 	}
 	
