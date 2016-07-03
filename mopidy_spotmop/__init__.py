@@ -11,7 +11,7 @@ from services.pusher import pusher
 from services.auth import auth
 from mopidy import config, ext
 
-__version__ = '2.7.2'
+__version__ = '2.7.3'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 

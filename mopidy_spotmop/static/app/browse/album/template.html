@@ -3,24 +3,21 @@
 	<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 	
 	<div class="asset-sidebar">
-        
-        <div
-            class="thumbnail-wrapper album slim-intro-wrapper" 
-            draggable="false"
-            candrag
-            dragobj="album">
+		
+		<div class="thumbnail-wrapper slim-intro-wrapper">
             
-                <div class="thumbnail album" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
-                
-                <div class="thumbnail album placeholder" ng-if="!album.images || !album.images.medium "></div>
+            <div class="drag-wrapper primary-thumbnail" draggable="false" candrag dragobj="album">
+                <thumbnail size="medium" images="album.images"></thumbnail>
+            </div>
 				
-				<div class="slim-intro mobile-show" ng-if="mediumScreen()">
-                    <thumbnail size="medium" images="album.images"></thumbnail>				
-					<h1 ng-bind="album.name"></h1>
+			<div class="slim-intro mobile-show" ng-if="mediumScreen()">
+                <thumbnail size="medium" images="album.images"></thumbnail>			
+				<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
 						<artistlist artists="album.artists" sentence></artistlist>
 					</h2>	
-				</div>
+			</div>
+		
 		</div>
         
         <div class="clear-left"><!-- clear --></div>

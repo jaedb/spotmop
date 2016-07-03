@@ -5,19 +5,13 @@
 	<div class="asset-sidebar">
 		
 		<div class="thumbnail-wrapper slim-intro-wrapper">
-		
-			<div class="thumbnail playlist"
-				ng-if="playlist.images.length > 0"
-				ng-repeat="image in playlist.images | limitTo:1"
-				style="background-image: url({{ image.url }});"
-				draggable="false"
-				candrag
-				dragobj="playlist"
-				></div>
-			<div class="thumbnail playlist placeholder" ng-if=" !playlist.images || playlist.images.length <= 0"></div>
+            
+            <div class="drag-wrapper primary-thumbnail" draggable="false" candrag dragobj="playlist">
+                <thumbnail size="medium" images="playlist.images"></thumbnail>
+            </div>
 				
 			<div class="slim-intro mobile-show" ng-if="mediumScreen()">
-                <thumbnail ng-if="playlist.images" size="medium" images="playlist.images"></thumbnail>			
+                <thumbnail size="medium" images="playlist.images"></thumbnail>			
 				<h1 ng-bind="playlist.name"></h1>
 				<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
 			</div>
@@ -82,7 +76,7 @@
 			</div>
 			<div class="info-item">
 				<a class="playlist-owner" ui-sref="browse.user({ uri: playlist.owner.uri })">
-                    <span class="thumbnail animate" ng-repeat="image in playlist.owner.images | limitTo: 1 : playlist.owner.images.length-1" style="background-image: url('{{ image.url }}');"><span class="border animate"></span></span>
+                    <thumbnail size="small" images="playlist.owner.images"></thumbnail>	
                     <span class="name" ng-bind="playlist.owner.display_name"></span>
                 </a>
 			</div>

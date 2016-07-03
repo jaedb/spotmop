@@ -130,7 +130,7 @@ angular.module('spotmop.browse.album', [])
 				
 				$scope.album = response;
 				$scope.album.totalTracks = response.tracks.total;
-                $scope.album.images = $filter('sizedImages')(response.images);
+                $scope.album.images = response.images;
 				$scope.tracklist = response.tracks;
 				$scope.tracklist.type = 'track';
 				$scope.tracklist.tracks = response.tracks.items;
