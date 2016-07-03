@@ -29,7 +29,7 @@
 			<div class="item-container" ng-repeat="playlist in playlists track by $index">
 				<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist">
 					<div class="image-container">
-						<thumbnail images="playlist.images"></thumbnail>
+                        <thumbnail ng-if="playlist.images" size="medium" images="playlist.images"></thumbnail>
 					</div>
 					<div class="info animate">
 						<div class="name" ng-bind="playlist.name"></div>

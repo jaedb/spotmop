@@ -9,7 +9,7 @@
 			</div>
 		
 			<div class="image-container">
-				<backgroundparallax class="image" image='assets/backgrounds/{{ partofday() }}.jpg' useproxy="true" detectbackground="false" opacity="0.5"></backgroundparallax>
+				<backgroundparallax class="image" image='assets/backgrounds/{{ partofday() }}.jpg'  opacity="0.5"></backgroundparallax>
 			</div>
             
 		</div>
@@ -22,7 +22,7 @@
                     dragobj="playlist"
                     draggable="false">
                         <div class="image-container">
-                            <thumbnail images="playlist.images"></thumbnail>
+                            <thumbnail ng-if="playlist.images" size="medium" images="playlist.images"></thumbnail>
                         </div>
                         <div class="info animate">
                             <div class="name" ng-bind="playlist.name"></div>

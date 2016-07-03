@@ -18,8 +18,7 @@
             candrag
             dragobj="artist"
             draggable="false">
-                <span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});" ng-if="artist.images.length > 0"></span>
-                <span class="thumbnail animate" ng-if="artist.images.length <= 0"></span>
+                <thumbnail size="small" images="artist.images"></thumbnail>
                 <span class="name" ng-bind="artist.name"></span>
 		</a>
 
@@ -42,7 +41,7 @@
             dragobj="album"
             draggable="false">
                 <div class="image-container">
-                    <div class="image animate" style="background-image: url({{ (album.images | sizedImages).medium }});"></div>
+                    <thumbnail size="medium" images="album.images"></thumbnail>
                 </div>
                 <div class="info smaller animate">
                     <div class="name" ng-bind="album.name"></div>
@@ -54,8 +53,7 @@
             dragobj="album"
             draggable="false">
                 <div class="image-container">
-                    <div class="image animate" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
-                    <div ng-if="!album.images.medium" class="image placeholder"></div>
+                    <thumbnail size="medium" images="album.images"></thumbnail>
                 </div>
                 <div class="info smaller animate">
                     <div class="name" ng-bind="album.name"></div>

@@ -15,7 +15,7 @@
                 <div class="thumbnail album placeholder" ng-if="!album.images || !album.images.medium "></div>
 				
 				<div class="slim-intro mobile-show" ng-if="mediumScreen()">
-					<preloadedimage ng-if="album.images.medium" class="thumbnail album" url="{{ album.images.medium }}" useproxy="true"></preloadedimage>					
+                    <thumbnail size="medium" images="album.images"></thumbnail>				
 					<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
 						<artistlist artists="album.artists" sentence></artistlist>
@@ -33,8 +33,7 @@
                 draggable="false"
                 candrag
                 dragobj="artist">
-                    <div class="image animate" ng-if="artist.images.small" style="background-image: url({{ artist.images.small }});"></div>
-                    <div class="image" ng-if="!artist.images.small"></div>
+                    <thumbnail size="medium" images="artist.images"></thumbnail>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
 		</div>

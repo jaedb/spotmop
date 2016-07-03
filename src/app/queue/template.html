@@ -39,11 +39,17 @@
 				</div>
 				
 				<div class="pull-right">
-					<span class="button random" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
-						<i class="fa fa-random"></i>
+					<span class="button consume has-tooltip" ng-click="toggleConsume()" ng-class="{active: state().isConsume}">
+						<i class="fa fa-fire"></i>
+                        <span class="tooltip">Consume mode</span>
 					</span>
-					<span class="button repeat" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
+					<span class="button random has-tooltip" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
+						<i class="fa fa-random"></i>
+                        <span class="tooltip">Randomise</span>
+					</span>
+					<span class="button repeat has-tooltip" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
 						<i class="fa fa-repeat"></i>
+                        <span class="tooltip">Repeat all</span>
 					</span>
 				</div>
 				

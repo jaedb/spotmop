@@ -37,9 +37,7 @@
                     dragobj="album"
                     draggable="false">
                         <div class="image-container">
-                            <div class="image animate" ng-if="album.images.medium" style="background-image: url({{ album.images.medium }});"></div>
-                            <div ng-if="!album.images.medium" class="image placeholder"></div>
-                            <!-- TODO: Use built-in image library to get these images -->
+                            <thumbnail size="medium" images="album.images"></thumbnail>
                         </div>
                         <div class="info smaller animate">
                             <div class="name" ng-bind="album.name"></div>

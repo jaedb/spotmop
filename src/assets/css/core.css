@@ -758,6 +758,11 @@ input[type='submit'],
     top: -5px;
     right: -8px;
     padding: 5px 16px 5px 8px;
+	min-width: 0;
+}
+
+.popularity .tooltip:before {
+	display: none;
 }
 
 .popularity:hover .bar-track {
@@ -1031,7 +1036,8 @@ h1 .flag {
 
 .body .button,
 .dialog .button.primary,
-.dialog .button.secondary {
+.dialog .button.secondary,
+.dialog .button.transparent {
     display: inline-block;
     padding: 12px 22px;
 	margin-right: -3px;
@@ -1042,9 +1048,12 @@ h1 .flag {
 }
 
 .body .button,
-.dialog .button.secondary { 						background: #9b9b9b; }
+.dialog .button.secondary { 					background: #9b9b9b; }
 .body .button:hover,
 .dialog .button.secondary:hover { 				background: #8B8B8B; }
+
+.body .button.transparent,
+.body .button.transparent:hover { 				background: transparent; color: #000000; }
 
 .body .button .fa {
 	margin-top: 2px;
@@ -1134,7 +1143,7 @@ h1 .flag {
 	border: 0 !important;
 }
 
-.artist-list .artist .thumbnail {
+.artist-list .artist .image {
 	display: block;
 	width: 50px;
 	height: 50px;
@@ -1149,7 +1158,7 @@ h1 .flag {
 	border: 2px solid #f5f5f5;
 }
 
-.artist-list .artist:hover .thumbnail {
+.artist-list .artist:hover .image {
 	opacity: 0.75;
 	border-color: #08d58f;
 }
@@ -1653,6 +1662,48 @@ slider .item-container > .square-panel {
 	vertical-align: top;
 }
  
+ 
+/**
+ * Tooltips
+ * Revealed on hover of parental .has-tooltip
+ **/
+
+.tooltip {
+	position: absolute;
+	top: -25px;
+	left: 50%;
+	min-width: 66px;
+	margin-left: -37px;
+	padding: 4px;
+	background: #333333;
+	color: #FFFFFF;
+	font-size: 11px;
+	display: none;
+} 
+
+.tooltip:before {
+	content: '';
+	width: 6px;
+	height: 6px;
+	background: #333333;
+	position: absolute;
+	bottom: -3px;
+	left: 50%;
+	margin-left: -3px;
+    -webkit-transform: rotate(45deg);
+       -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+		    transform: rotate(45deg);
+}
+
+.has-tooltip {
+	position: relative;
+}
+
+#app:not(.touchDevice) .has-tooltip:hover .tooltip {
+	display: block;
+}
+ 
 
 
 /* ====================================================================== PAGE-SPECIFIC =========== */
@@ -1884,7 +1935,7 @@ slider .item-container > .square-panel {
 	position: relative;
 }
 
-.artist-page .info-panel .thumbnail {
+.artist-page .info-panel .thumbnail-wrapper .image {
 	width: 250px;
 	height: 250px;
 	background-image: url('../svg/no-image.svg');

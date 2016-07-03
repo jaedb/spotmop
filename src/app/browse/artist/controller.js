@@ -93,7 +93,7 @@ angular.module('spotmop.browse.artist', [])
 		SpotifyService.getArtist( $stateParams.uri )
 			.then( function( response ){
 				$scope.artist = response;
-				$scope.artist.images = $filter('sizedImages')(response.images)
+				$scope.artist.images = response.images;
 			});
 
 		// figure out if we're following this playlist
@@ -148,13 +148,13 @@ angular.module('spotmop.browse.artist', [])
 				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
 					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
 						.then( function( response ){
-							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+							$scope.artist.images = response.artist.image;
 							$scope.artist.stats = response.artist.stats;
 						});
 				}else{
 					LastfmService.artistInfo( $scope.artist.name )
 						.then( function( response ){
-							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+							$scope.artist.images = response.artist.image;
 							$scope.artist.stats = response.artist.stats;
 						});
                 }
@@ -204,7 +204,7 @@ angular.module('spotmop.browse.artist', [])
 					var callback = function(n){
 						return function( response ){
                             if( typeof(response.album) !== 'undefined' ){
-                                $scope.albums.items[n].images = $filter('sizedImages')(response.album.image);
+                                $scope.albums.items[n].images = response.album.image;
                             }
 						};
 					}(i);
