@@ -254,7 +254,7 @@ angular.module('spotmop.common.tracklist', [])
 				
 					// build an array of track uris (and subtract the first one, as we play him immediately)
 					var selectedTracksUris = [];
-					for( var i = 1; i < selectedTracks.length; i++ ){
+					for( var i = 0; i < selectedTracks.length; i++ ){
 						selectedTracksUris.push( selectedTracks[i].uri );
 					};
 					
@@ -264,15 +264,7 @@ angular.module('spotmop.common.tracklist', [])
 						
 					NotifyService.notify( message );
 					
-					// play the first track immediately
-					MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
-						
-						// more tracks to add
-						if( selectedTracksUris.length > 0 ){
-							// add the following tracks to the tracklist
-							MopidyService.addToTrackList( selectedTracksUris, 1 );
-						}
-					});
+					MopidyService.playTrack( selectedTracksUris, 0 );
 				}
 			}
 			

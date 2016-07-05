@@ -27,10 +27,7 @@ angular.module('spotmop.services.mopidy', [
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
 
-			cfpLoadingBar.start();
-			cfpLoadingBar.set(0.25);
-			executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-				cfpLoadingBar.complete();
+			executeFunctionByName(functionNameToWrap, self, args).then(function(data){
 				deferred.resolve(data);
 			}, function(err) {
 				NotifyService.error( err );
@@ -197,23 +194,33 @@ angular.module('spotmop.services.mopidy', [
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
-		playTrack: function(newTracklistUris, trackToPlayIndex) {
+		playTrack: function(trackUris, trackToPlayIndex) {
 			var self = this;
-
-			// add the surrounding tracks (ie the whole tracklist in focus)
-			// we add this right to the top of the existing tracklist
-			return self.mopidy.tracklist.add({ uris: newTracklistUris, at_position: 0 })
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			// add the first track immediately
+			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+			
+				// then play it
+				.then( function( response ){					
+					// make sure we added the track successfully
+					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+					if( response.length > 0 ){
+						return self.mopidy.playback.play({ tlid: response[0].tlid });
+					}else{
+						return self.mopidy.playback.play();
+					}
+				}, consoleError)
+				
+				// now add all the remaining tracks
+				// note the use of .shift() previously altered the array				
 				.then( function(){
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-						}, consoleError );
+					return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+						.then( function(){
+							cfpLoadingBar.complete();
+						});
 				}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){

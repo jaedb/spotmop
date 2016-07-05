@@ -79,30 +79,18 @@ angular.module('spotmop.browse.artist', [])
 			NotifyService.notify('Starting artist radio');
 			
 			// get the artist's top tracks
-			SpotifyService.getRecommendations( 20, 0, $scope.artist.id )
+			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
 				.then( function( response ){
 				
 					var uris = [];
 					for( var i = 0; i < response.tracks.length; i++ ){
 						uris.push( response.tracks[i].uri );
 					}
-					MopidyService.playTrack( uris, 0 );
-					
+					MopidyService.clearCurrentTrackList()
+						.then( function(){
+							MopidyService.playTrack( uris, 0 );
+						});
 				});
-			
-			/*
-			NotifyService.notify('Playing all top tracks');
-			
-			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
-				.then( function( response ){
-					var uris = [];
-					for( var i = 0; i < response.tracks.length; i++ ){
-						uris.push( response.tracks[i].uri );
-					}
-					MopidyService.playTrack( uris, 0 );
-				});
-			*/
 		}
 		
 		// get the artist from Spotify
