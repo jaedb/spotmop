@@ -238,7 +238,7 @@ angular.module('spotmop.local', [])
 		// chat with Mopidy and get the images for all these URIs
 		MopidyService.getImages( uris )
 			.then( function(response){
-				
+			
 				// loop all the response uris
 				for( var key in response ){
 				
@@ -250,7 +250,7 @@ angular.module('spotmop.local', [])
 						var index = $scope.allAlbums.indexOf( albumByUri[0] );
 						
 						// update the album's images
-						$scope.allAlbums[index].images = $filter('sizedImages')( response[key] );
+						$scope.allAlbums[index].images = response[key];
 					}
 				}
 			});
