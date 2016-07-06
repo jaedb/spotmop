@@ -204,23 +204,25 @@ angular.module('spotmop.services.mopidy', [
 			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
 			
 				// then play it
-				.then( function( response ){					
+				.then( function( response ){	
+					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+					var playTrack = null;					
 					if( response.length > 0 ){
-						return self.mopidy.playback.play({ tlid: response[0].tlid });
-					}else{
-						return self.mopidy.playback.play();
+						playTrack = { tlid: response[0].tlid };
 					}
-				}, consoleError)
+					
+					return self.mopidy.playback.play()
 				
-				// now add all the remaining tracks
-				// note the use of .shift() previously altered the array				
-				.then( function(){
-					return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+						// now add all the remaining tracks
+						// note the use of .shift() previously altered the array				
 						.then( function(){
-							cfpLoadingBar.complete();
-						});
+							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+								.then( function(){
+									cfpLoadingBar.complete();
+								});
+						}, consoleError);
 				}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){
