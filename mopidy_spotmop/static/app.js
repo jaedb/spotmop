@@ -30437,7 +30437,9 @@ angular.module('spotmop.browse.album', [])
 				}
 				
 				// this is not strictly accurate, but the only way to get the actual album data is from the track object
-				$scope.album = response[0].album;
+				var sourceAlbum = response[0].album;
+				delete sourceAlbum.images;
+				$scope.album = sourceAlbum;
 				$scope.album.artists = [];
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
@@ -30488,7 +30490,7 @@ angular.module('spotmop.browse.album', [])
 						
 						// we got images from mopidy!
 						if( albumImages.length > 0 ){
-						
+							
 							$scope.album.images = albumImages;
 				
 						// no mopidy artwork, so get album artwork from LastFM
@@ -30622,17 +30624,21 @@ angular.module('spotmop.browse.artist', [])
 				});
 		}
 		$scope.playArtistRadio = function(){
-			
-			NotifyService.notify('Playing all top tracks');
+		
+			NotifyService.notify('Starting artist radio');
 			
 			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
+			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
 				.then( function( response ){
+				
 					var uris = [];
 					for( var i = 0; i < response.tracks.length; i++ ){
 						uris.push( response.tracks[i].uri );
 					}
-					MopidyService.playTrack( uris, 0 );
+					MopidyService.clearCurrentTrackList()
+						.then( function(){
+							MopidyService.playTrack( uris, 0 );
+						});
 				});
 		}
 		
@@ -32452,8 +32458,11 @@ angular.module('spotmop.directives', [])
 			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
 			if( $element.attr('watch') ){
 				$scope.$watch('url', function(newValue, oldValue) {
-					if (newValue)
+					if( newValue ){
 						loadImage();
+					}else{
+						$element.attr('style', 'background-image: none;');
+					}
 				}, true);
 			}
 			
@@ -32462,7 +32471,7 @@ angular.module('spotmop.directives', [])
 			
 			// run the preloader
 			function loadImage(){
-				
+			
 				var fullUrl = '';
 				/*
 				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
@@ -32701,38 +32710,6 @@ angular.module('spotmop.directives', [])
     };
 })
 
-// get the appropriate sized image
-// DEPRECIATED 
-.filter('thumbnailImage', function(){
-	return function( images ){
-        
-        // what if there are no images? then nada
-        if( images.length <= 0 )
-            return false;
-        
-        // loop all the images
-        for( var i = 0; i < images.length; i++){
-            var image = images[i];
-            
-            // this is our preferred size
-            if( image.height >= 200 && image.height <= 300 ){
-                return image.url;
-            
-            // let's take it a notch up then
-            }else if( image.height > 300 && image.height <= 500 ){
-                return image.url;
-            
-            // nope? let's take it a notch down then
-            }else if( image.height >= 150 && image.height < 200 ){
-                return image.url;
-            }
-        };
-        
-        // no thumbnail that suits? just get the first (and highest res) one then        
-		return images[0].url;
-	}
-})
-
 // standardize our images into a large/medium/small structure for template usage
 .filter('sizedImages', ['SettingsService', function( SettingsService ){
 	return function( images ){
@@ -32753,6 +32730,7 @@ angular.module('spotmop.directives', [])
 				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
 				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
 				image.url = baseUrl +'/spotmop'+ image.uri;
+				delete image.uri;
 				
 				if( image.height ){
 					if( image.height >= 650 ){				
@@ -33364,7 +33342,7 @@ angular.module('spotmop.common.tracklist', [])
 				
 					// build an array of track uris (and subtract the first one, as we play him immediately)
 					var selectedTracksUris = [];
-					for( var i = 1; i < selectedTracks.length; i++ ){
+					for( var i = 0; i < selectedTracks.length; i++ ){
 						selectedTracksUris.push( selectedTracks[i].uri );
 					};
 					
@@ -33374,15 +33352,7 @@ angular.module('spotmop.common.tracklist', [])
 						
 					NotifyService.notify( message );
 					
-					// play the first track immediately
-					MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
-						
-						// more tracks to add
-						if( selectedTracksUris.length > 0 ){
-							// add the following tracks to the tracklist
-							MopidyService.addToTrackList( selectedTracksUris, 1 );
-						}
-					});
+					MopidyService.playTrack( selectedTracksUris, 0 );
 				}
 			}
 			
@@ -34324,7 +34294,7 @@ angular.module('spotmop.local', [])
 		// chat with Mopidy and get the images for all these URIs
 		MopidyService.getImages( uris )
 			.then( function(response){
-				
+			
 				// loop all the response uris
 				for( var key in response ){
 				
@@ -34336,7 +34306,7 @@ angular.module('spotmop.local', [])
 						var index = $scope.allAlbums.indexOf( albumByUri[0] );
 						
 						// update the album's images
-						$scope.allAlbums[index].images = $filter('sizedImages')( response[key] );
+						$scope.allAlbums[index].images = response[key];
 					}
 				}
 			});
@@ -34710,7 +34680,6 @@ angular.module('spotmop.services.player', [])
 	}
 	
 	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
 		
 		// only if our new tlTrack differs from our current one
@@ -35908,10 +35877,7 @@ angular.module('spotmop.services.mopidy', [
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
 
-			cfpLoadingBar.start();
-			cfpLoadingBar.set(0.25);
-			executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-				cfpLoadingBar.complete();
+			executeFunctionByName(functionNameToWrap, self, args).then(function(data){
 				deferred.resolve(data);
 			}, function(err) {
 				NotifyService.error( err );
@@ -36078,23 +36044,35 @@ angular.module('spotmop.services.mopidy', [
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
-		playTrack: function(newTracklistUris, trackToPlayIndex) {
+		playTrack: function(trackUris, trackToPlayIndex) {
 			var self = this;
-
-			// add the surrounding tracks (ie the whole tracklist in focus)
-			// we add this right to the top of the existing tracklist
-			return self.mopidy.tracklist.add({ uris: newTracklistUris, at_position: 0 })
-				.then( function(){
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-						}, consoleError );
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			// add the first track immediately
+			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+			
+				// then play it
+				.then( function( response ){	
+					
+					// make sure we added the track successfully
+					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+					var playTrack = null;					
+					if( response.length > 0 ){
+						playTrack = { tlid: response[0].tlid };
+					}
+					
+					return self.mopidy.playback.play()
+				
+						// now add all the remaining tracks
+						// note the use of .shift() previously altered the array				
+						.then( function(){
+							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+								.then( function(){
+									cfpLoadingBar.complete();
+								});
+						}, consoleError);
 				}, consoleError);
 		},
 		playTlTrack: function( tlTrack ){
