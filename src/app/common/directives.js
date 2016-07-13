@@ -685,8 +685,11 @@ angular.module('spotmop.directives', [])
 			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
 			if( $element.attr('watch') ){
 				$scope.$watch('url', function(newValue, oldValue) {
-					if (newValue)
+					if( newValue ){
 						loadImage();
+					}else{
+						$element.attr('style', 'background-image: none;');
+					}
 				}, true);
 			}
 			
@@ -695,7 +698,7 @@ angular.module('spotmop.directives', [])
 			
 			// run the preloader
 			function loadImage(){
-				
+			
 				var fullUrl = '';
 				/*
 				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND

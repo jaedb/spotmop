@@ -47,10 +47,9 @@ class PusherRequestHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers", "X-Requested-With")
         self.set_header("Content-Type", "application/json")
 
-    def initialize(self, core, config, version):
+    def initialize(self, core, config):
 		self.core = core
 		self.config = config
-		self.version = version
         
     # get method
     def get(self, action):
@@ -72,12 +71,11 @@ class PusherRequestHandler(tornado.web.RequestHandler):
                 clientDetailsList.append(client['details'])
             self.write(json_encode(clientDetailsList))
 
-def spotmop_pusher_factory(config, core, version):
+def spotmop_pusher_factory(config, core):
     return [
         ('/', PusherRequestHandler, {
                 'core': core,
-                'config': config,
-                'version': version
+                'config': config
             })
     ]
     

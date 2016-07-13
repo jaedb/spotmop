@@ -100,7 +100,6 @@ angular.module('spotmop.services.player', [])
 	}
 	
 	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
 		
 		// only if our new tlTrack differs from our current one

@@ -11,10 +11,9 @@ class IdentifyRequestHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
-    def initialize(self, core, config, version):
+    def initialize(self, core, config):
 		self.core = core
 		self.config = config
-		self.version = version
 	
     def get(self):
         ip = self.request.remote_ip

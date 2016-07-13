@@ -75,17 +75,21 @@ angular.module('spotmop.browse.artist', [])
 				});
 		}
 		$scope.playArtistRadio = function(){
-			
-			NotifyService.notify('Playing all top tracks');
+		
+			NotifyService.notify('Starting artist radio');
 			
 			// get the artist's top tracks
-			SpotifyService.getTopTracks( $stateParams.uri )
+			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
 				.then( function( response ){
+				
 					var uris = [];
 					for( var i = 0; i < response.tracks.length; i++ ){
 						uris.push( response.tracks[i].uri );
 					}
-					MopidyService.playTrack( uris, 0 );
+					MopidyService.clearCurrentTrackList()
+						.then( function(){
+							MopidyService.playTrack( uris, 0 );
+						});
 				});
 		}
 		
