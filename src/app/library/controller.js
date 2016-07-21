@@ -33,11 +33,6 @@ angular.module('spotmop.library', [])
 			url: "/albums",
 			templateUrl: "app/library/albums.template.html",
 			controller: 'LibraryAlbumsController'
-		})
-		.state('library.local', {
-			url: "/local/:uri",
-			templateUrl: "app/library/local.template.html",
-			controller: 'LibraryLocalController'
 		});
 })
 	
@@ -301,10 +296,10 @@ angular.module('spotmop.library', [])
 	$scope.show = function( playlist ){
         
         if(
-				typeof($scope.settings.playlists) === 'undefined' ||
-				typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
-				!$scope.settings.playlists.onlyshowowned ){
-            return true;
+			typeof($scope.settings.playlists) === 'undefined' ||
+			typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
+			!$scope.settings.playlists.onlyshowowned ){
+				return true;
         }
         
         if( playlist.owner.id == 'jaedb' ) return true;
@@ -320,27 +315,44 @@ angular.module('spotmop.library', [])
     
 		SpotifyService.getPlaylists( userid )
 			.then( function( response ){ // successful
-					$scope.playlists = response;
 					
 					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
 						Spotify.refreshToken();
+                    }else{
+						$scope.playlists = response;
+					}
 				});
 	
 	// not authorized, so have to fetch via backend first
-	}else{	
-        
-        NotifyService.notify('Fetching from Mopidy as you haven\'t authorized Spotify. This will take a while!');
+	}else{
         
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
-				.then( function( response ){				
-					// fetch more detail from each playlist (individually, d'oh!)
-					angular.forEach( response, function(value, key){
-						SpotifyService.getPlaylist( value.uri )
-							.then( function( playlist ){
-								$scope.playlists.items.push( playlist );
-							});
+				.then( function( response ){
+					
+					// add them to our list
+					$scope.playlists.items = response;
+					
+					// now go get the extra info (and artwork) from Spotify
+					// need to do this individually as there is no bulk endpoint, curses!
+					angular.forEach( response, function(playlist, i){
+					
+						// process it and add to our $scope
+						var callback = function(i){
+							return function( response ){
+								
+								// make sure our response was not an error
+								if( typeof(response.error) === 'undefined' ){
+									
+									// update the existing playlist item with our updated data
+									$scope.playlists.items[i] = response;
+								}
+							};
+						}(i);
+						
+						// run the actual request
+						SpotifyService.getPlaylist( playlist.uri ).then( callback );
 					});
 				});
 		}
@@ -351,6 +363,7 @@ angular.module('spotmop.library', [])
 		else
 			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
     }
+	
 	
     /**
      * Load more of the album's tracks
@@ -389,177 +402,6 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
-})
-
-
-	
-/**
- * Local files
- **/
-.controller('LibraryLocalController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
-	
-	$scope.path = [{title: 'Files', uri: 'local:directory'}];
-	$scope.allFolders = [];
-	$scope.allTracks = [];	
-	var uri;
-	
-	// watch for filter input
-	$scope.$watch('filterTerm', function(val){
-        $scope.tracks = $filter('filter')($scope.allTracks, val);
-        $scope.folders = $filter('filter')($scope.allFolders, val);
-    });
-	
-	
-	if( $stateParams.uri ){
-		
-		uri = $stateParams.uri;
-		
-		// handle use of pipes to separate actual folders
-		// this method is used by the json backend library, but is not needed for local-sqlite
-		if( uri.indexOf('|') > -1 || uri.indexOf('local:directory:') > -1 ){
-		
-			// drop the local:directory: bit
-			var path = uri.substring(16,uri.length);
-			
-			// split string into array elements (provided we're not viewing the root level already)
-			if( path != '' ) path = path.split('|');
-			
-			// loop each 'folder' within the uri string
-			if( path.length > 0 ){
-				for( var i = 0; i < path.length; i++ ){
-				
-					var uri = 'local:directory:';
-					
-					// loop the whole path to re-build the uri
-					for( var j = 0; j <= i; j++ ){
-						if( uri != 'local:directory:' )	uri += '|';
-						uri += path[j];
-					}
-					
-					// plug our path into the template array
-					$scope.path.push({
-						title: decodeURIComponent( path[i] ),
-						uri: uri
-					});
-				}
-			}
-			
-			uri = uri.replace('|','/');
-		}
-		
-		// manually setup path structure
-		if(uri == 'local:directory?type=track' ){
-			$scope.path.push({title: 'Tracks', uri: 'local:directory'});
-		}else if( uri.indexOf('local:directory?date=') > -1 ){
-			$scope.path.push({title: 'History', uri: 'local:directory'});
-			
-		// albums
-		}else if( uri.indexOf('local:directory?type=album') > -1 ){
-			$scope.path.push({title: 'Albums'});
-		
-		// individual album
-		}else if( uri.indexOf('album=') > -1 || uri.indexOf('local:album:') > -1 ){
-			$scope.path.push({title: 'Albums', uri: 'local:directory?type=album'});
-			$scope.path.push({title: 'Album'});
-			
-		// artist
-		}else if( uri.indexOf('local:directory?type=artist') > -1 ){
-			$scope.path.push({title: 'Artists'});
-		
-		// individual artist
-		}else if( uri.indexOf('local:artist:') > -1 ){
-			$scope.path.push({title: 'Artists', uri: 'local:directory?type=artist'});
-			$scope.path.push({title: 'Artist'});
-			
-		// genre
-		}else if( uri.indexOf('local:directory?type=genre') > -1 ){
-			$scope.path.push({title: 'Genres'});
-		
-		// individual genre
-		}else if( uri.indexOf('genre=') > -1 ){
-			$scope.path.push({title: 'Genres', uri: 'local:directory?type=genre'});
-			$scope.path.push({title: 'Genre'});
-		}
-	}
-	
-	// on init, go get the items (or wait for mopidy to be online)
-	if( $scope.mopidyOnline )
-		getItems();
-	else
-		$scope.$on('mopidy:state:online', function(){ getItems() });
-	
-	
-	// go get em
-	function getItems(){
-		
-		MopidyService.getLibraryItems( uri )
-			.then( function( response ){
-			
-					// load tracks
-					var trackReferences = $filter('filter')(response, {type: 'track'});
-					var trackUris = [];
-					
-					// loop all the track references, so we can get all the track objects
-					for( var i = 0; i < trackReferences.length; i++ ){
-						trackUris.push( trackReferences[i].uri );
-					}
-					
-					// take our track references and look up the actual track objects
-					if( trackUris.length > 0 ){
-						MopidyService.getTracks( trackUris )
-							.then( function( response ){
-							
-								var tracks = [];
-								
-								// loop all the tracks to sanitize the response
-								for( var key in response ){
-									var track = response[key][0];
-									track.type = 'localtrack';
-									tracks.push( track );
-								}
-								
-								$scope.tracks = tracks;
-								$scope.allTracks = tracks;
-							});
-					}
-					
-					// organise the folders					
-					var folders = [];
-					for( i = 0; i < response.length; i++ ){
-						if( response[i].type != 'track' )
-							folders.push( response[i] );
-					}
-					
-					var folders = formatFolders( folders );
-					
-					// store our folders to the template-accessible variable
-					$scope.folders = folders;
-					$scope.allFolders = folders;
-				});
-	}
-	
-	
-	/**
-	 * Format our folders into the desired format
-	 * @param items = array
-	 * @return array
-	 **/
-	function formatFolders( items ){
-		
-		// sanitize uris
-		for( var i = 0; i < items.length; i++ ){
-			var item = items[i];
-			
-			// replace slashes (even urlencoded ones) to ":"
-			item.uri = item.uri.replace('%2F', '|');
-			item.uri = item.uri.replace('/', '|');
-			
-			items[i] = item;
-		}
-		
-		return items;
-	}
-		
 });
 
 

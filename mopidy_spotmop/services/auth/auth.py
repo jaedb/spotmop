@@ -11,12 +11,10 @@ class AuthRequestHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
-    def initialize(self, core, config, version):
+    def initialize(self, core, config):
         self.core = core
         self.config =  config
-        self.version = version
 	
-	# check if we're able to upgrade, and what our current version is
     def get(self):
 
         url = 'https://accounts.spotify.com/api/token'

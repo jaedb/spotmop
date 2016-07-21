@@ -9,7 +9,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService ){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService, NotifyService, cfpLoadingBar ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -26,26 +26,14 @@ angular.module('spotmop.services.mopidy', [
 			var deferred = $q.defer();
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
-            
-			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
 
-			if (self.isConnected) {
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}else{
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}
+			executeFunctionByName(functionNameToWrap, self, args).then(function(data){
+				deferred.resolve(data);
+			}, function(err) {
+				NotifyService.error( err );
+				deferred.reject(err);
+			});
+			
 			return deferred.promise;
 		};
 	}
@@ -74,11 +62,8 @@ angular.module('spotmop.services.mopidy', [
 		isConnected: false,
 		
 		testMethod: function( method, payload ){
+			console.info( 'Performing test method: '+method+' with payload:'+ payload);
 			return wrapMopidyFunc(method, this)( payload );
-		},
-		
-		getImages: function( uri ){
-			return wrapMopidyFunc('mopidy.library.getImages', this)( uri );
 		},
 		
 		/*
@@ -169,6 +154,9 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
+		getImages: function(uris){
+			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
+		},
 		search: function(searchterm, type, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
 			if( typeof(type) === 'undefined' || !type ) var type = 'any';
@@ -206,92 +194,60 @@ angular.module('spotmop.services.mopidy', [
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
-		playTrack: function(newTracklistUris, trackToPlayIndex) {
+		playTrack: function(trackUris, trackToPlayIndex) {
 			var self = this;
-
-			// add the surrounding tracks (ie the whole tracklist in focus)
-			// we add this right to the top of the existing tracklist
-			return self.mopidy.tracklist.add({ uris: newTracklistUris, at_position: 0 })
-				.then( function(){
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-						}, consoleError );
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			// add the first track immediately
+			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+			
+				// then play it
+				.then( function( response ){	
+					
+					// make sure we added the track successfully
+					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+					var playTrack = null;					
+					if( response.length > 0 ){
+						playTrack = { tlid: response[0].tlid };
+					}
+					
+					return self.mopidy.playback.play()
+				
+						// now add all the remaining tracks
+						// note the use of .shift() previously altered the array				
+						.then( function(){
+							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+								.then( function(){
+									cfpLoadingBar.complete();
+								});
+						}, consoleError);
 				}, consoleError);
-
-			/*
-			// stop playback
-			return self.mopidy.playback.stop()
-				.then(function() {
-
-					// clear the current tracklist
-					return self.mopidy.tracklist.clear();
-
-				}, consoleError)
-				.then(function() {
-
-					// add the surrounding tracks (ie the whole tracklist in focus)
-					return self.mopidy.tracklist.add({ uris: newTracklistUris });
-
-				}, consoleError)
-				.then(function() {
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-				}, consoleError);
-			}, consoleError);
-			*/
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){
 			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);			
+				
 			var self = this;
 			
-			// pre-fetch our playlist tracks
-			self.mopidy.library.lookup({ uri: streamUri })
-				.then( function(tracks){
-					
-					// if we haven't got as many tracks as expected
-					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
-					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
-						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 2 seconds for server to pre-load playlist...');
-						$timeout( function(){
-							playStream();
-						}, 2000 );
-						
-					// we have the expected track count already (already loaded/cached), go-go-gadget!
-					}else{
-						playStream();
-					}
-				}, consoleError );
-			
-			// play the stream
-			function playStream(){
-				self.stopPlayback(true)
-					.then(function() {
-						self.mopidy.tracklist.clear();
-					}, consoleError)
-					.then(function() {
-						self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
-					}, consoleError)
-					.then(function() {
-						self.mopidy.playback.play();
-					}, consoleError);			
-			}
+			self.stopPlayback(true)
+				.then(function() {
+					self.mopidy.tracklist.clear();
+				}, consoleError)
+				.then(function() {
+					self.mopidy.tracklist.add({ at_position: 0, uri: streamUri })
+						.then( function(){
+							cfpLoadingBar.complete();
+						});
+				}, consoleError)
+				.then(function() {
+					self.mopidy.playback.play();
+				}, consoleError);
 		},
 		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
@@ -336,6 +292,9 @@ angular.module('spotmop.services.mopidy', [
 		},
 		getCurrentTrackList: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+		},
+		clearCurrentTrackList: function () {
+			return wrapMopidyFunc("mopidy.tracklist.clear", this)();
 		},
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();

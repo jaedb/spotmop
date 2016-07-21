@@ -22,7 +22,7 @@
 			<div class="item-container" ng-repeat="artist in artists.items track by $index">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
 					<div class="image-container">
-						<thumbnail images="artist.images"></thumbnail>
+                        <thumbnail size="medium" images="artist.images"></thumbnail>
 					</div>
 					<div class="info smaller animate">
 						<div class="name" ng-bind="artist.name"></div>

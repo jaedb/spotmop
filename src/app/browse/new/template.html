@@ -22,7 +22,7 @@
                     candrag
                     dragobj="album">
                         <div class="image-container">
-                            <thumbnail images="album.images"></thumbnail>
+                            <thumbnail ng-if="album.images" size="medium" images="album.images"></thumbnail>
                         </div>
                         <div class="info animate">
                             <div class="name" ng-bind="album.name"></div>

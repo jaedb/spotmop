@@ -29801,6 +29801,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
+	'spotmop.local',
 	'spotmop.search',
 	'spotmop.settings',	
 	'spotmop.discover',
@@ -29972,7 +29973,7 @@ angular.module('spotmop', [
 	 * Lazy loading
 	 **/
 
-	$scope.checkForLazyLoading = function(){		
+	$scope.checkForLazyLoading = function(){
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -29982,7 +29983,13 @@ angular.module('spotmop', [
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
 	}
+	
+	// listen for completion from our loading bar (which intercepts all http requests)
+	$rootScope.$on('cfpLoadingBar:completed', function(event){
+		$scope.checkForLazyLoading();
+	});
 	 
+	// listen for scrolling to load more stuff
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
 			
@@ -30062,9 +30069,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
-		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -30261,121 +30265,262 @@ angular.module('spotmop.browse.album', [])
 /**
  * Main controller
  **/
-.controller('AlbumController', ['$scope', '$rootScope', '$stateParams', '$filter', '$state', 'MopidyService', 'SpotifyService', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService ){	
+.controller('AlbumController', ['$scope', '$rootScope', '$stateParams', '$filter', '$state', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService, LastfmService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {tracks: []};
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
+	
     $scope.convertedDate = function(){
-		if( $scope.mediumScreen() ){
-			return $filter('date')($scope.album.release_date, "yyyy");
-		}else{
-			if( $scope.album.release_date_precision == 'day' )
-				return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
-			if( $scope.album.release_date_precision == 'month' )
-				return $filter('date')($scope.album.release_date, "MMMM yyyy");
-			if( $scope.album.release_date_precision == 'year' )
-				return $scope.album.release_date;
+		
+		// spotify-style date
+		if( typeof($scope.album.release_date) !== 'undefined' ){
+		
+			if( $scope.mediumScreen() ){
+				return $filter('date')($scope.album.release_date, "yyyy");
+			}else{
+				if( $scope.album.release_date_precision == 'day' )
+					return $filter('date')($scope.album.release_date, "MMMM d, yyyy");
+				if( $scope.album.release_date_precision == 'month' )
+					return $filter('date')($scope.album.release_date, "MMMM yyyy");
+				if( $scope.album.release_date_precision == 'year' )
+					return $scope.album.release_date;
+			}
+		
+		// mopidy-style date
+		}else if( typeof($scope.album.date) !== 'undefined' ){		
+			return $scope.album.date;
 		}
+		
         return null;
     }
 	
     // figure out the total time for all tracks
     $scope.totalTime = function(){
+	
         var totalTime = 0;
         if( typeof($scope.tracklist.tracks) !== 'undefined' ){
             angular.forEach( $scope.tracklist.tracks, function( track ){
-                totalTime += track.duration_ms;
+			
+				// spotify-style duration
+				if( typeof(track.duration_ms) !== 'undefined' ){
+				    totalTime += track.duration_ms;
+					
+				// mopidy-style duration
+				}else if( typeof(track.length) !== 'undefined' ){
+				    totalTime += track.length;
+				}
             });
         }
-        return Math.round(totalTime / 100000);   
+        return Math.round(totalTime / 100000); 
     }
-    
-	
-	/**
-	 * Lazy loading
-	 * When we scroll near the bottom of the page, broadcast it
-	 * so that our current controller knows when to load more content
-	 * NOTE: This is a clone of app.js version because we scroll a different element (.content)
-	 **/
-    $(document).find('.browse > .content').on('scroll', function(evt){
-        
-        // get our ducks in a row - these are all the numbers we need
-        var scrollPosition = $(this).scrollTop();
-        var frameHeight = $(this).outerHeight();
-        var contentHeight = $(this).children('.inner').outerHeight();
-        var distanceFromBottom = -( scrollPosition + frameHeight - contentHeight );
-        
-		if( distanceFromBottom <= 100 )
-        	$scope.$broadcast('spotmop:loadMore');
-    });
     
 	// play the whole album
 	$scope.playAlbum = function(){
-		MopidyService.playStream( $scope.album.uri );
+		MopidyService.playStream( uri );
 	}
 	
-	// add album to library
-	$scope.addToLibrary = function(){		
-		SpotifyService.addAlbumsToLibrary( $scope.album.id )
-			.then( function(){
-				$scope.isInLibrary = true;
-			});
-	}
+	/**
+	 * Spotify type albums
+	 **/
+	if( $scope.origin == 'spotify' ){
 	
-	// remove from library
-	$scope.removeFromLibrary = function(){		
-		SpotifyService.removeAlbumsFromLibrary($scope.album.id)
-			.then( function(){
-				$scope.isInLibrary = false;
-			});
-	}
-	
-	// get the album
-	SpotifyService.getAlbum( $stateParams.uri )
-		.then(function( response ) {
+		// add album to library
+		$scope.addToLibrary = function(){		
+			SpotifyService.addAlbumsToLibrary( $scope.album.id )
+				.then( function(){
+					$scope.isInLibrary = true;
+				});
+		}
 		
-			$scope.album = response;
-			$scope.tracklist = response.tracks;
-			$scope.tracklist.type = 'track';
-			$scope.tracklist.tracks = response.tracks.items;
-			
-			angular.forEach( $scope.tracklist.tracks, function(track){
-				track.album = $scope.album;
+		// remove from library
+		$scope.removeFromLibrary = function(){		
+			SpotifyService.removeAlbumsFromLibrary($scope.album.id)
+				.then( function(){
+					$scope.isInLibrary = false;
+				});
+		}
+		
+		getAlbumFromSpotify();
+	
+		// once we're told we're ready to load more tracks
+		$scope.$on('spotmop:loadMore', function(){
+			if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
+				loadMoreTracks( $scope.tracklist.next );
+			}
+		});
+	
+	/**
+	 * Not a spotify album, just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getAlbumFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getAlbumFromMopidy() 
 			});
-			
-			var artisturis = [];
-			angular.forEach( response.artists, function( artist ){
-				artisturis.push( artist.uri );
-			});
-			
-			// now get the artist objects
-			SpotifyService.getArtists( artisturis )
-				.then( function( response ){
-					$scope.album.artists = response.artists;
+		}
+	}
+	
+		
+	/**
+	 * Fetch the album from spotify
+	 **/
+	function getAlbumFromSpotify(){
+	
+		SpotifyService.getAlbum( uri )
+			.then(function( response ) {
+				
+				$scope.album = response;
+				$scope.album.totalTracks = response.tracks.total;
+                $scope.album.images = response.images;
+				$scope.tracklist = response.tracks;
+				$scope.tracklist.type = 'track';
+				$scope.tracklist.tracks = response.tracks.items;
+				
+				angular.forEach( $scope.tracklist.tracks, function(track){
+					track.album = $scope.album;
 				});
 				
-			// if we're viewing from within an individual artist, get 'em
-			if( typeof($stateParams.artisturi) !== 'undefined' ){		
-				// get the artist from Spotify
-				SpotifyService.getArtist( $stateParams.artisturi )
-					.then( function( response ){
-						$scope.artist = response;
-					});
-			}
-			
-			// figure out if we have this album in our library already
-			SpotifyService.isAlbumInLibrary([$scope.album.id])
-				.then( function( isInLibrary ){
-					$scope.isInLibrary = isInLibrary[0];
+				var artisturis = [];
+				angular.forEach( response.artists, function( artist ){
+					artisturis.push( artist.uri );
 				});
-		});
-    
+				
+				// now get the artist objects
+				SpotifyService.getArtists( artisturis )
+					.then( function( response ){
+                        $scope.album.artists = [];
+                        if( response.artists ){
+                            for( var i = 0; i < response.artists.length; i++ ){
+                                var artist = response.artists[i];
+                                $scope.album.artists.push( artist );
+                            };
+                        }
+					});
+					
+				// if we're viewing from within an individual artist, get 'em
+				if( typeof($stateParams.artisturi) !== 'undefined' ){		
+					// get the artist from Spotify
+					SpotifyService.getArtist( $stateParams.artisturi )
+						.then( function( response ){
+							$scope.artist = response;
+						});
+				}
+				
+				// figure out if we have this album in our library already
+				SpotifyService.isAlbumInLibrary([$scope.album.id])
+					.then( function( isInLibrary ){
+						$scope.isInLibrary = isInLibrary[0];
+					});
+			});
+	}
+		
+	
+	/** 
+	 * Fetch the album using Mopidy core
+	 **/
+	function getAlbumFromMopidy(){
+	
+		MopidyService.getAlbum( uri )
+			.then(function( response ) {
+				
+				// an empty response from Mopidy
+				if( response.length <= 0 ){
+					NotifyService.error('Could not load uri: '+uri);
+					return;
+				}
+				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
+				var sourceAlbum = response[0].album;
+				delete sourceAlbum.images;
+				$scope.album = sourceAlbum;
+				$scope.album.artists = [];
+				$scope.album.totalTracks = $scope.album.num_tracks;
+				$scope.tracklist = { type: 'localtrack', tracks: response };
+				
+				// get all our album artist and compile into an array
+				var uniqueArtists = [];
+				for( var i = 0; i < $scope.tracklist.tracks.length; i++ ){
+					var artists = $scope.tracklist.tracks[i].artists;
+					
+					for( var j = 0; j < artists.length; j++ ){
+						uniqueArtists[artists[j].uri] = artists[j];
+					}
+				}
+				
+				// flatten out our dictionary-style array
+				for( var index in uniqueArtists ){
+                    $scope.album.artists.push( uniqueArtists[index] );
+                }
+                
+                // get artwork for the artists
+                for( var i = 0; i < $scope.album.artists.length; i++ ){
+                    
+                    // once we get the info from lastFM
+                    // process it and add to our $scope
+                    var callback = function(n){
+                        return function( response ){
+                            if( typeof(response.artist) !== 'undefined'){
+                                $scope.album.artists[n].images = response.artist.image;
+                            }
+                        };
+                    }(i);
+					
+					// if we have a musicbrainz_id, get imagery from LastFM
+					if( typeof($scope.album.artists[i].musicbrainz_id) !== 'undefined' ){
+						LastfmService.artistInfoByMbid( $scope.album.artists[i].musicbrainz_id )
+							.then( callback );
+                    }else{
+						LastfmService.artistInfo( $scope.album.artists[i].name )
+							.then( callback );
+                    }
+                }
+				
+				// initiate request for album artwork from mopidy
+				MopidyService.getImages( [uri] )
+					.then( function( response ){
+						
+						var albumImages = response[uri];
+						
+						// we got images from mopidy!
+						if( albumImages.length > 0 ){
+							
+							$scope.album.images = albumImages;
+				
+						// no mopidy artwork, so get album artwork from LastFM
+						}else if( typeof( $scope.album.musicbrainz_id ) !== 'undefined' ){
+							LastfmService.albumInfoByMbid( $scope.album.musicbrainz_id )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = response.album.image;
+									}
+								});
+						
+						// no musicbrainz id, so let's just use album/artist strings
+						}else{
+							var firstUniqueArtist = uniqueArtists[Object.keys(uniqueArtists)[0]];
+							LastfmService.albumInfo( firstUniqueArtist.name.trim(), $scope.album.name.trim() )
+								.then( function( response ){
+									if( typeof(response.album) !== 'undefined' ){
+										$scope.album.images = response.album.image;
+									}
+								});
+						}
+					});
+			});
+	}
 	
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+	 
     var loadingMoreTracks = false;
     
     // go off and get more of this playlist's tracks
@@ -30401,13 +30546,6 @@ angular.module('spotmop.browse.album', [])
                 loadingMoreTracks = false;
             });
     }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreTracks && typeof( $scope.tracklist.next ) !== 'undefined' && $scope.tracklist.next ){
-            loadMoreTracks( $scope.tracklist.next );
-        }
-	});
 }]);
 'use strict';
 
@@ -30457,67 +30595,185 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', 'SpotifyService', 'SettingsService', 'MopidyService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', '$filter', 'SpotifyService', 'SettingsService', 'MopidyService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
-	$scope.tracklist = {type: 'track'};
-	$scope.albums = {};
+	$scope.tracklist = { type: 'track' };
+	$scope.albums = { items: [] };
 	$scope.relatedArtists = {};
-    $scope.followArtist = function(){
-        SpotifyService.followArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = true;
-            });
-    }
-    $scope.unfollowArtist = function(){
-        SpotifyService.unfollowArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = false;
-            });
-    }
-	$scope.playArtistRadio = function(){
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
+	
+	
+	/**
+	 * Spotify artists
+	 **/
+	if( $scope.origin == 'spotify' ){
 		
-		NotifyService.notify('Playing all top tracks');
-		
-		// get the artist's top tracks
-		SpotifyService.getTopTracks( $stateParams.uri )
-			.then( function( response ){
-				var uris = [];
-				for( var i = 0; i < response.tracks.length; i++ ){
-					uris.push( response.tracks[i].uri );
-				}
-				MopidyService.playTrack( uris, 0 );
-			});
-	}
-    
-	// get the artist from Spotify
-	SpotifyService.getArtist( $stateParams.uri )
-		.then( function( response ){
-			$scope.artist = response;
-    
-			/*
-			// get the artist from LastFM
-			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
-			LastfmService.artistInfo( response.name )
-				.then( function( response ){
-					console.log( response );
+		$scope.followArtist = function(){
+			SpotifyService.followArtist( $stateParams.uri )
+				.then( function(response){
+					$scope.following = true;
 				});
-			*/
-		});
-
-	// figure out if we're following this playlist
-	if( $rootScope.spotifyAuthorized ){
-		SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-			.then( function( isFollowing ){
-				$scope.following = $.parseJSON(isFollowing);
+		}
+		$scope.unfollowArtist = function(){
+			SpotifyService.unfollowArtist( $stateParams.uri )
+				.then( function(response){
+					$scope.following = false;
+				});
+		}
+		$scope.playArtistRadio = function(){
+		
+			NotifyService.notify('Starting artist radio');
+			
+			// get the artist's top tracks
+			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
+				.then( function( response ){
+				
+					var uris = [];
+					for( var i = 0; i < response.tracks.length; i++ ){
+						uris.push( response.tracks[i].uri );
+					}
+					MopidyService.clearCurrentTrackList()
+						.then( function(){
+							MopidyService.playTrack( uris, 0 );
+						});
+				});
+		}
+		
+		// get the artist from Spotify
+		SpotifyService.getArtist( $stateParams.uri )
+			.then( function( response ){
+				$scope.artist = response;
+				$scope.artist.images = response.images;
 			});
+
+		// figure out if we're following this playlist
+		if( $rootScope.spotifyAuthorized ){
+			SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+				.then( function( isFollowing ){
+					$scope.following = $.parseJSON(isFollowing);
+				});
+		}
+		
+		// get the artist's related artists
+		SpotifyService.getRelatedArtists( $stateParams.uri )
+			.then( function( response ){
+				$scope.relatedArtists = response.artists;
+			});
+		
+	
+	/**
+	 * Non-spotify artist, so just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getArtistFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getArtistFromMopidy() 
+			});
+		}
 	}
 	
-	// get the artist's related artists
-	SpotifyService.getRelatedArtists( $stateParams.uri )
-		.then( function( response ){
-			$scope.relatedArtists = response.artists;
-		});
+	/** 
+	 * Fetch the artist using Mopidy core
+	 **/
+	function getArtistFromMopidy(){
+	
+		MopidyService.getArtist( uri )
+			.then(function( response ){
+				
+				// an empty response from Mopidy
+				if( response.length <= 0 ){
+					NotifyService.error('Could not load artist: '+uri);
+					return;
+				}
+				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
+				$scope.artist = response[0].artists[0];
+				$scope.artist.type = 'localartist';
+				
+				// get artwork from LastFM
+				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
+						.then( function( response ){
+							$scope.artist.images = response.artist.image;
+							$scope.artist.stats = response.artist.stats;
+						});
+				}else{
+					LastfmService.artistInfo( $scope.artist.name )
+						.then( function( response ){
+							$scope.artist.images = response.artist.image;
+							$scope.artist.stats = response.artist.stats;
+						});
+                }
+				
+				$scope.tracklist.type = 'localtrack';
+				$scope.tracklist.tracks = $filter('limitTo')(response,10);
+		
+				// get the artist's related artists
+				// we hand this over to Spotify
+				/*
+				SpotifyService.getRelatedArtists( $stateParams.uri )
+					.then( function( response ){
+						$scope.relatedArtists = response.artists;
+					});
+					*/
+			});
+		
+		// get the albums
+		MopidyService.getLibraryItems( uri )
+			.then( function( response ){
+				
+				// get only the directories and albums
+				// Mopidy will dish up tracks that aren't recognised in an album or directory and that breaks stuff
+				$scope.albums.items = $filter('filter')(response, ( { type: 'directory' } && { type: 'album' } ));
+				
+				// loop each of the albums (or directories, depending on the backend)
+				for( var i = 0; i < $scope.albums.items.length; i++ ){
+                    
+					$scope.albums.items[i].artist = { name: $scope.artist.name };
+					$scope.albums.items[i].type = 'localalbum';
+                    
+                    // get the album URI from the url query (ie local:directory?album=uri&type=track...)
+                    var getAlbumUri = function( uri ) {
+                        return decodeURI(
+                            (RegExp('album=' + '(.+?)(&|$)').exec(uri)||[,null])[1]
+                        );
+                    }
+					
+					// handle "Directory" uris
+					// for some reason Mopidy sometimes detects albums as directory "type" instead
+					if( $scope.albums.items[i].uri.indexOf( 'album=' ) > -1 ){
+						$scope.albums.items[i].uri = getAlbumUri( $scope.albums.items[i].uri );
+					}
+					
+					// once we get the info from lastFM
+					// process it and add to our $scope
+					var callback = function(n){
+						return function( response ){
+                            if( typeof(response.album) !== 'undefined' ){
+                                $scope.albums.items[n].images = response.album.image;
+                            }
+						};
+					}(i);
+					
+					// get album artwork from LastFM
+					if( $scope.albums.items[i].mbid ){
+						LastfmService.albumInfoByMbid( $scope.albums.items[i].mbid )
+							.then( callback );
+					}else{
+						LastfmService
+							.albumInfo( $scope.albums.items[i].artist.name.trim(), $scope.albums.items[i].name.trim() )
+							.then( callback );
+					}
+				}
+			});
+	}
 }])
 
 
@@ -30525,18 +30781,71 @@ angular.module('spotmop.browse.artist', [])
  * Artist overview controller
  **/
 .controller('ArtistOverviewController', ['$scope', '$timeout', '$rootScope', '$stateParams', 'SpotifyService', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
-	
-	// get the artist's albums
-	SpotifyService.getArtistAlbums( $stateParams.uri )
-		.then( function( response ){
-			$scope.$parent.albums = response;
-		});	
-	
-	// get the artist's top tracks
-	SpotifyService.getTopTracks( $stateParams.uri )
-		.then( function( response ){
-			$scope.tracklist.tracks = response.tracks;
+
+
+	/**
+	 * Spotify artists
+	 **/
+	if( $scope.origin == 'spotify' ){
+			
+		// get the artist's albums
+		SpotifyService.getArtistAlbums( $stateParams.uri )
+			.then( function( response ){
+				$scope.$parent.albums = response;
+			});	
+		
+		// get the artist's top tracks
+		SpotifyService.getTopTracks( $stateParams.uri )
+			.then( function( response ){
+				$scope.tracklist.tracks = response.tracks;
+			});
+		
+		// once we're told we're ready to load more albums
+		$scope.$on('spotmop:loadMore', function(){
+			if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+				loadMoreAlbums( $scope.albums.next );
+			}
 		});
+	
+	/**
+	 * Non-spotify artist, so just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getArtistOverviewFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getArtistOverviewFromMopidy() 
+			});
+		}
+	}
+	
+	
+	/** 
+	 * Fetch the artist using Mopidy core
+	 **/
+	function getArtistOverviewFromMopidy(){
+	/*
+		MopidyService.getArtist( uri )
+			.then(function( response ){
+				//console.log( response );
+				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
+				$scope.artist = response[0].artists[0];
+				
+				// get artwork from LastFM
+				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
+						.then( function( response ){
+							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+						});
+				}
+			});
+			*/
+	}	
+	
 	
 	
 	
@@ -30570,13 +30879,6 @@ angular.module('spotmop.browse.artist', [])
                 loadingMoreAlbums = false;
             });
     }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
-            loadMoreAlbums( $scope.albums.next );
-        }
-	});
 }])
 
 
@@ -31510,7 +31812,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', ['$rootScope', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
+.directive('candrag', ['$rootScope', '$filter', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -31600,52 +31902,37 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
 					
-					switch( $scope.dragobj.type ){
-						
-						case 'album':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+					if(
+						$scope.dragobj.type == 'album' ||
+						$scope.dragobj.type == 'localalbum' ||
+						$scope.dragobj.type == 'artist' ||
+						$scope.dragobj.type == 'localartist' ||
+						$scope.dragobj.type == 'playlist' ){
+							
+							// figure out if we need to apply the sizing filter or if it's already applied
+							var images = false;							
+							if( typeof($scope.dragobj.images.small) !== 'undefined' ){
+								var images = $scope.dragobj.images;
+							}else if( $scope.dragobj.images.length > 0 ){
+								var images = $filter('sizedImages')( $scope.dragobj.images );
 							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'artist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							
+							// if we got some images, plug in a purrty thumbnail
+							if( images ){
+								tracerContent = '<div class="thumbnail" style="background-image: url('+images.small+');"></div>';
 							}
+							
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'playlist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'track':
+							
+					}else if(
+						$scope.dragobj.type == 'track' ||
+						$scope.dragobj.type == 'tltrack' ||
+						$scope.dragobj.type == 'localtrack' ){
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
 							}
-							break;
 						
-						case 'tltrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
-						
-						case 'localtrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -31749,6 +32036,9 @@ angular.module('spotmop.directives', [])
 			
 				switch( $scope.dragobj.type ){
 					case 'album':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
+					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
@@ -31959,12 +32249,13 @@ angular.module('spotmop.directives', [])
  * Figure out the best image to use for this set of image sizes
  * @return image obj
  **/
-.directive('thumbnail', ['$timeout', '$http', function( $timeout, $http ){
+.directive('thumbnail', ['$timeout', '$http', '$filter', function( $timeout, $http, $filter ){
 	return {
 		restrict: 'E',
 		scope: {
 			images: '=',
-			size: '='
+			size: '@',
+			debugging: '@'
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
@@ -31973,7 +32264,7 @@ angular.module('spotmop.directives', [])
 			// load thumbnail on init
 			loadThumbnail();
 			
-			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			// listen for changes to our image array and update when necessary
 			$scope.$watch('images', function(oldValue,newValue){
 				loadThumbnail();
 			});
@@ -31981,78 +32272,38 @@ angular.module('spotmop.directives', [])
 			// perform core functionality
 			function loadThumbnail(){
 			
-				// fetch this instance's best thumbnail
-				$scope.image = getThumbnailImage( $scope.images );
+				if( !$scope.images ){
+					return false;
+				}
 				
-				// now actually go get the image
-				if( $scope.image ){
+				// fetch this instance's best thumbnail
+				var image = $filter('sizedImages')($scope.images);
+				
+				// if we've been told a specific size (small|medium|large), get it
+				if( $scope.size ){
+					image = image[$scope.size];
+				
+				// otherwise just default to the smallest
+				}else{
+					image = image.small;
+				}
+				
+				// if we have an image
+				if( image && image != '' ){
 					$http({
 						method: 'GET',
-						url: $scope.image.url,
+						url: image,
 						cache: true
 						}).success( function(){
 						
 							// inject to DOM once loaded
-							$element.css('background-image', 'url('+$scope.image.url+')' );
+							$element.css('background-image', 'url('+image+')' );
 						});
 				}
 			}
 			
-			/**
-			 * Get the most appropriate thumbnail image
-			 * @param images = array of image urls
-			 * @return string (image url)
-			 **/
-			function getThumbnailImage( images ){
-				
-				// what if there are no images? then nada
-				if( images.length <= 0 )
-					return false;
-
-				// loop all the images
-				for( var i = 0; i < images.length; i++){
-					var image = images[i];
-					
-					// small thumbnails (ie search results)
-					if( $scope.size == 'small' ){
-						
-						// this is our preferred size
-						if( image.height >= 100 && image.height <= 200 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 200 && image.height <= 300 ){
-							return image;
-
-						// nope? let's take it the next notch up
-						}else if( image.height > 300 && image.height < 400 ){
-							return image;
-						}
-					
-					// standard thumbnails (ie playlists, full related artists, etc)
-					}else{
-						
-						// this is our preferred size
-						if( image.height >= 200 && image.height <= 300 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 300 && image.height <= 500 ){
-							return image;
-
-						// nope? let's take it a notch down then
-						}else if( image.height >= 150 && image.height < 200 ){
-							return image;
-						}						
-					}
-				};
-
-				// no thumbnail that suits? just get the first (and highest res) one then        
-				return images[0];
-			}
-			
 		},
-		template: '<div class="image animate"></div>'
+		template: '<div class="thumbnail-image image animate"></div>'
 	};
 }])
 
@@ -32207,8 +32458,11 @@ angular.module('spotmop.directives', [])
 			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
 			if( $element.attr('watch') ){
 				$scope.$watch('url', function(newValue, oldValue) {
-					if (newValue)
+					if( newValue ){
 						loadImage();
+					}else{
+						$element.attr('style', 'background-image: none;');
+					}
 				}, true);
 			}
 			
@@ -32217,7 +32471,7 @@ angular.module('spotmop.directives', [])
 			
 			// run the preloader
 			function loadImage(){
-				
+			
 				var fullUrl = '';
 				/*
 				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
@@ -32251,14 +32505,13 @@ angular.module('spotmop.directives', [])
 
 /**
  **/
-.directive('backgroundparallax', ['$rootScope', '$timeout', '$interval', '$http', function( $rootScope, $timeout, $interval, $http ){
+.directive('backgroundparallax', ['$rootScope', '$timeout', '$interval', '$http', '$filter', function( $rootScope, $timeout, $interval, $http, $filter ){
     return {
 		restrict: 'E',
         terminal: true,
 		scope: {
-			image: '@',				// object
-			useproxy: '@',
-			detectbackground: '@',
+			images: '=',
+			image: '@',
 			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
@@ -32273,27 +32526,43 @@ angular.module('spotmop.directives', [])
 			);
 				
 			// setup initial variables
-			var	scrollTop = 0;
+			var	state = {
+				scrollTop: 0,
+				windowWidth: $(window).width(),
+				windowHeight: $(window).height()
+			};
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
+			var url = '';
 			
-			// load our image data from the json string attribute
-			var image = $.parseJSON($scope.image);
-		
-			/*
-			REBUILD THIS TO USE TORNADO
-			if( $scope.useproxy )
-				image.url = '/vendor/resource-proxy.php?url='+image.url;
-			*/
+			// if we're using an explicit url, just use that
+			if( $scope.image ){
+				url = $scope.image;
+				
+			// we're getting an array of images, so size 'em and get the largest
+			}else if( $scope.images ){
+				var images = $filter('sizedImages')($scope.images);
+				url = images.large;
+			}
+			var image = {
+					width: 0,
+					height: 0,
+					url: url
+				};
+			
 			// create our new image object (to be plugged into canvas)
-			image.asObject = new Image();
-			image.asObject.src = image.url;
-			image.asObject.onload = function(){
+			var imageObject = new Image();
+			imageObject.src = image.url;
+			imageObject.onload = function(){
 				
 				// load destination opacity from attribute (if specified)
 				var destinationOpacity = 1;				
 				if( typeof($scope.opacity) !== 'undefined' )
 					destinationOpacity = $scope.opacity;
+				
+				// store the actual image dimensions into our image object
+				image.width = imageObject.naturalWidth;
+				image.height = imageObject.naturalHeight;
 				
 				// plug our image into the canvas
 				positionArtistBackground( image );
@@ -32332,14 +32601,14 @@ angular.module('spotmop.directives', [])
 				}
 				
 				// figure out where we want the image to be, based on scroll position
-				var percent = Math.round( scrollTop / canvasHeight * 100 );
+				var percent = Math.round( state.scrollTop / canvasHeight * 100 );
 				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
 				
 				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
 				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
 				
 				// actually draw the image on the canvas
-				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+				context.drawImage(imageObject, image.x, image.y, image.width, image.height);		
 			}
 			
 			// poll for scroll changes
@@ -32349,18 +32618,25 @@ angular.module('spotmop.directives', [])
 						
 						var bannerPanel = $(document).find('.intro');
 						
-						// if we've scrolled
-						if( scrollTop != $(document).scrollTop() ){
-							scrollTop = $(document).scrollTop();
-							
-							var bannerHeight = bannerPanel.outerHeight();
+						// if we've scrolled or resized
+						if(
+							state.scrollTop != $(document).scrollTop() ||
+							state.windowWidth != $(window).width() || 
+							state.windowHeight != $(window).height() ){
+								
+								// update our state
+								state.scrollTop = $(document).scrollTop();
+								state.windowWidth = $(window).width();
+								state.windowHeight = $(window).height();
+								
+								var bannerHeight = bannerPanel.outerHeight();
 
-							// and if we're within the bounds of our document
-							// this helps prevent us animating when the objects in question are off-screen
-							if( scrollTop < bannerHeight ){								
-								positionArtistBackground( image );
+								// and if we're within the bounds of our document
+								// this helps prevent us animating when the objects in question are off-screen
+								if( state.scrollTop < bannerHeight ){								
+									positionArtistBackground( image );
+								}
 							}
-						}
 					});
 				},
 				10
@@ -32434,36 +32710,102 @@ angular.module('spotmop.directives', [])
     };
 })
 
-// get the appropriate sized image
-.filter('thumbnailImage', function(){
+// standardize our images into a large/medium/small structure for template usage
+.filter('sizedImages', ['SettingsService', function( SettingsService ){
 	return function( images ){
         
         // what if there are no images? then nada
-        if( images.length <= 0 )
+        if( typeof(images) === 'undefined' || images.length <= 0 )
             return false;
-        
+			
+		var standardised = {};
+		
         // loop all the images
         for( var i = 0; i < images.length; i++){
             var image = images[i];
-            
-            // this is our preferred size
-            if( image.height >= 200 && image.height <= 300 ){
-                return image.url;
-            
-            // let's take it a notch up then
-            }else if( image.height > 300 && image.height <= 500 ){
-                return image.url;
-            
-            // nope? let's take it a notch down then
-            }else if( image.height >= 150 && image.height < 200 ){
-                return image.url;
-            }
-        };
-        
-        // no thumbnail that suits? just get the first (and highest res) one then        
-		return images[0].url;
+		
+			// mopidy-styled images
+			if( typeof(image.__model__) !== 'undefined' ){
+			
+				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				image.url = baseUrl +'/spotmop'+ image.uri;
+				delete image.uri;
+				
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;
+					}else if( image.height >= 250 ){
+						standardised.medium = image.url;
+					}else{		
+						standardised.small = image.url;			
+					}
+				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
+		
+			// spotify-styled images
+			}else if( typeof(image.height) !== 'undefined' ){
+			
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;		
+					}else if( image.height >= 300 ){				
+						standardised.medium = image.url;		
+					}else{
+						standardised.small = image.url;
+					}
+				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
+			
+			// lastFM styled images
+			}else if( typeof(image['#text']) !== 'undefined' ){
+				
+				// making sure the image actually exists...
+				if( image['#text'] && image['#text'].length > 0 && image.size != '' ){
+					
+					switch( image.size ){
+						case 'mega':
+							standardised.large = image['#text'];
+							break;
+						case 'extralarge':
+							standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'large':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'medium':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'small':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+					}
+				}
+			
+			// none of the above, assume mopidy core-styled images
+			}else{
+				standardised.large = image;
+				standardised.medium = image;
+				standardised.small = image;
+			}
+		}
+		
+		return standardised;
 	}
-})
+}])
 
 // get the appropriate sized image
 .filter('shuffle', function(){
@@ -32479,6 +32821,53 @@ angular.module('spotmop.directives', [])
 		}
 		
 		return array;
+	}
+})
+
+// identify what the asset's origin is (ie spotify, local)
+// return string
+.filter('assetOrigin', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 0 ){
+			return false;
+		}
+		return uriElements[0];
+	}
+})
+
+// identify what the asset type is
+// we rely on this being the second attribute in a URI (ie origin:type:id)
+// return string
+.filter('assetType', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 1 ){
+			return false;
+		}
+		return uriElements[1];
+	}
+})
+
+/**
+ * Get the MBID from a URI
+ * @return string
+**/
+.filter('mbid', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var start = uri.indexOf(':mbid:') + 6;
+		var end = uri.length;
+		
+		return uri.substr(start, end);
 	}
 });
 
@@ -32953,7 +33342,7 @@ angular.module('spotmop.common.tracklist', [])
 				
 					// build an array of track uris (and subtract the first one, as we play him immediately)
 					var selectedTracksUris = [];
-					for( var i = 1; i < selectedTracks.length; i++ ){
+					for( var i = 0; i < selectedTracks.length; i++ ){
 						selectedTracksUris.push( selectedTracks[i].uri );
 					};
 					
@@ -32963,15 +33352,7 @@ angular.module('spotmop.common.tracklist', [])
 						
 					NotifyService.notify( message );
 					
-					// play the first track immediately
-					MopidyService.playTrack( [ firstSelectedTrack.uri ], 0 ).then( function(){
-						
-						// more tracks to add
-						if( selectedTracksUris.length > 0 ){
-							// add the following tracks to the tracklist
-							MopidyService.addToTrackList( selectedTracksUris, 1 );
-						}
-					});
+					MopidyService.playTrack( selectedTracksUris, 0 );
 				}
 			}
 			
@@ -33299,11 +33680,6 @@ angular.module('spotmop.library', [])
 			url: "/albums",
 			templateUrl: "app/library/albums.template.html",
 			controller: 'LibraryAlbumsController'
-		})
-		.state('library.local', {
-			url: "/local/:uri",
-			templateUrl: "app/library/local.template.html",
-			controller: 'LibraryLocalController'
 		});
 }])
 	
@@ -33567,10 +33943,10 @@ angular.module('spotmop.library', [])
 	$scope.show = function( playlist ){
         
         if(
-				typeof($scope.settings.playlists) === 'undefined' ||
-				typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
-				!$scope.settings.playlists.onlyshowowned ){
-            return true;
+			typeof($scope.settings.playlists) === 'undefined' ||
+			typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
+			!$scope.settings.playlists.onlyshowowned ){
+				return true;
         }
         
         if( playlist.owner.id == 'jaedb' ) return true;
@@ -33586,27 +33962,44 @@ angular.module('spotmop.library', [])
     
 		SpotifyService.getPlaylists( userid )
 			.then( function( response ){ // successful
-					$scope.playlists = response;
 					
 					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
+					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
 						Spotify.refreshToken();
+                    }else{
+						$scope.playlists = response;
+					}
 				});
 	
 	// not authorized, so have to fetch via backend first
-	}else{	
-        
-        NotifyService.notify('Fetching from Mopidy as you haven\'t authorized Spotify. This will take a while!');
+	}else{
         
 		function fetchPlaylists(){		
 			MopidyService.getPlaylists()
-				.then( function( response ){				
-					// fetch more detail from each playlist (individually, d'oh!)
-					angular.forEach( response, function(value, key){
-						SpotifyService.getPlaylist( value.uri )
-							.then( function( playlist ){
-								$scope.playlists.items.push( playlist );
-							});
+				.then( function( response ){
+					
+					// add them to our list
+					$scope.playlists.items = response;
+					
+					// now go get the extra info (and artwork) from Spotify
+					// need to do this individually as there is no bulk endpoint, curses!
+					angular.forEach( response, function(playlist, i){
+					
+						// process it and add to our $scope
+						var callback = function(i){
+							return function( response ){
+								
+								// make sure our response was not an error
+								if( typeof(response.error) === 'undefined' ){
+									
+									// update the existing playlist item with our updated data
+									$scope.playlists.items[i] = response;
+								}
+							};
+						}(i);
+						
+						// run the actual request
+						SpotifyService.getPlaylist( playlist.uri ).then( callback );
 					});
 				});
 		}
@@ -33617,6 +34010,7 @@ angular.module('spotmop.library', [])
 		else
 			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
     }
+	
 	
     /**
      * Load more of the album's tracks
@@ -33655,14 +34049,298 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
-}])
+}]);
 
+
+
+
+angular.module('spotmop.local', [])
+
+/**
+ * Routing 
+ **/
+.config(['$stateProvider', function($stateProvider) {
+	$stateProvider
+		.state('local', {
+			url: "/local",
+			templateUrl: "app/local/template.html"
+		})
+		.state('local.index', {
+			url: "/index",
+			templateUrl: "app/local/index.html",
+			controller: 'LocalController'
+		})
+		.state('local.directory', {
+			url: "/directory/:uri",
+			templateUrl: "app/local/directory.html",
+			controller: 'LocalDirectoryController'
+		})
+		.state('local.albums', {
+			url: "/albums",
+			templateUrl: "app/local/albums.html",
+			controller: 'LocalAlbumsController'
+		})
+		.state('local.artists', {
+			url: "/artists",
+			templateUrl: "app/local/artists.html",
+			controller: 'LocalArtistsController'
+		});
+}])
 
 	
 /**
- * Local files
+ * Landing page
  **/
-.controller('LibraryLocalController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LocalController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
+		
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	// go get em
+	function getItems(){
+		
+		MopidyService.getLibraryItems( 'local:directory' )
+			.then( function( response ){
+			
+					// load tracks
+					var trackReferences = $filter('filter')(response, {type: 'track'});
+					var trackUris = [];
+					
+					// loop all the track references, so we can get all the track objects
+					for( var i = 0; i < trackReferences.length; i++ ){
+						trackUris.push( trackReferences[i].uri );
+					}
+					
+					// take our track references and look up the actual track objects
+					if( trackUris.length > 0 ){
+						MopidyService.getTracks( trackUris )
+							.then( function( response ){
+							
+								var tracks = [];
+								
+								// loop all the tracks to sanitize the response
+								for( var key in response ){
+									var track = response[key][0];
+									track.type = 'localtrack';
+									tracks.push( track );
+								}
+								
+								$scope.tracks = tracks;
+								$scope.allTracks = tracks;
+							});
+					}
+					
+					// organise the folders					
+					var folders = [];
+					for( i = 0; i < response.length; i++ ){
+						if( response[i].type != 'track' )
+							folders.push( response[i] );
+					}
+					
+					var folders = formatFolders( folders );
+					
+					// store our folders to the template-accessible variable
+					$scope.folders = folders;
+					$scope.allFolders = folders;
+				});
+	}
+	
+	
+	/**
+	 * Format our folders into the desired format
+	 * @param items = array
+	 * @return array
+	 **/
+	function formatFolders( items ){
+		
+		// sanitize uris
+		for( var i = 0; i < items.length; i++ ){
+			var item = items[i];
+			
+			// replace slashes (even urlencoded ones) to ":"
+			item.uri = item.uri.replace('%2F', '|');
+			item.uri = item.uri.replace('/', '|');
+			
+			items[i] = item;
+		}
+		
+		return items;
+	}
+		
+}])
+
+
+/**
+ * Artists
+ **/
+.controller('LocalArtistsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+	
+	$scope.settings = SettingsService.getSettings();
+	$scope.allArtists = [];
+    var limit = 50;
+	var uri;
+	
+	// watch for filter input
+	$scope.$watch('filterTerm', function(val){
+        limit = 50;
+        $scope.artists = $filter('filter')($scope.allArtists, val);
+        $scope.artists = $filter('limitTo')($scope.artists, limit);
+    });
+	
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	// go get em
+	function getItems(){
+		
+		MopidyService.getLibraryItems( 'local:directory?type=artist' )
+			.then( function( response ){
+				
+				var artists = response;
+				
+				// once we get the info from lastFM
+				// process it and add to our $scope
+				var callback = function(n){
+					return function( response ){
+						console.log( response );
+						if( typeof(response) !== 'undefined' ){
+							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
+						}
+					};
+				}(i);
+				
+				// get the artwork
+				for( var i = 0; i < artists.length; i++ ){
+				}
+				
+				$scope.artists = $filter('limitTo')(artists, limit);
+				$scope.allArtists = artists;
+			});
+	}
+    
+    // once we're told we're ready to load more
+    var loading = false;
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loading ){
+            loading = true;
+            limit += 50;
+            if( $scope.filterTerm ){
+                $scope.artists = $filter('filter')($scope.allArtists, $scope.filterTerm);
+                $scope.artists = $filter('limitTo')($scope.artists, limit);
+            }else{
+                $scope.artists = $filter('limitTo')($scope.allArtists, limit);
+            }
+            $timeout(
+                function(){
+                    loading = false;
+                }, 1 );
+        }
+    });
+}])
+
+
+/**
+ * Albums
+ **/
+.controller('LocalAlbumsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+	
+	$scope.settings = SettingsService.getSettings();
+	$scope.allAlbums = [];
+    var limit = 50;
+	var uri;
+	
+	// watch for filter input
+	$scope.$watch('filterTerm', function(val){
+        limit = 50;
+        $scope.albums = $filter('filter')($scope.allAlbums, val);
+        $scope.albums = $filter('limitTo')($scope.albums, limit);
+		if( $scope.albums.length > 0 ){
+			getArtwork( $scope.albums );
+		}
+    });
+	
+	// on init, go get the items (or wait for mopidy to be online)
+	if( $scope.mopidyOnline )
+		getItems();
+	else
+		$scope.$on('mopidy:state:online', function(){ getItems() });
+	
+	// go get em
+	function getItems(){
+		
+		MopidyService.getLibraryItems( 'local:directory?type=album' )
+			.then( function( response ){
+				$scope.albums = $filter('limitTo')(response, 50);
+				$scope.allAlbums = response;
+				getArtwork( $scope.albums );
+			});
+	}
+	
+	// fetch artwork from Mopidy
+    function getArtwork( $albums ){
+	
+		var uris = [];
+		
+		for( var i = 0; i < $albums.length; i++ ){
+			uris.push( $albums[i].uri );
+		}
+		
+		// chat with Mopidy and get the images for all these URIs
+		MopidyService.getImages( uris )
+			.then( function(response){
+			
+				// loop all the response uris
+				for( var key in response ){
+				
+					// make sure this key is valid, and we actually got some images
+					if( response.hasOwnProperty(key) && response[key].length > 0 ){
+						
+						// find the album that this URI matches, and store it's index
+						var albumByUri = $filter('filter')($scope.allAlbums, {uri: key});						
+						var index = $scope.allAlbums.indexOf( albumByUri[0] );
+						
+						// update the album's images
+						$scope.allAlbums[index].images = response[key];
+					}
+				}
+			});
+	}
+	
+    // once we're told we're ready to load more
+    var loading = false;
+    $scope.$on('spotmop:loadMore', function(){
+        if( !loading ){
+            loading = true;
+            limit += 50;
+            if( $scope.filterTerm ){
+                $scope.albums = $filter('filter')($scope.allAlbums, $scope.filterTerm);
+                $scope.albums = $filter('limitTo')($scope.albums, limit);
+            }else{
+                $scope.albums = $filter('limitTo')($scope.allAlbums, limit);
+            }
+            $timeout(
+                function(){
+                    loading = false;
+					if( $scope.albums.length > 0 ){
+						getArtwork( $scope.albums );
+					}
+                }, 1 );
+        }
+    });
+}])
+
+
+/**
+ * Directories
+ * This is mainly to support basic libraries (like JSON) and non-asset uris
+ **/
+.controller('LocalDirectoryController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.path = [{title: 'Files', uri: 'local:directory'}];
 	$scope.allFolders = [];
@@ -33711,40 +34389,6 @@ angular.module('spotmop.library', [])
 			}
 			
 			uri = uri.replace('|','/');
-		}
-		
-		// manually setup path structure
-		if(uri == 'local:directory?type=track' ){
-			$scope.path.push({title: 'Tracks', uri: 'local:directory'});
-		}else if( uri.indexOf('local:directory?date=') > -1 ){
-			$scope.path.push({title: 'History', uri: 'local:directory'});
-			
-		// albums
-		}else if( uri.indexOf('local:directory?type=album') > -1 ){
-			$scope.path.push({title: 'Albums'});
-		
-		// individual album
-		}else if( uri.indexOf('album=') > -1 || uri.indexOf('local:album:') > -1 ){
-			$scope.path.push({title: 'Albums', uri: 'local:directory?type=album'});
-			$scope.path.push({title: 'Album'});
-			
-		// artist
-		}else if( uri.indexOf('local:directory?type=artist') > -1 ){
-			$scope.path.push({title: 'Artists'});
-		
-		// individual artist
-		}else if( uri.indexOf('local:artist:') > -1 ){
-			$scope.path.push({title: 'Artists', uri: 'local:directory?type=artist'});
-			$scope.path.push({title: 'Artist'});
-			
-		// genre
-		}else if( uri.indexOf('local:directory?type=genre') > -1 ){
-			$scope.path.push({title: 'Genres'});
-		
-		// individual genre
-		}else if( uri.indexOf('genre=') > -1 ){
-			$scope.path.push({title: 'Genres', uri: 'local:directory?type=genre'});
-			$scope.path.push({title: 'Genre'});
 		}
 	}
 	
@@ -33830,7 +34474,6 @@ angular.module('spotmop.library', [])
 
 
 
-
 'use strict';
 
 angular.module('spotmop.player', [
@@ -33905,6 +34548,9 @@ angular.module('spotmop.player', [
     $scope.toggleMute = function(){
 		PlayerService.toggleMute();
     };
+    $scope.toggleConsume = function(){
+		PlayerService.toggleConsume();
+    };
 	
     
 	/**
@@ -33948,6 +34594,7 @@ angular.module('spotmop.services.player', [])
 		isRepeat: false,
 		isRandom: false,
 		isMute: false,
+		isConsume: false,
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
@@ -34027,10 +34674,12 @@ angular.module('spotmop.services.player', [])
         MopidyService.getMute().then( function(isMute){
             state.isMute = isMute;
         });
+		MopidyService.getConsume().then( function( isConsume ){
+			state.isConsume = isConsume;
+		});
 	}
 	
 	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
 		
 		// only if our new tlTrack differs from our current one
@@ -34128,11 +34777,16 @@ angular.module('spotmop.services.player', [])
 		
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
-						
+			
+			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
-			
-				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				
+				// convert our singular image into the expected mopidy image model
+				var images = [{ __model__: 'Image', uri: tlTrack.track.album.images }];
+				
+				// plug it in
+				state.currentTlTrack.track.images = $filter('sizedImages')( images );
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
@@ -34144,7 +34798,7 @@ angular.module('spotmop.services.player', [])
 					SpotifyService.getTrack( tlTrack.track.uri )
 						.then(function( response ){
 							if( typeof(response.album) !== 'undefined' ){
-								state.currentTlTrack.track.image = response.album.images[0].url;
+								state.currentTlTrack.track.images = $filter('sizedImages')(response.album.images);
 							}
 							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
@@ -34164,9 +34818,7 @@ angular.module('spotmop.services.player', [])
 									
 									// if we got an album match, plug in the 'extralarge' image to our state()
 									if( typeof(response.album) !== 'undefined' ){
-										var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-										if( largest )
-											state.currentTlTrack.track.image = largest['#text'];
+										state.currentTlTrack.track.images = $filter('sizedImages')(response.album.image);
 									}
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
@@ -34207,6 +34859,13 @@ angular.module('spotmop.services.player', [])
 	function updateTracklist(){
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$rootScope.currentTracklist = tlTracks;
+			
+			// no tracks? make sure we don't have anything 'playing'
+			// this would typically be called when we clear our tracklist, or have got to the end
+			if( !tlTracks || tlTracks.length <= 0 ){
+				state.currentTlTrack = false;
+				updateWindowTitle();
+			}
 		});
 	}
 		
@@ -34245,7 +34904,7 @@ angular.module('spotmop.services.player', [])
 	 **/
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
 				state.playPosition += 1000;
 			}
 		},
@@ -34322,8 +34981,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){		
-			MopidyService.play();
+		next: function(){
 			MopidyService.next();
 		},
 		
@@ -34362,6 +35020,12 @@ angular.module('spotmop.services.player', [])
 				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
 			else
 				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
+		},
+		toggleConsume: function(){
+			if( state.isConsume )
+				MopidyService.setConsume( false ).then( function(response){ state.isConsume = false; } );
+			else
+				MopidyService.setConsume( true ).then( function(response){ state.isConsume = true; } );
 		}
 		
 	};
@@ -34416,8 +35080,12 @@ angular.module('spotmop.queue', [])
         }
 	});
 
-	$scope.addByUri = function(){
+	$scope.addUri = function(){
 		DialogService.create('addbyuri',$scope);
+	};
+
+	$scope.clearQueue = function(){
+		MopidyService.clearCurrentTrackList();
 	};
 	
 	
@@ -34819,36 +35487,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
 		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SettingsService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
-            $scope.saving = false;
+		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistPublic == 'true' )
-					$scope.playlistPublic = true;
-				else
-					$scope.playlistPublic = false;
-                
-                // perform the creation
-                SpotifyService.createPlaylist(
-						$scope.$parent.spotifyUser.id,
-						{ name: $scope.playlistName, public: $scope.playlistPublic } 
-					)
-                    .then( function(response){
-                    
-                        // save new playlist to our playlist array
-                        $scope.$parent.playlists.items.push( response );
+				if( $scope.playlistName && $scope.playlistName != '' ){
+					
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistPublic == 'true' )
+						$scope.playlistPublic = true;
+					else
+						$scope.playlistPublic = false;
+					
+					// perform the creation
+					SpotifyService.createPlaylist(
+							$scope.$parent.spotifyUser.id,
+							{ name: $scope.playlistName, public: $scope.playlistPublic } 
+						)
+						.then( function(response){
 						
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+							// save new playlist to our playlist array
+							$scope.$parent.playlists.items.push( response );
+							
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}]
 	};
@@ -34868,35 +35542,42 @@ angular.module('spotmop.services.dialog', [])
 		transclude: true,
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
 		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SpotifyService ){
+		
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
             $scope.saving = false;
             $scope.savePlaylist = function(){
-                
-                // set state to saving (this swaps save button for spinner)
-                $scope.saving = true;
 				
-				// convert public to boolean (radio buttons use strings...)
-				if( $scope.playlistNewPublic == 'true' )
-					$scope.playlistNewPublic = true;
-				else
-					$scope.playlistNewPublic = false;
+				if( $scope.playlistNewName && $scope.playlistNewName != '' ){
                 
-                // actually perform the rename
-                SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
-                    .then( function(response){
-                    
-                        // update the playlist's name
-                        $scope.$parent.playlist.name = $scope.playlistNewName;
-                        $scope.$parent.playlist.public = $scope.playlistNewPublic;
-                    
-                        // fetch the new playlists (for sidebar)
-                        $scope.$parent.updatePlaylists();
-                    
-                        // and finally remove this dialog
-                        DialogService.remove();
-    					$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-                    });
+					// set state to saving (this swaps save button for spinner)
+					$scope.saving = true;
+					
+					// convert public to boolean (radio buttons use strings...)
+					if( $scope.playlistNewPublic == 'true' )
+						$scope.playlistNewPublic = true;
+					else
+						$scope.playlistNewPublic = false;
+					
+					// actually perform the rename
+					SpotifyService.updatePlaylist( $scope.$parent.playlist.uri, { name: $scope.playlistNewName, public: $scope.playlistNewPublic } )
+						.then( function(response){
+						
+							// update the playlist's name
+							$scope.$parent.playlist.name = $scope.playlistNewName;
+							$scope.$parent.playlist.public = $scope.playlistNewPublic;
+						
+							// fetch the new playlists (for sidebar)
+							$scope.$parent.updatePlaylists();
+						
+							// and finally remove this dialog
+							DialogService.remove();
+							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
+						});
+						
+				}else{
+					$scope.error = true;
+				}
             }
 		}]
 	};
@@ -35128,15 +35809,25 @@ angular.module('spotmop.services.lastfm', [])
 		},
 
 		trackInfo: function( artist, track ){
+            artist = encodeURIComponent( artist );
 			return this.sendRequest('method=track.getInfo&track='+track+'&artist='+artist);
 		},
 
 		albumInfo: function( artist, album ){
+            artist = encodeURIComponent( artist );
+            album = encodeURIComponent( album );
 			return this.sendRequest('method=album.getInfo&album='+album+'&artist='+artist);
+		},
+		albumInfoByMbid: function( mbid ){
+			return this.sendRequest('method=album.getInfo&mbid='+mbid);
 		},
 
 		artistInfo: function( artist ){
+            artist = encodeURIComponent( artist );
 			return this.sendRequest('method=artist.getInfo&artist='+artist);
+		},
+		artistInfoByMbid: function( mbid ){
+			return this.sendRequest('method=artist.getInfo&mbid='+mbid);
 		}
 	};
 	
@@ -35168,7 +35859,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", ['$q', '$rootScope', '$cacheFactory', '$location', '$timeout', 'SettingsService', 'PusherService', function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService ){
+.factory("MopidyService", ['$q', '$rootScope', '$cacheFactory', '$location', '$timeout', 'SettingsService', 'PusherService', 'NotifyService', 'cfpLoadingBar', function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService, NotifyService, cfpLoadingBar ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -35185,26 +35876,14 @@ angular.module('spotmop.services.mopidy', [
 			var deferred = $q.defer();
 			var args = Array.prototype.slice.call(arguments);
 			var self = thisObj || this;
-            
-			$rootScope.$broadcast('spotmop:callingmopidy', { name: functionNameToWrap, args: args });
 
-			if (self.isConnected) {
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}else{
-				executeFunctionByName(functionNameToWrap, self, args).then(function(data) {
-					deferred.resolve(data);
-					$rootScope.$broadcast('spotmop:calledmopidy', { name: functionNameToWrap, args: args });
-				}, function(err) {
-					deferred.reject(err);
-					$rootScope.$broadcast('spotmop:errormopidy', { name: functionNameToWrap, args: args, err: err });
-				});
-			}
+			executeFunctionByName(functionNameToWrap, self, args).then(function(data){
+				deferred.resolve(data);
+			}, function(err) {
+				NotifyService.error( err );
+				deferred.reject(err);
+			});
+			
 			return deferred.promise;
 		};
 	}
@@ -35233,11 +35912,8 @@ angular.module('spotmop.services.mopidy', [
 		isConnected: false,
 		
 		testMethod: function( method, payload ){
+			console.info( 'Performing test method: '+method+' with payload:'+ payload);
 			return wrapMopidyFunc(method, this)( payload );
-		},
-		
-		getImages: function( uri ){
-			return wrapMopidyFunc('mopidy.library.getImages', this)( uri );
 		},
 		
 		/*
@@ -35328,6 +36004,9 @@ angular.module('spotmop.services.mopidy', [
 		getArtist: function(uri) {
 			return wrapMopidyFunc("mopidy.library.lookup", this)({ uri: uri });
 		},
+		getImages: function(uris){
+			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
+		},
 		search: function(searchterm, type, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
 			if( typeof(type) === 'undefined' || !type ) var type = 'any';
@@ -35365,92 +36044,60 @@ angular.module('spotmop.services.mopidy', [
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
-		playTrack: function(newTracklistUris, trackToPlayIndex) {
+		playTrack: function(trackUris, trackToPlayIndex) {
 			var self = this;
-
-			// add the surrounding tracks (ie the whole tracklist in focus)
-			// we add this right to the top of the existing tracklist
-			return self.mopidy.tracklist.add({ uris: newTracklistUris, at_position: 0 })
-				.then( function(){
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-						}, consoleError );
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			// add the first track immediately
+			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+			
+				// then play it
+				.then( function( response ){	
+					
+					// make sure we added the track successfully
+					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+					var playTrack = null;					
+					if( response.length > 0 ){
+						playTrack = { tlid: response[0].tlid };
+					}
+					
+					return self.mopidy.playback.play()
+				
+						// now add all the remaining tracks
+						// note the use of .shift() previously altered the array				
+						.then( function(){
+							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+								.then( function(){
+									cfpLoadingBar.complete();
+								});
+						}, consoleError);
 				}, consoleError);
-
-			/*
-			// stop playback
-			return self.mopidy.playback.stop()
-				.then(function() {
-
-					// clear the current tracklist
-					return self.mopidy.tracklist.clear();
-
-				}, consoleError)
-				.then(function() {
-
-					// add the surrounding tracks (ie the whole tracklist in focus)
-					return self.mopidy.tracklist.add({ uris: newTracklistUris });
-
-				}, consoleError)
-				.then(function() {
-
-					// get the new tracklist
-					return self.mopidy.tracklist.getTlTracks()
-						.then(function(tlTracks) {
-
-							// save tracklist for later
-							self.currentTlTracks = tlTracks;
-
-							return self.mopidy.playback.play({ tl_track: tlTracks[trackToPlayIndex] });
-				}, consoleError);
-			}, consoleError);
-			*/
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
 		},
 		playStream: function( streamUri, expectedTrackCount ){
 			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);			
+				
 			var self = this;
 			
-			// pre-fetch our playlist tracks
-			self.mopidy.library.lookup({ uri: streamUri })
-				.then( function(tracks){
-					
-					// if we haven't got as many tracks as expected
-					// wait 2s before adding to tracklist (to allow mopidy to continue loading them in the background)
-					if( typeof(expectedTrackCount) !== 'undefined' && tracks.length != expectedTrackCount ){			
-						console.info(streamUri+ ' expecting '+expectedTrackCount+' tracks, got '+tracks.length+'. Waiting 2 seconds for server to pre-load playlist...');
-						$timeout( function(){
-							playStream();
-						}, 2000 );
-						
-					// we have the expected track count already (already loaded/cached), go-go-gadget!
-					}else{
-						playStream();
-					}
-				}, consoleError );
-			
-			// play the stream
-			function playStream(){
-				self.stopPlayback(true)
-					.then(function() {
-						self.mopidy.tracklist.clear();
-					}, consoleError)
-					.then(function() {
-						self.mopidy.tracklist.add({ at_position: 0, uri: streamUri });
-					}, consoleError)
-					.then(function() {
-						self.mopidy.playback.play();
-					}, consoleError);			
-			}
+			self.stopPlayback(true)
+				.then(function() {
+					self.mopidy.tracklist.clear();
+				}, consoleError)
+				.then(function() {
+					self.mopidy.tracklist.add({ at_position: 0, uri: streamUri })
+						.then( function(){
+							cfpLoadingBar.complete();
+						});
+				}, consoleError)
+				.then(function() {
+					self.mopidy.playback.play();
+				}, consoleError);
 		},
 		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
@@ -35495,6 +36142,9 @@ angular.module('spotmop.services.mopidy', [
 		},
 		getCurrentTrackList: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTracks", this)();
+		},
+		clearCurrentTrackList: function () {
+			return wrapMopidyFunc("mopidy.tracklist.clear", this)();
 		},
 		getCurrentTlTracks: function () {
 			return wrapMopidyFunc("mopidy.tracklist.getTlTracks", this)();
@@ -36351,15 +37001,15 @@ angular.module('spotmop.services.spotify', [])
 		
 		getMyAlbums: function( userid, limit, offset ){
 			
+            var deferred = $q.defer();
+			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
 			}
 			
-			if( typeof( limit ) === 'undefined' || !limit ) limit = 40;
+			if( typeof( limit ) === 'undefined' || !limit ) limit = 20;
 			if( typeof( offset ) === 'undefined' ) offset = 0;
-			
-            var deferred = $q.defer();
 
             $http({
 					cache: true,
@@ -36370,34 +37020,7 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){	
-					
-					var readyToResolve = false;
-					var completeAlbums = [];
-					var batchesRequired = Math.ceil( response.items.length / 20 );
-					
-					// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
-					for( var batchCounter = 1; batchCounter <= batchesRequired; batchCounter++ ){
-						
-						var batch = response.items.splice(0,20);
-						var albumids = [];
-						
-						// loop all our albums to build a list of all the album ids we need
-						var batchLimiter = 20;
-						if( batch.length < 20 ) batchLimiter = batch.length;
-						for( var i = 0; i < batchLimiter; i++ ){
-							albumids.push( batch[i].album.id );
-						};
-						
-						// go get the albums
-						service.getAlbums( albumids )
-							.then( function(albums){
-								completeAlbums = completeAlbums.concat( albums.albums );									
-								if( batchCounter >= batchesRequired ){
-									response.items = completeAlbums;
-									deferred.resolve( response );
-								}
-							});
-					}		
+					deferred.resolve( response );
                 })
                 .error(function( response ){					
 					NotifyService.error( response.error.message );
@@ -37411,6 +38034,10 @@ angular.module('spotmop.settings', [])
 		.state('settings', {
 			url: "/settings",
 			templateUrl: "app/settings/template.html"
+		})
+		.state('testing', {
+			url: "/testing",
+			templateUrl: "app/settings/testing.template.html"
 		});
 }])
 	
@@ -37490,6 +38117,28 @@ angular.module('spotmop.settings', [])
         .then( function(connections){
             $scope.clientConnections = connections;
         });
+}])
+
+
+/**
+ * Testing controller
+ * Accessed only by direct URL (/testing) for testing the system
+ **/	
+.controller('TestingController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
+	
+	$scope.method = 'mopidy.library.browse';
+	$scope.payload = '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}';
+	$scope.data = {};
+	
+	$scope.run = function(){
+		console.info('Testing method: '+$scope.method);
+		MopidyService.testMethod($scope.method, JSON.parse( $scope.payload ) )
+			.then( function(response){
+				console.table(response);
+				$scope.data = response;
+			});
+	}
+	
 }]);
 
 /**
@@ -37669,8 +38318,8 @@ angular.module('spotmop.services.settings', [])
 		runUpgrade: function(){
 			
 			// depreciated settings
-			SettingsService.setSetting('spotmop','','emulateTouchDevice');
-			SettingsService.setSetting('spotmop','default','pointerMode');
+			service.setSetting('spotmop','','emulateTouchDevice');
+			service.setSetting('spotmop','default','pointerMode');
 		},
 		
 		

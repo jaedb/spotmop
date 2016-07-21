@@ -3,8 +3,8 @@
 		
         <div class="page-header">
 		
-            <div class="utilities has-buttons">
-                <a class="button create-playlist primary pull-right" ng-click="createPlaylist()">
+            <div class="utilities has-buttons" ng-if="spotifyAuthorized">
+                <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()">
                     <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span>
                 </a>
                 <div class="switch-button-wrapper pull-right">
@@ -27,9 +27,9 @@
 			<div ng-if="playlists.items.length">
 				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by $index">
 					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
-						<div class="image-container" ng-if="playlist.images">
-							<thumbnail images="playlist.images"></thumbnail>
-						</div>
+                        <div class="image-container">
+                            <thumbnail size="medium" images="playlist.images"></thumbnail>
+                        </div>
 						<div class="info animate">
 							<div class="name" ng-bind="playlist.name"></div>
 							<div class="secondary tracks" ng-if="playlist.tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != spotifyUser.id">&nbsp;<i class="fa fa-lock"></i></span></div>

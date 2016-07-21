@@ -46,67 +46,185 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
-	$scope.tracklist = {type: 'track'};
-	$scope.albums = {};
+	$scope.tracklist = { type: 'track' };
+	$scope.albums = { items: [] };
 	$scope.relatedArtists = {};
-    $scope.followArtist = function(){
-        SpotifyService.followArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = true;
-            });
-    }
-    $scope.unfollowArtist = function(){
-        SpotifyService.unfollowArtist( $stateParams.uri )
-            .then( function(response){
-                $scope.following = false;
-            });
-    }
-	$scope.playArtistRadio = function(){
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
+	
+	
+	/**
+	 * Spotify artists
+	 **/
+	if( $scope.origin == 'spotify' ){
 		
-		NotifyService.notify('Playing all top tracks');
-		
-		// get the artist's top tracks
-		SpotifyService.getTopTracks( $stateParams.uri )
-			.then( function( response ){
-				var uris = [];
-				for( var i = 0; i < response.tracks.length; i++ ){
-					uris.push( response.tracks[i].uri );
-				}
-				MopidyService.playTrack( uris, 0 );
-			});
-	}
-    
-	// get the artist from Spotify
-	SpotifyService.getArtist( $stateParams.uri )
-		.then( function( response ){
-			$scope.artist = response;
-    
-			/*
-			// get the artist from LastFM
-			// NOT CURRENTLY REQUIRED AS IT DOESN'T PROVIDE MUCH MORE USEFUL DATA
-			LastfmService.artistInfo( response.name )
-				.then( function( response ){
-					console.log( response );
+		$scope.followArtist = function(){
+			SpotifyService.followArtist( $stateParams.uri )
+				.then( function(response){
+					$scope.following = true;
 				});
-			*/
-		});
-
-	// figure out if we're following this playlist
-	if( $rootScope.spotifyAuthorized ){
-		SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
-			.then( function( isFollowing ){
-				$scope.following = $.parseJSON(isFollowing);
+		}
+		$scope.unfollowArtist = function(){
+			SpotifyService.unfollowArtist( $stateParams.uri )
+				.then( function(response){
+					$scope.following = false;
+				});
+		}
+		$scope.playArtistRadio = function(){
+		
+			NotifyService.notify('Starting artist radio');
+			
+			// get the artist's top tracks
+			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
+				.then( function( response ){
+				
+					var uris = [];
+					for( var i = 0; i < response.tracks.length; i++ ){
+						uris.push( response.tracks[i].uri );
+					}
+					MopidyService.clearCurrentTrackList()
+						.then( function(){
+							MopidyService.playTrack( uris, 0 );
+						});
+				});
+		}
+		
+		// get the artist from Spotify
+		SpotifyService.getArtist( $stateParams.uri )
+			.then( function( response ){
+				$scope.artist = response;
+				$scope.artist.images = response.images;
 			});
+
+		// figure out if we're following this playlist
+		if( $rootScope.spotifyAuthorized ){
+			SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+				.then( function( isFollowing ){
+					$scope.following = $.parseJSON(isFollowing);
+				});
+		}
+		
+		// get the artist's related artists
+		SpotifyService.getRelatedArtists( $stateParams.uri )
+			.then( function( response ){
+				$scope.relatedArtists = response.artists;
+			});
+		
+	
+	/**
+	 * Non-spotify artist, so just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getArtistFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getArtistFromMopidy() 
+			});
+		}
 	}
 	
-	// get the artist's related artists
-	SpotifyService.getRelatedArtists( $stateParams.uri )
-		.then( function( response ){
-			$scope.relatedArtists = response.artists;
-		});
+	/** 
+	 * Fetch the artist using Mopidy core
+	 **/
+	function getArtistFromMopidy(){
+	
+		MopidyService.getArtist( uri )
+			.then(function( response ){
+				
+				// an empty response from Mopidy
+				if( response.length <= 0 ){
+					NotifyService.error('Could not load artist: '+uri);
+					return;
+				}
+				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
+				$scope.artist = response[0].artists[0];
+				$scope.artist.type = 'localartist';
+				
+				// get artwork from LastFM
+				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
+						.then( function( response ){
+							$scope.artist.images = response.artist.image;
+							$scope.artist.stats = response.artist.stats;
+						});
+				}else{
+					LastfmService.artistInfo( $scope.artist.name )
+						.then( function( response ){
+							$scope.artist.images = response.artist.image;
+							$scope.artist.stats = response.artist.stats;
+						});
+                }
+				
+				$scope.tracklist.type = 'localtrack';
+				$scope.tracklist.tracks = $filter('limitTo')(response,10);
+		
+				// get the artist's related artists
+				// we hand this over to Spotify
+				/*
+				SpotifyService.getRelatedArtists( $stateParams.uri )
+					.then( function( response ){
+						$scope.relatedArtists = response.artists;
+					});
+					*/
+			});
+		
+		// get the albums
+		MopidyService.getLibraryItems( uri )
+			.then( function( response ){
+				
+				// get only the directories and albums
+				// Mopidy will dish up tracks that aren't recognised in an album or directory and that breaks stuff
+				$scope.albums.items = $filter('filter')(response, ( { type: 'directory' } && { type: 'album' } ));
+				
+				// loop each of the albums (or directories, depending on the backend)
+				for( var i = 0; i < $scope.albums.items.length; i++ ){
+                    
+					$scope.albums.items[i].artist = { name: $scope.artist.name };
+					$scope.albums.items[i].type = 'localalbum';
+                    
+                    // get the album URI from the url query (ie local:directory?album=uri&type=track...)
+                    var getAlbumUri = function( uri ) {
+                        return decodeURI(
+                            (RegExp('album=' + '(.+?)(&|$)').exec(uri)||[,null])[1]
+                        );
+                    }
+					
+					// handle "Directory" uris
+					// for some reason Mopidy sometimes detects albums as directory "type" instead
+					if( $scope.albums.items[i].uri.indexOf( 'album=' ) > -1 ){
+						$scope.albums.items[i].uri = getAlbumUri( $scope.albums.items[i].uri );
+					}
+					
+					// once we get the info from lastFM
+					// process it and add to our $scope
+					var callback = function(n){
+						return function( response ){
+                            if( typeof(response.album) !== 'undefined' ){
+                                $scope.albums.items[n].images = response.album.image;
+                            }
+						};
+					}(i);
+					
+					// get album artwork from LastFM
+					if( $scope.albums.items[i].mbid ){
+						LastfmService.albumInfoByMbid( $scope.albums.items[i].mbid )
+							.then( callback );
+					}else{
+						LastfmService
+							.albumInfo( $scope.albums.items[i].artist.name.trim(), $scope.albums.items[i].name.trim() )
+							.then( callback );
+					}
+				}
+			});
+	}
 })
 
 
@@ -114,18 +232,71 @@ angular.module('spotmop.browse.artist', [])
  * Artist overview controller
  **/
 .controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
-	
-	// get the artist's albums
-	SpotifyService.getArtistAlbums( $stateParams.uri )
-		.then( function( response ){
-			$scope.$parent.albums = response;
-		});	
-	
-	// get the artist's top tracks
-	SpotifyService.getTopTracks( $stateParams.uri )
-		.then( function( response ){
-			$scope.tracklist.tracks = response.tracks;
+
+
+	/**
+	 * Spotify artists
+	 **/
+	if( $scope.origin == 'spotify' ){
+			
+		// get the artist's albums
+		SpotifyService.getArtistAlbums( $stateParams.uri )
+			.then( function( response ){
+				$scope.$parent.albums = response;
+			});	
+		
+		// get the artist's top tracks
+		SpotifyService.getTopTracks( $stateParams.uri )
+			.then( function( response ){
+				$scope.tracklist.tracks = response.tracks;
+			});
+		
+		// once we're told we're ready to load more albums
+		$scope.$on('spotmop:loadMore', function(){
+			if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
+				loadMoreAlbums( $scope.albums.next );
+			}
 		});
+	
+	/**
+	 * Non-spotify artist, so just use Mopidy core
+	 **/
+	}else{
+	
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getArtistOverviewFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getArtistOverviewFromMopidy() 
+			});
+		}
+	}
+	
+	
+	/** 
+	 * Fetch the artist using Mopidy core
+	 **/
+	function getArtistOverviewFromMopidy(){
+	/*
+		MopidyService.getArtist( uri )
+			.then(function( response ){
+				//console.log( response );
+				
+				// this is not strictly accurate, but the only way to get the actual album data is from the track object
+				$scope.artist = response[0].artists[0];
+				
+				// get artwork from LastFM
+				if( typeof( $scope.artist.musicbrainz_id ) !== 'undefined' ){
+					LastfmService.artistInfoByMbid( $scope.artist.musicbrainz_id )
+						.then( function( response ){
+							$scope.artist.images = $filter('sizedImages')(response.artist.image);
+						});
+				}
+			});
+			*/
+	}	
+	
 	
 	
 	
@@ -159,13 +330,6 @@ angular.module('spotmop.browse.artist', [])
                 loadingMoreAlbums = false;
             });
     }
-	
-	// once we're told we're ready to load more albums
-    $scope.$on('spotmop:loadMore', function(){
-        if( !loadingMoreAlbums && typeof( $scope.albums.next ) !== 'undefined' && $scope.albums.next ){
-            loadMoreAlbums( $scope.albums.next );
-        }
-	});
 })
 
 

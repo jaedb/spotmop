@@ -9,9 +9,10 @@ import json
 from services.upgrade import upgrade
 from services.pusher import pusher
 from services.auth import auth
+from services.queuer import queuer
 from mopidy import config, ext
 
-__version__ = '2.6.7'
+__version__ = '2.7.4'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -30,7 +31,7 @@ class SpotmopExtension(ext.Extension):
         schema = super(SpotmopExtension, self).get_config_schema()
         schema['debug'] = config.Boolean()
         schema['pusherport'] = config.String()
-        schema['pusherclientmap'] = config.String()
+        schema['artworklocation'] = config.String()
         return schema
 
     def setup(self, registry):
@@ -43,10 +44,15 @@ class SpotmopExtension(ext.Extension):
 
         logger.info('Starting Spotmop web client '+ self.version)
 
+class ArtworkHandler(tornado.web.RequestHandler):
+    def get(self, file):
+        self.write("You requested the file " + file)
+        
 def spotmop_client_factory(config, core):
 
 	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
+    artworklocation = config.get(__ext_name__)['artworklocation']
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
 
     # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
@@ -57,24 +63,30 @@ def spotmop_client_factory(config, core):
             }),
     ])
     application.listen(pusherport)
+    
     logger.info( 'Pusher server running on []:'+ str(pusherport) )
 	
     return [
-		('/upgrade', upgrade.UpgradeRequestHandler, {
+		(r'/upgrade', upgrade.UpgradeRequestHandler, {
 				'core': core,
 				'config': config,
 				'version': __version__ 
 			}),
-		('/pusher/([^/]+)', pusher.PusherRequestHandler, {
+		(r'/pusher/([^/]+)', pusher.PusherRequestHandler, {
 				'core': core,
-				'config': config,
-				'version': __version__
+				'config': config
 			}),
-		('/auth', auth.AuthRequestHandler, {
+		(r'/auth', auth.AuthRequestHandler, {
 				'core': core,
-				'config': config,
-				'version': __version__
+				'config': config
 			}),
+		(r'/queuer/([^/]*)', queuer.QueuerRequestHandler, {
+				'core': core,
+				'config': config
+			}),
+        (r"/images/(.*)", tornado.web.StaticFileHandler, {
+            "path": artworklocation
+        }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
 				"path": spotmoppath,
 				"default_filename": "index.html"

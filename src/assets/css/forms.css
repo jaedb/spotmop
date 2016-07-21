@@ -44,6 +44,11 @@
 	background: #FFFFFF;
 }
 
+button,
+input[type="submit"]{
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif
+}
+
 .field input[readonly="true"]{
 	border-color: #999999;
 	background: #EEEEEE;
@@ -284,8 +289,13 @@
 }
  
 .utilities .list-filter {
-	margin: -5px -25px 0 0;
+	vertical-align: top;
+	margin: -5px 20px 0 0;
 	width: 200px;
+}
+ 
+.utilities .field {
+	display: inline-block;
 }
 
 

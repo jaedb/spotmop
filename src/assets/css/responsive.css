@@ -142,6 +142,30 @@
 	#player .slider.progress:hover .track {
 		height: 2px;
 	}
+	
+	
+	/**
+	 * Dropzones
+	 **/
+	 
+	#dropzones .dropzone > .liner {
+		padding-top: 19px;
+		padding-bottom: 19px;
+		font-size: 15px;
+	}
+	#dropzones .dropzone .label {
+		padding-top: 6px;
+	}
+	#dropzones .dropzone .menu-item {
+		font-size: 12px;
+		padding: 4px 12px;
+	}
+	#dropzones .dropzone.queue .dropzone.add-to-queue {
+		padding: 4px 20px 4px;
+	}
+	#dropzones .dropzone.queue .dropzone.add-to-queue-next {
+		padding: 4.5px 20px;
+	}
 
 }
 
@@ -279,10 +303,16 @@
 		font-size: 18px;
 	}
 	
+	.page-header .fa {
+		color: #FFFFFF;
+	}
+	
 	.page-header .button,
 	.page-header .button:hover,
 	.page-header .button.primary,
-	.page-header .button.primary:hover {
+	.page-header .button.primary:hover
+	.page-header .button.transparent,
+	.page-header .button.transparent:hover {
 		margin: 3px -10px 0 0;
 		padding: 8px 11px;
 		background: transparent;
@@ -424,7 +454,7 @@
 		position: relative;
 	}
 	
-	.thumbnail-wrapper.slim-intro-wrapper > .thumbnail {
+	.thumbnail-wrapper.slim-intro-wrapper .primary-thumbnail > .image {
 		opacity: 0.25;
 		padding-bottom: 0;
 		width: auto;
@@ -446,7 +476,7 @@
 		padding: 60px 20px 40px;
 	}
 	
-	.thumbnail-wrapper.slim-intro-wrapper .slim-intro .thumbnail {
+	.thumbnail-wrapper.slim-intro-wrapper .slim-intro .image {
 		display: block;
 		width: 180px;
 		height: 180px;
@@ -476,7 +506,7 @@
         margin-top: -20px;
 	}
 	 
-	.artist-page .info-panel .thumbnail {
+	.artist-page .info-panel .image {
 		display: none;
 	}
 	
@@ -743,8 +773,12 @@
 		padding: 5px 0;
 	}
 	
-	.touchDevice #utilities {
-		right: 5px;
+	.page-header .utilities {
+		margin-right: 0;
+	}
+	
+	.page-header .utilities .list-filter {
+		display: none;
 	}
 	
 	

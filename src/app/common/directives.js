@@ -39,7 +39,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', function( $rootScope, MopidyService, SpotifyService, NotifyService, PlayerService ){
+.directive('candrag', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -129,52 +129,37 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
 					
-					switch( $scope.dragobj.type ){
-						
-						case 'album':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+					if(
+						$scope.dragobj.type == 'album' ||
+						$scope.dragobj.type == 'localalbum' ||
+						$scope.dragobj.type == 'artist' ||
+						$scope.dragobj.type == 'localartist' ||
+						$scope.dragobj.type == 'playlist' ){
+							
+							// figure out if we need to apply the sizing filter or if it's already applied
+							var images = false;							
+							if( typeof($scope.dragobj.images.small) !== 'undefined' ){
+								var images = $scope.dragobj.images;
+							}else if( $scope.dragobj.images.length > 0 ){
+								var images = $filter('sizedImages')( $scope.dragobj.images );
 							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'artist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
+							
+							// if we got some images, plug in a purrty thumbnail
+							if( images ){
+								tracerContent = '<div class="thumbnail" style="background-image: url('+images.small+');"></div>';
 							}
+							
 							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'playlist':
-							if( $scope.dragobj.images.length > 0 ){
-								var image = $scope.dragobj.images[$scope.dragobj.images.length-1].url;
-								tracerContent = '<div class="thumbnail" style="background-image: url('+image+');"></div>';
-							}
-							tracerContent += '<div class="text">'+$scope.dragobj.name+'</div>';
-							break;
-						
-						case 'track':
+							
+					}else if(
+						$scope.dragobj.type == 'track' ||
+						$scope.dragobj.type == 'tltrack' ||
+						$scope.dragobj.type == 'localtrack' ){
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
 							}
-							break;
 						
-						case 'tltrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
-						
-						case 'localtrack':
-							var selectedTracks = $(document).find('.track.selected');
-							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
-							}
-							break;
 					}
 					
                     tracer.html( tracerContent );
@@ -278,6 +263,9 @@ angular.module('spotmop.directives', [])
 			
 				switch( $scope.dragobj.type ){
 					case 'album':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
+					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
@@ -488,12 +476,13 @@ angular.module('spotmop.directives', [])
  * Figure out the best image to use for this set of image sizes
  * @return image obj
  **/
-.directive('thumbnail', function( $timeout, $http ){
+.directive('thumbnail', function( $timeout, $http, $filter ){
 	return {
 		restrict: 'E',
 		scope: {
 			images: '=',
-			size: '='
+			size: '@',
+			debugging: '@'
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
@@ -502,7 +491,7 @@ angular.module('spotmop.directives', [])
 			// load thumbnail on init
 			loadThumbnail();
 			
-			// listen for changes to our image array (if we're swapping out objects, we need to swap the associated image too!)
+			// listen for changes to our image array and update when necessary
 			$scope.$watch('images', function(oldValue,newValue){
 				loadThumbnail();
 			});
@@ -510,78 +499,38 @@ angular.module('spotmop.directives', [])
 			// perform core functionality
 			function loadThumbnail(){
 			
-				// fetch this instance's best thumbnail
-				$scope.image = getThumbnailImage( $scope.images );
+				if( !$scope.images ){
+					return false;
+				}
 				
-				// now actually go get the image
-				if( $scope.image ){
+				// fetch this instance's best thumbnail
+				var image = $filter('sizedImages')($scope.images);
+				
+				// if we've been told a specific size (small|medium|large), get it
+				if( $scope.size ){
+					image = image[$scope.size];
+				
+				// otherwise just default to the smallest
+				}else{
+					image = image.small;
+				}
+				
+				// if we have an image
+				if( image && image != '' ){
 					$http({
 						method: 'GET',
-						url: $scope.image.url,
+						url: image,
 						cache: true
 						}).success( function(){
 						
 							// inject to DOM once loaded
-							$element.css('background-image', 'url('+$scope.image.url+')' );
+							$element.css('background-image', 'url('+image+')' );
 						});
 				}
 			}
 			
-			/**
-			 * Get the most appropriate thumbnail image
-			 * @param images = array of image urls
-			 * @return string (image url)
-			 **/
-			function getThumbnailImage( images ){
-				
-				// what if there are no images? then nada
-				if( images.length <= 0 )
-					return false;
-
-				// loop all the images
-				for( var i = 0; i < images.length; i++){
-					var image = images[i];
-					
-					// small thumbnails (ie search results)
-					if( $scope.size == 'small' ){
-						
-						// this is our preferred size
-						if( image.height >= 100 && image.height <= 200 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 200 && image.height <= 300 ){
-							return image;
-
-						// nope? let's take it the next notch up
-						}else if( image.height > 300 && image.height < 400 ){
-							return image;
-						}
-					
-					// standard thumbnails (ie playlists, full related artists, etc)
-					}else{
-						
-						// this is our preferred size
-						if( image.height >= 200 && image.height <= 300 ){
-							return image;
-
-						// let's take it a notch up then
-						}else if( image.height > 300 && image.height <= 500 ){
-							return image;
-
-						// nope? let's take it a notch down then
-						}else if( image.height >= 150 && image.height < 200 ){
-							return image;
-						}						
-					}
-				};
-
-				// no thumbnail that suits? just get the first (and highest res) one then        
-				return images[0];
-			}
-			
 		},
-		template: '<div class="image animate"></div>'
+		template: '<div class="thumbnail-image image animate"></div>'
 	};
 })
 
@@ -736,8 +685,11 @@ angular.module('spotmop.directives', [])
 			// when we're told to watch, we watch for changes in the url param (ie sidebar bg)
 			if( $element.attr('watch') ){
 				$scope.$watch('url', function(newValue, oldValue) {
-					if (newValue)
+					if( newValue ){
 						loadImage();
+					}else{
+						$element.attr('style', 'background-image: none;');
+					}
 				}, true);
 			}
 			
@@ -746,7 +698,7 @@ angular.module('spotmop.directives', [])
 			
 			// run the preloader
 			function loadImage(){
-				
+			
 				var fullUrl = '';
 				/*
 				RE-BUILD THIS TO USE PYTHON/TORNADO BACKEND
@@ -780,14 +732,13 @@ angular.module('spotmop.directives', [])
 
 /**
  **/
-.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http ){
+.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http, $filter ){
     return {
 		restrict: 'E',
         terminal: true,
 		scope: {
-			image: '@',				// object
-			useproxy: '@',
-			detectbackground: '@',
+			images: '=',
+			image: '@',
 			opacity: '@'
 		},
         link: function($scope, $element, $attrs){
@@ -802,27 +753,43 @@ angular.module('spotmop.directives', [])
 			);
 				
 			// setup initial variables
-			var	scrollTop = 0;
+			var	state = {
+				scrollTop: 0,
+				windowWidth: $(window).width(),
+				windowHeight: $(window).height()
+			};
 			var canvasDOM = document.getElementById('backgroundparallax');
 			var context = canvasDOM.getContext('2d');
+			var url = '';
 			
-			// load our image data from the json string attribute
-			var image = $.parseJSON($scope.image);
-		
-			/*
-			REBUILD THIS TO USE TORNADO
-			if( $scope.useproxy )
-				image.url = '/vendor/resource-proxy.php?url='+image.url;
-			*/
+			// if we're using an explicit url, just use that
+			if( $scope.image ){
+				url = $scope.image;
+				
+			// we're getting an array of images, so size 'em and get the largest
+			}else if( $scope.images ){
+				var images = $filter('sizedImages')($scope.images);
+				url = images.large;
+			}
+			var image = {
+					width: 0,
+					height: 0,
+					url: url
+				};
+			
 			// create our new image object (to be plugged into canvas)
-			image.asObject = new Image();
-			image.asObject.src = image.url;
-			image.asObject.onload = function(){
+			var imageObject = new Image();
+			imageObject.src = image.url;
+			imageObject.onload = function(){
 				
 				// load destination opacity from attribute (if specified)
 				var destinationOpacity = 1;				
 				if( typeof($scope.opacity) !== 'undefined' )
 					destinationOpacity = $scope.opacity;
+				
+				// store the actual image dimensions into our image object
+				image.width = imageObject.naturalWidth;
+				image.height = imageObject.naturalHeight;
 				
 				// plug our image into the canvas
 				positionArtistBackground( image );
@@ -861,14 +828,14 @@ angular.module('spotmop.directives', [])
 				}
 				
 				// figure out where we want the image to be, based on scroll position
-				var percent = Math.round( scrollTop / canvasHeight * 100 );
+				var percent = Math.round( state.scrollTop / canvasHeight * 100 );
 				var position = Math.round( (canvasHeight / 2) * (percent/100) ) - 100;
 				
 				image.x = ( canvasWidth / 2 ) - ( image.width / 2 );
 				image.y = ( ( canvasHeight / 2 ) - ( image.height / 2 ) ) + ( ( percent / 100 ) * 100);
 				
 				// actually draw the image on the canvas
-				context.drawImage(image.asObject, image.x, image.y, image.width, image.height);		
+				context.drawImage(imageObject, image.x, image.y, image.width, image.height);		
 			}
 			
 			// poll for scroll changes
@@ -878,18 +845,25 @@ angular.module('spotmop.directives', [])
 						
 						var bannerPanel = $(document).find('.intro');
 						
-						// if we've scrolled
-						if( scrollTop != $(document).scrollTop() ){
-							scrollTop = $(document).scrollTop();
-							
-							var bannerHeight = bannerPanel.outerHeight();
+						// if we've scrolled or resized
+						if(
+							state.scrollTop != $(document).scrollTop() ||
+							state.windowWidth != $(window).width() || 
+							state.windowHeight != $(window).height() ){
+								
+								// update our state
+								state.scrollTop = $(document).scrollTop();
+								state.windowWidth = $(window).width();
+								state.windowHeight = $(window).height();
+								
+								var bannerHeight = bannerPanel.outerHeight();
 
-							// and if we're within the bounds of our document
-							// this helps prevent us animating when the objects in question are off-screen
-							if( scrollTop < bannerHeight ){								
-								positionArtistBackground( image );
+								// and if we're within the bounds of our document
+								// this helps prevent us animating when the objects in question are off-screen
+								if( state.scrollTop < bannerHeight ){								
+									positionArtistBackground( image );
+								}
 							}
-						}
 					});
 				},
 				10
@@ -963,34 +937,100 @@ angular.module('spotmop.directives', [])
     };
 })
 
-// get the appropriate sized image
-.filter('thumbnailImage', function(){
+// standardize our images into a large/medium/small structure for template usage
+.filter('sizedImages', function( SettingsService ){
 	return function( images ){
         
         // what if there are no images? then nada
-        if( images.length <= 0 )
+        if( typeof(images) === 'undefined' || images.length <= 0 )
             return false;
-        
+			
+		var standardised = {};
+		
         // loop all the images
         for( var i = 0; i < images.length; i++){
             var image = images[i];
-            
-            // this is our preferred size
-            if( image.height >= 200 && image.height <= 300 ){
-                return image.url;
-            
-            // let's take it a notch up then
-            }else if( image.height > 300 && image.height <= 500 ){
-                return image.url;
-            
-            // nope? let's take it a notch down then
-            }else if( image.height >= 150 && image.height < 200 ){
-                return image.url;
-            }
-        };
-        
-        // no thumbnail that suits? just get the first (and highest res) one then        
-		return images[0].url;
+		
+			// mopidy-styled images
+			if( typeof(image.__model__) !== 'undefined' ){
+			
+				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
+				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				image.url = baseUrl +'/spotmop'+ image.uri;
+				delete image.uri;
+				
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;
+					}else if( image.height >= 250 ){
+						standardised.medium = image.url;
+					}else{		
+						standardised.small = image.url;			
+					}
+				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
+		
+			// spotify-styled images
+			}else if( typeof(image.height) !== 'undefined' ){
+			
+				if( image.height ){
+					if( image.height >= 650 ){				
+						standardised.large = image.url;		
+					}else if( image.height >= 300 ){				
+						standardised.medium = image.url;		
+					}else{
+						standardised.small = image.url;
+					}
+				}
+				
+				if( !standardised.small ) standardised.small = image.url;
+				if( !standardised.medium ) standardised.medium = image.url;
+				if( !standardised.large ) standardised.large = image.url;
+			
+			// lastFM styled images
+			}else if( typeof(image['#text']) !== 'undefined' ){
+				
+				// making sure the image actually exists...
+				if( image['#text'] && image['#text'].length > 0 && image.size != '' ){
+					
+					switch( image.size ){
+						case 'mega':
+							standardised.large = image['#text'];
+							break;
+						case 'extralarge':
+							standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'large':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'medium':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+						case 'small':
+							standardised.small = image['#text'];
+							if( !standardised.medium ) standardised.medium = image['#text'];
+							if( !standardised.large ) standardised.large = image['#text'];
+							break;
+					}
+				}
+			
+			// none of the above, assume mopidy core-styled images
+			}else{
+				standardised.large = image;
+				standardised.medium = image;
+				standardised.small = image;
+			}
+		}
+		
+		return standardised;
 	}
 })
 
@@ -1008,6 +1048,53 @@ angular.module('spotmop.directives', [])
 		}
 		
 		return array;
+	}
+})
+
+// identify what the asset's origin is (ie spotify, local)
+// return string
+.filter('assetOrigin', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 0 ){
+			return false;
+		}
+		return uriElements[0];
+	}
+})
+
+// identify what the asset type is
+// we rely on this being the second attribute in a URI (ie origin:type:id)
+// return string
+.filter('assetType', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var uriElements = uri.split(':');
+		if( uriElements.length <= 1 ){
+			return false;
+		}
+		return uriElements[1];
+	}
+})
+
+/**
+ * Get the MBID from a URI
+ * @return string
+**/
+.filter('mbid', function(){
+	return function( uri ){
+		if( typeof(uri) === 'undefined' ){
+			return false;
+		}
+		var start = uri.indexOf(':mbid:') + 6;
+		var end = uri.length;
+		
+		return uri.substr(start, end);
 	}
 });
 

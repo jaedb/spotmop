@@ -3,22 +3,21 @@
 	<span class="menu-reveal-trigger" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
 	
 	<div class="asset-sidebar">
+		
+		<div class="thumbnail-wrapper slim-intro-wrapper">
         
-        <div
-            class="thumbnail-wrapper album slim-intro-wrapper" 
-            draggable="false"
-            candrag
-            dragobj="album">
-                <div class="thumbnail album" ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" style="background-image: url({{ image.url }});"></div>
-                <div class="thumbnail album placeholder" ng-if="!album.images || album.images.length <= 0"></div>
+            <div class="drag-wrapper primary-thumbnail" draggable="false" candrag dragobj="album">
+                <thumbnail size="medium" images="album.images"></thumbnail>
+            </div>
 				
-				<div class="slim-intro mobile-show" ng-if="mediumScreen()">
-					<preloadedimage ng-if="album.images.length > 0" ng-repeat="image in album.images | limitTo:1" class="thumbnail album" url="{{ image.url }}" useproxy="true"></preloadedimage>					
-					<h1 ng-bind="album.name"></h1>
+			<div class="slim-intro mobile-show" ng-if="mediumScreen()">
+                <thumbnail size="medium" images="album.images"></thumbnail>			
+				<h1 ng-bind="album.name"></h1>
 					<h2 class="description">
-						<artistlist artists="album.artists"></artistlist>
+						<artistlist artists="album.artists" sentence></artistlist>
 					</h2>	
-				</div>
+			</div>
+		
 		</div>
         
         <div class="clear-left"><!-- clear --></div>
@@ -31,7 +30,7 @@
                 draggable="false"
                 candrag
                 dragobj="artist">
-					<thumbnail ng-if="artist.images" images="artist.images" size="small"></thumbnail>
+                    <thumbnail size="medium" images="artist.images"></thumbnail>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
 		</div>
@@ -40,8 +39,10 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-			<a class="button" ng-click="addToLibrary()" ng-if="spotifyAuthorized && !isInLibrary">Add to library</a>
-			<a class="button" ng-click="removeFromLibrary()" ng-if="spotifyAuthorized && isInLibrary">Remove from library</a>
+            <span ng-if="spotifyAuthorized && origin == 'spotify'">
+                <a class="button" ng-click="addToLibrary()" ng-if="!isInLibrary">Add to library</a>
+                <a class="button" ng-click="removeFromLibrary()" ng-if="isInLibrary">Remove from library</a>
+            </span>
 			<a class="button mobile-show tertiary" ng-click="showInfo = !showInfo" ng-class="{ showing: showInfo }">Info</a>
 		</div>
 		
@@ -49,13 +50,13 @@
 			
 		<div class="info" ng-class="{ show: showInfo }">
 			<div class="info-item capitalize">
-				<span ng-bind="album.tracks.total"></span> track<span ng-hide="album.tracks.items.length<=1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
+				<span ng-bind="album.totalTracks"></span> track<span ng-hide="album.totalTracks <= 1">s</span>, <span ng-show="album.tracks.next">+</span><span ng-bind="totalTime()"></span> minutes
 			</div>
 			<div class="info-item capitalize">
 				<span class="label">Released: </span>
 				<span class="date" ng-bind="convertedDate()"></span>
 			</div>
-			<div class="info-item capitalize">
+			<div class="info-item capitalize" ng-if="album.popularity">
 				Popularity: 
 				<span class="bar-track">
 					<span class="bar" style="width: {{ album.popularity }}%;"></span>
@@ -80,11 +81,18 @@
 						<a class="item" ui-sref="browse.artist.overview({ uri: artist.uri })" ng-bind="artist.name"></a>
 						<i class="fa fa-angle-right divider"></i>
 					</span>
+					<span ng-if="linkingMode('library.localalbum')">
+						<a class="item" ui-sref="library.local({ uri: 'local:directory?type=album' })">Local files</a>
+						<i class="fa fa-angle-right divider"></i>
+					</span>
 					<span class="item">Album</span>
 				</div>
-				<h1 ng-bind="album.name"></h1>
+                <h1>
+                    <span ng-bind="album.name"></span>
+                    <span ng-if="origin != 'spotify'" class="flag blue">LOCAL</span>
+                </h1>
 				<h2 class="description">
-					<artistlist artists="album.artists"></artistlist>
+					<artistlist artists="album.artists" sentence></artistlist>
 				</h2>	
 			</div>
             

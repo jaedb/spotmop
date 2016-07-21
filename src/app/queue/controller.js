@@ -39,8 +39,12 @@ angular.module('spotmop.queue', [])
         }
 	});
 
-	$scope.addByUri = function(){
+	$scope.addUri = function(){
 		DialogService.create('addbyuri',$scope);
+	};
+
+	$scope.clearQueue = function(){
+		MopidyService.clearCurrentTrackList();
 	};
 	
 	

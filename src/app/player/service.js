@@ -14,6 +14,7 @@ angular.module('spotmop.services.player', [])
 		isRepeat: false,
 		isRandom: false,
 		isMute: false,
+		isConsume: false,
 		volume: 100,
 		playPosition: 0,
 		currentTlTrack: false,
@@ -93,10 +94,12 @@ angular.module('spotmop.services.player', [])
         MopidyService.getMute().then( function(isMute){
             state.isMute = isMute;
         });
+		MopidyService.getConsume().then( function( isConsume ){
+			state.isConsume = isConsume;
+		});
 	}
 	
 	// listen for current track changes
-	// TODO: Move this into the MopidyService for sanity
 	$rootScope.$on('mopidy:event:trackPlaybackStarted', function( event, tlTrack ){
 		
 		// only if our new tlTrack differs from our current one
@@ -194,11 +197,16 @@ angular.module('spotmop.services.player', [])
 		
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
-						
+			
+			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
-			
-				state.currentTlTrack.track.image = tlTrack.track.album.images[0];
+				
+				// convert our singular image into the expected mopidy image model
+				var images = [{ __model__: 'Image', uri: tlTrack.track.album.images }];
+				
+				// plug it in
+				state.currentTlTrack.track.images = $filter('sizedImages')( images );
 				$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 			
 			// no image provided by backend, so let's fetch it from elsewhere
@@ -210,7 +218,7 @@ angular.module('spotmop.services.player', [])
 					SpotifyService.getTrack( tlTrack.track.uri )
 						.then(function( response ){
 							if( typeof(response.album) !== 'undefined' ){
-								state.currentTlTrack.track.image = response.album.images[0].url;
+								state.currentTlTrack.track.images = $filter('sizedImages')(response.album.images);
 							}
 							$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
 						});
@@ -230,9 +238,7 @@ angular.module('spotmop.services.player', [])
 									
 									// if we got an album match, plug in the 'extralarge' image to our state()
 									if( typeof(response.album) !== 'undefined' ){
-										var largest = $filter('filter')(response.album.image, { size: 'extralarge' })[0];							
-										if( largest )
-											state.currentTlTrack.track.image = largest['#text'];
+										state.currentTlTrack.track.images = $filter('sizedImages')(response.album.image);
 									}
 									
 									$rootScope.$broadcast('spotmop:currenttrack:loaded', state.currentTlTrack);
@@ -273,6 +279,13 @@ angular.module('spotmop.services.player', [])
 	function updateTracklist(){
 		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
 			$rootScope.currentTracklist = tlTracks;
+			
+			// no tracks? make sure we don't have anything 'playing'
+			// this would typically be called when we clear our tracklist, or have got to the end
+			if( !tlTracks || tlTracks.length <= 0 ){
+				state.currentTlTrack = false;
+				updateWindowTitle();
+			}
 		});
 	}
 		
@@ -311,7 +324,7 @@ angular.module('spotmop.services.player', [])
 	 **/
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
+			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
 				state.playPosition += 1000;
 			}
 		},
@@ -388,8 +401,7 @@ angular.module('spotmop.services.player', [])
 			state.playing = false;
 		},
 		
-		next: function(){		
-			MopidyService.play();
+		next: function(){
 			MopidyService.next();
 		},
 		
@@ -428,6 +440,12 @@ angular.module('spotmop.services.player', [])
 				MopidyService.setMute( false ).then( function(response){ state.isMute = false; } );
 			else
 				MopidyService.setMute( true ).then( function(response){ state.isMute = true; } );
+		},
+		toggleConsume: function(){
+			if( state.isConsume )
+				MopidyService.setConsume( false ).then( function(response){ state.isConsume = false; } );
+			else
+				MopidyService.setConsume( true ).then( function(response){ state.isConsume = true; } );
 		}
 		
 	};

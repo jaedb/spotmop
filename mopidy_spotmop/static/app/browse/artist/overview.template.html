@@ -1,11 +1,12 @@
-<div class="col" ng-class="{'w70': !mediumScreen(), 'w100': mediumScreen()}">
+<div class="col" ng-class="{'w70': (!mediumScreen() && origin == 'spotify'), 'w100': (mediumScreen() || origin != 'spotify') }">
 
 	<h4 class="section-title">Top tracks</h4>
-	<tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist top-tracks"></tracklist>
+	<tracklist ng-if="tracklist.tracks && origin == 'spotify'" tracks="tracklist.tracks" type="track" class="tracklist top-tracks"></tracklist>
+	<tracklist ng-if="tracklist.tracks && origin != 'spotify'" tracks="tracklist.tracks" type="localtrack" class="tracklist top-tracks"></tracklist>
     
 </div>
 
-<div class="col w25 pull-right" ng-hide="mediumScreen()">
+<div class="col w25 pull-right" ng-if="!mediumScreen() && origin == 'spotify'">
 
 	<h4 class="section-title">Related Artists</h4>
 	
@@ -17,8 +18,7 @@
             candrag
             dragobj="artist"
             draggable="false">
-                <span class="thumbnail animate" ng-repeat="image in artist.images | limitTo: 1 : artist.images.length-1" style="background-image: url({{ image.url }});" ng-if="artist.images.length > 0"></span>
-                <span class="thumbnail animate" ng-if="artist.images.length <= 0"></span>
+                <thumbnail size="small" images="artist.images"></thumbnail>
                 <span class="name" ng-bind="artist.name"></span>
 		</a>
 
@@ -34,19 +34,32 @@
 <h4 class="section-title">Albums</h4>
 
 <div class="album-items square-panels">
-	<div class="item-container" ng-repeat="album in albums.items track by $index">
-		<a ui-sref="browse.artistalbum({ artisturi: artist.uri, uri: album.uri })" class="square-panel album"
+    <div class="item-container" ng-repeat="album in albums.items track by $index">
+        <a ui-sref="browse.artistalbum({ artisturi: artist.uri, uri: album.uri })" class="square-panel album"
+            ng-if="origin == 'spotify'"
             candrag
             dragobj="album"
             draggable="false">
-                <div class="image-container" ng-repeat="image in album.images | filter:image.height=300 | limitTo:1">
-                    <div class="image animate" style="background-image: url({{ image.url }});"></div>
+                <div class="image-container">
+                    <thumbnail size="medium" images="album.images"></thumbnail>
                 </div>
                 <div class="info smaller animate">
                     <div class="name" ng-bind="album.name"></div>
                 </div>
-		</a>
-	</div>
+        </a>
+        <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
+            ng-if="origin != 'spotify'"
+            candrag
+            dragobj="album"
+            draggable="false">
+                <div class="image-container">
+                    <thumbnail size="medium" images="album.images"></thumbnail>
+                </div>
+                <div class="info smaller animate">
+                    <div class="name" ng-bind="album.name"></div>
+                </div>
+        </a>
+    </div>
 </div>
 
 <div class="clear-both"></div>

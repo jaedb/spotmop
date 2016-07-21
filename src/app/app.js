@@ -31,6 +31,7 @@ angular.module('spotmop', [
 	'spotmop.player',
 	'spotmop.queue',
 	'spotmop.library',
+	'spotmop.local',
 	'spotmop.search',
 	'spotmop.settings',	
 	'spotmop.discover',
@@ -202,7 +203,7 @@ angular.module('spotmop', [
 	 * Lazy loading
 	 **/
 
-	$scope.checkForLazyLoading = function(){		
+	$scope.checkForLazyLoading = function(){
 		// get our ducks in a row - these are all the numbers we need
 		var scrollPosition = $(document).scrollTop();
 		var frameHeight = $(window).height();
@@ -212,7 +213,13 @@ angular.module('spotmop', [
 		if( distanceFromBottom <= 100 )
 			$scope.$broadcast('spotmop:loadMore');
 	}
+	
+	// listen for completion from our loading bar (which intercepts all http requests)
+	$rootScope.$on('cfpLoadingBar:completed', function(event){
+		$scope.checkForLazyLoading();
+	});
 	 
+	// listen for scrolling to load more stuff
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
 			
@@ -292,9 +299,6 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
-		});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
