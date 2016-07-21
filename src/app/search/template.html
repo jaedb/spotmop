@@ -64,6 +64,7 @@
 			</div>
 			
 			<div ng-if="type == 'album'">
+			
 				<div class="album-items square-panels">
 					<div class="item-container" ng-repeat="album in albums.items track by $index">
 						<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"

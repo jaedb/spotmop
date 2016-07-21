@@ -108,6 +108,7 @@ angular.module('spotmop.search', [])
 			case 'album' :
 				SpotifyService.getSearchResults( 'album', query, 50 )
 					.then( function(response){
+						console.log( response );
 						$scope.albums = response.albums;
 						if( response.albums.next )
 							nextOffset = response.albums.offset + response.albums.limit;
