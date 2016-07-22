@@ -9,9 +9,10 @@ import json
 from services.upgrade import upgrade
 from services.pusher import pusher
 from services.auth import auth
+from services.queuer import queuer
 from mopidy import config, ext
 
-__version__ = '2.7.3'
+__version__ = '2.7.4'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
@@ -73,13 +74,15 @@ def spotmop_client_factory(config, core):
 			}),
 		(r'/pusher/([^/]+)', pusher.PusherRequestHandler, {
 				'core': core,
-				'config': config,
-				'version': __version__
+				'config': config
 			}),
 		(r'/auth', auth.AuthRequestHandler, {
 				'core': core,
-				'config': config,
-				'version': __version__
+				'config': config
+			}),
+		(r'/queuer/([^/]*)', queuer.QueuerRequestHandler, {
+				'core': core,
+				'config': config
 			}),
         (r"/images/(.*)", tornado.web.StaticFileHandler, {
             "path": artworklocation

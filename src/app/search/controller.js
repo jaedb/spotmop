@@ -108,6 +108,7 @@ angular.module('spotmop.search', [])
 			case 'album' :
 				SpotifyService.getSearchResults( 'album', query, 50 )
 					.then( function(response){
+						console.log( response );
 						$scope.albums = response.albums;
 						if( response.albums.next )
 							nextOffset = response.albums.offset + response.albums.limit;
@@ -145,28 +146,15 @@ angular.module('spotmop.search', [])
 				break;
 			
 			default :
-				SpotifyService.getSearchResults( 'track', query, 50 )
+				SpotifyService.getSearchResults( 'track,album,artist,playlist', query, 50 )
 					.then( function(response){
+						$scope.albums = response.albums;
+						$scope.artists = response.artists;
+						$scope.playlists = response.playlists;
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.type = 'track';
 						$scope.tracklist.tracks = response.tracks.items;
 					});	
-					
-				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
-						$scope.albums = response.albums;
-					});
-					
-				SpotifyService.getSearchResults( 'artist', query, 50 )
-					.then( function(response){		
-						$scope.artists = response.artists;
-					});
-					
-				SpotifyService.getSearchResults( 'playlist', query, 50 )
-					.then( function(response){		
-						$scope.playlists = response.playlists;
-							
-					});
 				break;
 		}
 	}

@@ -49,7 +49,7 @@
                             dragobj="artist"
                             draggable="false">
                                 <div class="image-container">
-                                    <thumbnail images="artist.images"></thumbnail>
+                                    <thumbnail size="medium" images="artist.images"></thumbnail>
                                 </div>
                                 <div class="info animate">
                                     <div class="name" ng-bind="artist.name"></div>
@@ -64,6 +64,7 @@
 			</div>
 			
 			<div ng-if="type == 'album'">
+			
 				<div class="album-items square-panels">
 					<div class="item-container" ng-repeat="album in albums.items track by $index">
 						<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
@@ -71,7 +72,7 @@
                             dragobj="album"
                             draggable="false">
                                 <div class="image-container">
-                                    <thumbnail images="album.images"></thumbnail>
+                                    <thumbnail size="medium" images="album.images"></thumbnail>
                                 </div>
                                 <div class="info animate">
                                     <div class="name" ng-bind="album.name"></div>
@@ -98,7 +99,7 @@
                             dragobj="playlist"
                             draggable="false">
                                 <div class="image-container">
-                                    <thumbnail images="playlist.images"></thumbnail>
+                                    <thumbnail size="medium" images="playlist.images"></thumbnail>
                                 </div>
                                 <div class="info animate">
                                     <div class="name" ng-bind="playlist.name"></div>
@@ -132,7 +133,7 @@
                                 dragobj="artist"
                                 draggable="false">
                                     <div class="image-container">
-                                        <thumbnail images="artist.images" size="small"></thumbnail>
+                                        <thumbnail size="medium" images="artist.images" size="small"></thumbnail>
                                     </div>
                                     <div class="info animate">
                                         <div class="name" ng-bind="artist.name"></div>
@@ -141,7 +142,7 @@
 						</div>
 					</div>
 					<div class="clear-both"></div>
-				</div>	
+				</div>
 				
 				<div class="search-results-section albums" ng-if="albums.items.length > 0">
 					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
@@ -152,7 +153,7 @@
                                 dragobj="album"
                                 draggable="false">
                                     <div class="image-container">
-                                        <thumbnail images="album.images" size="small"></thumbnail>
+                                        <thumbnail size="medium" images="album.images" size="small"></thumbnail>
                                     </div>
                                     <div class="info animate">
                                         <div class="name" ng-bind="album.name"></div>
@@ -177,7 +178,7 @@
                                 dragobj="playlist"
                                 draggable="false">
                                     <div class="image-container">
-                                        <thumbnail images="playlist.images" size="small"></thumbnail>
+                                        <thumbnail size="medium" images="playlist.images" size="small"></thumbnail>
                                     </div>
                                     <div class="info animate">
                                         <div class="name" ng-bind="playlist.name"></div>

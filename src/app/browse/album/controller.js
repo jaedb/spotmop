@@ -189,7 +189,9 @@ angular.module('spotmop.browse.album', [])
 				}
 				
 				// this is not strictly accurate, but the only way to get the actual album data is from the track object
-				$scope.album = response[0].album;
+				var sourceAlbum = response[0].album;
+				delete sourceAlbum.images;
+				$scope.album = sourceAlbum;
 				$scope.album.artists = [];
 				$scope.album.totalTracks = $scope.album.num_tracks;
 				$scope.tracklist = { type: 'localtrack', tracks: response };
@@ -240,7 +242,7 @@ angular.module('spotmop.browse.album', [])
 						
 						// we got images from mopidy!
 						if( albumImages.length > 0 ){
-						
+							
 							$scope.album.images = albumImages;
 				
 						// no mopidy artwork, so get album artwork from LastFM
