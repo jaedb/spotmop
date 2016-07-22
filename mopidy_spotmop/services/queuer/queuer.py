@@ -7,7 +7,9 @@ from tornado.escape import json_encode, json_decode
 from tornado.escape import json_encode
 import subprocess
 
-state = {}
+state = {
+	'mode': 'normal'
+}
 
 class QueuerRequestHandler(tornado.web.RequestHandler):
     
@@ -17,9 +19,6 @@ class QueuerRequestHandler(tornado.web.RequestHandler):
     def initialize(self, core, config):
         self.core = core
         self.config =  config
-        state = {
-            'mode': 'normal'
-        }
 	
     ## get the current state
     def get(self, action):
@@ -27,7 +26,7 @@ class QueuerRequestHandler(tornado.web.RequestHandler):
 	
     ## post to update the state
     def post(self, mode):
-        state[mode] = 'radio'
+        state['mode'] = 'radio'
         self.write(json_encode(state))
 
 

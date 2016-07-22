@@ -30625,7 +30625,7 @@ angular.module('spotmop.browse.artist', [])
 		}
 		$scope.playArtistRadio = function(){
 		
-			NotifyService.notify('Starting artist radio');
+			NotifyService.notify('Starting artist radio (beta)');
 			
 			// get the artist's top tracks
 			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
@@ -35251,6 +35251,7 @@ angular.module('spotmop.search', [])
 			case 'album' :
 				SpotifyService.getSearchResults( 'album', query, 50 )
 					.then( function(response){
+						console.log( response );
 						$scope.albums = response.albums;
 						if( response.albums.next )
 							nextOffset = response.albums.offset + response.albums.limit;
@@ -35288,28 +35289,15 @@ angular.module('spotmop.search', [])
 				break;
 			
 			default :
-				SpotifyService.getSearchResults( 'track', query, 50 )
+				SpotifyService.getSearchResults( 'track,album,artist,playlist', query, 50 )
 					.then( function(response){
+						$scope.albums = response.albums;
+						$scope.artists = response.artists;
+						$scope.playlists = response.playlists;
 						$scope.tracklist = response.tracks;
 						$scope.tracklist.type = 'track';
 						$scope.tracklist.tracks = response.tracks.items;
 					});	
-					
-				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){		
-						$scope.albums = response.albums;
-					});
-					
-				SpotifyService.getSearchResults( 'artist', query, 50 )
-					.then( function(response){		
-						$scope.artists = response.artists;
-					});
-					
-				SpotifyService.getSearchResults( 'playlist', query, 50 )
-					.then( function(response){		
-						$scope.playlists = response.playlists;
-							
-					});
 				break;
 		}
 	}
@@ -37883,27 +37871,32 @@ angular.module('spotmop.services.spotify', [])
                 .success(function( response ){		
 					
 					if( type == 'album' ){
-					
+						
 						var readyToResolve = false;
 						var completeAlbums = [];
-						var batchesRequired = Math.ceil( response.albums.items.length / 20 );
+						var batches = [];
 						
 						// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
-						for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+						while( response.albums.items.length ){
+							batches.push( response.albums.items.splice(0,20) );
+						}
+						
+						console.log( batches );
+						
+						// now let's process our batches
+						for( var i = 0; i < batches.length; i++ ){
 							
-							var batch = response.albums.items.splice(0,20);
-							var albumids = [];
-							
-							// loop all our albums to build a list of all the album ids we need
-							for( var i = 0; i < 20; i++ ){
-								albumids.push( batch[i].id );
+							// loop our batch items to get just IDs
+							var albumids = [];							
+							for( var j = 0; j < batches[i].length; j++ ){
+								albumids.push( batches[i][j].id );
 							};
 							
 							// go get the albums
 							service.getAlbums( albumids )
 								.then( function(albums){
 									completeAlbums = completeAlbums.concat( albums.albums );									
-									if( batchCounter >= batchesRequired ){
+									if( i >= batches.length - 1 ){
 										response.albums.items = completeAlbums;
 										deferred.resolve( response );
 									}

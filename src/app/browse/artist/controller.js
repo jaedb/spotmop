@@ -76,7 +76,7 @@ angular.module('spotmop.browse.artist', [])
 		}
 		$scope.playArtistRadio = function(){
 		
-			NotifyService.notify('Starting artist radio');
+			NotifyService.notify('Starting artist radio (beta)');
 			
 			// get the artist's top tracks
 			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
