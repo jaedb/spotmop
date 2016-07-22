@@ -110,6 +110,9 @@ angular.module('spotmop.directives', [])
 					
 				// trigger our global switch (so nothing else interferes with our mouseup/down events)
 				$rootScope.dragging = true;
+				
+				// make sure the drag target is selected (important for track items)
+				$scope.dragobj.selected = true;
                 
                 // detect if we've just started dragging and need to setup the drag tracer
                 var requiresSetup = false;
@@ -155,6 +158,12 @@ angular.module('spotmop.directives', [])
 						$scope.dragobj.type == 'track' ||
 						$scope.dragobj.type == 'tltrack' ||
 						$scope.dragobj.type == 'localtrack' ){
+							
+							// add the dragobj title first
+							// this allows for non-selected tracks to facilitate dragging
+							tracerContent += '<div class="track-title">'+ $scope.dragobj.name +'</div>';
+							
+							// loop the first three items, and add these to our drag tracer
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
