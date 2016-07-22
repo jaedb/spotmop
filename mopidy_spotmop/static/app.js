@@ -29852,7 +29852,7 @@ angular.module('spotmop', [
     $rootScope.isTouchMode = function(){
 		
 		// detect our manual override
-		var pointerMode = SettingsService.getSetting('spotmop',false,'pointerMode');
+		var pointerMode = SettingsService.getSetting('spotmop.pointerMode');
 		if( pointerMode == 'touch' ) return true;
 		else if( pointerMode == 'click' ) return false;
 		
@@ -29860,16 +29860,9 @@ angular.module('spotmop', [
 		return $rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
-		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
-		
-		// if set to localhost or not set at all (then using default of localhost)
-		if( !mopidyhost || mopidyhost == 'localhost' )
-			return true;
-		
-		// custom setting, and if it matches the domain spotmop is using, then we're in business
-		if( $location.host() == mopidyhost )
-			return true;
-		}
+		var mopidyhost = SettingsService.getSetting('mopidy.host');
+		if( !mopidyhost || $location.host() == mopidyhost ) return true;
+	}
 	$scope.state = PlayerService.state;
 	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
@@ -29882,7 +29875,7 @@ angular.module('spotmop', [
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
-    
+	
     /**
      * Playlists submenu
      **/
@@ -30123,7 +30116,7 @@ angular.module('spotmop', [
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
 		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
+			SettingsService.setSetting('mopidy.consume',isConsume);
 		});
 	});
 	
@@ -30137,8 +30130,8 @@ angular.module('spotmop', [
     $rootScope.$on('spotmop:pusher:online', function(event, data){
         
         // if we have no client name, then initiate initial setup
-		var client = SettingsService.getSetting('pushername', null);
-        if( typeof(client) === 'undefined' || !client || client == '' ){
+		var client = SettingsService.getSetting('pusher.name');
+        if( !client || client == '' ){
             DialogService.create('initialsetup', $scope);
 			Analytics.trackEvent('Core', 'Initial setup');
 		}
@@ -30186,7 +30179,7 @@ angular.module('spotmop', [
 
 			// if we're about to fire a keyboard shortcut event, let's prevent default
 			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled') ){
 				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
 				if($.inArray(event.which, shortcutKeyCodes) > -1)
 					event.preventDefault();			
@@ -30197,7 +30190,7 @@ angular.module('spotmop', [
         .bind('keyup',function( event ){
 
 			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled') ){
 				
 				// delete key
 				if( event.which === 46 )
@@ -30651,7 +30644,11 @@ angular.module('spotmop.browse.artist', [])
 
 		// figure out if we're following this playlist
 		if( $rootScope.spotifyAuthorized ){
-			SpotifyService.isFollowingArtist( $stateParams.uri, SettingsService.getSetting('spotifyuserid',null) )
+			
+			var spotifyuserid = SettingsService.getSetting('spotifyuser.id');
+			if( !spotifyuserid ) return false;
+			
+			SpotifyService.isFollowingArtist( $stateParams.uri, spotifyuserid )
 				.then( function( isFollowing ){
 					$scope.following = $.parseJSON(isFollowing);
 				});
@@ -31327,7 +31324,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
+		var currentUserID = SettingsService.getSetting('spotifyuser.id');
         
 		if( playlistOwnerID != currentUserID ){
 			
@@ -31377,7 +31374,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
+		var currentUserID = SettingsService.getSetting('spotifyuser.id');
 		
 		if( playlistOwnerID != currentUserID ){
 			NotifyService.error('Cannot modify to a playlist you don\'t own');
@@ -31883,6 +31880,9 @@ angular.module('spotmop.directives', [])
 					
 				// trigger our global switch (so nothing else interferes with our mouseup/down events)
 				$rootScope.dragging = true;
+				
+				// make sure the drag target is selected (important for track items)
+				$scope.dragobj.selected = true;
                 
                 // detect if we've just started dragging and need to setup the drag tracer
                 var requiresSetup = false;
@@ -31928,6 +31928,12 @@ angular.module('spotmop.directives', [])
 						$scope.dragobj.type == 'track' ||
 						$scope.dragobj.type == 'tltrack' ||
 						$scope.dragobj.type == 'localtrack' ){
+							
+							// add the dragobj title first
+							// this allows for non-selected tracks to facilitate dragging
+							tracerContent += '<div class="track-title">'+ $scope.dragobj.name +'</div>';
+							
+							// loop the first three items, and add these to our drag tracer
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
@@ -32648,6 +32654,52 @@ angular.module('spotmop.directives', [])
 }])
 
 
+/** 
+ * Dropdown field
+ * Facilitates nicer dropdowns, like the 'view' toggles
+ **/
+.directive('dropdownfield', ['$rootScope', '$filter', 'SettingsService', function( $rootScope, $filter, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			options: '=',
+			settingname: '@'
+		},
+		link: function($scope, $element, $attrs){
+			
+			// make sure we've been given options
+			if( !$scope.options || $scope.options.length <= 0 ){
+				return false;
+			}
+			
+			// get the value from our settings, and if null, then we use the first available option
+			$scope.currentValue = SettingsService.getSetting($scope.settingname);
+			$scope.currentOption = function(){
+				if( $scope.currentValue ){
+					return $filter('filter')( $scope.options, {value: $scope.currentValue} )[0];
+				}else{
+					return $scope.options[0];
+				}
+			}
+		},
+		controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
+			
+			$scope.toggleVisibility = function(){
+				$scope.visible = !$scope.visible;
+			}
+			$scope.selectOption = function( option ){
+				$scope.currentValue = option.value;
+				SettingsService.setSetting($scope.settingname, option.value);
+				$scope.visible = false;
+			}
+		}],
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/common/dropdown-field.template.html'
+	}
+}])
+
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
@@ -32726,9 +32778,13 @@ angular.module('spotmop.directives', [])
 		
 			// mopidy-styled images
 			if( typeof(image.__model__) !== 'undefined' ){
-			
-				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				
+				var mopidyhost = SettingsService.getSetting('mopidy.host');
+				if( !mopidyhost ) mopidyhost = window.location.hostname;
+				var mopidyip = SettingsService.getSetting('mopidy.host');
+				if( !mopidyip ) mopidyip = '6680';
+				
+				var baseUrl = 'http://'+ mopidyhost +':'+ mopidyip;
 				image.url = baseUrl +'/spotmop'+ image.uri;
 				delete image.uri;
 				
@@ -33853,10 +33909,24 @@ angular.module('spotmop.library', [])
 .controller('LibraryAlbumsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'NotifyService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	$scope.settings = SettingsService.getSettings();
+	$scope.viewOptions = [
+			{
+				value: 'detail',
+				label: 'Detail'
+			},
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+    var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
 	if( $rootScope.spotifyAuthorized ){	
@@ -33939,14 +34009,21 @@ angular.module('spotmop.library', [])
 	}
 	
 	$scope.settings = SettingsService.getSettings();
+	$scope.filterOptions = [
+			{
+				value: 'all',
+				label: 'All playlists'
+			},
+			{
+				value: 'owned',
+				label: 'Playlists I own'
+			}
+		];
 	$scope.playlists = { items: [] };
 	$scope.show = function( playlist ){
-        
-        if(
-			typeof($scope.settings.playlists) === 'undefined' ||
-			typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
-			!$scope.settings.playlists.onlyshowowned ){
-				return true;
+        var filter = SettingsService.getSetting('playlists.filter');
+        if( !filter || filter == 'all' ){
+			return true;
         }
         
         if( playlist.owner.id == 'jaedb' ) return true;
@@ -33955,7 +34032,7 @@ angular.module('spotmop.library', [])
 	};
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+    var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
 	if( $rootScope.spotifyAuthorized ){	
@@ -34178,6 +34255,17 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalArtistsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	
 	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     var limit = 50;
@@ -34250,6 +34338,17 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalAlbumsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+		
 	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
     var limit = 50;
@@ -35587,7 +35686,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SpotifyService', 'SettingsService', 'NotifyService', function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
             
 			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
+			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
 			
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
 				.then(function( response ) {
@@ -35682,8 +35781,8 @@ angular.module('spotmop.services.dialog', [])
 			$scope.settings = SettingsService.getSettings();
 			
 			// default to on
-			SettingsService.setSetting('spotify',true,'authorizationenabled');
-			SettingsService.setSetting('spotmop','default','pointerMode');
+			SettingsService.setSetting('spotify.authorizationenabled',true);
+			SettingsService.setSetting('pointerMode','default');
 		
             $scope.saving = false;
             $scope.save = function(){          
@@ -35693,12 +35792,12 @@ angular.module('spotmop.services.dialog', [])
 					$scope.saving = true;
 					
 					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('spotify',false,'authorizationenabled') ){
+					if( SettingsService.getSetting('spotify.authorizationenabled') ){
 						SpotifyService.authorize();
 					}
 					
 					// perform the creation
-					SettingsService.setSetting('pushername', $scope.name);
+					SettingsService.setSetting('pusher.name', $scope.name);
 					DialogService.remove();
 				}else{
 					$scope.error = true;
@@ -35821,7 +35920,8 @@ angular.module('spotmop.services.lastfm', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'http://ws.audioscrobbler.com/2.0';
-	var apiKey = SettingsService.getSetting("lastfmkey", '4320a3ef51c9b3d69de552ac083c55e3');
+	var apiKey = SettingsService.getSetting("lastfm,key");
+	if( !apiKey ) apiKey = '4320a3ef51c9b3d69de552ac083c55e3';
 	
 	// and finally, give us our service!
 	return service;
@@ -35914,8 +36014,10 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+            var mopidyhost = SettingsService.getSetting("mopidy.host");
+			if( !mopidyhost ) mopidyhost = window.location.hostname;
+            var mopidyport = SettingsService.getSetting("mopidy.port");
+			if( !mopidyport ) mopidyport = "6680";
 			
 			// Initialize mopidy
             try{
@@ -36100,13 +36202,15 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			var name = SettingsService.getSetting('pushername', 'User');      
-			var ip = SettingsService.getSetting('pusherip', null);      
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			var ip = SettingsService.getSetting('pusher.ip');     
+			if( !ip ) ip = false; 
             PusherService.send({
                 title: 'Track skipped',
                 body: name +' vetoed this track!',
                 clientip: ip,
-                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser') )
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
@@ -36252,7 +36356,7 @@ angular.module('spotmop.services.notify', [])
 		browserNotify: function( title, body, icon ){
 				
 			// disabled by user
-			if( SettingsService.getSetting('notificationsDisabled', false) )
+			if( SettingsService.getSetting('notificationsDisabled') )
 				return false;
 	
 			// Determine the correct object to use
@@ -36319,9 +36423,12 @@ angular.module('spotmop.services.pusher', [
 		$localStorage.pusher = {};
 		
 	// build the endpoint string
-	var urlBase = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ SettingsService.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
+	var mopidyhost = SettingsService.getSetting("mopidy.host");
+	if( !mopidyhost ) mopidyhost = window.location.hostname;
+	var mopidyport = SettingsService.getSetting("mopidy.port");
+	if( !mopidyport ) mopidyport = "6680";
+	
+	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
 	var service = {
 		pusher: {},
@@ -36331,9 +36438,11 @@ angular.module('spotmop.services.pusher', [
 		start: function(){
             var self = this;
 
-            // Get mopidy ip and port from settigns
-            var pusherhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var pusherport = SettingsService.getSetting("pusherport", "6681");
+            // Get mopidy/pusher ip and port from settigns
+			var pusherhost = SettingsService.getSetting("mopidy.host");
+			if( !pusherhost ) pusherhost = window.location.hostname;
+			var pusherport = SettingsService.getSetting("pusher.port");
+			if( !pusherport ) pusherport = "6681";
 			
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
@@ -36354,27 +36463,26 @@ angular.module('spotmop.services.pusher', [
                         // if it's an initial connection status message, just parse it through quietly
                         if( data.startup ){
                             console.info('Pusher connected as '+data.details.id);
-                            SettingsService.setSetting('pusherid', data.details.id);
-                            SettingsService.setSetting('pusherip', data.details.ip);
+                            SettingsService.setSetting('pusher.id', data.details.id);
+                            SettingsService.setSetting('pusher.ip', data.details.ip);
 								
                             // detect if the core has been updated
-                            if( SettingsService.getSetting('version', 0, 'installed') != data.version ){
+                            if( SettingsService.getSetting('version.installed') != data.version ){
                                 NotifyService.notify('New version detected, clearing caches...');      
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
-                                SettingsService.setSetting('version', data.version, 'installed');
+                                SettingsService.setSetting('version.installed', data.version);
 								SettingsService.runUpgrade();
                             }
 							
                             // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', '')
-                            if( name )
-                                service.setMe( name );
+                            var name = SettingsService.getSetting('pusher.name')
+                            if( name ) service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', '') && !SettingsService.getSetting('pusherdisabled', false) )
+                            if( data.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
@@ -36400,7 +36508,7 @@ angular.module('spotmop.services.pusher', [
 		
 		send: function( data ){
 			data.pusher = true;
-			data.id = SettingsService.getSetting('pusherid',null);
+			data.id = SettingsService.getSetting('pusher.id');
 			service.pusher.send( JSON.stringify(data) );
 		},
         
@@ -36410,7 +36518,7 @@ angular.module('spotmop.services.pusher', [
          * @return deferred promise
          **/
         setMe: function( name ){
-            var id = SettingsService.getSetting('pusherid', null);
+            var id = SettingsService.getSetting('pusher.id');
             $.ajax({
                 method: 'GET',
                 cache: false,
@@ -36564,9 +36672,11 @@ angular.module('spotmop.services.spotify', [])
 			
 			// client hasn't authorized spotmop with spotify, so let's just use the backend
 			}else if( this.authenticationMethod == 'server' ){
-			
-				var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-				var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+				
+				var mopidyhost = SettingsService.getSetting("mopidy.host");
+				if( !mopidyhost ) mopidyhost = window.location.hostname;
+				var mopidyport = SettingsService.getSetting("mopidy.port");
+				if( !mopidyport ) mopidyport = "6680";
 				url = 'http://'+mopidyhost+':'+mopidyport+'/spotmop/auth';
 			
 			// no authentication method, so cannot refresh token!
@@ -37256,7 +37366,8 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
-			var country = SettingsService.getSetting('countrycode','NZ');						
+			var country = SettingsService.getSetting('spotify.countrycode');
+			if( !country ) country = 'NZ';
             var deferred = $q.defer();
 
             $http({
@@ -37323,8 +37434,8 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-            if( userid != SettingsService.getSetting('spotifyuser',{id: null}).id )
-                return false;		
+			spotifyUser = SettingsService.getSetting('spotify.user');
+            if( !spotifyUser || userid != spotifyUser ) return false;		
 			
             var deferred = $q.defer();
 
@@ -37919,8 +38030,10 @@ angular.module('spotmop.services.spotify', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
-	var country = SettingsService.getSetting("spotifycountry", 'NZ');
-	var locale = SettingsService.getSetting("spotifylocale", "en_NZ");
+	var country = SettingsService.getSetting("spotify.country");
+	if( !country ) country = 'NZ';
+	var locale = SettingsService.getSetting("spotify.locale");
+	if( !locale ) locale = 'en_NZ';
 	
 	// and finally, give us our service!
 	return service;
@@ -38041,7 +38154,7 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.settings = SettingsService.getSettings();
+	$scope.storage = SettingsService.getSettings();
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
@@ -38060,12 +38173,12 @@ angular.module('spotmop.settings', [])
 		NotifyService.notify( 'Checking for updates' );
 		SettingsService.upgradeCheck()
 			.then( function(response){				
-				SettingsService.setSetting('version', response, 'latest');
-				if( SettingsService.getSetting('version', 0, 'installed') < response ){
-					SettingsService.setSetting('version',true,'upgradeAvailable');
+				SettingsService.setSetting('version.latest', response);
+				if( SettingsService.getSetting('version.installed') < response ){
+					SettingsService.setSetting('version.upgradeAvailable',true);
 					NotifyService.notify( 'Upgrade is available!' );
 				}else{
-					SettingsService.setSetting('version',false,'upgradeAvailable');
+					SettingsService.setSetting('version.upgradeAvailable',false);
 					NotifyService.notify( 'You\'re already running the latest version' );
 				}
 			});
@@ -38078,7 +38191,7 @@ angular.module('spotmop.settings', [])
 					NotifyService.error( response.message );
 				}else{
 					NotifyService.notify( response.message );
-					SettingsService.setSetting('version',false,'upgradeAvailable');
+					SettingsService.setSetting('version.upgradeAvailable', false);
 				}
 			});
 	}
@@ -38091,8 +38204,8 @@ angular.module('spotmop.settings', [])
 	SettingsService.getVersion()
 		.then( function(response){
 			if( response.status != 'error' ){
-				SettingsService.setSetting('version',response.currentVersion,'installed');
-				SettingsService.setSetting('version',response.root,'root');
+				SettingsService.setSetting('version.installed',response.currentVersion);
+				SettingsService.setSetting('version.root',response.root);
 			}
 		});
 	
@@ -38103,7 +38216,7 @@ angular.module('spotmop.settings', [])
 	};	
 	$scope.savePusherName = function( name ){
 		PusherService.setMe( name );
-		SettingsService.setSetting( 'pushername', name );
+		SettingsService.setSetting( 'pusher.name', name );
 	};	
     
     PusherService.getConnections()
@@ -38155,29 +38268,36 @@ angular.module('spotmop.services.settings', [])
 		 * Set a setting
 		 * @param setting = string (the setting to change)
 		 * @param value = the setting's new value
-		 * @param property = string (optional sub-property)
 		 **/
-		setSetting: function( setting, value, property ){
+		setSetting: function( setting, value ){
 			
-			if( typeof(property) === 'undefined')
-				property = false;
+			if( typeof($localStorage) === 'undefined' ) $localStorage = {};
 			
-			// unsetting?
-			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' ){
-				if( property ){
-					delete $localStorage.settings[setting][property];
-				}else{
-					delete $localStorage.settings[setting];	
-				}
-			// setting
-            }else{
-				if( property ){
-					if( typeof($localStorage.settings[setting]) === 'undefined' )
-						$localStorage.settings[setting] = {};
-					$localStorage.settings[setting][property] = value;
-				}else{
-					$localStorage.settings[setting] = value;
-				}
+			settingElements = setting.split('.');
+			switch( settingElements.length ){
+				case 1:
+					$localStorage[settingElements[0]] = value;
+					break;
+				case 2:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) $localStorage[settingElements[0]] = {};
+					$localStorage[settingElements[0]][settingElements[1]] = value;
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						$localStorage[settingElements[0]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]] = {};
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						$localStorage[settingElements[0]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = {};
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+					break;
 			}
 		},
 		
@@ -38185,46 +38305,33 @@ angular.module('spotmop.services.settings', [])
 		/**
 		 * Get a setting
 		 * @param setting = string (the setting to fetch)
-		 * @param value = the settings default value (if the setting is undefined)
-		 * @param property = string (optional sub-property)
 		 **/
-		getSetting: function( setting, defaultValue, property ){
-            
-			if( typeof(property) === 'undefined')
-				property = false;
-			
-            // if we're getting a sub-property
-			if( property ){
-                
-                // make sure our parent property, and sub-property exist
-				if( typeof($localStorage.settings[setting]) !== 'undefined' && typeof($localStorage.settings[setting][property]) !== 'undefined' ){
-					return $localStorage.settings[setting][property];
-				}
-			}else{
-				if( typeof($localStorage.settings[setting]) !== 'undefined' ){
-					return $localStorage.settings[setting];
-				}
+		getSetting: function( setting ){			
+			settingElements = setting.split('.');
+			switch( settingElements.length ){
+				case 1:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) return null;
+					return $localStorage[settingElements[0]];
+					break;
+				case 2:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						return null;
+					return $localStorage[settingElements[0]][settingElements[1]];
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
+						return null;
+					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
+					break;
 			}
-			return defaultValue;
 		},
 		
 		getSettings: function(){
-			return $localStorage.settings;
-		},
-		
-		
-		/**
-		 * Client identification details
-         * TODO: CORS issue, so have to use $.ajax
-		 **/	
-		getClient: function(){
-            return service.getSetting('client', {ip: null, name: 'User'});
-		},
-		setClient: function( parameter, value ){
-            // make sure we have a settings container
-            if( typeof( $localStorage.settings.client ) === 'undefined' )
-                $localStorage.settings.client = {};
-            $localStorage.settings.client[parameter] = value;
+			return $localStorage;
 		},
         
 		getUser: function( username ){            
@@ -38311,8 +38418,8 @@ angular.module('spotmop.services.settings', [])
 		runUpgrade: function(){
 			
 			// depreciated settings
-			service.setSetting('spotmop','','emulateTouchDevice');
-			service.setSetting('spotmop','default','pointerMode');
+			service.setSetting('emulateTouchDevice',false);
+			service.setSetting('pointerMode','default');
 		},
 		
 		
@@ -38337,9 +38444,12 @@ angular.module('spotmop.services.settings', [])
 	};
 		
 	// build the endpoint string
-	var urlBase = 'http://'+ service.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ service.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
+	var mopidyhost = service.getSetting("mopidy.host");
+	if( !mopidyhost ) mopidyhost = window.location.hostname;
+	var mopidyport = service.getSetting("mopidy.port");
+	if( !mopidyport ) mopidyport = "6680";
+	
+	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
 	
 	return service;	
 }]);

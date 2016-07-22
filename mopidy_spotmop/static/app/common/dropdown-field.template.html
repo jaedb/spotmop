@@ -1,0 +1,15 @@
+<div class="field dropdown" ng-class="{ expanded: visible }">
+	<div class="current-option option" ng-click="toggleVisibility()">
+		<span class="label" ng-bind="currentOption().label"></span>
+		<i class="fa" ng-class="{ 'fa-chevron-down': !visible, 'fa-chevron-up': visible }"></i>
+	</div>
+	<div class="options" ng-show="visible">
+		<div
+			class="option"
+			ng-repeat="option in options track by $index"
+			ng-bind="option.label"
+			ng-click="selectOption(option)"
+			ng-class="{ selected: ( option.value == currentOption.value ) }"
+			></div>
+	</div>
+</div>
