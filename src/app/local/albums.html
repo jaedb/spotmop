@@ -4,17 +4,8 @@
         <div class="page-header">
 		
             <div class="utilities">
+				<dropdownfield options="viewOptions" settingname="local.view"></dropdownfield>
                 <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
-                <div class="field icon-radio view-options">
-                    <label>
-                        <input type="radio" name="spotmop.localalbumlayout" ng-model="settings.spotmop.localalbumlayout" value="grid" />
-                        <span class="label animate"><span class="si grid mobile-white"></span></span>
-                    </label>
-                    <label>
-                        <input type="radio" name="spotmop.localalbumlayout" ng-model="settings.spotmop.localalbumlayout" value="list" />
-                        <span class="label animate"><span class="si list mobile-white"></span></span>
-                    </label>
-                </div>
             </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
@@ -30,7 +21,7 @@
         
         <!-- GRID VIEW -->
         
-        <div class="album-items square-panels" ng-if="!settings.spotmop.localalbumlayout || settings.spotmop.localalbumlayout == 'grid'">
+        <div class="album-items square-panels" ng-if="!settings.local.view || settings.local.view == 'grid'">
             <div class="item-container" ng-repeat="album in albums track by $index">
                 <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
                     candrag
@@ -48,7 +39,7 @@
         
         <!-- LIST VIEW -->
 		
-		<div class="album-items list" ng-if="settings.spotmop.localalbumlayout == 'list'">
+		<div class="album-items list" ng-if="settings.local.view == 'list'">
             <div class="list-item header">
                 <div class="col w100 name">Name</div>
                 <div class="clear-both"></div>

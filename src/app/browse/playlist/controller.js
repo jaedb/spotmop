@@ -120,7 +120,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
+		var currentUserID = SettingsService.getSetting('spotifyuser.id');
         
 		if( playlistOwnerID != currentUserID ){
 			
@@ -170,7 +170,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser',{id: null}).id;
+		var currentUserID = SettingsService.getSetting('spotifyuser.id');
 		
 		if( playlistOwnerID != currentUserID ){
 			NotifyService.error('Cannot modify to a playlist you don\'t own');

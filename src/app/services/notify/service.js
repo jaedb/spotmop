@@ -99,7 +99,7 @@ angular.module('spotmop.services.notify', [])
 		browserNotify: function( title, body, icon ){
 				
 			// disabled by user
-			if( SettingsService.getSetting('notificationsDisabled', false) )
+			if( SettingsService.getSetting('notificationsDisabled') )
 				return false;
 	
 			// Determine the correct object to use

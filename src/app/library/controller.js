@@ -206,10 +206,24 @@ angular.module('spotmop.library', [])
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	$scope.settings = SettingsService.getSettings();
+	$scope.viewOptions = [
+			{
+				value: 'detail',
+				label: 'Detail'
+			},
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+    var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
 	if( $rootScope.spotifyAuthorized ){	
@@ -292,14 +306,21 @@ angular.module('spotmop.library', [])
 	}
 	
 	$scope.settings = SettingsService.getSettings();
+	$scope.filterOptions = [
+			{
+				value: 'all',
+				label: 'All playlists'
+			},
+			{
+				value: 'owned',
+				label: 'Playlists I own'
+			}
+		];
 	$scope.playlists = { items: [] };
 	$scope.show = function( playlist ){
-        
-        if(
-			typeof($scope.settings.playlists) === 'undefined' ||
-			typeof($scope.settings.playlists.onlyshowowned) === 'undefined' ||
-			!$scope.settings.playlists.onlyshowowned ){
-				return true;
+        var filter = SettingsService.getSetting('playlists.filter');
+        if( !filter || filter == 'all' ){
+			return true;
         }
         
         if( playlist.owner.id == 'jaedb' ) return true;
@@ -308,7 +329,7 @@ angular.module('spotmop.library', [])
 	};
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser',{ id: null }).id;
+    var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
 	if( $rootScope.spotifyAuthorized ){	

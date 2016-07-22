@@ -82,7 +82,7 @@ angular.module('spotmop', [
     $rootScope.isTouchMode = function(){
 		
 		// detect our manual override
-		var pointerMode = SettingsService.getSetting('spotmop',false,'pointerMode');
+		var pointerMode = SettingsService.getSetting('spotmop.pointerMode');
 		if( pointerMode == 'touch' ) return true;
 		else if( pointerMode == 'click' ) return false;
 		
@@ -90,16 +90,9 @@ angular.module('spotmop', [
 		return $rootScope.isTouchDevice();
 	}
     $scope.isSameDomainAsMopidy = function(){
-		var mopidyhost = SettingsService.getSetting('mopidyhost','localhost');
-		
-		// if set to localhost or not set at all (then using default of localhost)
-		if( !mopidyhost || mopidyhost == 'localhost' )
-			return true;
-		
-		// custom setting, and if it matches the domain spotmop is using, then we're in business
-		if( $location.host() == mopidyhost )
-			return true;
-		}
+		var mopidyhost = SettingsService.getSetting('mopidy.host');
+		if( !mopidyhost || $location.host() == mopidyhost ) return true;
+	}
 	$scope.state = PlayerService.state;
 	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
@@ -112,7 +105,7 @@ angular.module('spotmop', [
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
-    
+	
     /**
      * Playlists submenu
      **/
@@ -353,7 +346,7 @@ angular.module('spotmop', [
 	// listen for changes from other clients
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
 		MopidyService.getConsume().then( function( isConsume ){
-			SettingsService.setSetting('mopidy',isConsume,'consume');
+			SettingsService.setSetting('mopidy.consume',isConsume);
 		});
 	});
 	
@@ -367,8 +360,8 @@ angular.module('spotmop', [
     $rootScope.$on('spotmop:pusher:online', function(event, data){
         
         // if we have no client name, then initiate initial setup
-		var client = SettingsService.getSetting('pushername', null);
-        if( typeof(client) === 'undefined' || !client || client == '' ){
+		var client = SettingsService.getSetting('pusher.name');
+        if( !client || client == '' ){
             DialogService.create('initialsetup', $scope);
 			Analytics.trackEvent('Core', 'Initial setup');
 		}
@@ -416,7 +409,7 @@ angular.module('spotmop', [
 
 			// if we're about to fire a keyboard shortcut event, let's prevent default
 			// this needs to be handled on keydown instead of keyup, otherwise it's too late to prevent default behavior
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled') ){
 				var shortcutKeyCodes = new Array(46,32,13,37,38,39,40,27);
 				if($.inArray(event.which, shortcutKeyCodes) > -1)
 					event.preventDefault();			
@@ -427,7 +420,7 @@ angular.module('spotmop', [
         .bind('keyup',function( event ){
 
 			// make sure we're not typing in an input area
-			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled',false) ){
+			if( !$(document).find(':focus').is(':input') && SettingsService.getSetting('keyboardShortcutsEnabled') ){
 				
 				// delete key
 				if( event.which === 46 )

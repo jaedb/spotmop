@@ -19,29 +19,36 @@ angular.module('spotmop.services.settings', [])
 		 * Set a setting
 		 * @param setting = string (the setting to change)
 		 * @param value = the setting's new value
-		 * @param property = string (optional sub-property)
 		 **/
-		setSetting: function( setting, value, property ){
+		setSetting: function( setting, value ){
 			
-			if( typeof(property) === 'undefined')
-				property = false;
+			if( typeof($localStorage) === 'undefined' ) $localStorage = {};
 			
-			// unsetting?
-			if( ( typeof(value) === 'string' && value == '' ) || typeof(value) === 'undefined' ){
-				if( property ){
-					delete $localStorage.settings[setting][property];
-				}else{
-					delete $localStorage.settings[setting];	
-				}
-			// setting
-            }else{
-				if( property ){
-					if( typeof($localStorage.settings[setting]) === 'undefined' )
-						$localStorage.settings[setting] = {};
-					$localStorage.settings[setting][property] = value;
-				}else{
-					$localStorage.settings[setting] = value;
-				}
+			settingElements = setting.split('.');
+			switch( settingElements.length ){
+				case 1:
+					$localStorage[settingElements[0]] = value;
+					break;
+				case 2:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) $localStorage[settingElements[0]] = {};
+					$localStorage[settingElements[0]][settingElements[1]] = value;
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						$localStorage[settingElements[0]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]] = {};
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						$localStorage[settingElements[0]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]] = {};
+					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
+						$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = {};
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+					break;
 			}
 		},
 		
@@ -49,46 +56,33 @@ angular.module('spotmop.services.settings', [])
 		/**
 		 * Get a setting
 		 * @param setting = string (the setting to fetch)
-		 * @param value = the settings default value (if the setting is undefined)
-		 * @param property = string (optional sub-property)
 		 **/
-		getSetting: function( setting, defaultValue, property ){
-            
-			if( typeof(property) === 'undefined')
-				property = false;
-			
-            // if we're getting a sub-property
-			if( property ){
-                
-                // make sure our parent property, and sub-property exist
-				if( typeof($localStorage.settings[setting]) !== 'undefined' && typeof($localStorage.settings[setting][property]) !== 'undefined' ){
-					return $localStorage.settings[setting][property];
-				}
-			}else{
-				if( typeof($localStorage.settings[setting]) !== 'undefined' ){
-					return $localStorage.settings[setting];
-				}
+		getSetting: function( setting ){			
+			settingElements = setting.split('.');
+			switch( settingElements.length ){
+				case 1:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) return null;
+					return $localStorage[settingElements[0]];
+					break;
+				case 2:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						return null;
+					return $localStorage[settingElements[0]][settingElements[1]];
+					break;
+				case 3:
+					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
+						return null;
+					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
+					break;
 			}
-			return defaultValue;
 		},
 		
 		getSettings: function(){
-			return $localStorage.settings;
-		},
-		
-		
-		/**
-		 * Client identification details
-         * TODO: CORS issue, so have to use $.ajax
-		 **/	
-		getClient: function(){
-            return service.getSetting('client', {ip: null, name: 'User'});
-		},
-		setClient: function( parameter, value ){
-            // make sure we have a settings container
-            if( typeof( $localStorage.settings.client ) === 'undefined' )
-                $localStorage.settings.client = {};
-            $localStorage.settings.client[parameter] = value;
+			return $localStorage;
 		},
         
 		getUser: function( username ){            
@@ -175,8 +169,8 @@ angular.module('spotmop.services.settings', [])
 		runUpgrade: function(){
 			
 			// depreciated settings
-			service.setSetting('spotmop','','emulateTouchDevice');
-			service.setSetting('spotmop','default','pointerMode');
+			service.setSetting('emulateTouchDevice',false);
+			service.setSetting('pointerMode','default');
 		},
 		
 		
@@ -201,9 +195,12 @@ angular.module('spotmop.services.settings', [])
 	};
 		
 	// build the endpoint string
-	var urlBase = 'http://'+ service.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ service.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
+	var mopidyhost = service.getSetting("mopidy.host");
+	if( !mopidyhost ) mopidyhost = window.location.hostname;
+	var mopidyport = service.getSetting("mopidy.port");
+	if( !mopidyport ) mopidyport = "6680";
+	
+	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
 	
 	return service;	
 }]);

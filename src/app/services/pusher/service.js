@@ -10,9 +10,12 @@ angular.module('spotmop.services.pusher', [
 		$localStorage.pusher = {};
 		
 	// build the endpoint string
-	var urlBase = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-	urlBase += ':'+ SettingsService.getSetting('mopidyport', '6680');
-	urlBase += '/spotmop/';
+	var mopidyhost = SettingsService.getSetting("mopidy.host");
+	if( !mopidyhost ) mopidyhost = window.location.hostname;
+	var mopidyport = SettingsService.getSetting("mopidy.port");
+	if( !mopidyport ) mopidyport = "6680";
+	
+	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
 	var service = {
 		pusher: {},
@@ -22,9 +25,11 @@ angular.module('spotmop.services.pusher', [
 		start: function(){
             var self = this;
 
-            // Get mopidy ip and port from settigns
-            var pusherhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var pusherport = SettingsService.getSetting("pusherport", "6681");
+            // Get mopidy/pusher ip and port from settigns
+			var pusherhost = SettingsService.getSetting("mopidy.host");
+			if( !pusherhost ) pusherhost = window.location.hostname;
+			var pusherport = SettingsService.getSetting("pusher.port");
+			if( !pusherport ) pusherport = "6681";
 			
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
@@ -45,27 +50,26 @@ angular.module('spotmop.services.pusher', [
                         // if it's an initial connection status message, just parse it through quietly
                         if( data.startup ){
                             console.info('Pusher connected as '+data.details.id);
-                            SettingsService.setSetting('pusherid', data.details.id);
-                            SettingsService.setSetting('pusherip', data.details.ip);
+                            SettingsService.setSetting('pusher.id', data.details.id);
+                            SettingsService.setSetting('pusher.ip', data.details.ip);
 								
                             // detect if the core has been updated
-                            if( SettingsService.getSetting('version', 0, 'installed') != data.version ){
+                            if( SettingsService.getSetting('version.installed') != data.version ){
                                 NotifyService.notify('New version detected, clearing caches...');      
                                 $cacheFactory.get('$http').removeAll();
                                 $templateCache.removeAll();
-                                SettingsService.setSetting('version', data.version, 'installed');
+                                SettingsService.setSetting('version.installed', data.version);
 								SettingsService.runUpgrade();
                             }
 							
                             // notify server of our actual username
-                            var name = SettingsService.getSetting('pushername', '')
-                            if( name )
-                                service.setMe( name );
+                            var name = SettingsService.getSetting('pusher.name')
+                            if( name ) service.setMe( name );
                         
                         // standard notification, fire it out!
                         }else{
                             // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusherid', '') && !SettingsService.getSetting('pusherdisabled', false) )
+                            if( data.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') )
                                 $rootScope.$broadcast('spotmop:pusher:received', data);
                         }
 					}
@@ -91,7 +95,7 @@ angular.module('spotmop.services.pusher', [
 		
 		send: function( data ){
 			data.pusher = true;
-			data.id = SettingsService.getSetting('pusherid',null);
+			data.id = SettingsService.getSetting('pusher.id');
 			service.pusher.send( JSON.stringify(data) );
 		},
         
@@ -101,7 +105,7 @@ angular.module('spotmop.services.pusher', [
          * @return deferred promise
          **/
         setMe: function( name ){
-            var id = SettingsService.getSetting('pusherid', null);
+            var id = SettingsService.getSetting('pusher.id');
             $.ajax({
                 method: 'GET',
                 cache: false,

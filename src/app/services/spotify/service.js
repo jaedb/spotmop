@@ -120,9 +120,11 @@ angular.module('spotmop.services.spotify', [])
 			
 			// client hasn't authorized spotmop with spotify, so let's just use the backend
 			}else if( this.authenticationMethod == 'server' ){
-			
-				var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-				var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+				
+				var mopidyhost = SettingsService.getSetting("mopidy.host");
+				if( !mopidyhost ) mopidyhost = window.location.hostname;
+				var mopidyport = SettingsService.getSetting("mopidy.port");
+				if( !mopidyport ) mopidyport = "6680";
 				url = 'http://'+mopidyhost+':'+mopidyport+'/spotmop/auth';
 			
 			// no authentication method, so cannot refresh token!
@@ -812,7 +814,8 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
-			var country = SettingsService.getSetting('countrycode','NZ');						
+			var country = SettingsService.getSetting('spotify.countrycode');
+			if( !country ) country = 'NZ';
             var deferred = $q.defer();
 
             $http({
@@ -879,8 +882,8 @@ angular.module('spotmop.services.spotify', [])
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
 			
-            if( userid != SettingsService.getSetting('spotifyuser',{id: null}).id )
-                return false;		
+			spotifyUser = SettingsService.getSetting('spotify.user');
+            if( !spotifyUser || userid != spotifyUser ) return false;		
 			
             var deferred = $q.defer();
 
@@ -1475,8 +1478,10 @@ angular.module('spotmop.services.spotify', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
-	var country = SettingsService.getSetting("spotifycountry", 'NZ');
-	var locale = SettingsService.getSetting("spotifylocale", "en_NZ");
+	var country = SettingsService.getSetting("spotify.country");
+	if( !country ) country = 'NZ';
+	var locale = SettingsService.getSetting("spotify.locale");
+	if( !locale ) locale = 'en_NZ';
 	
 	// and finally, give us our service!
 	return service;

@@ -1636,12 +1636,10 @@ slider .item-container > .square-panel {
 	float: right;
 }
  
-.page-header .utilities.has-buttons {
+.page-header .utilities .button {
+	font-weight: 600;
+	text-transform: uppercase;
 	margin-top: -8px;
-}
- 
-.library-albums .utilities .view-options label {
-	padding: 0 5px;
 }
  
 .utilities .si {

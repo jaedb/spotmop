@@ -76,8 +76,10 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+            var mopidyhost = SettingsService.getSetting("mopidy.host");
+			if( !mopidyhost ) mopidyhost = window.location.hostname;
+            var mopidyport = SettingsService.getSetting("mopidy.port");
+			if( !mopidyport ) mopidyport = "6680";
 			
 			// Initialize mopidy
             try{
@@ -262,13 +264,15 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			var name = SettingsService.getSetting('pushername', 'User');      
-			var ip = SettingsService.getSetting('pusherip', null);      
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			var ip = SettingsService.getSetting('pusher.ip');     
+			if( !ip ) ip = false; 
             PusherService.send({
                 title: 'Track skipped',
                 body: name +' vetoed this track!',
                 clientip: ip,
-                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser') )
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},

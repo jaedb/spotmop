@@ -122,6 +122,17 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalArtistsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	
 	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     var limit = 50;
@@ -194,6 +205,17 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalAlbumsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+		
 	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
     var limit = 50;

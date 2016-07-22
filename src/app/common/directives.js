@@ -875,6 +875,52 @@ angular.module('spotmop.directives', [])
 })
 
 
+/** 
+ * Dropdown field
+ * Facilitates nicer dropdowns, like the 'view' toggles
+ **/
+.directive('dropdownfield', function( $rootScope, $filter, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			options: '=',
+			settingname: '@'
+		},
+		link: function($scope, $element, $attrs){
+			
+			// make sure we've been given options
+			if( !$scope.options || $scope.options.length <= 0 ){
+				return false;
+			}
+			
+			// get the value from our settings, and if null, then we use the first available option
+			$scope.currentValue = SettingsService.getSetting($scope.settingname);
+			$scope.currentOption = function(){
+				if( $scope.currentValue ){
+					return $filter('filter')( $scope.options, {value: $scope.currentValue} )[0];
+				}else{
+					return $scope.options[0];
+				}
+			}
+		},
+		controller: function($scope, $element, $attrs){
+			
+			$scope.toggleVisibility = function(){
+				$scope.visible = !$scope.visible;
+			}
+			$scope.selectOption = function( option ){
+				$scope.currentValue = option.value;
+				SettingsService.setSetting($scope.settingname, option.value);
+				$scope.visible = false;
+			}
+		},
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/common/dropdown-field.template.html'
+	}
+})
+
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
@@ -953,9 +999,13 @@ angular.module('spotmop.directives', [])
 		
 			// mopidy-styled images
 			if( typeof(image.__model__) !== 'undefined' ){
-			
-				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				
+				var mopidyhost = SettingsService.getSetting('mopidy.host');
+				if( !mopidyhost ) mopidyhost = window.location.hostname;
+				var mopidyip = SettingsService.getSetting('mopidy.host');
+				if( !mopidyip ) mopidyip = '6680';
+				
+				var baseUrl = 'http://'+ mopidyhost +':'+ mopidyip;
 				image.url = baseUrl +'/spotmop'+ image.uri;
 				delete image.uri;
 				

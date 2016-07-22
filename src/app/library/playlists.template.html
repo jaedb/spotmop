@@ -3,14 +3,11 @@
 		
         <div class="page-header">
 		
-            <div class="utilities has-buttons" ng-if="spotifyAuthorized">
+            <div class="utilities" ng-if="spotifyAuthorized">
                 <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()">
                     <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span>
                 </a>
-                <div class="switch-button-wrapper pull-right">
-                    <switch class="mobile-hide" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only my playlists"></switch>
-                    <switch class="mobile-show" name="playlists.onlyshowowned" value="settings.playlists.onlyshowowned" label="Only mine"></switch>
-                </div>
+				<dropdownfield options="filterOptions" settingname="playlists.filter"></dropdownfield>
             </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>

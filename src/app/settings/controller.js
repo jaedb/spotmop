@@ -25,7 +25,7 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.settings = SettingsService.getSettings();
+	$scope.storage = SettingsService.getSettings();
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
@@ -44,12 +44,12 @@ angular.module('spotmop.settings', [])
 		NotifyService.notify( 'Checking for updates' );
 		SettingsService.upgradeCheck()
 			.then( function(response){				
-				SettingsService.setSetting('version', response, 'latest');
-				if( SettingsService.getSetting('version', 0, 'installed') < response ){
-					SettingsService.setSetting('version',true,'upgradeAvailable');
+				SettingsService.setSetting('version.latest', response);
+				if( SettingsService.getSetting('version.installed') < response ){
+					SettingsService.setSetting('version.upgradeAvailable',true);
 					NotifyService.notify( 'Upgrade is available!' );
 				}else{
-					SettingsService.setSetting('version',false,'upgradeAvailable');
+					SettingsService.setSetting('version.upgradeAvailable',false);
 					NotifyService.notify( 'You\'re already running the latest version' );
 				}
 			});
@@ -62,7 +62,7 @@ angular.module('spotmop.settings', [])
 					NotifyService.error( response.message );
 				}else{
 					NotifyService.notify( response.message );
-					SettingsService.setSetting('version',false,'upgradeAvailable');
+					SettingsService.setSetting('version.upgradeAvailable', false);
 				}
 			});
 	}
@@ -75,8 +75,8 @@ angular.module('spotmop.settings', [])
 	SettingsService.getVersion()
 		.then( function(response){
 			if( response.status != 'error' ){
-				SettingsService.setSetting('version',response.currentVersion,'installed');
-				SettingsService.setSetting('version',response.root,'root');
+				SettingsService.setSetting('version.installed',response.currentVersion);
+				SettingsService.setSetting('version.root',response.root);
 			}
 		});
 	
@@ -87,7 +87,7 @@ angular.module('spotmop.settings', [])
 	};	
 	$scope.savePusherName = function( name ){
 		PusherService.setMe( name );
-		SettingsService.setSetting( 'pushername', name );
+		SettingsService.setSetting( 'pusher.name', name );
 	};	
     
     PusherService.getConnections()

@@ -4,20 +4,7 @@
         <div class="page-header">
 		
             <div class="utilities">
-                <div class="field icon-radio view-options">
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="default" />
-                        <span class="label animate"><span class="si sections mobile-white"></span></span>
-                    </label>
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="grid" />
-                        <span class="label animate"><span class="si grid mobile-white"></span></span>
-                    </label>
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="list" />
-                        <span class="label animate"><span class="si list mobile-white"></span></span>
-                    </label>
-                </div>
+				<dropdownfield options="viewOptions" settingname="albums.view"></dropdownfield>
             </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
@@ -37,7 +24,7 @@
 		
         <!-- FULL VIEW -->
         
-		<div class="album-items" ng-if="!settings.spotmop.albumlayout || settings.spotmop.albumlayout == 'default'">
+		<div class="album-items" ng-if="!settings.albums.view || settings.albums.view == 'detail'">
 			
 			<div class="item-container full-album" ng-repeat="album in albums.items track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
             
@@ -86,7 +73,7 @@
         
         <!-- GRID VIEW -->
 		
-		<div class="album-items square-panels" ng-if="settings.spotmop.albumlayout == 'grid'">
+		<div class="album-items square-panels" ng-if="settings.albums.view == 'grid'">
 			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="square-panel album">
 					<div class="image-container">
@@ -105,7 +92,7 @@
         
         <!-- LIST VIEW -->
 		
-		<div class="album-items list" ng-if="settings.spotmop.albumlayout == 'list'">
+		<div class="album-items list" ng-if="settings.albums.view == 'list'">
             <div class="list-item header">
                 <div class="col w35 name">Name</div>
                 <div class="col w30 artists">Artists</div>
