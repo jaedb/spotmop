@@ -66,7 +66,7 @@ angular.module('spotmop.browse.album', [])
 				}
             });
         }
-        return Math.round(totalTime / 100000); 
+        return Math.round(totalTime / 60000); 
     }
     
 	// play the whole album
