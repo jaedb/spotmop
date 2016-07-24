@@ -5,8 +5,9 @@
 		
             <div class="utilities" ng-if="spotifyAuthorized">
                 <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()">
-                    <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">Create playlist</span>
+                    <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">New</span>
                 </a>
+				<dropdownfield options="viewOptions" settingname="playlists.view"></dropdownfield>
 				<dropdownfield options="filterOptions" settingname="playlists.filter"></dropdownfield>
             </div>
         
@@ -18,11 +19,13 @@
             </h1>
             
         </div>
-	
-		<div class="playlist-items square-panels">
+        
+        <!-- GRID VIEW -->
+        
+		<div class="playlist-items square-panels" ng-if="!settings.playlists.view || settings.playlists.view == 'grid'">
 			
 			<div ng-if="playlists.items.length">
-				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by $index">
+				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by playlist.uri">
 					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
                         <div class="image-container">
                             <thumbnail size="medium" images="playlist.images"></thumbnail>
@@ -34,14 +37,49 @@
 					</a>
 				</div>
 			</div>
-		
-			<div ng-hide="playlists.items.length" class="no-items">
-				No items
-			</div>
 			
 			<div class="clear-both"></div>
 		
 		</div>
+        
+        <!-- LIST VIEW -->
+		
+		<div class="playlist-items list" ng-if="settings.playlists.view == 'list'">
+            <div class="list-item header">
+                <div class="col w45 name">Name</div>
+                <div class="col w25 owner">Owner</div>
+                <div class="col w10 tracks">Tracks</div>
+                <div class="col w10">Visibility</div>
+                <div class="col w10">Collaborative</div>
+                <div class="clear-both"></div>
+            </div>
+			<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by playlist.uri">
+				<a ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item">
+                    <div class="col w45 name">
+                        <span ng-bind="playlist.name"></span>
+                    </div>
+                    <div class="col w25 owner">
+                        <span ui-sref="browse.user({ uri: owner.uri })" ng-bind="playlist.owner.id"></span>
+                    </div>
+                    <div class="col w10 tracks">
+                        <span ng-bind="playlist.tracks.total | number:0"></span>
+                    </div>   
+                    <div class="col w10">
+                        <span ng-if="playlist.public">Public</span>
+                        <span ng-if="!playlist.public">Private</span>
+                    </div>
+                    <div class="col w10">
+                        <span ng-if="playlist.collaborative">Yes</span>
+                        <span ng-if="!playlist.collaborative">No</span>
+                    </div>
+                    <div class="clear-both"></div>
+				</a>
+			</div>		
+		</div>
+		
+        <div ng-hide="playlists.items.length" class="no-items">
+            No items
+        </div>
 		
 	</div>
 </div>

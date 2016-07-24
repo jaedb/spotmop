@@ -104,8 +104,7 @@
             </div>
 			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="list-item">
-                    <div class="col w35 name"> 
-                        <span class="si cd"></span>
+                    <div class="col w35 name">
                         <span ng-bind="album.album.name"></span>
                     </div>
                     <div class="col w30 artists">

@@ -477,6 +477,26 @@ angular.module('spotmop.directives', [])
 		templateUrl: 'app/common/artistlist.template.html'
 	}
 })
+
+
+/** 
+ * Genre list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('genrelist', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			genres: '='
+		},
+		link: function($scope, $element, $attrs){
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		templateUrl: 'app/common/genrelist.template.html'
+	}
+})
 		
 		
 		

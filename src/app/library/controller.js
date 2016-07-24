@@ -145,6 +145,18 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
+	$scope.settings = SettingsService.getSettings();
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	
 	$scope.artists = [];
 	
     // if we've got a userid already in storage, use that
@@ -153,7 +165,7 @@ angular.module('spotmop.library', [])
 	SpotifyService.getMyArtists( userid )
 		.then( function( response ){ // successful
 				$scope.artists = response.artists;
-				
+				console.log( response.artists );
 				// if it was 401, refresh token
 				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
 					Spotify.refreshToken();
@@ -314,6 +326,16 @@ angular.module('spotmop.library', [])
 			{
 				value: 'owned',
 				label: 'Playlists I own'
+			}
+		];
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
 			}
 		];
 	$scope.playlists = { items: [] };
