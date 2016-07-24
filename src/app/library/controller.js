@@ -328,6 +328,16 @@ angular.module('spotmop.library', [])
 				label: 'Playlists I own'
 			}
 		];
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
 	$scope.playlists = { items: [] };
 	$scope.show = function( playlist ){
         var filter = SettingsService.getSetting('playlists.filter');

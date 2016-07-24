@@ -50,8 +50,7 @@
             </div>
 			<div class="item-container" ng-repeat="artist in artists.items track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
-                    <div class="col w40 name"> 
-                        <span class="si mic"></span>
+                    <div class="col w40 name">
                         <span ng-bind="artist.name"></span>
                     </div>
                     <div class="col w45 genres">
