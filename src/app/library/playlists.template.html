@@ -54,12 +54,12 @@
                 <div class="clear-both"></div>
             </div>
 			<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by playlist.uri">
-				<a ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item">
+				<div ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item state-link">
                     <div class="col w45 name">
                         <span ng-bind="playlist.name"></span>
                     </div>
                     <div class="col w25 owner">
-                        <span ui-sref="browse.user({ uri: owner.uri })" ng-bind="playlist.owner.id"></span>
+                        <a ui-sref="browse.user({ uri: playlist.owner.uri })" ng-bind="playlist.owner.id" ng-click="$event.stopPropagation()"></a>
                     </div>
                     <div class="col w10 tracks">
                         <span ng-bind="playlist.tracks.total | number:0"></span>
@@ -73,7 +73,7 @@
                         <span ng-if="!playlist.collaborative">No</span>
                     </div>
                     <div class="clear-both"></div>
-				</a>
+				</div>
 			</div>		
 		</div>
 		
