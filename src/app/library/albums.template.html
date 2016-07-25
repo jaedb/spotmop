@@ -91,18 +91,54 @@
 		</div>
         
         <!-- LIST VIEW -->
-		
+        
 		<div class="album-items list" ng-if="settings.albums.view == 'list'">
             <div class="list-item header">
-                <div class="col w35 name">Name</div>
-                <div class="col w30 artists">Artists</div>
-                <div class="col w10 release-date">Released</div>
-                <div class="col w10 track-count">Tracks</div>
-                <div class="col w10 added-date">Added</div>
-                <div class="info">Rating</div>
+                <div class="col w35 name sortable" ng-click="sortField = 'album.name'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'album.name' }">
+                    Name
+                    <span ng-show="sortField == 'album.name'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w30 artists sortable" ng-click="sortField = 'album.artists[0].name'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'album.artists[0].name' }">
+                    Artists
+                    <span ng-show="sortField == 'album.artists[0].name'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 release-date sortable" ng-click="sortField = 'album.release_date'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'album.release_date' }">
+                    Released
+                    <span ng-show="sortField == 'album.release_date'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 track-count sortable" ng-click="sortField = 'album.tracks.total'; sortReverse = !sortReverse"  ng-class="{ active: sortField == 'album.tracks.total' }">
+                    Tracks
+                    <span ng-show="sortField == 'album.tracks.total'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 added-date sortable" ng-click="sortField = 'album.added_at'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'album.added_at' }">
+                    Added
+                    <span ng-show="sortField == 'album.added_at'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="info sortable" ng-click="sortField = 'album.popularity'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'album.popularity' }">
+                    Rating
+                    <span ng-show="sortField == 'album.popularity'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
+			<div class="item-container" ng-repeat="album in albums.items | orderBy:sortField:sortReverse track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="list-item">
                     <div class="col w35 name">
                         <span ng-bind="album.album.name"></span>

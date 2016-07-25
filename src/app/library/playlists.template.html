@@ -46,14 +46,44 @@
 		
 		<div class="playlist-items list" ng-if="settings.playlists.view == 'list'">
             <div class="list-item header">
-                <div class="col w45 name">Name</div>
-                <div class="col w25 owner">Owner</div>
-                <div class="col w10 tracks">Tracks</div>
-                <div class="col w10">Visibility</div>
-                <div class="col w10">Collaborative</div>
+                <div class="col w45 name sortable" ng-click="sortField = 'name'; sortReverse = !sortReverse">
+                    Name
+                    <span ng-show="sortField == 'name'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w25 owner sortable" ng-click="sortField = 'owner.id'; sortReverse = !sortReverse">
+                    Owner
+                    <span ng-show="sortField == 'owner.id'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 tracks sortable" ng-click="sortField = 'tracks.total'; sortReverse = !sortReverse">
+                    Tracks
+                    <span ng-show="sortField == 'tracks.total'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 sortable" ng-click="sortField = 'public'; sortReverse = !sortReverse">
+                    Visibility
+                    <span ng-show="sortField == 'public'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
+                <div class="col w10 sortable" ng-click="sortField = 'collaborative'; sortReverse = !sortReverse">
+                    Collaborative
+                    <span ng-show="sortField == 'collaborative'">
+                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
+                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    </span>
+                </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by playlist.uri">
+			<div class="item-container" ng-repeat="playlist in playlists.items | filter:show | orderBy:sortField:sortReverse track by playlist.uri">
 				<div ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item state-link">
                     <div class="col w45 name">
                         <span ng-bind="playlist.name"></span>

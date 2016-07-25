@@ -1481,6 +1481,15 @@ body.dragging .tracklist .track.dropping {
 	font-size: 11px;
 	padding-bottom: 2px;
 }
+ 
+.list .list-item.header .sortable:hover {
+	cursor: pointer;
+	color: #888888;
+}
+ 
+.list .list-item.header .sortable.active {
+	color: #32b5f2;
+}
 
 .list .list-item:not(.header):hover {
 	background: #F4F4F4;
