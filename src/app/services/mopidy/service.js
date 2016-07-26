@@ -220,12 +220,13 @@ angular.module('spotmop.services.mopidy', [
 					return self.mopidy.playback.play( playTrack )
 				
 						// now add all the remaining tracks
-						// note the use of .shift() previously altered the array				
 						.then( function(){
-							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
-								.then( function(){
-									cfpLoadingBar.complete();
-								});
+							if( trackUris.length > 0 ){
+								return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+									.then( function(){
+										cfpLoadingBar.complete();
+									});
+							}
 						}, consoleError);
 				}, consoleError);
 		},
