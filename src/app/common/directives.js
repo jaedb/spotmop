@@ -277,6 +277,9 @@ angular.module('spotmop.directives', [])
 					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
+					case 'playlist':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
 					case 'track':
 						var trackUris = [];
 						var trackDoms = $(document).find('.track.selected');

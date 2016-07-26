@@ -26,14 +26,19 @@
 			
 			<div ng-if="playlists.items.length">
 				<div class="item-container" ng-repeat="playlist in playlists.items | filter:show track by playlist.uri">
-					<a ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" class="square-panel playlist">
-                        <div class="image-container">
-                            <thumbnail size="medium" images="playlist.images"></thumbnail>
-                        </div>
-						<div class="info animate">
-							<div class="name" ng-bind="playlist.name"></div>
-							<div class="secondary tracks" ng-if="playlist.tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != spotifyUser.id">&nbsp;<i class="fa fa-lock"></i></span></div>
-						</div>
+					<a
+                        ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })"
+                        class="square-panel playlist"
+                        candrag
+                        dragobj="playlist"
+                        draggable="false">
+                            <div class="image-container">
+                                <thumbnail size="medium" images="playlist.images"></thumbnail>
+                            </div>
+                            <div class="info animate">
+                                <div class="name" ng-bind="playlist.name"></div>
+                                <div class="secondary tracks" ng-if="playlist.tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != spotifyUser.id">&nbsp;<i class="fa fa-lock"></i></span></div>
+                            </div>
 					</a>
 				</div>
 			</div>
