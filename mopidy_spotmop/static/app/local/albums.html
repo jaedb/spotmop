@@ -4,7 +4,8 @@
         <div class="page-header">
 		
             <div class="utilities">
-				<dropdownfield options="viewOptions" settingname="local.view"></dropdownfield>
+				<dropdownfield options="sortOptions" settingname="local.sortField" togglesettingname="local.sortReverse" iconclass="fa-sort"></dropdownfield>
+				<dropdownfield options="viewOptions" settingname="local.view" iconclass="fa-eye"></dropdownfield>
                 <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
             </div>
         
@@ -22,7 +23,7 @@
         <!-- GRID VIEW -->
         
         <div class="album-items square-panels" ng-if="!settings.local.view || settings.local.view == 'grid'">
-            <div class="item-container" ng-repeat="album in albums track by $index">
+            <div class="item-container" ng-repeat="album in albums | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by album.uri">
                 <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
                     candrag
                     dragobj="album"
@@ -41,10 +42,16 @@
 		
 		<div class="album-items list" ng-if="settings.local.view == 'list'">
             <div class="list-item header">
-                <div class="col w100 name">Name</div>
+                <div class="col w100 name">
+                    Name
+                    <span ng-show="settings.local.sortField == 'name'">
+                        <i ng-show="!settings.local.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.local.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="album in albums track by $index">
+			<div class="item-container" ng-repeat="album in albums | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by album.uri">
 				<a ui-sref="browse.album({ uri: album.uri })" class="list-item">
                     <div class="col w100 name">
                         <span ng-bind="album.name"></span>

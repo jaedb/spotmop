@@ -32686,7 +32686,9 @@ angular.module('spotmop.directives', [])
 		restrict: 'E',
 		scope: {
 			options: '=',
-			settingname: '@'
+			settingname: '@',
+			togglesettingname: '@',
+			iconclass: '@'
 		},
 		link: function($scope, $element, $attrs){
 			
@@ -32710,9 +32712,21 @@ angular.module('spotmop.directives', [])
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
 			}
+			
+			// option selected
 			$scope.selectOption = function( option ){
 				$scope.currentValue = option.value;
-				SettingsService.setSetting($scope.settingname, option.value);
+				
+				// if we've clicked on an option that we've already selected, and a toggle field
+				if( SettingsService.getSetting($scope.settingname) == option.value && $scope.togglesettingname ){
+					
+					var toggleState = SettingsService.getSetting($scope.togglesettingname);
+					SettingsService.setSetting($scope.togglesettingname, !toggleState);
+					
+				// BAU
+				}else{
+					SettingsService.setSetting($scope.settingname, option.value);
+				}
 				$scope.visible = false;
 			}
 		}],
@@ -33882,6 +33896,24 @@ angular.module('spotmop.library', [])
 				label: 'List'
 			}
 		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			},
+			{
+				value: 'genres[0]',
+				label: 'Genres'
+			},
+			{
+				value: 'followers.total',
+				label: 'Followers'
+			}
+		];
 	
 	$scope.artists = [];
 	
@@ -33956,6 +33988,24 @@ angular.module('spotmop.library', [])
 			{
 				value: 'list',
 				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'album.name',
+				label: 'Title'
+			},
+			{
+				value: 'album.artists[0].name',
+				label: 'Artist'
+			},
+			{
+				value: 'album.added_at',
+				label: 'Date added'
 			}
 		];
 	$scope.albums = { items: [] };
@@ -34062,6 +34112,24 @@ angular.module('spotmop.library', [])
 			{
 				value: 'list',
 				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			},
+			{
+				value: 'owner.id',
+				label: 'Owner'
+			},
+			{
+				value: 'tracks.total',
+				label: 'Tracks'
 			}
 		];
 	$scope.playlists = { items: [] };
@@ -34310,17 +34378,26 @@ angular.module('spotmop.local', [])
 				label: 'List'
 			}
 		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			}
+		];
 	
 	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
-    var limit = 50;
+    $scope.limit = 50;
 	var uri;
 	
 	// watch for filter input
 	$scope.$watch('filterTerm', function(val){
-        limit = 50;
+        $scope.limit = 50;
         $scope.artists = $filter('filter')($scope.allArtists, val);
-        $scope.artists = $filter('limitTo')($scope.artists, limit);
     });
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -34352,7 +34429,7 @@ angular.module('spotmop.local', [])
 				for( var i = 0; i < artists.length; i++ ){
 				}
 				
-				$scope.artists = $filter('limitTo')(artists, limit);
+				$scope.artists = artists;
 				$scope.allArtists = artists;
 			});
 	}
@@ -34362,12 +34439,9 @@ angular.module('spotmop.local', [])
     $scope.$on('spotmop:loadMore', function(){
         if( !loading ){
             loading = true;
-            limit += 50;
+            $scope.limit += 50;
             if( $scope.filterTerm ){
                 $scope.artists = $filter('filter')($scope.allArtists, $scope.filterTerm);
-                $scope.artists = $filter('limitTo')($scope.artists, limit);
-            }else{
-                $scope.artists = $filter('limitTo')($scope.allArtists, limit);
             }
             $timeout(
                 function(){
@@ -34393,17 +34467,26 @@ angular.module('spotmop.local', [])
 				label: 'List'
 			}
 		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			}
+		];
 		
 	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
-    var limit = 50;
+    $scope.limit = 50;
 	var uri;
 	
 	// watch for filter input
 	$scope.$watch('filterTerm', function(val){
-        limit = 50;
+        $scope.limit = 50;
         $scope.albums = $filter('filter')($scope.allAlbums, val);
-        $scope.albums = $filter('limitTo')($scope.albums, limit);
 		if( $scope.albums.length > 0 ){
 			getArtwork( $scope.albums );
 		}
@@ -34420,7 +34503,7 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=album' )
 			.then( function( response ){
-				$scope.albums = $filter('limitTo')(response, 50);
+				$scope.albums = response;
 				$scope.allAlbums = response;
 				getArtwork( $scope.albums );
 			});
@@ -34461,12 +34544,9 @@ angular.module('spotmop.local', [])
     $scope.$on('spotmop:loadMore', function(){
         if( !loading ){
             loading = true;
-            limit += 50;
+            $scope.limit += 50;
             if( $scope.filterTerm ){
                 $scope.albums = $filter('filter')($scope.allAlbums, $scope.filterTerm);
-                $scope.albums = $filter('limitTo')($scope.albums, limit);
-            }else{
-                $scope.albums = $filter('limitTo')($scope.allAlbums, limit);
             }
             $timeout(
                 function(){
