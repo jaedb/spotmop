@@ -291,6 +291,7 @@ angular.module('spotmop.services.dialog', [])
 			
 			// default to on
 			SettingsService.setSetting('spotify.authorizationenabled',true);
+			SettingsService.setSetting('keyboardShortcutsEnabled',true);
 			SettingsService.setSetting('pointerMode','default');
 		
             $scope.saving = false;
