@@ -198,14 +198,16 @@
                 </div>
 
                 <div class="field">
-                    <div class="label">System reset</div>
+                    <div class="label">Debugging</div>
                     <div class="input">
-                    <confirmation-button
-                        extra-classes="destructive"
-                        default-text="Reset all settings"
-                        confirmation-text="Are you sure?"
-                        on-confirmation="resetSettings">
-                    </confirmation-button>
+                        <confirmation-button
+                            extra-classes="destructive"
+                            default-text="Reset all settings"
+                            confirmation-text="Are you sure?"
+                            on-confirmation="resetSettings">
+                        </confirmation-button>
+                        &nbsp;
+                        <a class="button primary" ui-sref="testing"><i class="fa fa-flask"></i>&nbsp; Testing lab</a>
                     </div>
                 </div>
 

@@ -32047,6 +32047,9 @@ angular.module('spotmop.directives', [])
 					case 'localalbum':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
+					case 'playlist':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
 					case 'track':
 						var trackUris = [];
 						var trackDoms = $(document).find('.track.selected');
@@ -32245,6 +32248,26 @@ angular.module('spotmop.directives', [])
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
 		templateUrl: 'app/common/artistlist.template.html'
+	}
+}])
+
+
+/** 
+ * Genre list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('genrelist', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			genres: '='
+		},
+		link: function($scope, $element, $attrs){
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		templateUrl: 'app/common/genrelist.template.html'
 	}
 }])
 		
@@ -33848,6 +33871,18 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
+	$scope.settings = SettingsService.getSettings();
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	
 	$scope.artists = [];
 	
     // if we've got a userid already in storage, use that
@@ -33856,7 +33891,7 @@ angular.module('spotmop.library', [])
 	SpotifyService.getMyArtists( userid )
 		.then( function( response ){ // successful
 				$scope.artists = response.artists;
-				
+				console.log( response.artists );
 				// if it was 401, refresh token
 				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
 					Spotify.refreshToken();
@@ -34017,6 +34052,16 @@ angular.module('spotmop.library', [])
 			{
 				value: 'owned',
 				label: 'Playlists I own'
+			}
+		];
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
 			}
 		];
 	$scope.playlists = { items: [] };
@@ -35782,6 +35827,7 @@ angular.module('spotmop.services.dialog', [])
 			
 			// default to on
 			SettingsService.setSetting('spotify.authorizationenabled',true);
+			SettingsService.setSetting('keyboardShortcutsEnabled',true);
 			SettingsService.setSetting('pointerMode','default');
 		
             $scope.saving = false;
@@ -36146,6 +36192,8 @@ angular.module('spotmop.services.mopidy', [
 				// then play it
 				.then( function( response ){	
 					
+					console.log( response );
+					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
 					var playTrack = null;					
@@ -36153,15 +36201,16 @@ angular.module('spotmop.services.mopidy', [
 						playTrack = { tlid: response[0].tlid };
 					}
 					
-					return self.mopidy.playback.play()
+					return self.mopidy.playback.play( playTrack )
 				
 						// now add all the remaining tracks
-						// note the use of .shift() previously altered the array				
 						.then( function(){
-							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
-								.then( function(){
-									cfpLoadingBar.complete();
-								});
+							if( trackUris.length > 0 ){
+								return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+									.then( function(){
+										cfpLoadingBar.complete();
+									});
+							}
 						}, consoleError);
 				}, consoleError);
 		},
