@@ -208,6 +208,8 @@ angular.module('spotmop.services.mopidy', [
 				// then play it
 				.then( function( response ){	
 					
+					console.log( response );
+					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
 					var playTrack = null;					
@@ -215,7 +217,7 @@ angular.module('spotmop.services.mopidy', [
 						playTrack = { tlid: response[0].tlid };
 					}
 					
-					return self.mopidy.playback.play()
+					return self.mopidy.playback.play( playTrack )
 				
 						// now add all the remaining tracks
 						// note the use of .shift() previously altered the array				
