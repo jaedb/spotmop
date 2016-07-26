@@ -76,8 +76,10 @@ angular.module('spotmop.services.mopidy', [
 			$rootScope.$broadcast("spotmop:startingmopidy");
 
             // Get mopidy ip and port from settigns
-            var mopidyhost = SettingsService.getSetting("mopidyhost", window.location.hostname);
-            var mopidyport = SettingsService.getSetting("mopidyport", "6680");
+            var mopidyhost = SettingsService.getSetting("mopidy.host");
+			if( !mopidyhost ) mopidyhost = window.location.hostname;
+            var mopidyport = SettingsService.getSetting("mopidy.port");
+			if( !mopidyport ) mopidyport = "6680";
 			
 			// Initialize mopidy
             try{
@@ -206,6 +208,8 @@ angular.module('spotmop.services.mopidy', [
 				// then play it
 				.then( function( response ){	
 					
+					console.log( response );
+					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
 					var playTrack = null;					
@@ -213,15 +217,16 @@ angular.module('spotmop.services.mopidy', [
 						playTrack = { tlid: response[0].tlid };
 					}
 					
-					return self.mopidy.playback.play()
+					return self.mopidy.playback.play( playTrack )
 				
 						// now add all the remaining tracks
-						// note the use of .shift() previously altered the array				
 						.then( function(){
-							return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
-								.then( function(){
-									cfpLoadingBar.complete();
-								});
+							if( trackUris.length > 0 ){
+								return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+									.then( function(){
+										cfpLoadingBar.complete();
+									});
+							}
 						}, consoleError);
 				}, consoleError);
 		},
@@ -262,13 +267,15 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
 		next: function() {		
-			var name = SettingsService.getSetting('pushername', 'User');      
-			var ip = SettingsService.getSetting('pusherip', null);      
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			var ip = SettingsService.getSetting('pusher.ip');     
+			if( !ip ) ip = false; 
             PusherService.send({
                 title: 'Track skipped',
                 body: name +' vetoed this track!',
                 clientip: ip,
-                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser',{}) )
+                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser') )
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},

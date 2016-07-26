@@ -4,20 +4,8 @@
         <div class="page-header">
 		
             <div class="utilities">
-                <div class="field icon-radio view-options">
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="default" />
-                        <span class="label animate"><span class="si sections mobile-white"></span></span>
-                    </label>
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="grid" />
-                        <span class="label animate"><span class="si grid mobile-white"></span></span>
-                    </label>
-                    <label>
-                        <input type="radio" name="spotmop.albumlayout" ng-model="settings.spotmop.albumlayout" value="list" />
-                        <span class="label animate"><span class="si list mobile-white"></span></span>
-                    </label>
-                </div>
+				<dropdownfield options="sortOptions" settingname="albums.sortField" togglesettingname="albums.sortReverse" iconclass="fa-sort"></dropdownfield>
+				<dropdownfield options="viewOptions" settingname="albums.view" iconclass="fa-eye"></dropdownfield>
             </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
@@ -37,9 +25,9 @@
 		
         <!-- FULL VIEW -->
         
-		<div class="album-items" ng-if="!settings.spotmop.albumlayout || settings.spotmop.albumlayout == 'default'">
+		<div class="album-items" ng-if="!settings.albums.view || settings.albums.view == 'detail'">
 			
-			<div class="item-container full-album" ng-repeat="album in albums.items track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
+			<div class="item-container full-album" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
             
                 <div class="col w20 info">
                     <div class="album-header">
@@ -86,8 +74,8 @@
         
         <!-- GRID VIEW -->
 		
-		<div class="album-items square-panels" ng-if="settings.spotmop.albumlayout == 'grid'">
-			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
+		<div class="album-items square-panels" ng-if="settings.albums.view == 'grid'">
+			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="square-panel album">
 					<div class="image-container">
                         <thumbnail size="medium" images="album.album.images"></thumbnail>
@@ -104,21 +92,44 @@
 		</div>
         
         <!-- LIST VIEW -->
-		
-		<div class="album-items list" ng-if="settings.spotmop.albumlayout == 'list'">
+        
+		<div class="album-items list" ng-if="settings.albums.view == 'list'">
             <div class="list-item header">
-                <div class="col w35 name">Name</div>
-                <div class="col w30 artists">Artists</div>
-                <div class="col w10 release-date">Released</div>
-                <div class="col w10 track-count">Tracks</div>
-                <div class="col w10 added-date">Added</div>
-                <div class="info">Rating</div>
+                <div class="col w35">
+                    Title
+                    <span ng-show="settings.albums.sortField == 'album.name'">
+                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="col w30">
+                    Artists
+                    <span ng-show="settings.albums.sortField == 'album.artists[0].name'">
+                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="col w10">
+                    Released
+                </div>
+                <div class="col w10">
+                    Tracks
+                </div>
+                <div class="col w10">
+                    Added
+                    <span ng-show="settings.albums.sortField == 'album.added_at'">
+                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="info">
+                    Rating
+                </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="album in albums.items track by album.album.uri">
+			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="list-item">
-                    <div class="col w35 name"> 
-                        <span class="si cd"></span>
+                    <div class="col w35 name">
                         <span ng-bind="album.album.name"></span>
                     </div>
                     <div class="col w30 artists">

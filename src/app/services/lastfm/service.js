@@ -62,7 +62,8 @@ angular.module('spotmop.services.lastfm', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'http://ws.audioscrobbler.com/2.0';
-	var apiKey = SettingsService.getSetting("lastfmkey", '4320a3ef51c9b3d69de552ac083c55e3');
+	var apiKey = SettingsService.getSetting("lastfm,key");
+	if( !apiKey ) apiKey = '4320a3ef51c9b3d69de552ac083c55e3';
 	
 	// and finally, give us our service!
 	return service;

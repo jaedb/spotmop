@@ -122,16 +122,36 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalArtistsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			}
+		];
+	
 	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
-    var limit = 50;
+    $scope.limit = 50;
 	var uri;
 	
 	// watch for filter input
 	$scope.$watch('filterTerm', function(val){
-        limit = 50;
+        $scope.limit = 50;
         $scope.artists = $filter('filter')($scope.allArtists, val);
-        $scope.artists = $filter('limitTo')($scope.artists, limit);
     });
 	
 	// on init, go get the items (or wait for mopidy to be online)
@@ -163,7 +183,7 @@ angular.module('spotmop.local', [])
 				for( var i = 0; i < artists.length; i++ ){
 				}
 				
-				$scope.artists = $filter('limitTo')(artists, limit);
+				$scope.artists = artists;
 				$scope.allArtists = artists;
 			});
 	}
@@ -173,12 +193,9 @@ angular.module('spotmop.local', [])
     $scope.$on('spotmop:loadMore', function(){
         if( !loading ){
             loading = true;
-            limit += 50;
+            $scope.limit += 50;
             if( $scope.filterTerm ){
                 $scope.artists = $filter('filter')($scope.allArtists, $scope.filterTerm);
-                $scope.artists = $filter('limitTo')($scope.artists, limit);
-            }else{
-                $scope.artists = $filter('limitTo')($scope.allArtists, limit);
             }
             $timeout(
                 function(){
@@ -194,16 +211,36 @@ angular.module('spotmop.local', [])
  **/
 .controller('LocalAlbumsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
+	$scope.viewOptions = [
+			{
+				value: 'grid',
+				label: 'Grid'
+			},
+			{
+				value: 'list',
+				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			}
+		];
+		
 	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
-    var limit = 50;
+    $scope.limit = 50;
 	var uri;
 	
 	// watch for filter input
 	$scope.$watch('filterTerm', function(val){
-        limit = 50;
+        $scope.limit = 50;
         $scope.albums = $filter('filter')($scope.allAlbums, val);
-        $scope.albums = $filter('limitTo')($scope.albums, limit);
 		if( $scope.albums.length > 0 ){
 			getArtwork( $scope.albums );
 		}
@@ -220,7 +257,7 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=album' )
 			.then( function( response ){
-				$scope.albums = $filter('limitTo')(response, 50);
+				$scope.albums = response;
 				$scope.allAlbums = response;
 				getArtwork( $scope.albums );
 			});
@@ -261,12 +298,9 @@ angular.module('spotmop.local', [])
     $scope.$on('spotmop:loadMore', function(){
         if( !loading ){
             loading = true;
-            limit += 50;
+            $scope.limit += 50;
             if( $scope.filterTerm ){
                 $scope.albums = $filter('filter')($scope.allAlbums, $scope.filterTerm);
-                $scope.albums = $filter('limitTo')($scope.albums, limit);
-            }else{
-                $scope.albums = $filter('limitTo')($scope.allAlbums, limit);
             }
             $timeout(
                 function(){

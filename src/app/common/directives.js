@@ -110,6 +110,9 @@ angular.module('spotmop.directives', [])
 					
 				// trigger our global switch (so nothing else interferes with our mouseup/down events)
 				$rootScope.dragging = true;
+				
+				// make sure the drag target is selected (important for track items)
+				$scope.dragobj.selected = true;
                 
                 // detect if we've just started dragging and need to setup the drag tracer
                 var requiresSetup = false;
@@ -155,6 +158,12 @@ angular.module('spotmop.directives', [])
 						$scope.dragobj.type == 'track' ||
 						$scope.dragobj.type == 'tltrack' ||
 						$scope.dragobj.type == 'localtrack' ){
+							
+							// add the dragobj title first
+							// this allows for non-selected tracks to facilitate dragging
+							tracerContent += '<div class="track-title">'+ $scope.dragobj.name +'</div>';
+							
+							// loop the first three items, and add these to our drag tracer
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
 								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
@@ -266,6 +275,9 @@ angular.module('spotmop.directives', [])
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'localalbum':
+						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
+						break;
+					case 'playlist':
 						MopidyService.addToTrackList( [ $scope.dragobj.uri ], at_position );
 						break;
 					case 'track':
@@ -466,6 +478,26 @@ angular.module('spotmop.directives', [])
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
 		templateUrl: 'app/common/artistlist.template.html'
+	}
+})
+
+
+/** 
+ * Genre list
+ * Converts an array of artists into a clickable, human-friendly sentence
+ **/
+.directive('genrelist', function( $rootScope, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			genres: '='
+		},
+		link: function($scope, $element, $attrs){
+			$scope.sentence = $attrs.hasOwnProperty('sentence');
+		},
+		replace: true, // Replace with the template below
+		transclude: true, // we want to insert custom content inside the directive
+		templateUrl: 'app/common/genrelist.template.html'
 	}
 })
 		
@@ -875,6 +907,66 @@ angular.module('spotmop.directives', [])
 })
 
 
+/** 
+ * Dropdown field
+ * Facilitates nicer dropdowns, like the 'view' toggles
+ **/
+.directive('dropdownfield', function( $rootScope, $filter, SettingsService ){
+	return {
+		restrict: 'E',
+		scope: {
+			options: '=',
+			settingname: '@',
+			togglesettingname: '@',
+			iconclass: '@'
+		},
+		link: function($scope, $element, $attrs){
+			
+			// make sure we've been given options
+			if( !$scope.options || $scope.options.length <= 0 ){
+				return false;
+			}
+			
+			// get the value from our settings, and if null, then we use the first available option
+			$scope.currentValue = SettingsService.getSetting($scope.settingname);
+			$scope.currentOption = function(){
+				if( $scope.currentValue ){
+					return $filter('filter')( $scope.options, {value: $scope.currentValue} )[0];
+				}else{
+					return $scope.options[0];
+				}
+			}
+		},
+		controller: function($scope, $element, $attrs){
+			
+			$scope.toggleVisibility = function(){
+				$scope.visible = !$scope.visible;
+			}
+			
+			// option selected
+			$scope.selectOption = function( option ){
+				$scope.currentValue = option.value;
+				
+				// if we've clicked on an option that we've already selected, and a toggle field
+				if( SettingsService.getSetting($scope.settingname) == option.value && $scope.togglesettingname ){
+					
+					var toggleState = SettingsService.getSetting($scope.togglesettingname);
+					SettingsService.setSetting($scope.togglesettingname, !toggleState);
+					
+				// BAU
+				}else{
+					SettingsService.setSetting($scope.settingname, option.value);
+				}
+				$scope.visible = false;
+			}
+		},
+		replace: true,
+		transclude: true,
+		templateUrl: 'app/common/dropdown-field.template.html'
+	}
+})
+
+
 
 /* ======================================================================== FILTERS =========== */
 /* ============================================================================================ */
@@ -953,9 +1045,13 @@ angular.module('spotmop.directives', [])
 		
 			// mopidy-styled images
 			if( typeof(image.__model__) !== 'undefined' ){
-			
-				var baseUrl = 'http://'+ SettingsService.getSetting('mopidyhost', window.location.hostname);
-				baseUrl += ':'+ SettingsService.getSetting('mopidyport', '6680')
+				
+				var mopidyhost = SettingsService.getSetting('mopidy.host');
+				if( !mopidyhost ) mopidyhost = window.location.hostname;
+				var mopidyip = SettingsService.getSetting('mopidy.host');
+				if( !mopidyip ) mopidyip = '6680';
+				
+				var baseUrl = 'http://'+ mopidyhost +':'+ mopidyip;
 				image.url = baseUrl +'/spotmop'+ image.uri;
 				delete image.uri;
 				

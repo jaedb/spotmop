@@ -2,6 +2,11 @@
 	<div class="inner">
 		
         <div class="page-header">
+		
+            <div class="utilities">
+				<dropdownfield options="sortOptions" settingname="artists.sortField" togglesettingname="artists.sortReverse" iconclass="fa-sort"></dropdownfield>
+				<dropdownfield options="viewOptions" settingname="artists.view" iconclass="fa-eye"></dropdownfield>
+            </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
             
@@ -17,9 +22,11 @@
             </div>
             
         </div>
+        
+        <!-- FULL VIEW -->
 		
-		<div class="artist-items square-panels">
-			<div class="item-container" ng-repeat="artist in artists.items track by $index">
+		<div class="artist-items square-panels" ng-if="!settings.artists.view || settings.artists.view == 'grid'">
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
 					<div class="image-container">
                         <thumbnail size="medium" images="artist.images"></thumbnail>
@@ -30,6 +37,61 @@
 				</a>
 			</div>
             <div class="clear-both"></div>
+		</div>
+        
+        <!-- LIST VIEW -->
+		
+		<div class="artist-items list" ng-if="settings.artists.view == 'list'">
+        
+            <div class="list-item header">
+                <div class="col w40">
+                    Name
+                    <span ng-show="settings.artists.sortField == 'name'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="col w45">
+                    Genres
+                    <span ng-show="settings.artists.sortField == 'genres[0]'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="col w10">
+                    Followers
+                    <span ng-show="settings.artists.sortField == 'followers.total'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
+                <div class="info">
+                    Rating
+                </div>
+                <div class="clear-both"></div>
+            </div>
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
+				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
+                    <div class="col w40 name">
+                        <span ng-bind="artist.name"></span>
+                    </div>
+                    <div class="col w45 genres">
+                        <genrelist genres="artist.genres"></genrelist>
+                    </div>
+                    <div class="col w10 followers">
+                        <span ng-bind="artist.followers.total | number:0"></span>
+                    </div>   
+                    <div class="info">                        
+                        <div class="popularity tooltip-wrapper" ng-if="artist.popularity >= 0">
+                            <span class="bar-track">
+                                <span class="bar" style="height: {{ artist.popularity }}%;"></span>
+                            </span>
+                            <span class="tooltip"><span ng-bind="artist.popularity"></span>%</span>
+                        </div>                        
+                    </div>               
+                    <div class="clear-both"></div>
+				</a>
+			</div>		
 		</div>
 		
 		<div ng-hide="artists.items.length" class="no-items">

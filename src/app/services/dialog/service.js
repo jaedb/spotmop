@@ -195,7 +195,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
             
 			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser', {id: 'undefined'}).id;
+			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
 			
 			SpotifyService.getPlaylists( spotifyUserID, 50 )
 				.then(function( response ) {
@@ -290,8 +290,9 @@ angular.module('spotmop.services.dialog', [])
 			$scope.settings = SettingsService.getSettings();
 			
 			// default to on
-			SettingsService.setSetting('spotify',true,'authorizationenabled');
-			SettingsService.setSetting('spotmop','default','pointerMode');
+			SettingsService.setSetting('spotify.authorizationenabled',true);
+			SettingsService.setSetting('keyboardShortcutsEnabled',true);
+			SettingsService.setSetting('pointerMode','default');
 		
             $scope.saving = false;
             $scope.save = function(){          
@@ -301,12 +302,12 @@ angular.module('spotmop.services.dialog', [])
 					$scope.saving = true;
 					
 					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('spotify',false,'authorizationenabled') ){
+					if( SettingsService.getSetting('spotify.authorizationenabled') ){
 						SpotifyService.authorize();
 					}
 					
 					// perform the creation
-					SettingsService.setSetting('pushername', $scope.name);
+					SettingsService.setSetting('pusher.name', $scope.name);
 					DialogService.remove();
 				}else{
 					$scope.error = true;

@@ -216,6 +216,64 @@ input[type="submit"]{
 
 
 
+/**
+ * Dropdown field
+ * Javascript-driven version of a <select> field
+ **/
+ 
+.field.dropdown {
+	position: relative;
+	z-index: 9;
+}
+
+.utilities .field.dropdown {	
+	margin-top: -6px;
+}
+ 
+.field.dropdown.expanded {
+	background: #222222;
+	color: #FFFFFF;
+}
+ 
+.field.dropdown .label {
+	display: inline-block;
+	width: auto;
+	float: none;
+	padding: 0 6px 0 0;
+}
+ 
+.field.dropdown .option {
+	cursor: pointer;
+	padding: 10px 20px;
+	font-weight: 600;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+ 
+.field.dropdown .option i {
+	vertical-align: top;
+	margin: 2px 2px 0 -7px;
+}
+
+.field.dropdown .options {
+	position: absolute;
+	top: 100%;
+	min-width: 100%;
+	left: 0;
+	z-index: 9;
+	background: #333333;
+}
+ 
+.field.dropdown .options .option {
+	border-top: 1px solid #444444;
+}
+ 
+.field.dropdown .options .option:hover {
+	background: #222222;
+}
+
+
+
 
 
 /* ============================================================================== SEARCH FORMS ========= */
@@ -296,6 +354,7 @@ input[type="submit"]{
  
 .utilities .field {
 	display: inline-block;
+	padding-top: 0;
 }
 
 
