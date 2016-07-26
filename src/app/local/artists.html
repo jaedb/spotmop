@@ -4,6 +4,7 @@
         <div class="page-header">
 		
             <div class="utilities">
+				<dropdownfield options="sortOptions" settingname="local.sortField" togglesettingname="local.sortReverse"></dropdownfield>
 				<dropdownfield options="viewOptions" settingname="local.view"></dropdownfield>
                 <input class="list-filter" type="text" ng-model="filterTerm" placeholder="Start typing to filter..." />
             </div>
@@ -22,7 +23,7 @@
         <!-- GRID VIEW -->
         
         <div class="artist-items square-panels" ng-if="!settings.local.view || settings.local.view == 'grid'">
-            <div class="item-container" ng-repeat="artist in artists track by $index">
+            <div class="item-container" ng-repeat="artist in artists | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by artist.uri">
                 <a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
                     candrag
                     dragobj="artist"
@@ -41,10 +42,16 @@
 		
 		<div class="artist-items list" ng-if="settings.local.view == 'list'">
             <div class="list-item header">
-                <div class="col w100 name">Name</div>
+                <div class="col w100">
+                    Name
+                    <span ng-show="settings.local.sortField == 'name'">
+                        <i ng-show="!settings.local.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.local.sortReverse" class="fa fa-caret-up"></i>
+                    </span>
+                </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="artist in artists track by $index">
+			<div class="item-container" ng-repeat="artist in artists | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
                     <div class="col w100 name">
                         <span ng-bind="artist.name"></span>
