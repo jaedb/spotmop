@@ -917,7 +917,8 @@ angular.module('spotmop.directives', [])
 		scope: {
 			options: '=',
 			settingname: '@',
-			togglesettingname: '@'
+			togglesettingname: '@',
+			iconclass: '@'
 		},
 		link: function($scope, $element, $attrs){
 			

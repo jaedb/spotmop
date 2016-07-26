@@ -247,18 +247,19 @@ input[type="submit"]{
 	padding: 10px 20px;
 	font-weight: 600;
 	text-transform: uppercase;
+	white-space: nowrap;
 }
  
 .field.dropdown .option i {
 	vertical-align: top;
-	margin: 1px -5px 0 0;
+	margin: 2px 2px 0 -7px;
 }
 
 .field.dropdown .options {
 	position: absolute;
 	top: 100%;
+	min-width: 100%;
 	left: 0;
-	right: 0;
 	z-index: 9;
 	background: #333333;
 }

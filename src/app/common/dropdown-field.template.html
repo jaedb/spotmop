@@ -1,7 +1,8 @@
 <div class="field dropdown" ng-class="{ expanded: visible }">
 	<div class="current-option option" ng-click="toggleVisibility()">
+		<i class="fa fa-fw" ng-class="{ 'fa-chevron-down': !visible, 'fa-chevron-up': visible }" ng-show="!iconclass"></i>
+		<i class="fa fa-fw" ng-class="{ '{{iconclass}}': !visible, 'fa-chevron-up': visible }" ng-show="iconclass"></i>
 		<span class="label" ng-bind="currentOption().label"></span>
-		<i class="fa" ng-class="{ 'fa-chevron-down': !visible, 'fa-chevron-up': visible }"></i>
 	</div>
 	<div class="options" ng-show="visible">
 		<div
