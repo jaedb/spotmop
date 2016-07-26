@@ -4,6 +4,7 @@
         <div class="page-header">
 		
             <div class="utilities">
+				<dropdownfield options="sortOptions" settingname="artists.sortField" togglesettingname="artists.sortReverse"></dropdownfield>
 				<dropdownfield options="viewOptions" settingname="artists.view"></dropdownfield>
             </div>
         
@@ -25,7 +26,7 @@
         <!-- FULL VIEW -->
 		
 		<div class="artist-items square-panels" ng-if="!settings.artists.view || settings.artists.view == 'grid'">
-			<div class="item-container" ng-repeat="artist in artists.items track by artist.uri">
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
 					<div class="image-container">
                         <thumbnail size="medium" images="artist.images"></thumbnail>
@@ -43,37 +44,33 @@
 		<div class="artist-items list" ng-if="settings.artists.view == 'list'">
         
             <div class="list-item header">
-                <div class="col w40 name sortable" ng-click="sortField = 'name'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'name' }">
+                <div class="col w40">
                     Name
-                    <span ng-show="sortField == 'name'">
-                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
-                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    <span ng-show="settings.artists.sortField == 'name'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
-                <div class="col w45 genres sortable" ng-click="sortField = 'genres[0]'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'genres[0]' }">
+                <div class="col w45">
                     Genres
-                    <span ng-show="sortField == 'genres[0]'">
-                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
-                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    <span ng-show="settings.artists.sortField == 'genres[0]'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
-                <div class="col w10 followers sortable" ng-click="sortField = 'followers.total'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'followers.total' }">
+                <div class="col w10">
                     Followers
-                    <span ng-show="sortField == 'followers.total'">
-                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
-                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
+                    <span ng-show="settings.artists.sortField == 'followers.total'">
+                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
-                <div class="info sortable" ng-click="sortField = 'popularity'; sortReverse = !sortReverse" ng-class="{ active: sortField == 'popularity' }">
+                <div class="info">
                     Rating
-                    <span ng-show="sortField == 'popularity'">
-                        <span ng-show="sortReverse" class="fa fa-caret-down"></span>
-                        <span ng-show="!sortReverse" class="fa fa-caret-up"></span>
-                    </span>
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="artist in artists.items | orderBy:sortField:sortReverse track by artist.uri">
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
                     <div class="col w40 name">
                         <span ng-bind="artist.name"></span>

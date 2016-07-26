@@ -916,7 +916,8 @@ angular.module('spotmop.directives', [])
 		restrict: 'E',
 		scope: {
 			options: '=',
-			settingname: '@'
+			settingname: '@',
+			togglesettingname: '@'
 		},
 		link: function($scope, $element, $attrs){
 			
@@ -940,9 +941,21 @@ angular.module('spotmop.directives', [])
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
 			}
+			
+			// option selected
 			$scope.selectOption = function( option ){
 				$scope.currentValue = option.value;
-				SettingsService.setSetting($scope.settingname, option.value);
+				
+				// if we've clicked on an option that we've already selected, and a toggle field
+				if( SettingsService.getSetting($scope.settingname) == option.value && $scope.togglesettingname ){
+					
+					var toggleState = SettingsService.getSetting($scope.togglesettingname);
+					SettingsService.setSetting($scope.togglesettingname, !toggleState);
+					
+				// BAU
+				}else{
+					SettingsService.setSetting($scope.settingname, option.value);
+				}
 				$scope.visible = false;
 			}
 		},

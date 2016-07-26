@@ -156,6 +156,24 @@ angular.module('spotmop.library', [])
 				label: 'List'
 			}
 		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			},
+			{
+				value: 'genres[0]',
+				label: 'Genres'
+			},
+			{
+				value: 'followers.total',
+				label: 'Followers'
+			}
+		];
 	
 	$scope.artists = [];
 	
@@ -230,6 +248,24 @@ angular.module('spotmop.library', [])
 			{
 				value: 'list',
 				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'album.name',
+				label: 'Title'
+			},
+			{
+				value: 'album.artists[0].name',
+				label: 'Artist'
+			},
+			{
+				value: 'album.added_at',
+				label: 'Date added'
 			}
 		];
 	$scope.albums = { items: [] };
@@ -336,6 +372,24 @@ angular.module('spotmop.library', [])
 			{
 				value: 'list',
 				label: 'List'
+			}
+		];
+	$scope.sortOptions = [
+			{
+				value: '',
+				label: 'Default'
+			},
+			{
+				value: 'name',
+				label: 'Name'
+			},
+			{
+				value: 'owner.id',
+				label: 'Owner'
+			},
+			{
+				value: 'tracks.total',
+				label: 'Tracks'
 			}
 		];
 	$scope.playlists = { items: [] };
