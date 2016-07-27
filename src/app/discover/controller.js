@@ -126,6 +126,8 @@ angular.module('spotmop.discover', [])
 	var seed_tracks = [];
 	var seed_albums = [];
 	var seed_artists = [];
+	$scope.seedObjects = [];
+	
 	var uris = $stateParams.uri.split(',');
 	
 	for( var i = 0; i < uris.length; i++ ){
@@ -146,6 +148,23 @@ angular.module('spotmop.discover', [])
 	( seed_tracks.length > 0 ? seed_tracks = seed_tracks.join(',') : seed_tracks = null );
 	( seed_albums.length > 0 ? seed_albums = seed_albums.join(',') : seed_albums = null );
 	( seed_artists.length > 0 ? seed_artists = seed_artists.join(',') : seed_artists = null );
+	
+	// go get our seed objects
+	if( seed_tracks != null ){
+		SpotifyService.getTracks( seed_tracks ).then( function(response){		
+			$scope.seedObjects = $scope.seedObjects.concat( response.tracks );
+		});
+	}
+	if( seed_albums != null ){
+		SpotifyService.getAlbums( seed_albums ).then( function(response){		
+			$scope.seedObjects = $scope.seedObjects.concat( response.albums );
+		});
+	}
+	if( seed_artists != null ){
+		SpotifyService.getArtists( seed_artists ).then( function(response){
+			$scope.seedObjects = $scope.seedObjects.concat( response.artists );
+		});
+	}
 	
 	// get from spotify ( limit, offset, seed_artists, seed_albums, seed_tracks )
 	SpotifyService.getRecommendations( 50, 0, seed_artists, seed_albums, seed_tracks).then( function(response){		

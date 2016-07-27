@@ -13,6 +13,11 @@
                 </h1>
                 
             </div>
+            
+            <h2 class="seed-items">
+                <span class="title">Tracks similar to: </span>
+                <span ng-repeat="seed in seedObjects track by seed.uri"><span ng-if="$last"> and </span><span ng-if="!$first && !$last">, </span><a ui-sref="browse.album({ uri: seed.album.uri })" class="seed-item" ng-bind="seed.name" ng-if="seed.type == 'track'"></a><a ui-sref="browse.album({ uri: seed.uri })" class="seed-item" ng-bind="seed.name" ng-if="seed.type == 'album'"></a><a ui-sref="browse.artist.overview({ uri: seed.uri })" class="seed-item" ng-bind="seed.name" ng-if="seed.type == 'artist'"></a></span>
+            </h2>
 			
 			<tracklist ng-if="tracks" tracks="tracks" type="track" class="tracklist playlist-items"></tracklist>
 			

@@ -667,6 +667,34 @@ angular.module('spotmop.services.spotify', [])
 		
 	
 		/**
+		 * Get one or many tracks
+		 * @param trackids = string (comma-separated ids)
+		 **/		
+		getTracks: function( trackids ){
+				
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'tracks?ids='+trackids,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+	
+		/**
 		 * Playlist-oriented requests
 		 **/     
 		
@@ -1237,10 +1265,15 @@ angular.module('spotmop.services.spotify', [])
 			
 			var self = this;
 			var artistids = '';
-			angular.forEach( artisturis, function( artisturi ){
-				if( artistids != '' ) artistids += ',';
-				artistids += self.getFromUri( 'artistid', artisturi );
-			});
+			
+			if( typeof(artisturis) === 'array' ){
+				angular.forEach( artisturis, function( artisturi ){
+					if( artistids != '' ) artistids += ',';
+					artistids += self.getFromUri( 'artistid', artisturi );
+				});
+			}else{
+				artistids = artisturis;
+			}
 			
             var deferred = $q.defer();
 
