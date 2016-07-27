@@ -10,15 +10,24 @@ angular.module('spotmop.discover', [])
 	$stateProvider
 		.state('discover', {
 			url: "/discover",
-			templateUrl: "app/discover/template.html",
-			controller: 'DiscoverController'
+			templateUrl: "app/discover/template.html"
+		})
+		.state('discover.recommendations', {
+			url: "/recommendations",
+			templateUrl: "app/discover/recommendations.template.html",
+			controller: 'DiscoverRecommendationsController'
+		})
+		.state('discover.similar', {
+			url: "/similar/:uri",
+			templateUrl: "app/discover/similar.template.html",
+			controller: 'DiscoverSimilarController'
 		});
 })
 	
 /**
- * Main controller
+ * Recommendations
  **/
-.controller('DiscoverController', function DiscoverController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverRecommendationsController', function DiscoverRecommendationsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
@@ -107,6 +116,41 @@ angular.module('spotmop.discover', [])
 		});
 	}
 	
+})
+	
+/**
+ * Discover material, similar to a seed URI
+ **/
+.controller('DiscoverSimilarController', function DiscoverSimilarController( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, NotifyService ){
+	
+	var seed_tracks = [];
+	var seed_albums = [];
+	var seed_artists = [];
+	var uris = $stateParams.uri.split(',');
+	
+	for( var i = 0; i < uris.length; i++ ){
+		switch( SpotifyService.uriType( uris[i] ) ){
+			case 'track':
+				seed_tracks.push( SpotifyService.getFromUri('trackid', uris[i]) );
+				break;
+			case 'album':
+				seed_albums.push( SpotifyService.getFromUri('albumid', uris[i]) )
+				break;
+			case 'artist':
+				seed_artists.push( SpotifyService.getFromUri('artistid', uris[i]) )
+				break;
+		}
+	}
+	
+	// merge our arrays of ids back into a comma-separated string, or a null variable if empty
+	( seed_tracks.length > 0 ? seed_tracks = seed_tracks.join(',') : seed_tracks = null );
+	( seed_albums.length > 0 ? seed_albums = seed_albums.join(',') : seed_albums = null );
+	( seed_artists.length > 0 ? seed_artists = seed_artists.join(',') : seed_artists = null );
+	
+	// get from spotify ( limit, offset, seed_artists, seed_albums, seed_tracks )
+	SpotifyService.getRecommendations( 50, 0, seed_artists, seed_albums, seed_tracks).then( function(response){		
+		$scope.tracks = response.tracks;
+	});
 });
 
 

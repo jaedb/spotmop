@@ -193,6 +193,8 @@ angular.module('spotmop.services.spotify', [])
 		 **/
 		uriType: function( uri ){
 			var exploded = uri.split(':');
+			if( exploded[0] == 'spotify' && exploded[1] == 'track' )
+				return 'track';	
 			if( exploded[0] == 'spotify' && exploded[1] == 'artist' )
 				return 'artist';		
 			if( exploded[0] == 'spotify' && exploded[1] == 'album' )

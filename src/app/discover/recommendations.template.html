@@ -1,0 +1,49 @@
+<div class="page discover-page scrolling-panel">
+	<div class="inner">
+
+		<div class="discover">
+		
+            <div class="page-header">
+            
+                <span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>
+                
+                <h1>
+                    <span class="si compass mobile-hide"></span>
+                    Discover
+                </h1>
+		
+                <div class="flag bad" ng-show="!spotifyAuthorized">
+                    <i class="fa fa-exclamation-triangle white-text"></i>
+                    &nbsp;
+                    Please authorize Spotify
+                </div>
+                
+            </div>
+			
+			<div class="discover-section" ng-if="current.items.length > 0">
+				<h4 class="section-title">
+					Because you're listening to
+                    <artistlist artists="current.artists" sentence></artistlist>
+				</h4>
+				<slider class="square-panels panel-slider" items="current.items"></slider>				
+			</div>
+			
+			<div class="discover-section" ng-repeat="section in sections track by $index">
+				<h4 class="section-title">
+					{{ section.title }}
+                    <artistlist ng-if="section.artists" artists="section.artists" sentence></artistlist>
+				</h4>
+				<slider class="square-panels panel-slider" items="section.items"></slider>				
+			</div>
+			
+			<div class="discover-section" ng-if="favorites.items.length > 0">
+				<h4 class="section-title">
+					Some old favorites
+				</h4>
+				<slider class="square-panels panel-slider" items="favorites.items"></slider>				
+			</div>
+			
+		</div>
+		
+	</div>
+</div>
