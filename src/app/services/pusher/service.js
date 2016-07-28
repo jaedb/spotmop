@@ -69,8 +69,8 @@ angular.module('spotmop.services.pusher', [
 						
 						case 'notification':
 							
-							// make sure we're not notifying ourselves
-							if( data.client.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') ){
+							// respect notifications disabled setting
+							if( !SettingsService.getSetting('pusher.disabled') ){
 								NotifyService.browserNotify( data.title, data.body, data.client.icon );
 							}
 							break;
@@ -96,6 +96,9 @@ angular.module('spotmop.services.pusher', [
 		},
 		
 		send: function( data ){
+			
+			// make sure we have a recipients array, even if empty
+			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
 			
 			var icon = '';
 			var spotifyuser = SettingsService.getSetting('spotifyuser');  

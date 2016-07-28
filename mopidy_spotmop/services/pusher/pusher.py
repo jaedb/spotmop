@@ -28,8 +28,20 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
     logger.debug( 'New Spotmop Pusher connection: '+ self.id )
 
   def on_message(self, message):
-    for client in clients.itervalues():
-        client['connection'].write_message(message)
+    messageJson = json_decode(message)
+    
+    # recipients array has items, so only send to specific clients
+    if messageJson['recipients']:    
+      for id in messageJson['recipients']:
+        id = id.encode("utf-8")
+        clients[id]['connection'].write_message(message)
+    
+    # empty, so send to all clients
+    else:    
+      for client in clients.itervalues():
+        if client['details']['id'] != self.id:
+          client['connection'].write_message(message)
+        
     logger.debug( 'Spotmop Pusher message received from '+ self.id )
 
   def on_close(self):
