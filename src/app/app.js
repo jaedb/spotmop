@@ -367,18 +367,6 @@ angular.module('spotmop', [
 		}
     });
     
-	$rootScope.$on('spotmop:pusher:received', function(event, data){
-		
-		var icon = '';
-		data.spotifyuser = JSON.parse(data.spotifyuser);
-		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
-			icon = data.spotifyuser.images[0].url;
-		
-		NotifyService.browserNotify( data.title, data.body, icon );
-		
-		Analytics.trackEvent('Pusher', 'Notification received', data.body);
-	});
-    
     
 
     /**

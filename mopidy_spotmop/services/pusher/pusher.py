@@ -23,7 +23,7 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
     clients[self.id] = { 'details': self.details, 'connection': self}
     
     # send a message to the client with it's assigned details
-    connectedMessage = '{"pusher": "true", "startup": "true", "details": '+ json_encode(self.details) +', "version": "'+self.version+'"}'
+    connectedMessage = '{"type": "startup", "details": '+ json_encode(self.details) +', "version": "'+self.version+'"}'
     self.write_message( connectedMessage )
     logger.debug( 'New Spotmop Pusher connection: '+ self.id )
 

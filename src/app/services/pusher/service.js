@@ -44,34 +44,36 @@ angular.module('spotmop.services.pusher', [
                     
 					var data = JSON.parse(response.data);
 					
-					// if this is a pusher message (because Mopidy uses websockets too!)
-					if( data.pusher ){
+					switch( data.type ){
 					
-                        // if it's an initial connection status message, just parse it through quietly
-                        if( data.startup ){
-                            console.info('Pusher connected as '+data.details.id);
-                            SettingsService.setSetting('pusher.id', data.details.id);
-                            SettingsService.setSetting('pusher.ip', data.details.ip);
+						// initial connection status message, just parse it through quietly
+						case 'startup':
+						
+							console.info('Pusher connected as '+data.details.id);
+							SettingsService.setSetting('pusher.id', data.details.id);
+							SettingsService.setSetting('pusher.ip', data.details.ip);
 								
-                            // detect if the core has been updated
-                            if( SettingsService.getSetting('version.installed') != data.version ){
-                                NotifyService.notify('New version detected, clearing caches...');      
-                                $cacheFactory.get('$http').removeAll();
-                                $templateCache.removeAll();
-                                SettingsService.setSetting('version.installed', data.version);
+							// detect if the core has been updated
+							if( SettingsService.getSetting('version.installed') != data.version ){
+								NotifyService.notify('New version detected, clearing caches...');      
+								$cacheFactory.get('$http').removeAll();
+								$templateCache.removeAll();
+								SettingsService.setSetting('version.installed', data.version);
 								SettingsService.runUpgrade();
-                            }
+							}
 							
-                            // notify server of our actual username
-                            var name = SettingsService.getSetting('pusher.name')
-                            if( name ) service.setMe( name );
-                        
-                        // standard notification, fire it out!
-                        }else{
-                            // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') )
-                                $rootScope.$broadcast('spotmop:pusher:received', data);
-                        }
+							// notify server of our actual username
+							var name = SettingsService.getSetting('pusher.name')
+							if( name ) service.setMe( name );
+							break;
+						
+						case 'notification':
+							
+							// make sure we're not notifying ourselves
+							if( data.client.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') ){
+								NotifyService.browserNotify( data.title, data.body, data.client.icon );
+							}
+							break;
 					}
 				}
 
@@ -94,8 +96,23 @@ angular.module('spotmop.services.pusher', [
 		},
 		
 		send: function( data ){
-			data.pusher = true;
-			data.id = SettingsService.getSetting('pusher.id');
+			
+			var icon = '';
+			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			if( spotifyuser ){
+				icon = spotifyuser.images[0].url;
+			}
+		
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			
+			data.client = {
+				ip: SettingsService.getSetting('pusher.ip'),
+				id: SettingsService.getSetting('pusher.id'),
+				name: name,
+				icon: icon
+			};
+			
 			service.pusher.send( JSON.stringify(data) );
 		},
         

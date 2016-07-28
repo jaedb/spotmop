@@ -103,17 +103,24 @@ angular.module('spotmop.settings', [])
  **/	
 .controller('TestingController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
-	$scope.method = 'mopidy.library.browse';
-	$scope.payload = '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}';
-	$scope.data = {};
+	$scope.mopidyTest = {
+			method: 'mopidy.library.browse',
+			payload: '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}',
+			run: function(){
+				console.info('Testing method: '+$scope.mopidyTest.method);
+				MopidyService.testMethod( $scope.mopidyTest.method, JSON.parse( $scope.mopidyTest.payload ) )
+					.then( function(response){
+						console.table(response);
+						$scope.response = response;
+					});
+			}
+		}
 	
-	$scope.run = function(){
-		console.info('Testing method: '+$scope.method);
-		MopidyService.testMethod($scope.method, JSON.parse( $scope.payload ) )
-			.then( function(response){
-				console.table(response);
-				$scope.data = response;
-			});
-	}
+	$scope.pusherTest = {
+			payload: '{"type":"notification","client":{"id":"'+SettingsService.getSetting('pusher.id')+'"},"title":"Title","body":"Test notification"}',
+			run: function(){
+				PusherService.send( JSON.parse($scope.pusherTest.payload) );
+			}
+		}
 	
 });
