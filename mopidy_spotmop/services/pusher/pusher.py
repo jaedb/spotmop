@@ -3,12 +3,13 @@ import logging, uuid, os, subprocess
 from datetime import datetime
 from tornado.escape import json_encode, json_decode
 from mopidy import config, ext
+from mopidy.core import CoreListener
 
 logger = logging.getLogger(__name__)
 clients = {}
 
 ## PUSHER WEBSOCKET SERVER
-class PusherHandler(tornado.websocket.WebSocketHandler):
+class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
 
   def check_origin(self, origin):
     return True
@@ -49,7 +50,17 @@ class PusherHandler(tornado.websocket.WebSocketHandler):
         del clients[self.id]
     logger.debug( 'Spotmop Pusher connection to '+ self.id +' closed' )
     
- 
+  def ThreadWorker(self, stopThreadEvent):
+    logger.info('Starting')
+    wsURL = 'ws://music.james:6680/mopidy/ws'
+    try:
+      ws = websocket.create_connection(wsURL)
+      while not stopThreadEvent.isSet():
+        response = ws.recv()
+        logger.info(response)
+    except:
+      logger.info('Error')
+      
 ## PUSHER HTTP ENDPOINT
 class PusherRequestHandler(tornado.web.RequestHandler):
 
