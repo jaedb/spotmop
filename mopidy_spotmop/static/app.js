@@ -30137,18 +30137,6 @@ angular.module('spotmop', [
 		}
     });
     
-	$rootScope.$on('spotmop:pusher:received', function(event, data){
-		
-		var icon = '';
-		data.spotifyuser = JSON.parse(data.spotifyuser);
-		if( typeof( data.spotifyuser.images ) !== 'undefined' && data.spotifyuser.images.length > 0 )
-			icon = data.spotifyuser.images[0].url;
-		
-		NotifyService.browserNotify( data.title, data.body, icon );
-		
-		Analytics.trackEvent('Pusher', 'Notification received', data.body);
-	});
-    
     
 
     /**
@@ -32962,6 +32950,16 @@ angular.module('spotmop.directives', [])
 		
 		return uri.substr(start, end);
 	}
+})
+
+/**
+ * URLEncoding
+ * @return string
+ **/
+.filter('urlDecode', function(){
+    return function(string){
+        return decodeURIComponent( string );
+    }
 });
 
 
@@ -33635,15 +33633,24 @@ angular.module('spotmop.discover', [])
 	$stateProvider
 		.state('discover', {
 			url: "/discover",
-			templateUrl: "app/discover/template.html",
-			controller: 'DiscoverController'
+			templateUrl: "app/discover/template.html"
+		})
+		.state('discover.recommendations', {
+			url: "/recommendations",
+			templateUrl: "app/discover/recommendations.template.html",
+			controller: 'DiscoverRecommendationsController'
+		})
+		.state('discover.similar', {
+			url: "/similar/:uri",
+			templateUrl: "app/discover/similar.template.html",
+			controller: 'DiscoverSimilarController'
 		});
 }])
 	
 /**
- * Main controller
+ * Recommendations
  **/
-.controller('DiscoverController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverRecommendationsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverRecommendationsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
@@ -33732,6 +33739,60 @@ angular.module('spotmop.discover', [])
 		});
 	}
 	
+}])
+	
+/**
+ * Discover material, similar to a seed URI
+ **/
+.controller('DiscoverSimilarController', ['$scope', '$rootScope', '$filter', '$stateParams', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverSimilarController( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, NotifyService ){
+	
+	var seed_tracks = [];
+	var seed_albums = [];
+	var seed_artists = [];
+	$scope.seedObjects = [];
+	
+	var uris = $stateParams.uri.split(',');
+	
+	for( var i = 0; i < uris.length; i++ ){
+		switch( SpotifyService.uriType( uris[i] ) ){
+			case 'track':
+				seed_tracks.push( SpotifyService.getFromUri('trackid', uris[i]) );
+				break;
+			case 'album':
+				seed_albums.push( SpotifyService.getFromUri('albumid', uris[i]) )
+				break;
+			case 'artist':
+				seed_artists.push( SpotifyService.getFromUri('artistid', uris[i]) )
+				break;
+		}
+	}
+	
+	// merge our arrays of ids back into a comma-separated string, or a null variable if empty
+	( seed_tracks.length > 0 ? seed_tracks = seed_tracks.join(',') : seed_tracks = null );
+	( seed_albums.length > 0 ? seed_albums = seed_albums.join(',') : seed_albums = null );
+	( seed_artists.length > 0 ? seed_artists = seed_artists.join(',') : seed_artists = null );
+	
+	// go get our seed objects
+	if( seed_tracks != null ){
+		SpotifyService.getTracks( seed_tracks ).then( function(response){		
+			$scope.seedObjects = $scope.seedObjects.concat( response.tracks );
+		});
+	}
+	if( seed_albums != null ){
+		SpotifyService.getAlbums( seed_albums ).then( function(response){		
+			$scope.seedObjects = $scope.seedObjects.concat( response.albums );
+		});
+	}
+	if( seed_artists != null ){
+		SpotifyService.getArtists( seed_artists ).then( function(response){
+			$scope.seedObjects = $scope.seedObjects.concat( response.artists );
+		});
+	}
+	
+	// get from spotify ( limit, offset, seed_artists, seed_albums, seed_tracks )
+	SpotifyService.getRecommendations( 50, 0, seed_artists, seed_albums, seed_tracks).then( function(response){		
+		$scope.tracks = response.tracks;
+	});
 }]);
 
 
@@ -36330,16 +36391,11 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function() {		
-			var name = SettingsService.getSetting('pusher.name');
-			if( !name ) name = 'User';
-			var ip = SettingsService.getSetting('pusher.ip');     
-			if( !ip ) ip = false; 
+		next: function(){			
             PusherService.send({
+				type: 'notification',
                 title: 'Track skipped',
-                body: name +' vetoed this track!',
-                clientip: ip,
-                spotifyuser: JSON.stringify( SettingsService.getSetting('spotifyuser') )
+                body: name +' vetoed this track!'
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
@@ -36575,7 +36631,13 @@ angular.module('spotmop.services.pusher', [
 			
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
-				var pusher = new WebSocket(host);
+                
+                var id = Math.random().toString(36).substr(2, 9);
+                SettingsService.setSetting('pusher.id', id);
+                var name = "User";
+                if( SettingsService.getSetting('pusher.name') ) name = encodeURI(SettingsService.getSetting('pusher.name'));
+                
+				var pusher = new WebSocket(host, id+'_'+name );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
@@ -36584,37 +36646,49 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onmessage = function( response ){
                     
-					var data = JSON.parse(response.data);
+					var message = JSON.parse(response.data);
+					console.log(message);
+                    
+                    $rootScope.$broadcast('spotmop:pusher:'+message.type, message.data);
+                    
+                    /*
+					switch( data.type ){
 					
-					// if this is a pusher message (because Mopidy uses websockets too!)
-					if( data.pusher ){
-					
-                        // if it's an initial connection status message, just parse it through quietly
-                        if( data.startup ){
-                            console.info('Pusher connected as '+data.details.id);
-                            SettingsService.setSetting('pusher.id', data.details.id);
-                            SettingsService.setSetting('pusher.ip', data.details.ip);
+						// initial connection status message, just parse it through quietly
+						case 'startup':
+						
+							console.info('Pusher connected as '+data.client.id);
+							SettingsService.setSetting('pusher.id', data.client.id);
+							SettingsService.setSetting('pusher.ip', data.client.ip);
+                            $rootScope.$broadcast('spotmop:pusher:setup');
 								
-                            // detect if the core has been updated
-                            if( SettingsService.getSetting('version.installed') != data.version ){
-                                NotifyService.notify('New version detected, clearing caches...');      
-                                $cacheFactory.get('$http').removeAll();
-                                $templateCache.removeAll();
-                                SettingsService.setSetting('version.installed', data.version);
+							// detect if the core has been updated
+							if( SettingsService.getSetting('version.installed') != data.version ){
+								NotifyService.notify('New version detected, clearing caches...');      
+								$cacheFactory.get('$http').removeAll();
+								$templateCache.removeAll();
+								SettingsService.setSetting('version.installed', data.version);
 								SettingsService.runUpgrade();
-                            }
+							}
 							
-                            // notify server of our actual username
-                            var name = SettingsService.getSetting('pusher.name')
-                            if( name ) service.setMe( name );
-                        
-                        // standard notification, fire it out!
-                        }else{
-                            // make sure we're not notifying ourselves
-                            if( data.id != SettingsService.getSetting('pusher.id') && !SettingsService.getSetting('pusher.disabled') )
-                                $rootScope.$broadcast('spotmop:pusher:received', data);
-                        }
+							// notify server of our actual username
+							var name = SettingsService.getSetting('pusher.name')
+							if( name ) service.setMe( name );
+							break;
+						
+						case 'notification':
+							
+							// respect notifications disabled setting
+							if( !SettingsService.getSetting('pusher.disabled') ){
+								NotifyService.browserNotify( data.title, data.body, data.client.icon );
+							}
+							break;
+						
+						case 'connections_changed':
+							$rootScope.$broadcast('spotmop:pusher:connections_changed', data);
+							break;
 					}
+                    */
 				}
 
 				pusher.onclose = function(){
@@ -36636,8 +36710,26 @@ angular.module('spotmop.services.pusher', [
 		},
 		
 		send: function( data ){
-			data.pusher = true;
-			data.id = SettingsService.getSetting('pusher.id');
+			
+			// make sure we have a recipients array, even if empty
+			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
+			
+			var icon = '';
+			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			if( spotifyuser ){
+				icon = spotifyuser.images[0].url;
+			}
+		
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			
+			data.client = {
+				ip: SettingsService.getSetting('pusher.ip'),
+				id: SettingsService.getSetting('pusher.id'),
+				name: name,
+				icon: icon
+			};
+			
 			service.pusher.send( JSON.stringify(data) );
 		},
         
@@ -36874,6 +36966,8 @@ angular.module('spotmop.services.spotify', [])
 		 **/
 		uriType: function( uri ){
 			var exploded = uri.split(':');
+			if( exploded[0] == 'spotify' && exploded[1] == 'track' )
+				return 'track';	
 			if( exploded[0] == 'spotify' && exploded[1] == 'artist' )
 				return 'artist';		
 			if( exploded[0] == 'spotify' && exploded[1] == 'album' )
@@ -37329,6 +37423,34 @@ angular.module('spotmop.services.spotify', [])
 					method: 'DELETE',
 					cache: false,
 					url: urlBase+'me/following?type=artist&ids='+artistid,
+					headers: {
+						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+					}
+				})
+                .success(function( response ){					
+                    deferred.resolve( response );
+                })
+                .error(function( response ){					
+					NotifyService.error( response.error.message );
+                    deferred.reject( response.error.message );
+                });
+				
+            return deferred.promise;
+		},
+		
+	
+		/**
+		 * Get one or many tracks
+		 * @param trackids = string (comma-separated ids)
+		 **/		
+		getTracks: function( trackids ){
+				
+            var deferred = $q.defer();
+
+            $http({
+					cache: false,
+					method: 'GET',
+					url: urlBase+'tracks?ids='+trackids,
 					headers: {
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
@@ -37916,10 +38038,15 @@ angular.module('spotmop.services.spotify', [])
 			
 			var self = this;
 			var artistids = '';
-			angular.forEach( artisturis, function( artisturi ){
-				if( artistids != '' ) artistids += ',';
-				artistids += self.getFromUri( 'artistid', artisturi );
-			});
+			
+			if( typeof(artisturis) === 'array' ){
+				angular.forEach( artisturis, function( artisturi ){
+					if( artistids != '' ) artistids += ',';
+					artistids += self.getFromUri( 'artistid', artisturi );
+				});
+			}else{
+				artistids = artisturis;
+			}
 			
             var deferred = $q.defer();
 
@@ -38348,10 +38475,18 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( 'pusher.name', name );
 	};	
     
-    PusherService.getConnections()
-        .then( function(connections){
-            $scope.clientConnections = connections;
-        });
+    function updatePusherConnections(){
+        PusherService.getConnections()
+            .then( function(connections){
+                console.log( connections );
+                $scope.pusherConnections = connections;
+            });
+    }
+    
+    // update whenever setup is completed, or another client opens a connection
+    updatePusherConnections();
+    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
 }])
 
 
@@ -38361,18 +38496,26 @@ angular.module('spotmop.settings', [])
  **/	
 .controller('TestingController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
-	$scope.method = 'mopidy.library.browse';
-	$scope.payload = '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}';
-	$scope.data = {};
+	$scope.mopidyTest = {
+			method: 'mopidy.library.browse',
+			payload: '{"uri":"local:artist:md5:2cbd40f39c692153d24a3a3a5fe8c04a"}',
+			run: function(){
+				console.info('Testing method: '+$scope.mopidyTest.method);
+				MopidyService.testMethod( $scope.mopidyTest.method, JSON.parse( $scope.mopidyTest.payload ) )
+					.then( function(response){
+						console.table(response);
+						$scope.response = response;
+					});
+			}
+		}
 	
-	$scope.run = function(){
-		console.info('Testing method: '+$scope.method);
-		MopidyService.testMethod($scope.method, JSON.parse( $scope.payload ) )
-			.then( function(response){
-				console.table(response);
-				$scope.data = response;
-			});
-	}
+	$scope.pusherTest = {
+			payload: '{"type":"notification","client":{"id":"'+SettingsService.getSetting('pusher.id')+'"},"title":"Title","body":"Test notification"}',
+			run: function(){
+				PusherService.send( JSON.parse($scope.pusherTest.payload) );
+				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
+			}
+		}
 	
 }]);
 
