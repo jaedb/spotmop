@@ -17,8 +17,15 @@ def send_message( event, data ):
         connection['connection'].write_message( message )
         
 # digest a protocol header into it's id/name parts
-def digest_protocol( protocols ):
-    elements = {"id": protocols[0].replace(',',''), "name": protocols[1]}
+def digest_protocol( protocol ):
+
+    # facilitate wrapping list objects, silly various browser formats and also Jupiter's orbit...
+    protocol = ''.join(protocol)
+    protocol = protocol.replace(',','').replace('[','').replace(']','')
+    elements = protocol.split('_')
+    
+    # construct our protocol object, and return
+    elements = {"protocol": protocol, "id": elements[0], "name": elements[1]}
     return elements
 
 ## PUSHER WEBSOCKET SERVER
@@ -34,7 +41,7 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   def open(self):
     
     # decode our connection protocol value (which is a payload of id/name from javascript)
-    protocolElements = digest_protocol(self.request.headers['Sec-Websocket-Protocol'].split())
+    protocolElements = digest_protocol(self.request.headers['Sec-Websocket-Protocol'])
     id = protocolElements['id']
     self.id = id
     name = protocolElements['name']
@@ -49,9 +56,9 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     # notify all other clients that a new user has connected
     send_message( 'client_connected', client )
   
-  def select_subprotocol(self, subprotocols):    
+  def select_subprotocol(self, subprotocols):
     # return the id. This lets the client know we've accepted this connection
-    return digest_protocol( subprotocols )['id']
+    return digest_protocol( subprotocols )['protocol']
   
   # server received a message
   def on_message(self, message):

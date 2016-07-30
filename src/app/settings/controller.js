@@ -93,6 +93,7 @@ angular.module('spotmop.settings', [])
     function updatePusherConnections(){
         PusherService.getConnections()
             .then( function(connections){
+                console.log( connections );
                 $scope.pusherConnections = connections;
             });
     }

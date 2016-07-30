@@ -34,12 +34,12 @@ angular.module('spotmop.services.pusher', [
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
                 
-                var id = Math.random().toString(36).substr(2, 16);
+                var id = Math.random().toString(36).substr(2, 9);
                 SettingsService.setSetting('pusher.id', id);
                 var name = "User";
                 if( SettingsService.getSetting('pusher.name') ) name = encodeURI(SettingsService.getSetting('pusher.name'));
                 
-				var pusher = new WebSocket(host, [id, name] );
+				var pusher = new WebSocket(host, id+'_'+name );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
