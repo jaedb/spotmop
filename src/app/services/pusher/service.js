@@ -53,29 +53,24 @@ angular.module('spotmop.services.pusher', [
                     
                     $rootScope.$broadcast('spotmop:pusher:'+message.type, message.data);
                     
-                    /*
-					switch( data.type ){
+					switch( message.type ){
 					
 						// initial connection status message, just parse it through quietly
-						case 'startup':
+						case 'client_connected':
 						
-							console.info('Pusher connected as '+data.client.id);
-							SettingsService.setSetting('pusher.id', data.client.id);
-							SettingsService.setSetting('pusher.ip', data.client.ip);
-                            $rootScope.$broadcast('spotmop:pusher:setup');
+							// if the new connection is mine
+							if( message.data.id == SettingsService.getSetting('pusher.id') ){
+								console.info('Pusher connection '+message.data.id+' accepted');
 								
-							// detect if the core has been updated
-							if( SettingsService.getSetting('version.installed') != data.version ){
-								NotifyService.notify('New version detected, clearing caches...');      
-								$cacheFactory.get('$http').removeAll();
-								$templateCache.removeAll();
-								SettingsService.setSetting('version.installed', data.version);
-								SettingsService.runUpgrade();
-							}
-							
-							// notify server of our actual username
-							var name = SettingsService.getSetting('pusher.name')
-							if( name ) service.setMe( name );
+								// detect if the core has been updated
+								if( message.data.version != SettingsService.getSetting('version.installed') ){
+									NotifyService.notify('New version detected, clearing caches...');      
+									$cacheFactory.get('$http').removeAll();
+									$templateCache.removeAll();
+									SettingsService.setSetting('version.installed', message.data.version);
+									SettingsService.runUpgrade();
+								}
+							}							
 							break;
 						
 						case 'notification':
@@ -85,12 +80,7 @@ angular.module('spotmop.services.pusher', [
 								NotifyService.browserNotify( data.title, data.body, data.client.icon );
 							}
 							break;
-						
-						case 'connections_changed':
-							$rootScope.$broadcast('spotmop:pusher:connections_changed', data);
-							break;
 					}
-                    */
 				}
 
 				pusher.onclose = function(){

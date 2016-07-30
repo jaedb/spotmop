@@ -215,7 +215,7 @@
                     <div class="label">Users connected</div>
                     <div class="input readonly">
                         <div ng-repeat="connection in pusherConnections">
-                            <span class="min-width w100 name">
+                            <span class="min-width w150 name">
                                 <span ng-bind="connection.name | urlDecode"></span>
                                 <span ng-if="connection.id == storage.pusher.id">(you)</span>
                             </span>
