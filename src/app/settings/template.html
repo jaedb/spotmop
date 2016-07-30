@@ -210,20 +210,17 @@
                         <a class="button primary" ui-sref="testing"><i class="fa fa-flask"></i>&nbsp; Testing lab</a>
                     </div>
                 </div>
-
-                <div class="field">
-                    <div class="label">Current connection</div>
-                    <div class="input readonly">
-                        <span ng-bind="::storage.pusher.ip"></span> <span class="grey-text">(<span ng-bind="::storage.pusher.id"></span>)</span>
-                    </div>
-                </div>
-
+                
                 <div class="field current-connections">
                     <div class="label">Users connected</div>
                     <div class="input readonly">
-                        <div ng-repeat="client in clientConnections">
-                            <span class="min-width w100 ip" ng-bind="client.ip"></span>
-                            <span class="min-width w100 name" ng-bind="client.name"></span>
+                        <div ng-repeat="connection in pusherConnections">
+                            <span class="min-width w100 name">
+                                <span ng-bind="connection.name | urlDecode"></span>
+                                <span ng-if="connection.id == storage.pusher.id">(you)</span>
+                            </span>
+                            <span class="min-width w100 ip" ng-bind="connection.ip"></span>
+                            <span class="min-width w100 id" ng-bind="connection.id"></span>
                         </div>
                     </div>
                     <div class="clear-both"></div>

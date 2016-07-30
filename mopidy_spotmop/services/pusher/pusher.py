@@ -6,7 +6,20 @@ from mopidy import config, ext
 from mopidy.core import CoreListener
 
 logger = logging.getLogger(__name__)
-clients = {}
+connections = {}
+  
+# send a message to all connections
+# @param event = string (event name, ie connection_opened)
+# @param data = array (any data required to include in our message)
+def send_message( event, data ):
+    for connection in connections.itervalues():
+        message = '{"type": "'+event+'", "data": '+ json_encode( data ) +'}'
+        connection['connection'].write_message( message )
+        
+# digest a protocol header into it's id/name parts
+def digest_protocol( protocols ):
+    elements = {"id": protocols[0].replace(',',''), "name": protocols[1]}
+    return elements
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -17,17 +30,30 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   def initialize(self, version):
     self.version = version
   
+  # when a new connection is opened
   def open(self):
-    created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')    
-    self.id = str(uuid.uuid4().hex)
-    self.details = {"id": self.id, "ip": self.request.remote_ip, "name": "User", "created": created}
-    clients[self.id] = { 'details': self.details, 'connection': self}
     
-    # send a message to the client with it's assigned details
-    connectedMessage = '{"type": "startup", "details": '+ json_encode(self.details) +', "version": "'+self.version+'"}'
-    self.write_message( connectedMessage )
-    logger.debug( 'New Spotmop Pusher connection: '+ self.id )
-
+    # decode our connection protocol value (which is a payload of id/name from javascript)
+    protocolElements = digest_protocol(self.request.headers['Sec-Websocket-Protocol'].split())
+    id = protocolElements['id']
+    self.id = id
+    name = protocolElements['name']
+    created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
+    
+    # construct our client object, and add to our list of connections
+    client = { "id": id, "name": name, "ip": self.request.remote_ip, "created": created, "version": self.version }
+    connections[id] = { 'client': client, 'connection': self }
+    
+    logger.debug( 'New Spotmop Pusher connection: '+ id +'  '+ name )
+    
+    # notify all other clients that a new user has connected
+    send_message( 'client_connected', client )
+  
+  def select_subprotocol(self, subprotocols):    
+    # return the id. This lets the client know we've accepted this connection
+    return digest_protocol( subprotocols )['id']
+  
+  # server received a message
   def on_message(self, message):
     messageJson = json_decode(message)
     
@@ -35,21 +61,28 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     if messageJson['recipients']:    
       for id in messageJson['recipients']:
         id = id.encode("utf-8")
-        clients[id]['connection'].write_message(message)
+        connections[id]['connection'].write_message(message)
     
     # empty, so send to all clients
     else:    
-      for client in clients.itervalues():
-        if client['details']['id'] != self.id:
-          client['connection'].write_message(message)
+      for connection in connections.itervalues():
+        if connection['client']['id'] != self.id:
+          connection['connection'].write_message(message)
         
     logger.debug( 'Spotmop Pusher message received from '+ self.id )
-
+  
+  # connection closed
   def on_close(self):
-    if self.id in clients:
-        del clients[self.id]
-    logger.debug( 'Spotmop Pusher connection to '+ self.id +' closed' )
-    
+    if self.id in connections:
+        
+        clientRemoved = connections[self.id]['client']
+        logger.debug( 'Spotmop Pusher connection to '+ self.id +' closed' )
+        
+        # now actually remove it
+        del connections[self.id]
+        
+        send_message( 'client_disconnected', clientRemoved )
+  
   def ThreadWorker(self, stopThreadEvent):
     logger.info('Starting')
     wsURL = 'ws://music.james:6680/mopidy/ws'
@@ -82,17 +115,17 @@ class PusherRequestHandler(tornado.web.RequestHandler):
             name = self.get_argument('name','name')
             
             # save the payload name to the client list
-            if id in clients:
-                clients[id]['details']['name'] = name
+            if id in connections:
+                connections[id]['client']['name'] = name
                 self.write( '{"status":"ok"}' )
             else:
                 self.write( '{"status":"error","message":"Client does not exist"}' )
             
         elif action == 'connections':
-            clientDetailsList = []
-            for client in clients.itervalues():
-                clientDetailsList.append(client['details'])
-            self.write(json_encode(clientDetailsList))
+            connectionsDetailsList = []
+            for connection in connections.itervalues():
+                connectionsDetailsList.append(connection['client'])
+            self.write(json_encode(connectionsDetailsList))
 
 def spotmop_pusher_factory(config, core):
     return [

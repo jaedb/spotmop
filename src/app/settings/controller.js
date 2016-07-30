@@ -90,10 +90,17 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( 'pusher.name', name );
 	};	
     
-    PusherService.getConnections()
-        .then( function(connections){
-            $scope.clientConnections = connections;
-        });
+    function updatePusherConnections(){
+        PusherService.getConnections()
+            .then( function(connections){
+                $scope.pusherConnections = connections;
+            });
+    }
+    
+    // update whenever setup is completed, or another client opens a connection
+    updatePusherConnections();
+    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
 })
 
 

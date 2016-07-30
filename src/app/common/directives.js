@@ -1192,6 +1192,16 @@ angular.module('spotmop.directives', [])
 		
 		return uri.substr(start, end);
 	}
+})
+
+/**
+ * URLEncoding
+ * @return string
+ **/
+.filter('urlDecode', function(){
+    return function(string){
+        return decodeURIComponent( string );
+    }
 });
 
 

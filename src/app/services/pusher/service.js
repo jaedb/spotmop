@@ -33,7 +33,13 @@ angular.module('spotmop.services.pusher', [
 			
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
-				var pusher = new WebSocket(host);
+                
+                var id = Math.random().toString(36).substr(2, 16);
+                SettingsService.setSetting('pusher.id', id);
+                var name = "User";
+                if( SettingsService.getSetting('pusher.name') ) name = encodeURI(SettingsService.getSetting('pusher.name'));
+                
+				var pusher = new WebSocket(host, [id, name] );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
@@ -42,16 +48,21 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onmessage = function( response ){
                     
-					var data = JSON.parse(response.data);
-					
+					var message = JSON.parse(response.data);
+					console.log(message);
+                    
+                    $rootScope.$broadcast('spotmop:pusher:'+message.type, message.data);
+                    
+                    /*
 					switch( data.type ){
 					
 						// initial connection status message, just parse it through quietly
 						case 'startup':
 						
-							console.info('Pusher connected as '+data.details.id);
-							SettingsService.setSetting('pusher.id', data.details.id);
-							SettingsService.setSetting('pusher.ip', data.details.ip);
+							console.info('Pusher connected as '+data.client.id);
+							SettingsService.setSetting('pusher.id', data.client.id);
+							SettingsService.setSetting('pusher.ip', data.client.ip);
+                            $rootScope.$broadcast('spotmop:pusher:setup');
 								
 							// detect if the core has been updated
 							if( SettingsService.getSetting('version.installed') != data.version ){
@@ -74,7 +85,12 @@ angular.module('spotmop.services.pusher', [
 								NotifyService.browserNotify( data.title, data.body, data.client.icon );
 							}
 							break;
+						
+						case 'connections_changed':
+							$rootScope.$broadcast('spotmop:pusher:connections_changed', data);
+							break;
 					}
+                    */
 				}
 
 				pusher.onclose = function(){
