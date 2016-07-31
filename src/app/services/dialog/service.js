@@ -285,7 +285,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
 			
 			$scope.settings = SettingsService.getSettings();
 			
@@ -308,6 +308,17 @@ angular.module('spotmop.services.dialog', [])
 					
 					// perform the creation
 					SettingsService.setSetting('pusher.name', $scope.name);
+					
+					// and go tell the server to update
+					PusherService.send({
+						type: 'client_updated', 
+						data: {
+							attribute: 'name',
+							oldVal: '',
+							newVal: $scope.name
+						}
+					});
+					
 					DialogService.remove();
 				}else{
 					$scope.error = true;

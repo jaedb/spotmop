@@ -84,18 +84,21 @@ angular.module('spotmop.settings', [])
 	// this is fired when an input field is blurred
 	$scope.saveField = function( event ){
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
-	};	
+	};
+	
+	var oldPusherName = SettingsService.setSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
 	
 		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
+		oldPusherName = name;
 		
 		// and go tell the server to update
 		PusherService.send({
 			type: 'client_updated', 
 			data: {
 				attribute: 'name',
-				oldVal: 'DUNNO',
+				oldVal: oldPusherName,
 				newVal: name
 			}
 		});
