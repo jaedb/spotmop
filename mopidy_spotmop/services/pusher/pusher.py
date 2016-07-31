@@ -24,9 +24,18 @@ def digest_protocol( protocol ):
     protocol = protocol.replace(',','').replace('[','').replace(']','')
     elements = protocol.split('_')
     
+    # if we've been given a valid array
+    try:
+      id = elements[0]
+      name = elements[1]
+      
+    # invalid, so just create a default connection, and auto-generate an ID
+    except:
+      id = str(uuid.uuid4().hex)
+      name = "User"
+    
     # construct our protocol object, and return
-    elements = {"protocol": protocol, "id": elements[0], "name": elements[1]}
-    return elements
+    return {"protocol": protocol, "id": id, "name": name}
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -41,7 +50,7 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   def open(self):
     
     # decode our connection protocol value (which is a payload of id/name from javascript)
-    protocolElements = digest_protocol(self.request.headers['Sec-Websocket-Protocol'])
+    protocolElements = digest_protocol(self.request.headers.get('Sec-Websocket-Protocol', '[]'))        
     id = protocolElements['id']
     self.id = id
     name = protocolElements['name']
@@ -63,6 +72,12 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   # server received a message
   def on_message(self, message):
     messageJson = json_decode(message)
+    
+    if messageJson['type'] == 'client_updated':
+        if messageJson['origin']['id'] in connections:            
+            connections[messageJson['origin']['id']]['client']['name'] = messageJson['data']['newVal']
+            logger.debug( 'Spotmop Pusher connection '+ self.id +' updated' )
+    
     
     # recipients array has items, so only send to specific clients
     if messageJson['recipients']:    
@@ -117,18 +132,7 @@ class PusherRequestHandler(tornado.web.RequestHandler):
     # get method
     def get(self, action):
     
-        if action == 'me':
-            id = self.get_argument('id','id')
-            name = self.get_argument('name','name')
-            
-            # save the payload name to the client list
-            if id in connections:
-                connections[id]['client']['name'] = name
-                self.write( '{"status":"ok"}' )
-            else:
-                self.write( '{"status":"error","message":"Client does not exist"}' )
-            
-        elif action == 'connections':
+        if action == 'connections':
             connectionsDetailsList = []
             for connection in connections.itervalues():
                 connectionsDetailsList.append(connection['client'])

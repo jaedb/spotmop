@@ -24,13 +24,18 @@ angular.module('spotmop.services.settings', [])
 			
 			if( typeof($localStorage) === 'undefined' ) $localStorage = {};
 			
-			settingElements = setting.split('.');
+			var settingElements = setting.split('.');
+			var oldValue = false;
+			
 			switch( settingElements.length ){
 				case 1:
+					oldValue = $localStorage[settingElements[0]];
 					$localStorage[settingElements[0]] = value;
 					break;
 				case 2:
 					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) $localStorage[settingElements[0]] = {};
+					
+					oldValue = $localStorage[settingElements[0]][settingElements[1]];
 					$localStorage[settingElements[0]][settingElements[1]] = value;
 					break;
 				case 3:
@@ -38,6 +43,8 @@ angular.module('spotmop.services.settings', [])
 						$localStorage[settingElements[0]] = {};
 					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
 						$localStorage[settingElements[0]][settingElements[1]] = {};
+						
+					oldValue = $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
 					break;
 				case 3:
@@ -47,7 +54,9 @@ angular.module('spotmop.services.settings', [])
 						$localStorage[settingElements[0]][settingElements[1]] = {};
 					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
 						$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = {};
-					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+						
+					oldValue = $localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]];
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]] = value;
 					break;
 			}
 		},

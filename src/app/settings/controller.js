@@ -86,8 +86,19 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};	
 	$scope.savePusherName = function( name ){
-		PusherService.setMe( name );
+	
+		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
+		
+		// and go tell the server to update
+		PusherService.send({
+			type: 'client_updated', 
+			data: {
+				attribute: 'name',
+				oldVal: 'DUNNO',
+				newVal: name
+			}
+		});
 	};	
     
     function updatePusherConnections(){
@@ -101,6 +112,7 @@ angular.module('spotmop.settings', [])
     updatePusherConnections();
     $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
 })
 
 
