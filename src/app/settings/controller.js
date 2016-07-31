@@ -124,7 +124,7 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","client":{"id":"'+SettingsService.getSetting('pusher.id')+'"},"title":"Title","body":"Test notification"}',
+			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.id')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
 				PusherService.send( JSON.parse($scope.pusherTest.payload) );
 				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };

@@ -77,7 +77,7 @@ angular.module('spotmop.services.pusher', [
 							
 							// respect notifications disabled setting
 							if( !SettingsService.getSetting('pusher.disabled') ){
-								NotifyService.browserNotify( message.data.title, message.data.body, false );
+								NotifyService.browserNotify( message.data );
 							}
 							break;
 					}
