@@ -266,11 +266,22 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function(){			
+		next: function(){		
+		
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			
+			var icon = '';
+			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			if( spotifyuser ) icon = spotifyuser.images[0].url;
+            
             PusherService.send({
 				type: 'notification',
-                title: 'Track skipped',
-                body: name +' vetoed this track!'
+                data: {
+                    title: 'Track skipped',
+                    body: name +' vetoed this track!',
+                    icon: icon
+                }
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},

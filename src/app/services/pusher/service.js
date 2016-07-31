@@ -77,7 +77,7 @@ angular.module('spotmop.services.pusher', [
 							
 							// respect notifications disabled setting
 							if( !SettingsService.getSetting('pusher.disabled') ){
-								NotifyService.browserNotify( data.title, data.body, data.client.icon );
+								NotifyService.browserNotify( message.data.title, message.data.body, false );
 							}
 							break;
 					}
@@ -105,23 +105,17 @@ angular.module('spotmop.services.pusher', [
 			
 			// make sure we have a recipients array, even if empty
 			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
-			
-			var icon = '';
-			var spotifyuser = SettingsService.getSetting('spotifyuser');  
-			if( spotifyuser ){
-				icon = spotifyuser.images[0].url;
-			}
-		
+            
+            // set the origin of this notification as the current client/connection
 			var name = SettingsService.getSetting('pusher.name');
-			if( !name ) name = 'User';
-			
-			data.client = {
+			if( !name ) name = 'User';			
+			data.origin = {
 				ip: SettingsService.getSetting('pusher.ip'),
 				id: SettingsService.getSetting('pusher.id'),
-				name: name,
-				icon: icon
+				name: name
 			};
-			
+            
+            // send off the notification to the websocket
 			service.pusher.send( JSON.stringify(data) );
 		},
         

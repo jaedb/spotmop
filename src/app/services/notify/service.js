@@ -97,24 +97,21 @@ angular.module('spotmop.services.notify', [])
 		 * @param icon = string (optional)
 		 **/
 		browserNotify: function( title, body, icon ){
+            
+            // handle null icon
+			if( typeof(icon) === 'undefined' ) var icon = null;
 				
 			// disabled by user
-			if( SettingsService.getSetting('notificationsDisabled') )
-				return false;
+			if( SettingsService.getSetting('notificationsDisabled') ) return false;
 	
 			// Determine the correct object to use
 			var notification = window.Notification || window.mozNotification || window.webkitNotification;
-		
+            
 			// not supported
-			if ('undefined' === typeof notification)
-				return false;
+			if ('undefined' === typeof notification) return false;
 
 			// The user needs to allow this
-			if ('undefined' !== typeof notification)
-				notification.requestPermission(function(permission){});
-				
-			if( typeof(icon) === 'undefined' )
-				var icon = '';
+			if ('undefined' !== typeof notification) notification.requestPermission(function(permission){});
 			
 			var trackNotification = new notification(
 				title,
@@ -126,6 +123,8 @@ angular.module('spotmop.services.notify', [])
 					icon: icon
 				}
 			);
+            
+            console.log( trackNotification );
 			
 			return true;
 		}
