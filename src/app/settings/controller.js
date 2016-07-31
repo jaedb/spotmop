@@ -86,12 +86,11 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
-	var oldPusherName = SettingsService.setSetting( 'pusher.name' );
+	var oldPusherName = SettingsService.getSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
 	
 		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
-		oldPusherName = name;
 		
 		// and go tell the server to update
 		PusherService.send({
@@ -102,6 +101,9 @@ angular.module('spotmop.settings', [])
 				newVal: name
 			}
 		});
+		
+		// and now update our old one
+		oldPusherName = name;
 	};	
     
     function updatePusherConnections(){
