@@ -86,6 +86,13 @@ angular.module('spotmop.services.pusher', [
 								NotifyService.browserNotify( title, body, icon );
 							}
 							break;
+						
+						case 'enforced_refresh':
+							location.reload();
+							NotifyService.notify('System updating...');      
+							$cacheFactory.get('$http').removeAll();
+							$templateCache.removeAll();
+							break;
 					}
 				}
 
