@@ -35962,7 +35962,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SettingsService', 'SpotifyService', function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService ){
+		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SettingsService', 'SpotifyService', 'PusherService', function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
 			
 			$scope.settings = SettingsService.getSettings();
 			
@@ -35985,6 +35985,17 @@ angular.module('spotmop.services.dialog', [])
 					
 					// perform the creation
 					SettingsService.setSetting('pusher.name', $scope.name);
+					
+					// and go tell the server to update
+					PusherService.send({
+						type: 'client_updated', 
+						data: {
+							attribute: 'name',
+							oldVal: '',
+							newVal: $scope.name
+						}
+					});
+					
 					DialogService.remove();
 				}else{
 					$scope.error = true;
@@ -36391,11 +36402,22 @@ angular.module('spotmop.services.mopidy', [
 		previous: function() {
 			return wrapMopidyFunc("mopidy.playback.previous", this)();
 		},
-		next: function(){			
+		next: function(){		
+		
+			var name = SettingsService.getSetting('pusher.name');
+			if( !name ) name = 'User';
+			
+			var icon = '';
+			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			if( spotifyuser ) icon = spotifyuser.images[0].url;
+            
             PusherService.send({
 				type: 'notification',
-                title: 'Track skipped',
-                body: name +' vetoed this track!'
+                data: {
+                    title: 'Track skipped',
+                    body: name +' vetoed this track!',
+                    icon: icon
+                }
             });
 			return wrapMopidyFunc("mopidy.playback.next", this)();
 		},
@@ -36539,24 +36561,21 @@ angular.module('spotmop.services.notify', [])
 		 * @param icon = string (optional)
 		 **/
 		browserNotify: function( title, body, icon ){
+            
+            // handle null icon
+			if( typeof(icon) === 'undefined' ) icon = '';
 				
 			// disabled by user
-			if( SettingsService.getSetting('notificationsDisabled') )
-				return false;
+			if( SettingsService.getSetting('notificationsDisabled') ) return false;
 	
 			// Determine the correct object to use
 			var notification = window.Notification || window.mozNotification || window.webkitNotification;
-		
+            
 			// not supported
-			if ('undefined' === typeof notification)
-				return false;
+			if ('undefined' === typeof notification) return false;
 
 			// The user needs to allow this
-			if ('undefined' !== typeof notification)
-				notification.requestPermission(function(permission){});
-				
-			if( typeof(icon) === 'undefined' )
-				var icon = '';
+			if ('undefined' !== typeof notification) notification.requestPermission(function(permission){});
 			
 			var trackNotification = new notification(
 				title,
@@ -36651,44 +36670,40 @@ angular.module('spotmop.services.pusher', [
                     
                     $rootScope.$broadcast('spotmop:pusher:'+message.type, message.data);
                     
-                    /*
-					switch( data.type ){
+					switch( message.type ){
 					
 						// initial connection status message, just parse it through quietly
-						case 'startup':
+						case 'client_connected':
 						
-							console.info('Pusher connected as '+data.client.id);
-							SettingsService.setSetting('pusher.id', data.client.id);
-							SettingsService.setSetting('pusher.ip', data.client.ip);
-                            $rootScope.$broadcast('spotmop:pusher:setup');
+							// if the new connection is mine
+							if( message.data.id == SettingsService.getSetting('pusher.id') ){
+								console.info('Pusher connection '+message.data.id+' accepted');
 								
-							// detect if the core has been updated
-							if( SettingsService.getSetting('version.installed') != data.version ){
-								NotifyService.notify('New version detected, clearing caches...');      
-								$cacheFactory.get('$http').removeAll();
-								$templateCache.removeAll();
-								SettingsService.setSetting('version.installed', data.version);
-								SettingsService.runUpgrade();
-							}
-							
-							// notify server of our actual username
-							var name = SettingsService.getSetting('pusher.name')
-							if( name ) service.setMe( name );
+								// detect if the core has been updated
+								if( message.data.version != SettingsService.getSetting('version.installed') ){
+									NotifyService.notify('New version detected, clearing caches...');      
+									$cacheFactory.get('$http').removeAll();
+									$templateCache.removeAll();
+									SettingsService.setSetting('version.installed', message.data.version);
+									SettingsService.runUpgrade();
+								}
+							}							
 							break;
 						
 						case 'notification':
 							
 							// respect notifications disabled setting
 							if( !SettingsService.getSetting('pusher.disabled') ){
-								NotifyService.browserNotify( data.title, data.body, data.client.icon );
+                                var title = '';
+                                var body = '';
+                                var icon = '';
+                                if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
+                                if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
+                                if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
+								NotifyService.browserNotify( title, body, icon );
 							}
 							break;
-						
-						case 'connections_changed':
-							$rootScope.$broadcast('spotmop:pusher:connections_changed', data);
-							break;
 					}
-                    */
 				}
 
 				pusher.onclose = function(){
@@ -36713,23 +36728,17 @@ angular.module('spotmop.services.pusher', [
 			
 			// make sure we have a recipients array, even if empty
 			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
-			
-			var icon = '';
-			var spotifyuser = SettingsService.getSetting('spotifyuser');  
-			if( spotifyuser ){
-				icon = spotifyuser.images[0].url;
-			}
-		
+            
+            // set the origin of this notification as the current client/connection
 			var name = SettingsService.getSetting('pusher.name');
-			if( !name ) name = 'User';
-			
-			data.client = {
+			if( !name ) name = 'User';			
+			data.origin = {
 				ip: SettingsService.getSetting('pusher.ip'),
 				id: SettingsService.getSetting('pusher.id'),
-				name: name,
-				icon: icon
+				name: name
 			};
-			
+            
+            // send off the notification to the websocket
 			service.pusher.send( JSON.stringify(data) );
 		},
         
@@ -38469,16 +38478,31 @@ angular.module('spotmop.settings', [])
 	// this is fired when an input field is blurred
 	$scope.saveField = function( event ){
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
-	};	
+	};
+	
+	var oldPusherName = SettingsService.getSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
-		PusherService.setMe( name );
+	
+		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
+		
+		// and go tell the server to update
+		PusherService.send({
+			type: 'client_updated', 
+			data: {
+				attribute: 'name',
+				oldVal: oldPusherName,
+				newVal: name
+			}
+		});
+		
+		// and now update our old one
+		oldPusherName = name;
 	};	
     
     function updatePusherConnections(){
         PusherService.getConnections()
             .then( function(connections){
-                console.log( connections );
                 $scope.pusherConnections = connections;
             });
     }
@@ -38487,6 +38511,7 @@ angular.module('spotmop.settings', [])
     updatePusherConnections();
     $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
 }])
 
 
@@ -38510,7 +38535,7 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","client":{"id":"'+SettingsService.getSetting('pusher.id')+'"},"title":"Title","body":"Test notification"}',
+			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.id')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
 				PusherService.send( JSON.parse($scope.pusherTest.payload) );
 				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
@@ -38545,13 +38570,18 @@ angular.module('spotmop.services.settings', [])
 			
 			if( typeof($localStorage) === 'undefined' ) $localStorage = {};
 			
-			settingElements = setting.split('.');
+			var settingElements = setting.split('.');
+			var oldValue = false;
+			
 			switch( settingElements.length ){
 				case 1:
+					oldValue = $localStorage[settingElements[0]];
 					$localStorage[settingElements[0]] = value;
 					break;
 				case 2:
 					if( typeof($localStorage[settingElements[0]]) === 'undefined' ) $localStorage[settingElements[0]] = {};
+					
+					oldValue = $localStorage[settingElements[0]][settingElements[1]];
 					$localStorage[settingElements[0]][settingElements[1]] = value;
 					break;
 				case 3:
@@ -38559,6 +38589,8 @@ angular.module('spotmop.services.settings', [])
 						$localStorage[settingElements[0]] = {};
 					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
 						$localStorage[settingElements[0]][settingElements[1]] = {};
+						
+					oldValue = $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
 					break;
 				case 3:
@@ -38568,7 +38600,9 @@ angular.module('spotmop.services.settings', [])
 						$localStorage[settingElements[0]][settingElements[1]] = {};
 					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
 						$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = {};
-					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]] = value;
+						
+					oldValue = $localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]];
+					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]] = value;
 					break;
 			}
 		},
