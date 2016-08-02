@@ -1,0 +1,41 @@
+@font-face {
+  font-family: 'Archivo Narrow';
+  font-weight: 400;
+  font-style: normal;
+  src: url('assets/fonts/Archivo-Narrow-regular.eot');
+  src: url('assets/fonts/Archivo-Narrow-regular.eot?#iefix') format('embedded-opentype'),
+       local('Archivo Narrow Regular'),
+       local('Archivo-Narrow-regular'),
+       url('assets/fonts/Archivo-Narrow-regular.woff2') format('woff2'),
+       url('assets/fonts/Archivo-Narrow-regular.woff') format('woff'),
+       url('assets/fonts/Archivo-Narrow-regular.ttf') format('truetype'),
+       url('assets/fonts/Archivo-Narrow-regular.svg#ArchivoNarrow') format('svg');
+}
+
+@font-face {
+  font-family: 'Archivo Narrow';
+  font-weight: 700;
+  font-style: normal;
+  src: url('assets/fonts/Archivo-Narrow-700.eot');
+  src: url('assets/fonts/Archivo-Narrow-700.eot?#iefix') format('embedded-opentype'),
+       local('Archivo Narrow Bold'),
+       local('Archivo-Narrow-700'),
+       url('assets/fonts/Archivo-Narrow-700.woff2') format('woff2'),
+       url('assets/fonts/Archivo-Narrow-700.woff') format('woff'),
+       url('assets/fonts/Archivo-Narrow-700.ttf') format('truetype'),
+       url('assets/fonts/Archivo-Narrow-700.svg#ArchivoNarrow') format('svg');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-style: normal;
+  src: url('assets/fonts/Roboto-regular.eot');
+  src: url('assets/fonts/Roboto-regular.eot?#iefix') format('embedded-opentype'),
+       local('Roboto'),
+       local('Roboto-regular'),
+       url('assets/fonts/Roboto-regular.woff2') format('woff2'),
+       url('assets/fonts/Roboto-regular.woff') format('woff'),
+       url('assets/fonts/Roboto-regular.ttf') format('truetype'),
+       url('assets/fonts/Roboto-regular.svg#Roboto') format('svg');
+}

@@ -29731,7 +29731,7 @@ angular.module('cfp.loadingBar', [])
 		Clipboard = window.Clipboard;
     }
 
-    angular.module(MODULE_NAME, []).directive('ngclipboard', ['$rootScope', function($rootScope) {
+    angular.module(MODULE_NAME, []).directive('ngclipboard', function($rootScope) {
         return {
             restrict: 'A',
             scope: {
@@ -29766,7 +29766,7 @@ angular.module('cfp.loadingBar', [])
 
             }
         };
-    }]);
+    });
 })();
 
 
@@ -29816,7 +29816,7 @@ angular.module('spotmop', [
 	'spotmop.browse.new'
 ])
 
-.config(['$stateProvider', '$locationProvider', '$urlRouterProvider', '$httpProvider', 'AnalyticsProvider', 'cfpLoadingBarProvider', function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider, cfpLoadingBarProvider){
+.config(function($stateProvider, $locationProvider, $urlRouterProvider, $httpProvider, AnalyticsProvider, cfpLoadingBarProvider){
 
 	$urlRouterProvider.otherwise("queue");
 	$httpProvider.interceptors.push('SpotifyServiceIntercepter');
@@ -29827,12 +29827,12 @@ angular.module('spotmop', [
 	
 	// loading bar config
 	cfpLoadingBarProvider.parentSelector = 'body';
-}])
+})
 
 
-.run( ['$rootScope', 'SettingsService', 'Analytics', function($rootScope, SettingsService, Analytics){
+.run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
-}])
+})
 
 
 /* ==================================================================== APP CONTROLLER ======== */
@@ -29841,7 +29841,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ['$scope', '$rootScope', '$state', '$localStorage', '$timeout', '$location', 'SpotifyService', 'MopidyService', 'PlayerService', 'SettingsService', 'NotifyService', 'PusherService', 'DialogService', 'Analytics', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
 
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -30220,7 +30220,7 @@ angular.module('spotmop', [
         }
     );
 	
-}]);
+});
 
 
 
@@ -30234,19 +30234,19 @@ angular.module('spotmop.browse.album', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse.album', {
 			url: "/album/:uri",
 			templateUrl: "app/browse/album/template.html",
 			controller: 'AlbumController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('AlbumController', ['$scope', '$rootScope', '$stateParams', '$filter', '$state', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService, LastfmService ){	
+.controller('AlbumController', function AlbumController( $scope, $rootScope, $stateParams, $filter, $state, MopidyService, SpotifyService, NotifyService, LastfmService ){	
 	
 	$scope.album = {};
 	$scope.tracklist = {tracks: []};
@@ -30527,7 +30527,7 @@ angular.module('spotmop.browse.album', [])
                 loadingMoreTracks = false;
             });
     }
-}]);
+});
 'use strict';
 
 angular.module('spotmop.browse.artist', [])
@@ -30535,7 +30535,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
     
 	$stateProvider
 		.state('browse.artist', {
@@ -30570,13 +30570,13 @@ angular.module('spotmop.browse.artist', [])
 			templateUrl: "app/browse/album/template.html",
 			controller: 'AlbumController'
 		});
-}])
+})
 
 
 /**
  * Main controller
  **/
-.controller('ArtistController', ['$scope', '$rootScope', '$timeout', '$interval', '$stateParams', '$sce', '$filter', 'SpotifyService', 'SettingsService', 'MopidyService', 'NotifyService', 'LastfmService', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = { type: 'track' };
@@ -30759,13 +30759,13 @@ angular.module('spotmop.browse.artist', [])
 				}
 			});
 	}
-}])
+})
 
 
 /**
  * Artist overview controller
  **/
-.controller('ArtistOverviewController', ['$scope', '$timeout', '$rootScope', '$stateParams', 'SpotifyService', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
+.controller('ArtistOverviewController', function ArtistOverviewController( $scope, $timeout, $rootScope, $stateParams, SpotifyService ){
 
 
 	/**
@@ -30864,20 +30864,20 @@ angular.module('spotmop.browse.artist', [])
                 loadingMoreAlbums = false;
             });
     }
-}])
+})
 
 
 /**
  * Related artists controller
  **/
-.controller('RelatedArtistsController', ['$scope', '$timeout', '$rootScope', function RelatedArtistsController( $scope, $timeout, $rootScope ){	
-}])
+.controller('RelatedArtistsController', function RelatedArtistsController( $scope, $timeout, $rootScope ){	
+})
 
 
 /**
  * Biography controller
  **/
-.controller('ArtistBiographyController', ['$scope', '$timeout', '$rootScope', '$stateParams', 'SpotifyService', 'LastfmService', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
+.controller('ArtistBiographyController', function ArtistBiographyController( $scope, $timeout, $rootScope, $stateParams, SpotifyService, LastfmService ){
 	
 	// check if we know the artist name yet. If not, go find the artist on Spotify first
 	if( typeof($scope.artist.name) === 'undefined' ){
@@ -30902,7 +30902,7 @@ angular.module('spotmop.browse.artist', [])
 					$scope.artist.biography = response.artist.bio;
 			});
 	}
-}]);
+});
 
 
 
@@ -30914,19 +30914,19 @@ angular.module('spotmop.browse', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse', {
 			url: "/browse",
 			templateUrl: "app/browse/template.html"
 		});
-}]);
+});
 angular.module('spotmop.browse.featured', [])
 
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse.featured', {
 			url: "/featured",
@@ -30938,12 +30938,12 @@ angular.module('spotmop.browse.featured', [])
 			templateUrl: "app/browse/playlist/template.html",
 			controller: 'PlaylistController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('FeaturedController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'NotifyService', function FeaturedController( $scope, $rootScope, $filter, SpotifyService, NotifyService ){	
+.controller('FeaturedController', function FeaturedController( $scope, $rootScope, $filter, SpotifyService, NotifyService ){	
 	
 	// set the default items
 	$scope.playlists = [];
@@ -30978,7 +30978,7 @@ angular.module('spotmop.browse.featured', [])
 			$scope.message = response.message;
 			$scope.playlists = response.playlists.items;
 		});
-}]);
+});
 'use strict';
 
 angular.module('spotmop.browse.genre', [])
@@ -30986,7 +30986,7 @@ angular.module('spotmop.browse.genre', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider){
+.config(function($stateProvider){
 	
 	$stateProvider
 		.state('browse.genre', {
@@ -31004,12 +31004,12 @@ angular.module('spotmop.browse.genre', [])
 			templateUrl: "app/browse/playlist/template.html",
 			controller: 'PlaylistController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('GenreController', ['$scope', '$rootScope', 'SpotifyService', 'NotifyService', function DiscoverController( $scope, $rootScope, SpotifyService, NotifyService ){
+.controller('GenreController', function DiscoverController( $scope, $rootScope, SpotifyService, NotifyService ){
 	
 	$scope.categories = [];
 	
@@ -31057,12 +31057,12 @@ angular.module('spotmop.browse.genre', [])
         }
 	});
 	
-}])
+})
 	
 /**
  * Category controller
  **/
-.controller('GenreCategoryController', ['$scope', '$rootScope', 'SpotifyService', '$stateParams', function CategoryController( $scope, $rootScope, SpotifyService, $stateParams ){
+.controller('GenreCategoryController', function CategoryController( $scope, $rootScope, SpotifyService, $stateParams ){
 
 	$scope.category = {};
 	$scope.playlists = [];
@@ -31116,13 +31116,13 @@ angular.module('spotmop.browse.genre', [])
         }
 	});
 	
-}]);
+});
 angular.module('spotmop.browse.new', [])
 
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse.new', {
 			url: "/new",
@@ -31134,12 +31134,12 @@ angular.module('spotmop.browse.new', [])
 			templateUrl: "app/browse/album/template.html",
 			controller: 'AlbumController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('NewController', ['$scope', '$element', '$rootScope', 'SpotifyService', 'MopidyService', function NewController( $scope, $element, $rootScope, SpotifyService, MopidyService ){
+.controller('NewController', function NewController( $scope, $element, $rootScope, SpotifyService, MopidyService ){
 	
 	// set the default items
 	$scope.albums = [];
@@ -31189,7 +31189,7 @@ angular.module('spotmop.browse.new', [])
         }
 	});
 	
-}]);
+});
 'use strict';
 
 angular.module('spotmop.browse.playlist', [])
@@ -31197,19 +31197,19 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse.playlist', {
 			url: "/playlist/:uri",
 			templateUrl: "app/browse/playlist/template.html",
 			controller: 'PlaylistController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('PlaylistController', ['$scope', '$rootScope', '$filter', '$state', '$stateParams', '$sce', 'SpotifyService', 'MopidyService', 'SettingsService', 'DialogService', 'NotifyService', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
 	
 	// setup base variables
 	$scope.playlist = {images: []};
@@ -31466,7 +31466,7 @@ angular.module('spotmop.browse.playlist', [])
             loadMoreTracks( $scope.tracklist.next );
         }
 	});
-}]);
+});
 'use strict';
 
 angular.module('spotmop.browse.user', [])
@@ -31474,19 +31474,19 @@ angular.module('spotmop.browse.user', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('browse.user', {
 			url: "/user/:uri",
 			templateUrl: "app/browse/user/template.html",
 			controller: 'UserController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('UserController', ['$scope', '$rootScope', 'SpotifyService', '$stateParams', function UserController( $scope, $rootScope, SpotifyService, $stateParams ){
+.controller('UserController', function UserController( $scope, $rootScope, SpotifyService, $stateParams ){
 	
 	$scope.user = {};
 	$scope.playlists = [];
@@ -31542,7 +31542,7 @@ angular.module('spotmop.browse.user', [])
             loadMorePlaylists( $scope.next );
         }
 	});
-}]);
+});
 'use strict';
 
 angular.module('spotmop.common.contextmenu', [
@@ -31556,7 +31556,7 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: ['$scope', '$rootScope', '$element', '$timeout', 'NotifyService', function( $scope, $rootScope, $element, $timeout, NotifyService ){
+		controller: function( $scope, $rootScope, $element, $timeout, NotifyService ){
 		
 			$(document).on('click', function(event){
 			
@@ -31752,7 +31752,7 @@ angular.module('spotmop.common.contextmenu', [
 			$scope.$on('spotmop:contextMenu:hide', function(event){
 				$element.fadeOut('fast');
 			});
-		}]
+		}
 	}
 });
 
@@ -31797,7 +31797,7 @@ angular.module('spotmop.directives', [])
  * Facilitates dragging of tracks, albums, artists and so on
  * Handles the drag and also the drop follow-on functions
  **/
-.directive('candrag', ['$rootScope', '$filter', 'MopidyService', 'SpotifyService', 'NotifyService', 'PlayerService', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
+.directive('candrag', function( $rootScope, $filter, MopidyService, SpotifyService, NotifyService, PlayerService ){
 	return {
 		restrict: 'A',
         scope: {
@@ -32185,14 +32185,14 @@ angular.module('spotmop.directives', [])
 			}
         }
     }
-}])
+})
 
 
 /** 
  * Switch input field
  * Provides toggles for values
  **/
-.directive('switch', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+.directive('switch', function( $rootScope, SettingsService ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -32202,7 +32202,7 @@ angular.module('spotmop.directives', [])
 		},
 		replace: true, // Replace with the template below
 		transclude: true, // we want to insert custom content inside the directive
-		controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
+		controller: function($scope, $element, $attrs){
 		
 			// listen for click events
 			$element.bind('touchstart click', function(event) {
@@ -32213,17 +32213,17 @@ angular.module('spotmop.directives', [])
 					$rootScope.$broadcast('spotmop:settings:changed', {name: $scope.name, value: $scope.value});
 				});
 			});
-		}],
+		},
 		template: '<span class="switch-button" ng-class="{ on: value }"><span class="switch-track"><span class="indicator animate"></span></span><span class="label" ng-if="label" ng-bind="label"></span></span>'
 	}
-}])
+})
 
 
 /** 
  * Artist list
  * Converts an array of artists into a clickable, human-friendly sentence
  **/
-.directive('artistlist', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+.directive('artistlist', function( $rootScope, SettingsService ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -32237,14 +32237,14 @@ angular.module('spotmop.directives', [])
 		transclude: true, // we want to insert custom content inside the directive
 		templateUrl: 'app/common/artistlist.template.html'
 	}
-}])
+})
 
 
 /** 
  * Genre list
  * Converts an array of artists into a clickable, human-friendly sentence
  **/
-.directive('genrelist', ['$rootScope', 'SettingsService', function( $rootScope, SettingsService ){
+.directive('genrelist', function( $rootScope, SettingsService ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -32257,7 +32257,7 @@ angular.module('spotmop.directives', [])
 		transclude: true, // we want to insert custom content inside the directive
 		templateUrl: 'app/common/genrelist.template.html'
 	}
-}])
+})
 		
 		
 		
@@ -32266,7 +32266,7 @@ angular.module('spotmop.directives', [])
  * Figure out the best image to use for this set of image sizes
  * @return image obj
  **/
-.directive('thumbnail', ['$timeout', '$http', '$filter', function( $timeout, $http, $filter ){
+.directive('thumbnail', function( $timeout, $http, $filter ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -32322,7 +32322,7 @@ angular.module('spotmop.directives', [])
 		},
 		template: '<div class="thumbnail-image image animate"></div>'
 	};
-}])
+})
 
 
 /**
@@ -32332,7 +32332,7 @@ angular.module('spotmop.directives', [])
 .directive('confirmationButton', function() {
 	return {
 		restrict: 'E',
-		controller: ['$scope', '$element', function($scope, $element){	
+		controller: function($scope, $element){	
 			
 			$scope.text = 'Button text';
 			$scope.confirming = false;
@@ -32364,7 +32364,7 @@ angular.module('spotmop.directives', [])
 					$scope.$apply();
 				}
 			});
-		}],
+		},
 		scope: {
 			text: '@',
 			extraClasses: '@',
@@ -32385,7 +32385,7 @@ angular.module('spotmop.directives', [])
  * Enhances readability when placed on dynamic background images
  * Requires spotmop:detectBackgroundColour broadcast to initiate check
  **/
-.directive('slider', ['$timeout', function($timeout){
+.directive('slider', function($timeout){
     return {
         restrict: 'E',
 		scope: {
@@ -32432,7 +32432,7 @@ angular.module('spotmop.directives', [])
         },
 		templateUrl: 'app/common/slider.template.html'
     };
-}])
+})
 
 
 
@@ -32461,7 +32461,7 @@ angular.module('spotmop.directives', [])
  * This let's us detect whether we need light text or dark text
  * Enhances readability when placed on dynamic background images
  **/
-.directive('preloadedimage', ['$rootScope', '$timeout', function( $rootScope, $timeout ){
+.directive('preloadedimage', function( $rootScope, $timeout ){
     return {
 		restrict: 'E',
 		scope: {
@@ -32517,12 +32517,12 @@ angular.module('spotmop.directives', [])
         },
 		template: ''
     };
-}])
+})
 
 
 /**
  **/
-.directive('backgroundparallax', ['$rootScope', '$timeout', '$interval', '$http', '$filter', function( $rootScope, $timeout, $interval, $http, $filter ){
+.directive('backgroundparallax', function( $rootScope, $timeout, $interval, $http, $filter ){
     return {
 		restrict: 'E',
         terminal: true,
@@ -32662,14 +32662,14 @@ angular.module('spotmop.directives', [])
         },
 		template: '<canvas id="backgroundparallax"></canvas>'
     };
-}])
+})
 
 
 /** 
  * Dropdown field
  * Facilitates nicer dropdowns, like the 'view' toggles
  **/
-.directive('dropdownfield', ['$rootScope', '$filter', 'SettingsService', function( $rootScope, $filter, SettingsService ){
+.directive('dropdownfield', function( $rootScope, $filter, SettingsService ){
 	return {
 		restrict: 'E',
 		scope: {
@@ -32695,7 +32695,7 @@ angular.module('spotmop.directives', [])
 				}
 			}
 		},
-		controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
+		controller: function($scope, $element, $attrs){
 			
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
@@ -32717,12 +32717,12 @@ angular.module('spotmop.directives', [])
 				}
 				$scope.visible = false;
 			}
-		}],
+		},
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/common/dropdown-field.template.html'
 	}
-}])
+})
 
 
 
@@ -32788,7 +32788,7 @@ angular.module('spotmop.directives', [])
 })
 
 // standardize our images into a large/medium/small structure for template usage
-.filter('sizedImages', ['SettingsService', function( SettingsService ){
+.filter('sizedImages', function( SettingsService ){
 	return function( images ){
         
         // what if there are no images? then nada
@@ -32886,7 +32886,7 @@ angular.module('spotmop.directives', [])
 		
 		return standardised;
 	}
-}])
+})
 
 // get the appropriate sized image
 .filter('shuffle', function(){
@@ -32976,14 +32976,14 @@ angular.module('spotmop.directives', [])
 
 angular.module('spotmop.common.tracklist.service', [])
 
-.factory("TracklistService", ['$rootScope', function( $rootScope ){
+.factory("TracklistService", function( $rootScope ){
 	
 	return {
 		getSelectedTracks: function(){
 			console.log('triggered getSelectedTracks');
 		}
 	}	
-}]);
+});
 
 
 
@@ -32997,7 +32997,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, NotifyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
 			
 			/**
 			 * Single click
@@ -33035,7 +33035,7 @@ angular.module('spotmop.common.track', [])
 			$element.dblclick( function( event ){
 				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
-		}]
+		}
 	}
 })
 
@@ -33046,7 +33046,7 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/tltrack.template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'PlayerService', function( $element, $scope, $rootScope, MopidyService, PlayerService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService ){
 			
 			$scope.state = PlayerService.state;
 			
@@ -33118,7 +33118,7 @@ angular.module('spotmop.common.track', [])
 					});
 				});
 			});
-		}]
+		}
 	}
 })
 
@@ -33129,7 +33129,7 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/localtrack.template.html',
 		link: function( $scope, element, attrs ){		
 		},
-		controller: ['$element', '$scope', '$rootScope', 'MopidyService', 'PlayerService', 'NotifyService', function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
 			
 			$scope.state = PlayerService.state;
 			
@@ -33170,7 +33170,7 @@ angular.module('spotmop.common.track', [])
 			$element.dblclick( function( event ){
 				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
-		}]
+		}
 	}
 });
 
@@ -33187,7 +33187,7 @@ angular.module('spotmop.common.tracklist', [])
  * This is the parent object for all lists of tracks (top tracks, queue, playlists, the works!)
  **/
 
-.directive('tracklist', ['$compile', function( $compile ){
+.directive('tracklist', function( $compile ){
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/template.html',
@@ -33198,7 +33198,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: ['$element', '$scope', '$filter', '$rootScope', '$stateParams', 'MopidyService', 'SpotifyService', 'DialogService', 'NotifyService', 'SettingsService', 'PlayerService', function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
 						
 			// store our selected track uris
 			$rootScope.selectedTrackURIs = [];
@@ -33614,9 +33614,9 @@ angular.module('spotmop.common.tracklist', [])
 				
 				console.log( selectedTracksUris );
 			});
-		}]
+		}
 	}
-}]);
+});
 
 
 
@@ -33628,7 +33628,7 @@ angular.module('spotmop.discover', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider){
+.config(function($stateProvider){
 	
 	$stateProvider
 		.state('discover', {
@@ -33645,12 +33645,12 @@ angular.module('spotmop.discover', [])
 			templateUrl: "app/discover/similar.template.html",
 			controller: 'DiscoverSimilarController'
 		});
-}])
+})
 	
 /**
  * Recommendations
  **/
-.controller('DiscoverRecommendationsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverRecommendationsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverRecommendationsController', function DiscoverRecommendationsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, NotifyService ){
 	
 	$scope.favorites = [];
 	$scope.current = [];
@@ -33739,12 +33739,12 @@ angular.module('spotmop.discover', [])
 		});
 	}
 	
-}])
+})
 	
 /**
  * Discover material, similar to a seed URI
  **/
-.controller('DiscoverSimilarController', ['$scope', '$rootScope', '$filter', '$stateParams', 'SpotifyService', 'SettingsService', 'NotifyService', function DiscoverSimilarController( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, NotifyService ){
+.controller('DiscoverSimilarController', function DiscoverSimilarController( $scope, $rootScope, $filter, $stateParams, SpotifyService, SettingsService, NotifyService ){
 	
 	var seed_tracks = [];
 	var seed_albums = [];
@@ -33793,7 +33793,7 @@ angular.module('spotmop.discover', [])
 	SpotifyService.getRecommendations( 50, 0, seed_artists, seed_albums, seed_tracks).then( function(response){		
 		$scope.tracks = response.tracks;
 	});
-}]);
+});
 
 
 
@@ -33804,7 +33804,7 @@ angular.module('spotmop.library', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('library', {
 			url: "/library",
@@ -33835,12 +33835,12 @@ angular.module('spotmop.library', [])
 			templateUrl: "app/library/albums.template.html",
 			controller: 'LibraryAlbumsController'
 		});
-}])
+})
 	
 /**
  * Library tracks
  **/
-.controller('LibraryTracksController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryTracksController', function LibraryTracksController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	  
 	$scope.tracklist = {tracks: [], type: 'track'};
 	
@@ -33939,12 +33939,12 @@ angular.module('spotmop.library', [])
         }
 	});
 	
-}])
+})
 	
 /**
  * Library artists
  **/
-.controller('LibraryArtistsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
+.controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
 	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
@@ -34029,12 +34029,12 @@ angular.module('spotmop.library', [])
         }
 	});
 		
-}])
+})
 
 /**
  * Library albums
  **/
-.controller('LibraryAlbumsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'NotifyService', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
+.controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
@@ -34140,14 +34140,14 @@ angular.module('spotmop.library', [])
             loadMoreAlbums( $scope.albums.next );
         }
 	});
-}])
+})
 
 
 
 /**
  * Library playlists
  **/
-.controller('LibraryPlaylistsController', ['$scope', '$rootScope', '$filter', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'NotifyService', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -34300,7 +34300,7 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
-}]);
+});
 
 
 
@@ -34310,7 +34310,7 @@ angular.module('spotmop.local', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('local', {
 			url: "/local",
@@ -34336,13 +34336,13 @@ angular.module('spotmop.local', [])
 			templateUrl: "app/local/artists.html",
 			controller: 'LocalArtistsController'
 		});
-}])
+})
 
 	
 /**
  * Landing page
  **/
-.controller('LocalController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LocalController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 		
 	// on init, go get the items (or wait for mopidy to be online)
 	if( $scope.mopidyOnline )
@@ -34421,13 +34421,13 @@ angular.module('spotmop.local', [])
 		return items;
 	}
 		
-}])
+})
 
 
 /**
  * Artists
  **/
-.controller('LocalArtistsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+.controller('LocalArtistsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
 	$scope.viewOptions = [
 			{
@@ -34510,13 +34510,13 @@ angular.module('spotmop.local', [])
                 }, 1 );
         }
     });
-}])
+})
 
 
 /**
  * Albums
  **/
-.controller('LocalAlbumsController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', '$timeout', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', 'LastfmService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
+.controller('LocalAlbumsController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, $timeout, SpotifyService, SettingsService, DialogService, MopidyService, LastfmService ){
 	
 	$scope.viewOptions = [
 			{
@@ -34618,14 +34618,14 @@ angular.module('spotmop.local', [])
                 }, 1 );
         }
     });
-}])
+})
 
 
 /**
  * Directories
  * This is mainly to support basic libraries (like JSON) and non-asset uris
  **/
-.controller('LocalDirectoryController', ['$scope', '$rootScope', '$filter', '$stateParams', '$localStorage', 'SpotifyService', 'SettingsService', 'DialogService', 'MopidyService', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
+.controller('LocalDirectoryController', function ( $scope, $rootScope, $filter, $stateParams, $localStorage, SpotifyService, SettingsService, DialogService, MopidyService ){
 	
 	$scope.path = [{title: 'Files', uri: 'local:directory'}];
 	$scope.allFolders = [];
@@ -34755,7 +34755,7 @@ angular.module('spotmop.local', [])
 		return items;
 	}
 		
-}]);
+});
 
 
 
@@ -34767,7 +34767,7 @@ angular.module('spotmop.player', [
 	'spotmop.services.mopidy'
 ])
 
-.controller('PlayerController', ['$scope', '$rootScope', '$timeout', '$interval', '$element', 'PlayerService', 'MopidyService', 'SpotifyService', 'SettingsService', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, SettingsService ){
+.controller('PlayerController', function PlayerController( $scope, $rootScope, $timeout, $interval, $element, PlayerService, MopidyService, SpotifyService, SettingsService ){
 	
 	$scope.state = PlayerService.state;
 	    
@@ -34862,7 +34862,7 @@ angular.module('spotmop.player', [
 	});
 	*/
 	
-}]);
+});
 /**
  * Create a Player service
  *
@@ -35329,19 +35329,19 @@ angular.module('spotmop.queue', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('queue', {
 			url: "/queue",
 			templateUrl: "app/queue/template.html",
 			controller: 'QueueController'
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('QueueController', ['$scope', '$rootScope', '$filter', '$timeout', '$state', 'MopidyService', 'SpotifyService', 'DialogService', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
 	$scope.totalTime = 0;
 	$scope.tracks = $rootScope.currentTracklist;
@@ -35425,13 +35425,13 @@ angular.module('spotmop.queue', [])
 		MopidyService.removeFromTrackList( tracksToDelete );
 	});
 	
-}]);
+});
 angular.module('spotmop.search', [])
 
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 	$stateProvider
 		.state('search', {
 			url: "/search/:query/:type",
@@ -35444,12 +35444,12 @@ angular.module('spotmop.search', [])
 				query: { squash: true, value: null }
 			}
 		});
-}])
+})
 	
 /**
  * Main controller
  **/
-.controller('SearchController', ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$filter', 'SpotifyService', 'MopidyService', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
 	
 	$scope.tracklist = {tracks: [], type: 'track'};
 	$scope.albums = [];
@@ -35674,7 +35674,7 @@ angular.module('spotmop.search', [])
             loadMoreResults( nextOffset );
         }
 	});
-}]);
+});
 /**
  * Create a Dialog service 
  *
@@ -35714,7 +35714,7 @@ angular.module('spotmop.services.dialog', [])
 /**
  * Directive to handle wrapping functionality
  **/
-.directive('dialog', ['$compile', function( $compile ){
+.directive('dialog', function( $compile ){
 	
 	return {
 		restrict: 'E',
@@ -35727,7 +35727,7 @@ angular.module('spotmop.services.dialog', [])
 		link: function( $scope, $element ){
 			$element.find('.content').html( $compile('<'+$scope.type+'dialog />')( $scope ) );
 		},
-		controller: ['$scope', '$element', 'DialogService', function( $scope, $element, DialogService ){
+		controller: function( $scope, $element, DialogService ){
 			
 			$scope.closeDisabled = false;
 			if( $scope.type == 'initialsetup' )
@@ -35742,9 +35742,9 @@ angular.module('spotmop.services.dialog', [])
 				if( !$scope.closeDisabled )
 					DialogService.remove();
 			});
-		}]
+		}
 	};
-}])
+})
 
 
 /**
@@ -35759,7 +35759,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SettingsService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
 		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
@@ -35797,7 +35797,7 @@ angular.module('spotmop.services.dialog', [])
 					$scope.error = true;
 				}
             }
-		}]
+		}
 	};
 })
 
@@ -35814,7 +35814,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/editplaylist.template.html',
-		controller: ['$scope', '$element', '$rootScope', 'DialogService', 'SpotifyService', function( $scope, $element, $rootScope, DialogService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, SpotifyService ){
 		
             $scope.playlistNewName = $scope.$parent.playlist.name;
             $scope.playlistNewPublic = $scope.$parent.playlist.public.toString();
@@ -35852,7 +35852,7 @@ angular.module('spotmop.services.dialog', [])
 					$scope.error = true;
 				}
             }
-		}]
+		}
 	};
 })
 
@@ -35869,7 +35869,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SpotifyService', 'SettingsService', 'NotifyService', function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
             
 			$scope.playlists = [];
 			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
@@ -35909,7 +35909,7 @@ angular.module('spotmop.services.dialog', [])
 						NotifyService.notify( selectedTracksUris.length +' tracks added to '+ playlist.name );
 					});
 			};
-		}]
+		}
 	};
 })
 
@@ -35926,7 +35926,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/volumecontrols.template.html',
-		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'PlayerService', function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, PlayerService ){
 			$scope.state = function(){
 				return PlayerService.state();
 			}
@@ -35945,7 +35945,7 @@ angular.module('spotmop.services.dialog', [])
 				
 				PlayerService.setVolume( percent );
 			};
-		}]
+		}
 	};
 })
 
@@ -35962,7 +35962,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: ['$scope', '$element', '$rootScope', '$filter', 'DialogService', 'SettingsService', 'SpotifyService', 'PusherService', function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
 			
 			$scope.settings = SettingsService.getSettings();
 			
@@ -36001,7 +36001,7 @@ angular.module('spotmop.services.dialog', [])
 					$scope.error = true;
 				}
             }
-		}]
+		}
 	};
 })
 
@@ -36018,7 +36018,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addbyuri.template.html',
-		controller: ['$scope', '$element', 'DialogService', 'SpotifyService', 'MopidyService', function( $scope, $element, DialogService, SpotifyService, MopidyService ){
+		controller: function( $scope, $element, DialogService, SpotifyService, MopidyService ){
 				
             $scope.saving = false;
             $scope.add = function(){          
@@ -36042,7 +36042,7 @@ angular.module('spotmop.services.dialog', [])
 					$scope.error = true;
 				}
             }
-		}]
+		}
 	};
 });
 
@@ -36145,7 +36145,7 @@ angular.module('spotmop.services.mopidy', [
     //'llNotifier'
 ])
 
-.factory("MopidyService", ['$q', '$rootScope', '$cacheFactory', '$location', '$timeout', 'SettingsService', 'PusherService', 'NotifyService', 'cfpLoadingBar', function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService, NotifyService, cfpLoadingBar ){
+.factory("MopidyService", function($q, $rootScope, $cacheFactory, $location, $timeout, SettingsService, PusherService, NotifyService, cfpLoadingBar ){
 	
 	// Create consolelog object for Mopidy to log it's logs on
     var consoleLog = function () {};
@@ -36460,7 +36460,7 @@ angular.module('spotmop.services.mopidy', [
 		}
 
 	};
-}]);
+});
 
 /**
  * Notifications service
@@ -36620,7 +36620,7 @@ angular.module('spotmop.services.notify', [])
 angular.module('spotmop.services.pusher', [
 ])
 
-.factory("PusherService", ['$rootScope', '$http', '$q', '$localStorage', '$cacheFactory', '$templateCache', 'SettingsService', 'NotifyService', function($rootScope, $http, $q, $localStorage, $cacheFactory, $templateCache, SettingsService, NotifyService){
+.factory("PusherService", function($rootScope, $http, $q, $localStorage, $cacheFactory, $templateCache, SettingsService, NotifyService){
 
 	// make sure we have a local storage container
 	if( typeof( $localStorage.pusher ) === 'undefined' )
@@ -36785,7 +36785,7 @@ angular.module('spotmop.services.pusher', [
 	};
     
     return service;
-}]);
+});
 
 /**
  * Create a Spotify service 
@@ -38317,7 +38317,7 @@ angular.module('spotmop.services.spotify', [])
  * Authentication Intercepter which checks spotify's requests results for a 401 error
  * SOURCE: https://github.com/dirkgroenen
  **/
-.factory('SpotifyServiceIntercepter', ['$q', '$rootScope', '$injector', '$localStorage', function SpotifyServiceIntercepter($q, $rootScope, $injector, $localStorage){ 
+.factory('SpotifyServiceIntercepter', function SpotifyServiceIntercepter($q, $rootScope, $injector, $localStorage){ 
 
     "use strict";
 	var retryCount = 0;
@@ -38388,7 +38388,7 @@ angular.module('spotmop.services.spotify', [])
     };
 
     return interceptor;
-}]);
+});
 
 
 
@@ -38406,7 +38406,7 @@ angular.module('spotmop.settings', [])
 /**
  * Routing 
  **/
-.config(['$stateProvider', function($stateProvider) {
+.config(function($stateProvider) {
 		
 	$stateProvider
 		.state('settings', {
@@ -38417,12 +38417,12 @@ angular.module('spotmop.settings', [])
 			url: "/testing",
 			templateUrl: "app/settings/testing.template.html"
 		});
-}])
+})
 	
 /**
  * Main controller
  **/	
-.controller('SettingsController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
+.controller('SettingsController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
 	// load our current settings into the template
 	$scope.version;
@@ -38519,14 +38519,14 @@ angular.module('spotmop.settings', [])
     $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
-}])
+})
 
 
 /**
  * Testing controller
  * Accessed only by direct URL (/testing) for testing the system
  **/	
-.controller('TestingController', ['$scope', '$http', '$rootScope', '$timeout', 'MopidyService', 'SpotifyService', 'SettingsService', 'NotifyService', 'PusherService', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
+.controller('TestingController', function SettingsController( $scope, $http, $rootScope, $timeout, MopidyService, SpotifyService, SettingsService, NotifyService, PusherService ){
 	
 	$scope.mopidyTest = {
 			method: 'mopidy.library.browse',
@@ -38549,7 +38549,7 @@ angular.module('spotmop.settings', [])
 			}
 		}
 	
-}]);
+});
 
 /**
  * Create a Settings service

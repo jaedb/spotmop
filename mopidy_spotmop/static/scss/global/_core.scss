@@ -1,0 +1,2435 @@
+/**
+ * Core styles
+ * Spotmop
+ **/
+
+body,
+html {
+	background: #f5f5f5;
+	color: #000000;
+	font-family: 'Archivo Narrow', Helvetica, Arial, sans-serif;
+	font-size: 14px;
+}
+
+body {
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+* {
+	border: 0;
+	padding: 0;
+	margin: 0;
+}
+
+body.dragging *,
+.button,
+.menu-item {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+body.dragging,
+body.dragging *,
+body.dragging .body,
+body.dragging .body * {
+	cursor: -webkit-grabbing !important;
+	cursor: -moz-grabbing !important;
+}
+
+	
+/**
+ * Hardware accelaration
+ **/
+
+#sidebar,
+#body {
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+	/* Other transform properties here */
+	-webkit-transform: translate3d(0, 0, 0);
+	-moz-transform: translate3d(0, 0, 0);
+	-ms-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	/* Other transform properties here */
+}
+ 
+
+
+
+/* ================================================================================ STRUCTURE ===== */
+/* ================================================================================================ */
+
+#sidebar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 20%;
+	overflow: hidden;
+	background: #111111;
+	z-index: 1;
+}
+
+#sidebar > .background-image {
+	position: absolute;
+	top: -50px;
+	right: 0;
+	bottom: -50px;
+	left: -50px;
+	opacity: 0.3;
+	z-index: 1;
+}
+
+#sidebar > .background-image .image {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	opacity: 0;
+	background-position: 0 50%;
+	background-size: cover;
+}
+
+#sidebar > .inner {
+	z-index: 2;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	position: absolute;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+#player {
+	position: fixed;
+	bottom: 20px;
+	left: 0;
+	width: 20%;
+	z-index: 3;
+}
+
+#body {
+	padding-left: 20%;
+	position: relative;
+	min-height: 100vh;
+}
+
+.page > .inner {
+	padding: 40px;
+}
+
+
+/**
+ * Column layouts
+ * Provides percentage fluid faux tables
+ **/
+.col {
+	float: left;
+	min-height: 1px;
+}
+
+.col.w5{	width: 5%; }
+.col.w10{	width: 10%; }
+.col.w15{	width: 15%; }
+.col.w20{	width: 20%; }
+.col.w25{	width: 25%; }
+.col.w30{	width: 30%; }
+.col.w35{	width: 35%; }
+.col.w40{	width: 40%; }
+.col.w45{	width: 45%; }
+.col.w50{	width: 50%; }
+.col.w55{	width: 55%; }
+.col.w60{	width: 60%; }
+.col.w65{	width: 65%; }
+.col.w70{	width: 70%; }
+.col.w75{	width: 75%; }
+.col.w80{	width: 80%; }
+.col.w85{	width: 85%; }
+.col.w90{	width: 90%; }
+.col.w95{	width: 95%; }
+.col.w100{	width: 100%; }
+
+.min-width {			display: inline-block; }
+.min-width.w50 {		min-width: 50px; }
+.min-width.w100 {		min-width: 100px; }
+.min-width.w150 {		min-width: 150px; }
+.min-width.w200 {		min-width: 200px; }
+
+.pull-left {		float: left; }
+.pull-right {		float: right; }
+
+
+
+/** 
+ * Transitioning
+ * This occurs during a delete instruction and a delete success. It makes a snappy interface, but still indicates progress.
+ **/
+
+.transitioning,
+.transitioning:hover {
+	opacity: 0.2;
+}
+
+
+
+/** 
+ * Non-selectable text
+ **/
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none;   /* Chrome/Safari/Opera */
+	-khtml-user-select: none;    /* Konqueror */
+	-moz-user-select: none;      /* Firefox */
+	-ms-user-select: none;       /* IE/Edge */
+	user-select: none;           /* non-prefixed version, currently  not supported by any browser */
+}
+
+
+
+
+/* ================================================================================ SIDEBAR ======= */
+/* ================================================================================================ */
+
+.main-menu .divider {
+	padding: 20px 0 5px 10px;
+	font-size: 11px;
+	color: #FFFFFF;
+	opacity: 0.4;
+	text-transform: uppercase;
+}
+
+.main-menu .divider.spacer {
+    height: 0;
+}
+
+.main-menu .menu-item:last-child {
+    padding-bottom: 20px;
+}
+
+.main-menu a.unavailable {
+	opacity: 0.5;
+}
+
+.main-menu .menu-item > a {
+	display: block;
+	padding: 8px 0 8px 10px;
+	color: #FFFFFF;
+	text-decoration: none;
+	font-size: 16px;
+	background-image: url('assets/svg/white-diamond.svg');
+	background-position: 110% 50%;
+	background-repeat: no-repeat;
+	border-left: 4px solid transparent;
+}
+
+.main-menu .menu-item > a.droppable.dropping,
+.main-menu .menu-item > a.droppable.dropping:hover {
+	background-color: #08d58f;
+}
+
+.main-menu .menu-item .info {
+	font-size: 12px;
+	opacity: 0.5;
+	padding: 2px 20px 0 0;
+	float: right;
+}
+
+.main-menu > .menu-item > a > i.services-alert {
+	float: right;
+	padding: 3px 12px 0 0;
+}
+
+.main-menu .menu-item.active > a {
+	background-color: rgba(0,0,0,0.15);
+	border-color: #08d58f;
+}
+
+.main-menu .menu-item:not(.active) > a:hover {
+	background-color: rgba(255,255,255,0.05);
+}
+
+.main-menu .playlists-submenu-trigger {
+    float: right;
+    display: block;
+    opacity: 0.5;
+    margin-top: -7px;
+    padding: 6px 15px;
+}
+
+.main-menu .playlists-submenu-trigger i {
+    font-size: 12px;
+}
+	
+.menu-reveal-trigger {
+	position: absolute;
+	top: 1px;
+	left: 0;
+	display: none;
+	color: #FFFFFF;
+	font-size: 17px;
+	padding: 16px;
+	cursor: pointer;
+	z-index: 9;
+}
+
+
+.main-menu .dragging-note {
+	display: none;
+	float: right;
+	color: #222222;
+	font-size: 12px;
+	padding-right: 7px;
+	padding-top: 2px;
+}
+
+.dragging .main-menu *.dropping > .dragging-note,
+.dragging .main-menu *:hover > .dragging-note {
+	display: block;
+}
+
+
+/**
+ * Submenus
+ **/
+
+.main-menu .submenu {
+	display: none;
+}
+
+.main-menu .menu-item.section .submenu,
+.main-menu .menu-item.active .submenu {
+	display: block;
+}
+
+.main-menu .submenu > .menu-item {
+	list-style-type: none;
+}
+
+.main-menu .submenu > .menu-item a {
+	padding-left: 39px;
+}
+
+
+/**
+ * Playlist Submenu
+ **/
+
+.main-menu .submenu.playlists {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 100%;
+	overflow: hidden;
+	background: rgba(48,48,48,0.95);
+	padding: 20px 0;
+	z-index: 1;
+	display: block;
+}
+
+.main-menu .submenu.playlists .menu-item > a {
+	color: #FFFFFF;
+	font-size: 16px;
+	padding: 10px 0 10px 20px;
+}
+
+.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
+.dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
+	left: 20%;
+}
+
+
+
+/**
+ * Sub-page navigation
+ **/
+
+.sub-page-navigation {
+	margin-bottom: 35px;
+	margin-top: -15px;
+}
+
+.sub-page-navigation .menu-item {
+	padding: 12px 0;
+	margin-right: 25px;
+	border-bottom: 3px solid transparent;
+	display: inline-block;
+	font-size: 18px;
+	text-transform: capitalize;
+}
+
+.sub-page-navigation .menu-item > i {
+	font-size: 6px;
+	vertical-align: middle;
+	margin-top: -4px;
+	padding-right: 2px;
+}
+
+.sub-page-navigation .menu-item:hover {
+	border-color: rgba(255,255,255,0.5);
+	cursor: pointer;
+}
+
+.search-page .sub-page-navigation .menu-item:hover {
+	border-color: #AAAAAA;
+}
+
+.sub-page-navigation .menu-item.active {
+	border-color: #f5f5f5;
+}
+
+
+
+/**
+ * Critical services (Mopidy + Spotify)
+ * Alerts shown under services menu item if offline
+ **/
+
+.critical-services-status {
+	padding-left: 29px;
+	padding-top: 5px;
+}
+	
+#loading-bar .bar {
+	left: 20% !important;
+	right: 0px !important;
+}
+	
+#loading-bar-spinner {
+	right: 10px !important;
+	left: auto !important;
+}
+
+
+
+/**
+ * Dropzones
+ * When dragging, these zones are revealed to allow dropping
+ **/
+
+#dropzones {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 20%;
+	z-index: 98;
+	background: rgba(0,0,0,0.75);
+}
+
+.dragging #dropzones {
+	display: block;
+}
+
+#dropzones > .dropzone {
+	background: #444444;
+	text-align: center;
+	font-size: 20px;
+	color: #FFFFFF;
+	margin: 20px 20px 0 20px;
+	line-height: 20px;
+}
+
+#dropzones > .dropzone.disabled {
+	background: #222222;
+}
+
+#dropzones > .dropzone.disabled > .liner {
+	opacity: 0.3;
+}
+
+#dropzones .dropzone > .liner {
+	padding: 50px 20px;
+}
+
+#dropzones .dropzone.dropping > .liner:not(.hover-content),
+#dropzones .dropzone.dropping-within > .liner:not(.hover-content) {
+	background: #08d58f;
+}
+
+#dropzones .dropzone.dropping .default-content,
+#dropzones .dropzone.dropping-within .default-content,
+#dropzones .dropzone:not(.dropping):not(.dropping-within) .hover-content {
+	display: none;
+}
+
+#dropzones .dropzone.dropping .hover-content,
+#dropzones .dropzone.dropping-within .hover-content {
+	display: block !important;
+}
+
+#dropzones .dropzone .label {
+	padding-top: 20px;
+}
+
+#dropzones .dropzone .menu-item {
+	display: block;
+	text-align: left;
+	padding: 10px 20px;
+	color: #FFFFFF;
+	text-decoration: none;
+	font-size: 16px;
+}
+
+#dropzones .dropzone .menu-item.dropping,
+#dropzones .dropzone .dropzone.dropping {
+	background: #08d58f;
+}
+
+#dropzones .dropzone .menu-item:not(:last-child) {
+	border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+ 
+ 
+/** unique dropzones **/
+
+#dropzones .dropzone.playlists > .liner.hover-content {
+	padding: 0;
+}
+
+#dropzones .dropzone.queue > .liner.hover-content {
+	padding: 0;
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue {
+	padding: 30px 20px 20px;
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue-next {
+	padding: 14.5px 20px;
+	border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+#dropzones .dropzone.queue .dropzone.add-to-queue-next .label {
+	padding: 0;
+}
+ 
+ 
+
+/* ====================================================================== GLOBAL ELEMENTS ========= */
+/* ================================================================================================ */
+
+
+.clear-both {		clear: both; }
+.clear-left {		clear: left; }
+.clear-right {		clear: right; }
+.hide {				display: none !important; }
+.invisible {		visibility: hidden !important; }
+*:focus {		    outline: none; }
+.spacer {           height: 40px; }
+
+
+/**
+ * Animations
+ * Add .animation to any element to animate :hover and :focus sudo-styles
+ **/
+ 
+.animate,
+.button,
+button,
+.main-menu a,
+input[type='submit'],
+.opacity-hover {
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+/* prevent animations when page is loading */
+.loading .animate,
+.loading .button,
+.loading button,
+.loading .main-menu a,
+.loading input[type='submit'],
+.loading .opacity-hover {
+	-webkit-transition: none !important;
+	-moz-transition: none !important;
+	-o-transition: none !important;
+	transition: none !important;
+}
+
+/* spinning */
+@-moz-keyframes spin {
+    0% {
+        -moz-transform: rotate(0deg);
+    }
+    100% {
+        -moz-transform: rotate(360deg);
+    };
+}
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    };
+}
+@keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+    100% {
+        -webkit-transform: rotate(360deg);
+    };
+}
+ 
+/* fade in hidden elements */
+.fadereveal {	
+	-webkit-animation: fadereveal 0.2s linear;
+	-moz-animation: fadereveal 0.2s linear;
+	-o-animation: fadereveal 0.2s linear;
+	animation: fadereveal 0.2s linear;
+	-webkit-animation-fill-mode: forward;
+	-moz-animation-fill-mode: forward;
+	-o-animation-fill-mode: forward;
+	animation-fill-mode: forward;
+}
+@-moz-keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
+@-webkit-keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
+@keyframes fadereveal {
+	0% {
+		display: none;
+		opacity: 0;
+	}
+	99% {
+		display: block;
+	}
+	100% {
+		display: block;
+		opacity: 1;
+	}
+}
+
+
+/**
+ * Hover opacity elements
+ * Fade in on hover
+ **/
+ 
+.opacity-hover {
+	opacity: 0.5;
+}
+
+.opacity-hover:hover {
+	opacity: 1;
+}
+
+
+
+/**
+ * Image effects
+ * Blurs, etc
+ **/
+
+.blur {
+	filter: url('assets/svg/blur.svg#blur');
+	-webkit-filter: blur(10px);
+	filter: blur(10px);
+}
+
+.invert {
+	-webkit-filter: invert(100%);
+	filter: invert(100%);
+}
+
+
+/**
+ * Drag tracer
+ * Follows the cursor during drag events
+ **/
+
+.drag-tracer {
+	position: fixed;
+	color: #FFFFFF;
+	background: #32b5f2;
+	z-index: 99;
+	display: none;
+	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+	pointer-events: none;
+}
+
+.drag-tracer .track-title {
+	padding: 8px 12px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100px;
+	font-size: 12px;
+	vertical-align: top;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	z-index: 3;
+	background: #32b5f2;
+	box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+}
+
+.drag-tracer .track-title:nth-child(2) {		top: 5px; left: 5px; z-index: 2; background: #29abe8; }
+.drag-tracer .track-title:nth-child(3) {		top: 10px; left: 10px; z-index: 1; background: #23a4e0; }
+
+.drag-tracer .thumbnail {
+	float: left;
+	width: 40px;
+	height: 40px;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.drag-tracer .text {
+	float: left;
+	padding: 12px 15px;
+	font-size: 12px;
+	max-width: 150px;
+	vertical-align: top;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+    
+    
+/**
+ * Tooltips
+ * Only using CSS for basic hovers
+ **/
+
+.tooltip-wrapper {
+    z-index: 2;
+    position: relative;
+}
+
+.tooltip-wrapper .tooltip {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #DDDDDD;
+    color: #222222;
+    font-size: 11px;
+    padding: 2px 5px;
+}
+
+.tooltip-wrapper:hover .tooltip {
+    display: block;
+}
+
+.popularity .tooltip {
+    z-index: -1;
+    top: -5px;
+    right: -8px;
+    padding: 5px 16px 5px 8px;
+	min-width: 0;
+}
+
+.popularity .tooltip:before {
+	display: none;
+}
+
+.popularity:hover .bar-track {
+    background: #FFFFFF;
+}
+
+
+/**
+ * Notifications
+ **/
+
+#notifications {
+    position: fixed;
+    z-index: 9;
+    top: 15px;
+    left: 20%;
+    right: 0;
+    text-align: center;
+	pointer-events: none;
+}
+
+#notifications .notification {
+    color: #FFFFFF;
+    display: inline-block;
+    padding: 10px 18px;
+    background-color: rgba(0,0,0,0.6);
+	margin: 0px 1px;
+}
+
+#notifications .notification.keyboard-shortcut {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	width: 300px;
+	margin: -150px 0 0 -150px;
+	text-align: center;
+	border-radius: 10px;
+}
+
+#notifications .notification.keyboard-shortcut i {
+	line-height: 300px;
+	font-size: 120px;
+}
+
+#notifications .notification:not(.keyboard-shortcut):first-child {
+	border-radius: 100px 0 0 100px;
+}
+
+#notifications .notification:not(.keyboard-shortcut):last-child {
+	border-radius: 0 100px 100px 0;
+}
+
+#notifications .notification:not(.keyboard-shortcut):only-child {
+	border-radius: 100px;
+}
+
+#notifications .notification.bad,
+#notifications .notification.error {
+    background-color: rgba(214,47,47,0.9);
+}
+
+#notifications .notification.good {
+    background-color: rgba(53,204,53,0.9);
+}
+
+
+/**
+ * Full-page notifications (ie just for a certain page)
+ **/
+.page-notification {
+	margin: -40px -40px 30px -40px;
+	padding: 20px 40px;
+	font-size: 16px;
+}
+
+
+/**
+ * Base-level typography
+ * Standardise the font styles
+ **/
+
+h1 {
+	font-size: 40px;
+	font-weight: 200;
+	padding-bottom: 35px;
+	margin-top: -10px;
+}
+
+.heading-wrapper > h1 {
+	display: inline-block;
+}
+
+h2 {
+	font-size: 20px;
+	font-weight: 300;
+}
+
+h3 {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+h4 {
+	font-size: 14px;
+	font-weight: 400;
+}
+
+h4.section-title {
+	text-transform: uppercase;
+	font-weight: 600;
+	padding-bottom: 20px;
+}
+
+.underline {
+	border-bottom: 1px solid #999999;
+	padding-bottom: 5px;
+	margin-bottom: 5px;
+}
+
+.body a {
+	color: inherit;
+	text-decoration: none;
+	border-bottom: 1px dotted transparent;
+    cursor: pointer;
+}
+
+.body a:hover {
+	border-color: inherit;
+}
+
+.info-text {
+	color: #AAAAAA;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
+.capitalize {
+	text-transform: uppercase; 
+}
+
+.breadcrumbs {
+	margin-top: -20px;
+	color: #CCCCCC;
+	text-transform: uppercase;
+}
+
+.breadcrumbs .divider {
+	padding: 0 3px;
+}
+
+
+/**
+ * Text colour variations
+ **/
+
+.white-text {						color: #FFFFFF !important; }
+.black-text {						color: #000000 !important; }
+.grey-text {						color: #AAAAAA !important; }
+.red-text {							color: rgb(214,47,47) !important; }
+.green-text {						color: rgb(53,204,53) !important; }
+.primary-colour-text {				color: #08d58f !important; }
+
+.white-background {					background-color: #FFFFFF !important; }
+.grey-background {					background-color: #DDDDDD !important; }
+.black-background {					background-color: #000000 !important; }
+.red-background {					background-color: rgb(214,47,47) !important; }
+.green-background {					background-color: rgb(53,204,53) !important; }
+.primary-colour-background {		background-color: #08d58f !important; }
+
+
+/**
+ * Text style variatons
+ **/
+
+.bold-text {		font-weight: bold; }
+.italic-text {		font-style: italic; }
+
+
+
+/* ====================================================================== STANDARD ELEMENTS ======= */
+/* ================================================================================================ */
+
+
+.no-items {
+	text-align: center;
+	font-size: 16px;
+	color: #CCCCCC;
+	padding-top: 50px;
+	font-weight: bold;
+}
+
+/**
+ * Flags
+ **/
+
+.flag {
+	background: #EEEEEE;
+	display: inline-block;
+	border-radius: 3px;
+	padding: 3px 6px;
+	font-size: 11px;
+	font-weight: 400;
+	margin-left: 10px;
+	margin-right: -10px;
+}
+
+h1 .flag {
+    vertical-align: bottom;
+    margin-bottom: 8px;
+}
+
+.flag.blue{
+	background: #32b5f2;
+	color: #FFFFFF;
+}
+
+.flag.green,
+.flag.primary {
+	background: #08d58f;
+	color: #FFFFFF;
+}
+ 
+.flag.bad {
+	background: rgb(214,47,47);
+	color: #FFFFFF;
+}
+
+.flag.clickable:hover{
+	background: rgba(0,0,0,0.65);
+	color: rgba(255,255,255,0.85);
+}
+
+.flag.dark {
+	background: rgba(0,0,0,0.4);
+	color: rgba(255,255,255,0.5);
+}
+
+.flag.black {
+	background: rgba(0,0,0,0.55);
+	color: rgba(255,255,255,0.8);
+}
+
+.flag.red {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+}
+
+.flag.green {
+    background: rgba(53,204,53,0.9);
+	color: #FFFFFF;
+}
+
+.flag.clickable {
+    cursor: pointer;
+}
+
+.flag.clickable.destructive:hover {
+    background: rgba(214,47,47,0.9);
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+
+
+
+
+/**
+ * Clickable buttons
+ * These are all within the .body element (ie the main app frame)
+ **/
+
+.body .button,
+.dialog .button.primary,
+.dialog .button.secondary,
+.dialog .button.transparent {
+    display: inline-block;
+    padding: 12px 22px;
+	margin-right: -3px;
+    border: 0;
+    cursor: pointer;
+    color: #FFFFFF;
+	border: 0;
+}
+
+.body .button,
+.dialog .button.secondary { 					background: #9b9b9b; }
+.body .button:hover,
+.dialog .button.secondary:hover { 				background: #8B8B8B; }
+
+.body .button.transparent,
+.body .button.transparent:hover { 				background: transparent; color: #000000; }
+
+.body .button .fa {
+	margin-top: 2px;
+	margin-left: -2px;
+	vertical-align: top;
+}
+
+.body .heading-wrapper .button {
+	vertical-align: top;
+	margin-left: 10px;
+}
+
+
+/* variations */
+
+.body .button.primary,
+.dialog .button.primary {				background: #08d58f; }
+.body .button.primary:hover,
+.dialog .button.primary:hover {			background: #03c784; }
+
+.body .button.destructive {				background: #cf2d2d; }
+.body .button.destructive:hover {		background: #bc1f1f; }
+
+.body .button.tertiary {				background: #DDDDDD; color: #AAAAAA; }
+.body *:not(.touchDevice) .button.tertiary:hover {		    background: #DDDDDD; }
+
+
+.body .button.disabled,
+.body .button.disabled:hover {
+	cursor: not-allowed;
+	opacity: 0.5;
+}
+
+.body .button.float-right {				float: right; }
+
+
+/* follow/unfollow */
+
+.body .follow-unfollow .unfollow {		/* this prevents ugly element resizing when we hover and text changes */
+	min-width: 50px;
+	text-align: center;
+}
+
+.body .follow-unfollow:not(.following) > .unfollow,
+.body .follow-unfollow.following > .follow {
+	display: none;
+}
+
+
+
+
+/**
+ * Popularity bars
+ **/
+ 
+.bar-track {	
+	display: inline-block;
+	width: 5px;
+	position: relative;
+	height: 12px;
+	background: #DDDDDD;
+}
+
+.bar-track .bar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: #666666;
+}
+ 
+.info-text .bar-track {
+	vertical-align: top;
+	margin-top: 7px;
+}
+
+
+/**
+ * Artist lists (related artists, album artists, etc)
+ **/
+
+.artist-list .artist {
+	display: block;
+	clear: both;
+	padding: 10px 0;
+	margin-bottom: 5px;
+	border: 0 !important;
+}
+
+.artist-list .artist .image {
+	display: block;
+	width: 50px;
+	height: 50px;
+	border-radius: 100px;
+	padding: 0;
+	float: left;
+	margin-right: 14px;
+	border: 2px solid #f5f5f5;
+}
+
+.artist-list .artist:hover .image {
+	opacity: 0.75;
+	border-color: #08d58f;
+}
+
+.artist-list .artist .name {
+	padding-top: 15px;
+	padding-left: 65px;
+	font-weight: 300;
+	font-size: 15px;
+	display: block;
+}
+
+
+/**
+ * Artist grid (ie album page)
+ **/
+
+.artist-grid {
+	padding: 0;
+}
+
+.artist-grid .artist {
+	display: block;
+	float: left;
+	border: 0 !important;
+	width: 50%;
+	position: relative;
+}
+
+.artist-grid .artist .image {
+	display: block;
+	width: 100%;
+	padding-bottom: 100%;
+	background-image: url('assets/svg/no-image.svg');
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+	background-color: #777777;
+}
+
+.artist-grid .artist .name-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: -0.5px;
+	right: 0;
+	text-align: center;
+	color: #FFFFFF;
+	opacity: 0;
+	background: rgba(0,0,0,0.8);
+}
+
+.artist-grid .artist:hover .name-wrapper {
+	opacity: 1;
+}
+
+.artist-grid .artist .name {
+	padding-top: 45%;
+	font-weight: bold;
+}
+
+
+/**
+ * Square panels
+ * The basis for all playlist, album and artist thumbnails
+ **/
+ 
+ .square-panels {
+	margin-left: -2%;
+	margin-right: -2%;
+}
+ 
+.square-panel {
+	width: 16%;
+	margin: 0 2% 3% 2%;
+	display: block;
+	float: left;
+	text-decoration: none;
+	color: inherit;
+	border: none !important;
+}
+
+.square-panel .image-container {
+	position: relative;
+	width: 100%;
+	padding-bottom: 100%;
+}
+
+.square-panel .image-container .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: #E9E9E9;
+	background-image: url('assets/svg/no-image.svg');
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+.square-panel .image-container .overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 2;
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.image-container .image.placeholder,
+.thumbnail.placeholder {
+	background-color: #E9E9E9;
+	background-image: url('assets/svg/no-image.svg');
+	background-size: 80% 80%;
+	background-position: 50% 50%;
+}
+
+.square-panel:hover .image-container .image {
+	opacity: 0.75;
+}
+
+.square-panel .info {
+	padding-top: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	border-top: 3px solid transparent;
+	margin-top: -3px;
+	position: relative;
+	height: 50px;
+}
+
+.square-panel .info.smaller {
+	height: 30px;
+}
+
+.square-panel:hover .info {
+	border-color: #08d58f;
+}
+
+.square-panel .info .secondary {
+	padding-top: 2px;
+	color: #AAAAAA;
+}
+
+.square-panel .info .name,
+.square-panel .info .tracks {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+
+/**
+ * Smaller version of square panels (ie 7-across)
+ **/
+ 
+.square-panels.smaller {
+	margin-left: -1%;
+	margin-right: -1%;
+}
+
+.square-panels.smaller .square-panel {
+	width: 12.28%;
+	margin: 0 1% 3%;
+}
+
+
+
+/**
+ * Unique instances of square panels
+ * ie. Category panels
+ **/
+ 
+.square-panel.category .name {
+	position: absolute;
+	padding-bottom: 20%;
+	border-bottom: 3px solid transparent;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	text-align: center;
+	color: #FFFFFF;
+	font-weight: bold;
+	font-size: 16px;
+}
+ 
+.square-panel.category:hover .name {
+	border-color: #08d58f;
+	padding-bottom: 21%;
+}
+
+.square-panel.library-album {
+	width: 90%;
+	margin: 0;
+}
+
+.square-panel.library-album:hover .image {	opacity: 1;}
+
+
+/**
+ * Track rows
+ * At least 75% of the functionality lives here. At least.
+ **/
+
+.tracklist .track {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	cursor: pointer;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.track .title,
+.track .artist,
+.track .album,
+.track .info {
+	float: left;
+	min-height: 1px;
+}
+
+.track .source {		display: none; }
+.track .title {			width: 30%; }
+.track .artist {		width: 30%; }
+.track .album {			width: 30%; }
+.track .info {		    width: 10%; text-align: right; }
+
+.track .info .duration {
+    display: inline-block;
+    padding-right: 20px;
+}
+
+.track .info .popularity {
+    position: absolute;
+    top: 11px;
+    right: 10px;
+}
+
+.track .source {
+	display: none;
+    position: absolute;
+    top: 9px;
+    right: 5px;
+}
+
+.tracklist.queue-tracks .track .source,
+.tracklist.search-results.other .track .source {
+	display: inline-block;
+}
+
+body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
+	background: #F4F4F4;
+	border-color: #EEEEEE;
+}
+
+body.dragging .tracklist .track.selected {
+	opacity: 0.5;
+}
+
+.tracklist .track.selected,
+.tracklist .track.selected:hover {
+	background: #FFF39C;
+}
+
+.tracklist .track.playing {
+	font-weight: bold;
+}
+
+body.dragging .tracklist .track:hover,
+body.dragging .tracklist .track.dropping {
+	border-top: 3px solid #32b5f2;
+	margin-top: -3px;
+}
+
+
+/**
+ * Folders (based on tracks)
+ **/
+
+.track.folder .icon {
+	width: 24px;
+	float: left;
+}
+
+.track.folder .title {
+	width: auto;
+}
+
+
+/**
+ * List (based on tracks also)
+ **/
+ 
+.list .list-item {
+	display: block;
+	padding: 10px;
+	border-top: 1px solid #EEEEEE;
+	border-bottom: 1px solid #EEEEEE;
+	margin-bottom: -1px;
+	position: relative;
+	
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+ 
+.list .list-item.header {
+	text-transform: uppercase;
+	color: #CCCCCC;
+	border-top: 0;
+	font-size: 11px;
+	padding-bottom: 2px;
+}
+ 
+.list .list-item.header .sortable:hover {
+	cursor: pointer;
+	color: #888888;
+}
+ 
+.list .list-item.header .sortable.active {
+	color: #32b5f2;
+}
+
+.list .list-item:not(.header):hover {
+	background: #F4F4F4;
+	border-color: #EEEEEE;
+	cursor: pointer;
+}
+
+.list .list-item .si {
+	margin-top: 0;
+	vertical-align: bottom;
+}
+
+.list .list-item .fa {
+	margin-right: 6px;
+}
+
+.list .list-item .info {
+	width: 5%;
+	text-align: right;
+	float: right;
+}
+
+@media ( max-width: 800px ){
+	.list.album-items .release-date {
+		display: none;
+	}
+	.list.album-items .name .si {
+		display: none;
+	}
+	.list.album-items .name,
+	.list.album-items .artists {
+		width: 40%;
+	}
+}
+
+
+/**
+ * Thumbnail images
+ * Just the default settings, which will be manipulated on a contextual basis
+ **/
+
+.thumbnail-image.image {
+	width: 100%;
+	padding-bottom: 100%;
+	margin: 0;
+	background-image: url('assets/svg/no-image.svg');
+	background-color: #E9E9E9;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+
+ 
+ 
+/**
+ * Intro panels
+ * The key pages (Artist, Playlist, etc) have their own spin on this generic style
+ **/
+
+.intro preloadedimage {
+	position: absolute;
+	top: -30px;
+	right: -30px;
+	bottom: -30px;
+	left: -30px;
+	overflow: hidden;
+	opacity: 0;
+	background-position: 50% -100px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+ 
+ 
+ 
+/** 
+ * Sliders
+ * Side-scrolling content (ie discover sections)
+ **/
+
+slider {
+	height: 250px;
+	display: block;
+	position: relative;
+	margin-bottom: 40px;
+}
+
+slider.square-panels {
+	margin-left: 0;
+	margin-right: -40px;
+}
+
+slider .controls {
+	position: absolute;
+	top: -40px;
+	right: 40px;
+	z-index: 5;
+}
+
+slider .controls .si {
+	cursor: pointer;
+	margin: 5px;
+	opacity: 0.7;
+}
+
+slider .controls .si:hover {
+	opacity: 1;
+}
+
+slider .slides {
+	overflow: hidden;
+	position: relative;
+	height: 100%;
+}
+
+slider .slides-content {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 500%;
+}
+
+slider .item-container {
+	float: left;
+	width: 4%;
+}
+
+slider .item-container > .square-panel {
+	width: 80%;
+	margin: 0;
+}
+ 
+ 
+.page-header {
+	margin: -40px -40px 40px -40px;
+	background: #EEEEEE;
+	padding: 20px 40px;
+}
+ 
+.page-header h1 {
+	padding: 0;
+	margin: 0;
+	font-size: 22px;
+	display: inline-block;
+}
+ 
+.page-header h1 .si {
+	width: 1em;
+	height: 1em;
+	margin: 3px 5px 0 0;
+}
+ 
+.page-header .utilities {
+	margin: 0 -25px 0 0;
+	float: right;
+}
+ 
+.page-header .utilities .button {
+	font-weight: 600;
+	text-transform: uppercase;
+	margin-top: -8px;
+}
+ 
+.utilities .si {
+	width: 22px;
+	height: 22px;
+}
+ 
+.utilities .filter-option.active,
+.utilities .filter-option:hover {
+	opacity: 1;	
+	border: none !important;
+}
+ 
+.utilities .filter-option {
+	margin-left: 15px;
+	opacity: 0.5;
+}
+ 
+.utilities .filter-option .label {
+	display: inline-block;
+	vertical-align: bottom;
+	margin-bottom: 3px;
+}
+ 
+.page-header .flag {
+	display: inline-block;
+	padding: 3px 6px;
+	margin-top: 4px;
+	vertical-align: top;
+}
+ 
+ 
+/**
+ * Tooltips
+ * Revealed on hover of parental .has-tooltip
+ **/
+
+.tooltip {
+	position: absolute;
+	top: -25px;
+	left: 50%;
+	min-width: 66px;
+	margin-left: -37px;
+	padding: 4px;
+	background: #333333;
+	color: #FFFFFF;
+	font-size: 11px;
+	display: none;
+} 
+
+.tooltip:before {
+	content: '';
+	width: 6px;
+	height: 6px;
+	background: #333333;
+	position: absolute;
+	bottom: -3px;
+	left: 50%;
+	margin-left: -3px;
+    -webkit-transform: rotate(45deg);
+       -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+		    transform: rotate(45deg);
+}
+
+.has-tooltip {
+	position: relative;
+}
+
+#app:not(.touchDevice) .has-tooltip:hover .tooltip {
+	display: block;
+}
+ 
+
+
+/* ====================================================================== PAGE-SPECIFIC =========== */
+/* ================================================================================================ */
+
+
+/**
+ * Queue
+ **/
+ 
+.queue-intro {
+	padding-bottom: 20px;
+}
+
+.now-playing-page .page-header {
+	display: none;
+}
+
+
+
+/**
+ * Album page
+ **/
+
+.album-intro h1 {
+	padding: 20px 0 0 0;
+}
+
+.album-intro .square-panel {
+	margin: 0 30px 20px 0;
+	width: 250px;
+	height: 250px;
+}
+
+.album-intro .image {
+	background-color: #EEEEEE;
+	background-size: cover;
+	background-position: 50% 50%;
+	opacity: 1 !important;
+}
+
+.album-intro .info-text {
+	padding-top: 20px;
+}
+
+ 
+
+/**
+ * Playlist
+ **/
+
+.playlist-page .intro,
+.album-page .intro {
+	position: relative;
+	margin: 0 0 50px 0;
+}
+
+.asset-sidebar {
+	width: 20%;
+	position: absolute;
+	top: 0;
+	left: 20%;
+	bottom: 0;
+	background: #EEEEEE;
+}
+
+.content.has-asset-sidebar {
+	padding-left: 25%;
+}
+
+.content.has-asset-sidebar > .inner {
+	padding: 40px 20px 40px 20px;
+}
+
+.playlist-page .thumbnail-wrapper .image,
+.album-page .thumbnail-wrapper .image {
+	width: 100%;
+	padding-bottom: 100%;
+	margin: 0;
+}
+
+.playlist-page h1,
+.album-page h1 {
+	padding-bottom: 0;
+	padding-top: 15px;
+	margin: 0;
+}
+
+.playlist-page h2,
+.album-page h2 {
+	font-style: italic;
+	color: #888888;
+	font-weight: 100;
+	padding-top: 5px;
+}
+
+.playlist-page .asset-sidebar .info,
+.album-page .asset-sidebar .info {
+	padding: 14px 20px;
+	margin-top: 1px;
+}
+
+.playlist-page .asset-sidebar .info > .info-item,
+.album-page .asset-sidebar .info > .info-item {
+	padding: 2px 0;
+	color: #AAAAAA;
+}
+
+.playlist-page .asset-sidebar .info .bar-track,
+.album-page .asset-sidebar .info .bar-track {
+	vertical-align: top;
+	margin-top: 7px;
+	margin-left: 6px;
+}
+
+.playlist-owner {
+	display: block;
+	padding-top: 10px;
+	border: 0 !important;
+}
+
+.playlist-owner .name {
+    display: block;
+    font-size: 15px;
+    font-weight: 300;
+    padding-left: 40px;
+    padding-top: 5px;
+}
+
+.playlist-owner .image {
+	border-radius: 60px;
+	display: block;
+	float: left;
+	height: 30px;
+	margin-right: 8px;
+	width: 30px;
+	padding: 0;
+	position: relative;
+}
+
+.playlist-owner .image::after {
+    content: '';
+	display: block;
+	position: absolute;
+	top: -1px;
+	left: -1px;
+	bottom: -1px;
+	right: -1px;
+	border: 2px solid #eeeeee;
+	border-radius: 60px;
+	z-index: 2;
+}
+
+.playlist-owner:hover .image::after {
+	border-color: #08d58f;
+}
+
+
+/**
+ * Artist
+ **/
+
+.artist-intro {
+	position: relative;
+	margin: -40px -40px 30px;
+	padding: 0 20px;
+	height: 50vh;
+}
+
+.artist-intro h1 {
+	padding-bottom: 10px;
+}
+
+/*
+.artist-intro.background--dark h1,
+.artist-intro.background--dark .menu-item {             color: #FFFFFF; }
+.artist-intro.background--light h1,
+.artist-intro.background--light .menu-item,
+.artist-intro.background--complex h1,
+.artist-intro.background--complex .menu-item {             color: #000000; }
+*/
+
+.artist-intro h1,
+.artist-intro .menu-item {             color: #FFFFFF; }
+
+.artist-intro .image-container {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+	left: 0px;
+	overflow: hidden;
+	z-index: -1;
+	background: #444444;
+}
+
+.artist-intro .image-container .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	opacity: 0;
+}
+
+.artist-intro .image-container canvas {
+	background-color: #444444;
+}
+
+.artist-page .title-panel {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	padding-left: 330px;
+}
+
+.artist-page .sub-page-navigation {
+	margin: 0;
+}
+
+.artist-page .info-panel {
+	padding-left: 290px;
+	margin-bottom: 50px;
+	position: relative;
+}
+
+.artist-page .info-panel .thumbnail-wrapper .image {
+	width: 250px;
+	height: 250px;
+	padding: 0;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+.artist-page .info-panel .buttons {
+	padding-right: 20px;
+}
+
+.artist-page .info-panel .info-text {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.tracklist.top-track-items {
+	padding-bottom: 30px;
+}
+
+.gallery-item img {
+	max-width: 90%;
+}
+
+.biography .content {
+    font: inherit;
+    width: 100%;
+	font-size: 18px;
+	line-height: 1.4em;
+	white-space: pre-wrap;
+}
+
+.biography .details {
+    padding: 20px 0;
+	color: #666666;
+}
+
+
+/**
+ * Discover
+ **/
+
+.discover .discover-section {
+	clear: both;
+	padding-bottom: 20px;
+}
+
+.discover .discover-section .section-title {
+	padding-bottom: 25px;
+}
+
+.seed-items {
+	padding-bottom: 30px;
+	font-style: italic;
+	color: #888888;
+	font-weight: 100;
+}
+
+.seed-items .seed-item {
+}
+
+
+/**
+ * Library
+ **/
+ 
+.library-albums .library-album {}
+
+.library-albums .full-album {
+	padding-bottom: 40px;
+}
+
+.library-albums .full-album .album-title {
+	padding: 0 10px 15px 10px;
+}
+
+
+/**
+ * Featured playlists
+ **/
+ 
+.featured-playlists-intro {
+	position: relative;
+	margin: -40px -40px 40px;
+	padding: 0 20px;
+	height: 30vh;
+	background: #303030;
+}
+
+.featured-playlists-intro > .inner {
+	z-index: 1;
+	position: relative;
+	color: #FFFFFF;
+	text-align: center;
+	padding-top: 13vh;
+}
+
+.featured-playlists-intro > .image-container {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+
+.featured-playlists-intro > .image-container > .image {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+    opacity: 0;
+}
+ 
+    
+
+/**
+ * User page
+ **/
+
+.user-intro {
+    padding-bottom: 30px;
+}
+
+.user-intro .info {
+    padding-top: 30px;
+}
+
+.user-intro .info-text {
+    margin-top: -20px;
+}
+
+.user-intro .image-container .image {
+    width: 120px;
+    height: 120px;
+    border-radius: 120px;
+    float: left;
+    background-size: cover;
+    background-position: 50% 50%;
+    margin-right: 20px;
+}
+
+
+/**
+ * Search
+ **/
+
+.search .loading {
+	margin: 50px auto;
+	width: 70px;
+	height: 70px;
+}
+
+.search .loading img {
+	width: 100%;
+	height: 100%;
+}
+
+.search .sub-page-navigation {
+	margin: -10px 0 30px;
+}
+
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 30.6667%;
+	float: left;
+}
+.search-results-section.artists,
+.search-results-section.albums {
+	padding-right: 4%;
+}
+
+.search-results-section .square-panel {
+	width: 46%;
+}
+
+.search-results-section .square-panel .info {
+	height: 60px;
+}
+
+.search-results-section.tracks {
+	padding-top: 30px;
+}
+
+
+/**
+ * Settings
+ **/
+
+.settings > .section {
+	padding-bottom: 40px;
+}
+
+.settings .section-title .state-label {
+	display: inline-block;
+	padding: 1px 3px;
+	font-size: 11px;
+	margin-left: 5px;
+}
+ 
+.actions {
+    clear: both;
+    padding: 40px 0 0 15%;
+}
+
+.sub-page {
+	padding: 10px 0 20px;
+}
+
+.settings .field.current-user .input {
+    padding-top: 8px;
+}
+
+.settings .field.current-user .image-container > .image {
+    width: 36px;
+    height: 36px;
+    float: left;
+    border-radius: 36px;
+    margin-right: 10px;
+    margin-top: -10px;
+    background-size: cover;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+	background-color: #CCCCCC;
+}
+
+.settings .field .view-my-profile {
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	z-index: 1;
+	margin-top: 1px;
+	margin-left: -35px;
+	padding: 10px;
+	border: 0;
+}
+
+.settings .field.shortcut-keys .shortcuts {
+	padding-top: 15px;
+}
+
+.settings .field.shortcut-keys .row {
+	padding-bottom: 5px;
+}
+
+.settings .field.shortcut-keys .row .flag {
+	margin-left: 0;
+}
+
+
+
+/* ====================================================================== PLAYER ================== */
+/* ================================================================================================ */
+
+#player {
+	color: #FFFFFF;
+}
+
+#player > .background-image {
+	display: none;
+}
+
+.player .button {
+	padding: 5px;
+	margin: 0 5px;
+	font-size: 14px;
+	opacity: 0.75;
+	display: inline-block;
+	background: transparent;
+}
+
+.player .button.active,
+.player .button:hover {
+	opacity: 1;
+	cursor: pointer;
+}
+
+.player .button.active {
+    color: #08d58f;
+}
+
+.player .track-info {
+	text-align: center;
+	font-size: 16px;
+	text-transform: uppercase;
+	padding-bottom: 20px;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.player .track-info .track {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.player .track-info .artist {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0.5;
+}
+
+.player .track-info .artist a{
+	text-decoration: none;
+	color: #FFFFFF;
+	border-bottom: 1px dotted transparent;
+}
+
+.player .track-info .artist a:hover {
+	border-color: #FFFFFF;
+}
+
+/**
+ * Playback controls
+ **/
+ 
+#player .controls {
+}
+ 
+#player .playback {
+	float: left;
+	padding-left: 15px;
+}
+
+#player .volume {
+	float: right;
+	padding-right: 20px;
+}
+
+#player .volume.touch-friendly {
+	display: none;
+}
+
+#player .volume .slider {
+	display: inline-block;
+	width: 40px;
+	vertical-align: middle;
+	padding: 8px 0;
+}
+
+.player .slider {
+	cursor: pointer;
+}
+
+
+/**
+ * Scrobbling
+ **/
+
+#player .slider.progress {
+	padding-top: 5px;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 8;
+}
+
+#player .slider.progress .track {
+	height: 4px;
+	background: none;
+}
+
+#player .slider.progress:hover .track {
+	height: 12px;
+	background: rgba(0,0,0,0.15);
+}
+
+.player .slider .track {
+	position: relative;
+	height: 2px;
+	background: rgba(255,255,255,0.3);
+}
+
+.player .slider .track .fill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	background: #08d58f;
+	max-width: 100%;
+}
+
+.player .slider  .track .fill.animate {
+	-webkit-transition: all 1s;
+	-moz-transition: all 1s;
+	-o-transition: all 1s;
+	transition: all 1s;
+}
+
+
+/**
+ * Full player
+ **/
+ 
+#full-player {
+	text-align: center;
+}
+ 
+#full-player .artwork {
+	width: 400px;
+	padding-bottom: 400px;
+	margin: 0 auto 20px;
+	position: relative;
+	background: #EEEEEE;
+	display: block;
+	border: 0;
+}
+
+#full-player .controls {
+	width: 400px;
+	margin: 0 auto;
+}
+ 
+#full-player .artwork .image {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-image: url('assets/svg/no-image.svg');
+	background-size: cover;
+	background-position: 50% 50%;
+}
+ 
+#full-player .track-info {
+	color: #000000;
+	font-weight: 600;
+}
+
+#full-player .track-info .artist a {
+	color: #000000;
+	display: inline-block;
+}
+
+#full-player .track-info .artist a:hover {
+	border-color: #000000;
+}
+
+#full-player .button {
+	color: #000000;
+	font-size: 20px;
+}
+
+#full-player .button.active {
+	color: #08d58f;
+}
+
+#full-player .button:hover {
+	opacity: 1;
+	background: transparent;
+}
+
+#full-player .track-timer {
+	float: right;
+	margin-top: 12px;
+}
+
+#full-player .track-timer .current {
+	opacity: 0.5;
+	padding-right: 2px;
+	display: inline-block;
+}
+
+#full-player .progress.slider {
+	margin: 35px 0;
+	position: relative;
+}
+
+#full-player .slider .track {
+	background: #DDDDDD;
+	height: 4px;
+}
+	
+#full-player .volume {
+	display: none;
+}
+
+
+
+
+

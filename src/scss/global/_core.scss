@@ -1,6 +1,5 @@
 /**
  * Core styles
- * 
  * Spotmop
  **/
 
@@ -227,7 +226,7 @@ body.dragging .body * {
 	color: #FFFFFF;
 	text-decoration: none;
 	font-size: 16px;
-	background-image: url('../svg/white-diamond.svg');
+	background-image: url('assets/svg/white-diamond.svg');
 	background-position: 110% 50%;
 	background-repeat: no-repeat;
 	border-left: 4px solid transparent;
@@ -660,7 +659,7 @@ input[type='submit'],
  **/
 
 .blur {
-	filter: url('../svg/blur.svg#blur');
+	filter: url('assets/svg/blur.svg#blur');
 	-webkit-filter: blur(10px);
 	filter: blur(10px);
 }
@@ -1186,7 +1185,7 @@ h1 .flag {
 	display: block;
 	width: 100%;
 	padding-bottom: 100%;
-	background-image: url('../svg/no-image.svg');
+	background-image: url('assets/svg/no-image.svg');
 	background-repeat: no-repeat;
 	background-position: 50% 50%;
 	background-size: cover;
@@ -1248,7 +1247,7 @@ h1 .flag {
 	bottom: 0;
 	left: 0;
 	background-color: #E9E9E9;
-	background-image: url('../svg/no-image.svg');
+	background-image: url('assets/svg/no-image.svg');
 	background-position: 50% 50%;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -1268,7 +1267,7 @@ h1 .flag {
 .image-container .image.placeholder,
 .thumbnail.placeholder {
 	background-color: #E9E9E9;
-	background-image: url('../svg/no-image.svg');
+	background-image: url('assets/svg/no-image.svg');
 	background-size: 80% 80%;
 	background-position: 50% 50%;
 }
@@ -1535,7 +1534,7 @@ body.dragging .tracklist .track.dropping {
 	width: 100%;
 	padding-bottom: 100%;
 	margin: 0;
-	background-image: url('../svg/no-image.svg');
+	background-image: url('assets/svg/no-image.svg');
 	background-color: #E9E9E9;
 	background-position: 50% 50%;
 	background-size: cover;
@@ -2372,7 +2371,7 @@ slider .item-container > .square-panel {
 	right: 0;
 	bottom: 0;
 	left: 0;
-	background-image: url('../svg/no-image.svg');
+	background-image: url('assets/svg/no-image.svg');
 	background-size: cover;
 	background-position: 50% 50%;
 }

@@ -1,0 +1,133 @@
+/**
+ * Context menu styles
+ * Provides right-click behavior to tracks and other interactive elements
+ * 
+ * Spotmop
+ **/
+
+
+
+/* ============================================================================ BASE STYLES ======== */
+/* ================================================================================================= */
+
+.contextmenu {
+	position: fixed;
+	display: none;
+	top: 0;
+	left: 0;
+	z-index: 10;
+	background: #222222;
+	color: #FFFFFF;
+	min-width: 110px;
+}
+
+.contextmenu .menu-item {
+	display: block;
+	padding: 8px 14px 8px 10px;
+	border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+}
+
+.contextmenu .menu-item.has-submenu i {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
+
+.contextmenu .menu-item:hover {
+	background: #333333;
+	cursor: pointer;
+}
+
+.contextmenu .menu-item:hover > .sub-menu{
+	display: block;
+}
+
+.contextmenu .sub-menu {
+    display: none;
+    position: absolute;
+    right: -150px;
+	background: #333333;
+    top: 0;
+    width: 150px;
+	max-height: 306px;
+	overflow-y: scroll;
+}
+
+.contextmenu.hard-right .sub-menu,
+.contextmenu.close-right .sub-menu {
+	right: auto;
+	left: -150px;
+}
+
+.contextmenu.hard-bottom .sub-menu,
+.contextmenu.close-bottom .sub-menu {
+	top: auto;
+	bottom: 0px;
+}
+
+.contextmenu .sub-menu > .menu-item:hover {
+    background: #414141;
+}
+
+
+
+/**
+ * Non-touch device only
+ **/
+
+.contextmenu.click .menu-item i {
+	font-size: 8px;
+	padding-right: 5px;
+	vertical-align: top;
+	margin-top: 5px;
+}
+
+
+
+/**
+ * Touch-device friendly
+ * This provides a sticky toolbar while tracks are selected
+ **/
+.contextmenu.touch  {
+	padding-left: 5px;
+	position: fixed;
+	top: auto;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 99;
+	background: #32b5f2;
+}
+
+.contextmenu.touch  .menu-item {
+	display: block;
+	float: left;
+	padding: 14px 0 12px;
+	width: 45px;
+	text-align: center;
+	border: 0;
+}
+
+.contextmenu.touch  .menu-item.cancel {
+	opacity: 0.5;
+	float: right;
+}
+
+.contextmenu.touch  .menu-item .icon {
+	font-size: 16px;
+}
+
+.contextmenu.touch  .menu-item .text {
+	font-size: 8px;
+	display: block;
+	text-transform: uppercase;
+	padding-top: 5px;
+}
+
+
+
+
+
+
+

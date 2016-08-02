@@ -1,9 +1,9 @@
 # If you've pulled Spotmop via GitHub, you can run this using any webserver
 # by navigating to localhost/src. Otherwise we'll redirect it to the Mopidy instance as per below
 
-RewriteEngine On
-RewriteCond %{REQUEST_URI} !^/src
-RewriteCond %{REQUEST_URI} !^/artwork
-RewriteCond %{REQUEST_URI} !^/mopidy_spotmop
-RewriteRule (.*) http://%{HTTP_HOST}:6680/spotmop/ [R=301,L]
+#RewriteEngine On
+#RewriteCond %{REQUEST_URI} !^/src
+#RewriteCond %{REQUEST_URI} !^/artwork
+#RewriteCond %{REQUEST_URI} !^/mopidy_spotmop
+#RewriteRule (.*) http://%{HTTP_HOST}:6680/spotmop/ [R=301,L]
 

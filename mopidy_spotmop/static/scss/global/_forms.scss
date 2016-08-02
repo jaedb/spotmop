@@ -1,0 +1,360 @@
+/**
+ * Core styles
+ * 
+ * Spotmop
+ **/
+ 
+.field {
+	clear: both;
+	padding-top: 20px;
+	text-align: top;
+}
+
+.field .label {
+	float: left;
+	width: 13%;
+	padding-top: 8px;
+	text-align: right;
+	padding-right: 2%;
+}
+
+.note {
+	display: block;
+	padding: 4px 0 5px 0;
+	font-family: "Roboto";
+	font-size: 12px;
+	font-weight: 300;
+	color: #777777;
+}
+	
+.field .input {
+	float: left;
+	width: 85%;
+}
+
+.field .input.readonly {
+	padding-top: 8.5px;
+}
+
+.field input {
+	padding: 10px 16px;
+	font-family: "Roboto",Helvetica,Arial,sans-serif;
+	font-size: 12px;
+	width: 50%;
+	background: #FFFFFF;
+}
+
+button,
+input[type="submit"]{
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif
+}
+
+.field input[readonly="true"]{
+	border-color: #999999;
+	background: #EEEEEE;
+}
+
+.field .autosave-success {
+	display: none;
+	color: #46D938;
+	padding: 8px;
+	font-size: 18px;
+}
+
+.field .connection-status .status,
+.field .authentication-token > * {
+	padding: 8px 8px 8px 0;
+	display: inline-block;
+}
+
+.field .connection-status.online .status,
+.field .connection-status.online .status.disconnected,
+.field .connection-status.offline .status.connected {
+	display: none;
+}
+
+.field .connection-status.online .status.connected,
+.field .connection-status.offline .status.disconnected {
+	display: block;
+}
+
+
+/**
+ * Switches buttons
+ **/
+
+.field.switch .input {
+	float: left;
+	width: auto;
+	padding-right: 15px;
+}
+
+.field.switch .label {
+	float: left;
+	text-align: left;
+	width: auto;
+}
+ 
+.switch-button {
+	cursor: pointer;
+}
+ 
+.switch-button > .switch-track {
+    margin-top: 6px;
+    width: 30px;
+    height: 12px;
+    padding: 3px;
+    border-radius: 20px;
+    position: relative;
+    display: inline-block;
+	border: 2px solid #000000;
+}
+
+.switch-button > .switch-track > .indicator {
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    background: #000000;
+    border-radius: 14px;
+}
+
+.switch-button.on > .switch-track > .indicator {
+    left: auto;
+    right: 3px;
+    background: #08d58f;
+}
+
+.switch-button-wrapper {
+	display: block;
+	padding: 4px 16px 0 0;
+}
+
+.switch-button-wrapper .label {
+	vertical-align: top;
+	display: inline-block;
+	margin: 7px 5px 0 10px
+}
+
+
+
+/**
+ * Options field
+ * Basically a glorified radio field
+ **/
+
+.field.radio .input label {
+	padding-top: 2px;
+	display: inline-block;
+}
+
+.field.radio input {
+	display: none;
+}
+
+.field.radio label .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+    border-radius: 50%;
+	border: 2px solid #000000;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.field.radio input:checked + .label:before {
+    background: #000000;
+    box-shadow: inset 0px 0px 0px 3px #f5f5f5;
+}
+
+
+
+/**
+ * Options via icons field
+ * Basically a glorified radio field, but using icons instead of radios
+ **/
+
+.field.icon-radio {
+	padding: 0;
+}
+
+.field.icon-radio input {
+	display: none;
+}
+
+.field.icon-radio label {
+	display: inline-block;
+}
+
+.field.icon-radio .label {
+	opacity: 0.3;
+	width: auto;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+}
+
+.field.icon-radio .label:hover {
+	opacity: 0.5;
+}
+
+.field.icon-radio input:checked + .label {
+	opacity: 1;
+}
+
+
+
+/**
+ * Dropdown field
+ * Javascript-driven version of a <select> field
+ **/
+ 
+.field.dropdown {
+	position: relative;
+	z-index: 9;
+}
+
+.utilities .field.dropdown {	
+	margin-top: -6px;
+}
+ 
+.field.dropdown.expanded {
+	background: #222222;
+	color: #FFFFFF;
+}
+ 
+.field.dropdown .label {
+	display: inline-block;
+	width: auto;
+	float: none;
+	padding: 0 6px 0 0;
+}
+ 
+.field.dropdown .option {
+	cursor: pointer;
+	padding: 10px 20px;
+	font-weight: 600;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+ 
+.field.dropdown .option i {
+	vertical-align: top;
+	margin: 2px 2px 0 -7px;
+}
+
+.field.dropdown .options {
+	position: absolute;
+	top: 100%;
+	min-width: 100%;
+	left: 0;
+	z-index: 9;
+	background: #333333;
+}
+ 
+.field.dropdown .options .option {
+	border-top: 1px solid #444444;
+}
+ 
+.field.dropdown .options .option:hover {
+	background: #222222;
+}
+
+
+
+
+
+/* ============================================================================== SEARCH FORMS ========= */
+/* ===================================================================================================== */
+
+.search-form .query {
+	font-family: "Archivo Narrow";
+	font-size: 16px;
+	font-weight: 100 !important;
+	border-bottom: 1px solid #FFFFFF;
+	width: 90%;
+	padding: 10px 10% 10px 0;
+	background: transparent;
+	color: #FFFFFF;
+}
+
+.search-form .query:focus {
+	border-color: #1cf4c4;
+}
+
+
+/**
+ * Sidebar form
+ **/
+
+.search-form {
+	margin: 20px 15px 30px;
+	position: relative;
+}
+
+.search-form .submit {
+	background: transparent;
+	color: #FFFFFF;
+	position: absolute;
+	top: 10px;
+	right: 0;
+	font-size: 16px;
+	cursor: pointer;
+}
+
+
+
+/**
+ * Results page
+ **/
+
+#body .search-form {
+	width: 100%;
+	margin: 0 0 20px 0;
+}
+
+#body .search-form input {
+	color: #333333;
+	border-color: #CCCCCC;
+}
+
+#body .search-form .submit {
+	color: #333333;
+}
+
+
+
+/**
+ * List filter
+ * Used on our Local Files view
+ **/
+ 
+.list-filter {
+	padding: 10px;
+	font-family: "Archivo Narrow",Helvetica,Arial,sans-serif;
+}
+ 
+.utilities .list-filter {
+	vertical-align: top;
+	margin: -5px 20px 0 0;
+	width: 200px;
+}
+ 
+.utilities .field {
+	display: inline-block;
+	padding-top: 0;
+}
+
+
