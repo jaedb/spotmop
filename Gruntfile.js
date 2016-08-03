@@ -18,11 +18,19 @@ module.exports = function(grunt) {
 						'src/vendor/jquery.min.js',
 						'src/vendor/angular.js',
 						'src/vendor/*.js',
-						'src/app/app.js'
+						'src/**/*.js'
 					],
                 dest: 'mopidy_spotmop/static/app.js'
             }
         },
+		ngAnnotate: {
+			options: {},
+			js: {
+				files: {
+					'mopidy_spotmop/static/app-annotated.js': ['mopidy_spotmop/static/app.js']
+				}
+			},
+		},
         uglify: {
             options: {
                 banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n',
@@ -32,7 +40,7 @@ module.exports = function(grunt) {
 				}
             },
             build: {
-                src: 'mopidy_spotmop/static/app.js',
+                src: 'mopidy_spotmop/static/app-annotated.js',
                 dest: 'mopidy_spotmop/static/app.min.js'
             }
         },
@@ -67,7 +75,7 @@ module.exports = function(grunt) {
 		watch: {
 			scripts: {
 				files: ['src/app/**/*.js', 'src/**/*.html'],
-				tasks: ['copy','concat','uglify','processhtml']
+				tasks: ['copy','ngAnnotate','concat','uglify','processhtml']
 			},
 			css: {
 				files: ['src/scss/**/*.scss', 'src/**/*.html'],
@@ -83,9 +91,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-ng-annotate');
 	grunt.loadNpmTasks('grunt-processhtml');
 
     // Default task(s).
-    grunt.registerTask('default', ['copy', 'concat', 'uglify', 'sass', 'cssmin', 'processhtml', 'watch']);
+    grunt.registerTask('default', ['copy', 'concat', 'ngAnnotate', 'uglify', 'sass', 'cssmin', 'processhtml', 'watch']);
 
 };
