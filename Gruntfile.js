@@ -65,7 +65,9 @@ module.exports = function(grunt) {
             }
         },
         processhtml: {
-			options: {},
+			options: {
+				includeBase:  true
+			},
             build: {
                 files: {
                     'mopidy_spotmop/static/index.html': 'mopidy_spotmop/static/testing.html'
