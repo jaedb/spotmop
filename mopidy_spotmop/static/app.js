@@ -36641,6 +36641,12 @@ angular.module('spotmop.services.pusher', [
                 var connectionid = Math.random().toString(36).substr(2, 9);
                 SettingsService.setSetting('pusher.connectionid', connectionid);
 				
+				var clientid = SettingsService.getSetting('pusher.clientid');
+				if( !clientid ){
+					clientid = Math.random().toString(36).substr(2, 9);
+					SettingsService.setSetting('pusher.clientid', clientid);
+				}
+				
 				var username = SettingsService.getSetting('pusher.username');
 				if( !username ){
 					username = Math.random().toString(36).substr(2, 9);
@@ -36648,7 +36654,7 @@ angular.module('spotmop.services.pusher', [
 				}
                 username = encodeURI(username);
                 
-				var pusher = new WebSocket(host, username+'_'+connectionid );
+				var pusher = new WebSocket(host, clientid+'_'+connectionid+'_'+username );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
@@ -36723,13 +36729,6 @@ angular.module('spotmop.services.pusher', [
 			
 			// make sure we have a recipients array, even if empty
 			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
-            
-            // set the origin of this notification as the current client/connection	
-			data.origin = {
-				connectionid: SettingsService.getSetting('pusher.connectionid'),
-				ip: SettingsService.getSetting('pusher.ip'),
-				username: SettingsService.getSetting('pusher.username')
-			};
             
             // send off the notification to the websocket
 			service.pusher.send( JSON.stringify(data) );
@@ -38459,6 +38458,17 @@ angular.module('spotmop.settings', [])
 		location.reload();
 	};
 	
+	/**
+	 * Request a sync with another connection
+	 **/
+	$scope.requestSync = function( connection ){
+		console.log( connection.connectionid );
+		PusherService.send({
+			type: 'sync_request',
+			recipients: [ connection.connectionid ]
+		});
+	};
+	
 	SettingsService.getVersion()
 		.then( function(response){
 			if( response.status != 'error' ){
@@ -38528,7 +38538,7 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.id')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
 				PusherService.send( JSON.parse($scope.pusherTest.payload) );
 				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };

@@ -26,16 +26,18 @@ def digest_protocol( protocol ):
     
     # if we've been given a valid array
     try:
-      username = elements[0]
+      clientid = elements[0]
       connectionid = elements[1]
+      username = elements[2]
       
     # invalid, so just create a default connection, and auto-generate an ID
     except:
+      clientid = str(uuid.uuid4().hex)
+      connectionid = str(uuid.uuid4().hex)
       username = str(uuid.uuid4().hex)
-      connectionid = username
     
     # construct our protocol object, and return
-    return {"protocol": protocol, "username": username, "connectionid": connectionid}
+    return {"protocol": protocol, "clientid": clientid, "connectionid": connectionid, "username": username,}
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -52,15 +54,16 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     # decode our connection protocol value (which is a payload of id/name from javascript)
     protocolElements = digest_protocol(self.request.headers.get('Sec-Websocket-Protocol', '[]'))        
     connectionid = protocolElements['connectionid']
+    clientid = protocolElements['clientid']
     self.connectionid = connectionid
     username = protocolElements['username']
     created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
     
     # construct our client object, and add to our list of connections
-    client = { "connectionid": connectionid, "username": username, "ip": self.request.remote_ip, "created": created, "version": self.version }
+    client = { "clientid": clientid, "connectionid": connectionid, "username": username, "ip": self.request.remote_ip, "created": created, "version": self.version }
     connections[connectionid] = { 'client': client, 'connection': self }
     
-    logger.debug( 'New Spotmop Pusher connection: '+ connectionid +'  '+ username )
+    logger.debug( 'New Spotmop Pusher connection: '+ connectionid +' ('+ clientid +'/'+ username +')' )
     
     # notify all other clients that a new user has connected
     send_message( 'client_connected', client )
@@ -73,22 +76,24 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   def on_message(self, message):
     messageJson = json_decode(message)
     
+    # construct the origin client info
+    messageJson['origin'] = { 'connectionid' : self.connectionid, 'clientid': connections[self.connectionid]['client']['clientid'], 'ip': self.request.remote_ip, 'username': connections[self.connectionid]['client']['username'] }
+    
     if messageJson['type'] == 'client_updated':
         if messageJson['origin']['connectionid'] in connections:            
             connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
             logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
     
-    
     # recipients array has items, so only send to specific clients
     if messageJson['recipients']:    
       for connectionid in messageJson['recipients']:
         connectionid = connectionid.encode("utf-8")
-        connections[connectionid]['connection'].write_message(message)
+        connections[connectionid]['connection'].write_message(messageJson)
     
     # empty, so send to all clients
     else:    
       for connection in connections.itervalues():
-        connection['connection'].write_message(message)
+        connection['connection'].write_message(messageJson)
         
     logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
   

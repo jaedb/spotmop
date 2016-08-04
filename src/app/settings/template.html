@@ -214,6 +214,9 @@
                             </span>
                             <span class="min-width w100 ip" ng-bind="connection.ip"></span>
                             <span class="min-width w100 connectionid" ng-bind="connection.connectionid"></span>
+                            <span class="min-width w100 connectionid">
+                                <a ng-click="requestSync( connection )">Pair</a>
+                            </span>
                         </div>
                     </div>
                     <div class="clear-both"></div>

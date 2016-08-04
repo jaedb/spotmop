@@ -6,7 +6,7 @@ module.exports = function(grunt) {
         copy: {
             build: {
                 cwd: 'src',
-                src: ['**/*', '!scss', '!**/*.js', '!vendor'],
+                src: ['**/*', '!scss'],
                 dest: 'mopidy_spotmop/static',
                 expand: true
             },
