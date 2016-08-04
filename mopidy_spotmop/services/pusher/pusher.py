@@ -88,8 +88,7 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     # empty, so send to all clients
     else:    
       for connection in connections.itervalues():
-        if connection['client']['connectionid'] != self.connectionid:
-          connection['connection'].write_message(message)
+        connection['connection'].write_message(message)
         
     logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
   
