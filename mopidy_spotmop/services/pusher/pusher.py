@@ -26,16 +26,16 @@ def digest_protocol( protocol ):
     
     # if we've been given a valid array
     try:
-      id = elements[0]
-      name = elements[1]
+      username = elements[0]
+      connectionid = elements[1]
       
     # invalid, so just create a default connection, and auto-generate an ID
     except:
-      id = str(uuid.uuid4().hex)
-      name = "User"
+      username = str(uuid.uuid4().hex)
+      connectionid = username
     
     # construct our protocol object, and return
-    return {"protocol": protocol, "id": id, "name": name}
+    return {"protocol": protocol, "username": username, "connectionid": connectionid}
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -51,16 +51,16 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     
     # decode our connection protocol value (which is a payload of id/name from javascript)
     protocolElements = digest_protocol(self.request.headers.get('Sec-Websocket-Protocol', '[]'))        
-    id = protocolElements['id']
-    self.id = id
-    name = protocolElements['name']
+    connectionid = protocolElements['connectionid']
+    self.connectionid = connectionid
+    username = protocolElements['username']
     created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
     
     # construct our client object, and add to our list of connections
-    client = { "id": id, "name": name, "ip": self.request.remote_ip, "created": created, "version": self.version }
-    connections[id] = { 'client': client, 'connection': self }
+    client = { "connectionid": connectionid, "username": username, "ip": self.request.remote_ip, "created": created, "version": self.version }
+    connections[connectionid] = { 'client': client, 'connection': self }
     
-    logger.debug( 'New Spotmop Pusher connection: '+ id +'  '+ name )
+    logger.debug( 'New Spotmop Pusher connection: '+ connectionid +'  '+ username )
     
     # notify all other clients that a new user has connected
     send_message( 'client_connected', client )
@@ -74,34 +74,34 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     messageJson = json_decode(message)
     
     if messageJson['type'] == 'client_updated':
-        if messageJson['origin']['id'] in connections:            
-            connections[messageJson['origin']['id']]['client']['name'] = messageJson['data']['newVal']
-            logger.debug( 'Spotmop Pusher connection '+ self.id +' updated' )
+        if messageJson['origin']['connectionid'] in connections:            
+            connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
+            logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
     
     
     # recipients array has items, so only send to specific clients
     if messageJson['recipients']:    
-      for id in messageJson['recipients']:
-        id = id.encode("utf-8")
-        connections[id]['connection'].write_message(message)
+      for connectionid in messageJson['recipients']:
+        connectionid = connectionid.encode("utf-8")
+        connections[connectionid]['connection'].write_message(message)
     
     # empty, so send to all clients
     else:    
       for connection in connections.itervalues():
-        if connection['client']['id'] != self.id:
+        if connection['client']['connectionid'] != self.connectionid:
           connection['connection'].write_message(message)
         
-    logger.debug( 'Spotmop Pusher message received from '+ self.id )
+    logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
   
   # connection closed
   def on_close(self):
-    if self.id in connections:
+    if self.connectionid in connections:
         
-        clientRemoved = connections[self.id]['client']
-        logger.debug( 'Spotmop Pusher connection to '+ self.id +' closed' )
+        clientRemoved = connections[self.connectionid]['client']
+        logger.debug( 'Spotmop Pusher connection to '+ self.connectionid +' closed' )
         
         # now actually remove it
-        del connections[self.id]
+        del connections[self.connectionid]
         
         send_message( 'client_disconnected', clientRemoved )
   

@@ -30119,23 +30119,6 @@ angular.module('spotmop', [
 			SettingsService.setSetting('mopidy.consume',isConsume);
 		});
 	});
-	
-	
-	/**
-	 * Pusher integration
-	 **/
-     
-	PusherService.start();
-	
-    $rootScope.$on('spotmop:pusher:online', function(event, data){
-        
-        // if we have no client name, then initiate initial setup
-		var client = SettingsService.getSetting('pusher.name');
-        if( !client || client == '' ){
-            DialogService.create('initialsetup', $scope);
-			Analytics.trackEvent('Core', 'Initial setup');
-		}
-    });
     
     
 
@@ -30145,8 +30128,12 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
+	PusherService.start();
 	MopidyService.start();
 	SpotifyService.start();
+	
+	// set default settings 
+	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
 	
 	/**
@@ -36651,12 +36638,17 @@ angular.module('spotmop.services.pusher', [
             try{
 				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
                 
-                var id = Math.random().toString(36).substr(2, 9);
-                SettingsService.setSetting('pusher.id', id);
-                var name = "User";
-                if( SettingsService.getSetting('pusher.name') ) name = encodeURI(SettingsService.getSetting('pusher.name'));
+                var connectionid = Math.random().toString(36).substr(2, 9);
+                SettingsService.setSetting('pusher.connectionid', connectionid);
+				
+				var username = SettingsService.getSetting('pusher.username');
+				if( !username ){
+					username = Math.random().toString(36).substr(2, 9);
+					SettingsService.setSetting('pusher.username', username);
+				}
+                username = encodeURI(username);
                 
-				var pusher = new WebSocket(host, id+'_'+name );
+				var pusher = new WebSocket(host, username+'_'+connectionid );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
@@ -36676,8 +36668,8 @@ angular.module('spotmop.services.pusher', [
 						case 'client_connected':
 						
 							// if the new connection is mine
-							if( message.data.id == SettingsService.getSetting('pusher.id') ){
-								console.info('Pusher connection '+message.data.id+' accepted');
+							if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
+								console.info('Pusher connection '+message.data.connectionid+' accepted');
 								
 								// detect if the core has been updated
 								if( message.data.version != SettingsService.getSetting('version.installed') ){
@@ -36691,17 +36683,13 @@ angular.module('spotmop.services.pusher', [
 							break;
 						
 						case 'notification':
-							
-							// respect notifications disabled setting
-							if( !SettingsService.getSetting('pusher.disabled') ){
-                                var title = '';
-                                var body = '';
-                                var icon = '';
-                                if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
-                                if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
-                                if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
-								NotifyService.browserNotify( title, body, icon );
-							}
+							var title = '';
+							var body = '';
+							var icon = '';
+							if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
+							if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
+							if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
+							NotifyService.browserNotify( title, body, icon );
 							break;
 						
 						case 'enforced_refresh':
@@ -36736,13 +36724,11 @@ angular.module('spotmop.services.pusher', [
 			// make sure we have a recipients array, even if empty
 			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
             
-            // set the origin of this notification as the current client/connection
-			var name = SettingsService.getSetting('pusher.name');
-			if( !name ) name = 'User';			
+            // set the origin of this notification as the current client/connection	
 			data.origin = {
+				connectionid: SettingsService.getSetting('pusher.connectionid'),
 				ip: SettingsService.getSetting('pusher.ip'),
-				id: SettingsService.getSetting('pusher.id'),
-				name: name
+				username: SettingsService.getSetting('pusher.username')
 			};
             
             // send off the notification to the websocket

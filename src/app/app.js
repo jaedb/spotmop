@@ -349,23 +349,6 @@ angular.module('spotmop', [
 			SettingsService.setSetting('mopidy.consume',isConsume);
 		});
 	});
-	
-	
-	/**
-	 * Pusher integration
-	 **/
-     
-	PusherService.start();
-	
-    $rootScope.$on('spotmop:pusher:online', function(event, data){
-        
-        // if we have no client name, then initiate initial setup
-		var client = SettingsService.getSetting('pusher.name');
-        if( !client || client == '' ){
-            DialogService.create('initialsetup', $scope);
-			Analytics.trackEvent('Core', 'Initial setup');
-		}
-    });
     
     
 
@@ -375,8 +358,12 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
+	PusherService.start();
 	MopidyService.start();
 	SpotifyService.start();
+	
+	// set default settings 
+	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
 	
 	/**

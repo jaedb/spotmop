@@ -33,7 +33,7 @@
 				<div class="field">
 					<div class="label">Username</div>
 					<div class="input">
-						<input type="text" name="pusher.name" placeholder="New user" class="autosave" ng-model="storage.pusher.name" ng-blur="savePusherName( storage.pusher.name )" />
+						<input type="text" name="pusher.username" placeholder="Username" class="autosave" ng-model="storage.pusher.username" ng-blur="savePusherName( storage.pusher.username )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -43,13 +43,6 @@
 					<div class="input">
 						<input type="text" name="pusher.port" placeholder="6681" class="autosave" ng-model="storage.pusher.port" ng-blur="saveField( $event )" />
 						<i class="fa fa-check autosave-success"></i>
-					</div>
-				</div>
-
-				<div class="field">
-					<div class="label">Disable browser notifications</div>
-					<div class="input">
-						<switch class="switch-button" name="pusher.disabled" value="storage.pusher.disabled"></switch>
 					</div>
 				</div>
 
@@ -216,11 +209,11 @@
                     <div class="input readonly">
                         <div ng-repeat="connection in pusherConnections">
                             <span class="min-width w150 name">
-                                <span ng-bind="connection.name | urlDecode"></span>
-                                <span ng-if="connection.id == storage.pusher.id">(you)</span>
+                                <span ng-bind="connection.username | urlDecode"></span>
+                                <span ng-if="connection.connectionid == storage.pusher.connectionid">(you)</span>
                             </span>
                             <span class="min-width w100 ip" ng-bind="connection.ip"></span>
-                            <span class="min-width w100 id" ng-bind="connection.id"></span>
+                            <span class="min-width w100 connectionid" ng-bind="connection.connectionid"></span>
                         </div>
                     </div>
                     <div class="clear-both"></div>

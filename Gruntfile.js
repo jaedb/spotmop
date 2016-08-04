@@ -35,6 +35,7 @@ module.exports = function(grunt) {
             options: {
                 banner: '/**\n * <%= pkg.name %>\n * Built <%= grunt.template.today("yyyy-mm-dd") %>\n **/\n\n',
 				ASCIIOnly: 'true',
+				sourceMap: true,
 				compress: {
 					drop_console: true
 				}
