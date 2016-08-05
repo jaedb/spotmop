@@ -215,7 +215,8 @@
                             <span class="min-width w100 ip" ng-bind="connection.ip"></span>
                             <span class="min-width w100 connectionid" ng-bind="connection.connectionid"></span>
                             <span class="min-width w100 connectionid">
-                                <a ng-click="requestSync( connection )">Pair</a>
+                                <a ng-click="requestPairing( connection )" ng-if="storage.pusher.pairedclients.indexOf(connection.clientid) <= -1">Pair</a>
+                                <a ng-click="revokePairing( connection )" ng-if="storage.pusher.pairedclients.indexOf(connection.clientid) > -1">Unpair</a>
                             </span>
                         </div>
                     </div>

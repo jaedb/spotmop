@@ -75,10 +75,23 @@ angular.module('spotmop.settings', [])
 	/**
 	 * Request a sync with another connection
 	 **/
-	$scope.requestSync = function( connection ){
-		console.log( connection.connectionid );
+	$scope.requestPairing = function( connection ){
 		PusherService.send({
-			type: 'sync_request',
+			type: 'pairing_requested',
+			recipients: [ connection.connectionid ]
+		});
+	};
+	$scope.revokePairing = function( connection ){
+	
+		// remove the clientid from our array of paired clients
+		var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
+		if( !clientsToSync ) clientsToSync = [];
+		clientsToSync.splice( clientsToSync.indexOf( connection.clientid ), 1 );
+		SettingsService.setSetting('pusher.pairedclients',clientsToSync);
+		
+		// and get our paired client to do the same
+		PusherService.send({
+			type: 'pairing_revoked',
 			recipients: [ connection.connectionid ]
 		});
 	};

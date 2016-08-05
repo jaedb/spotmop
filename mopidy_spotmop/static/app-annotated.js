@@ -30135,6 +30135,24 @@ angular.module('spotmop', [
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
+	// when a client requests sync pairing
+	$rootScope.$on('spotmop:pusher:pairing_requested', function(event, message){
+		if( confirm( message.origin.username +' wants to pair with you') == true ){
+		
+			// add the clientid to our array of paired clients
+			var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
+			if( !clientsToSync ) clientsToSync = [];
+			clientsToSync.push( message.origin.clientid );
+			SettingsService.setSetting('pusher.pairedclients',clientsToSync);
+			
+			// and notify the initiator that it's been confirmed
+			PusherService.send({
+				type: 'pairing_request_accepted',
+				recipients: [ message.origin.connectionid ],
+			});
+		}
+	});
+	
 	
 	/**
 	 * Keyboard shortcuts
@@ -36621,6 +36639,10 @@ angular.module('spotmop.services.pusher', [
 	
 	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
+	$rootScope.$on('spotmop:pusher:client_connected', function(event, data){
+	
+	});
+    
 	var service = {
 		pusher: {},
 		
@@ -36666,8 +36688,8 @@ angular.module('spotmop.services.pusher', [
 					var message = JSON.parse(response.data);
 					console.log(message);
                     
-                    $rootScope.$broadcast('spotmop:pusher:'+message.type, message.data);
-                    
+					$rootScope.$broadcast('spotmop:pusher:'+message.type, message);
+					
 					switch( message.type ){
 					
 						// initial connection status message, just parse it through quietly
@@ -36703,6 +36725,26 @@ angular.module('spotmop.services.pusher', [
 							NotifyService.notify('System updating...');      
 							$cacheFactory.get('$http').removeAll();
 							$templateCache.removeAll();
+							break;
+							
+						case 'pairing_request_accepted':
+							NotifyService.notify('Pairing request with <em>'+message.origin.username+'</em> accepted');
+							
+							// add the clientid to our array of paired clients
+							var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
+							if( !clientsToSync ) clientsToSync = [];
+							clientsToSync.push( message.origin.clientid );
+							SettingsService.setSetting('pusher.pairedclients',clientsToSync);
+							break;
+							
+						case 'pairing_revoked':
+							NotifyService.notify('Pairing with <em>'+message.origin.username+'</em> has been revoked');
+							
+							// remove the clientid from our array of paired clients
+							var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
+							if( !clientsToSync ) clientsToSync = [];
+							clientsToSync.splice( clientsToSync.indexOf( message.origin.clientid ), 1 );
+							SettingsService.setSetting('pusher.pairedclients',clientsToSync);
 							break;
 					}
 				}
@@ -38461,10 +38503,15 @@ angular.module('spotmop.settings', [])
 	/**
 	 * Request a sync with another connection
 	 **/
-	$scope.requestSync = function( connection ){
-		console.log( connection.connectionid );
+	$scope.requestPairing = function( connection ){
 		PusherService.send({
-			type: 'sync_request',
+			type: 'pairing_requested',
+			recipients: [ connection.connectionid ]
+		});
+	};
+	$scope.revokePairing = function( connection ){
+		PusherService.send({
+			type: 'pairing_revoked',
 			recipients: [ connection.connectionid ]
 		});
 	};
@@ -38538,7 +38585,7 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.id')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
 				PusherService.send( JSON.parse($scope.pusherTest.payload) );
 				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };

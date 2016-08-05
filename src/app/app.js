@@ -365,6 +365,24 @@ angular.module('spotmop', [
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
+	// when a client requests sync pairing
+	$rootScope.$on('spotmop:pusher:pairing_requested', function(event, message){
+		if( confirm( message.origin.username +' wants to pair with you') == true ){
+		
+			// add the clientid to our array of paired clients
+			var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
+			if( !clientsToSync ) clientsToSync = [];
+			clientsToSync.push( message.origin.clientid );
+			SettingsService.setSetting('pusher.pairedclients',clientsToSync);
+			
+			// and notify the initiator that it's been confirmed
+			PusherService.send({
+				type: 'pairing_request_accepted',
+				recipients: [ message.origin.connectionid ],
+			});
+		}
+	});
+	
 	
 	/**
 	 * Keyboard shortcuts
