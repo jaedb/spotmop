@@ -30137,11 +30137,27 @@ angular.module('spotmop', [
 	
 	// when a client requests sync pairing
 	$rootScope.$on('spotmop:pusher:config_push', function(event, message){
-		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this?') == true ){
-            if( message.data.spotify ) SettingsService.setSetting('spotify', message.data.spotify);
-            if( message.data.spotifyuser ) SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
-            if( message.data.mopidy ) SettingsService.setSetting('mopidy', message.data.mopidy);
-            location.reload();
+        console.log( message );
+		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this? This will overwrite your current Spotify and Mopidy configuration. ') == true ){
+            
+            if( message.data.spotify === null ) message.data.spotify = {};
+            SettingsService.setSetting('spotify', message.data.spotify);
+            
+            if( message.data.spotifyuser === null ) message.data.spotifyuser = {};
+            SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
+            
+            if( message.data.mopidy === null ) message.data.mopidy = {};
+            SettingsService.setSetting('mopidy', message.data.mopidy);
+            
+            SpotifyService.start();
+            
+            PusherService.send({
+                type: 'notification_soft',
+                recipients: [ message.origin.connectionid ]
+                data: {
+                    body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'
+                }
+            });
 		}
 	});
 	

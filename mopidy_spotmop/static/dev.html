@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	
+	<title>Spotmop</title>	
+    
+    <meta charset="utf-8" />
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scaleable=no" name="viewport" />
+	<meta name="mobile-web-app-capable" content="yes" >
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="theme-color" content="#222222" />
+    
+    <base href="#/" />
+	
+	<script type="text/javascript" src="//www.google-analytics.com/analytics.js"></script>
+    
+    <!-- build:js app.min.js -->
+	<script type="text/javascript" src="vendor/jquery.min.js"></script>	
+	<script type="text/javascript" src="vendor/angular.js"></script>
+	<script type="text/javascript" src="vendor/angular-ui-router.min.js"></script>
+	<script type="text/javascript" src="vendor/angular-resource.min.js"></script>
+	<script type="text/javascript" src="vendor/angular-storage.min.js"></script>
+	<script type="text/javascript" src="vendor/angular-touch.js"></script>
+	<script type="text/javascript" src="vendor/mopidy.min.js"></script>
+	<script type="text/javascript" src="vendor/clipboard.min.js"></script>
+	<script type="text/javascript" src="vendor/ngclipboard.js"></script>
+	<script type="text/javascript" src="vendor/background-check.min.js"></script>
+	<script type="text/javascript" src="vendor/loading-bar.js"></script>
+	<script type="text/javascript" src="vendor/angular-google-analytics.min.js"></script>
+	
+	<script type="text/javascript" src="app/app.js"></script>
+	<script type="text/javascript" src="app/services/notify/service.js"></script>
+	<script type="text/javascript" src="app/services/mopidy/service.js"></script>
+	<script type="text/javascript" src="app/services/spotify/service.js"></script>
+	<script type="text/javascript" src="app/services/lastfm/service.js"></script>
+	<script type="text/javascript" src="app/services/dialog/service.js"></script>
+	<script type="text/javascript" src="app/services/pusher/service.js"></script>
+	
+	<script type="text/javascript" src="app/common/directives.js"></script>
+	<script type="text/javascript" src="app/common/contextmenu/directive.js"></script>
+	<script type="text/javascript" src="app/common/tracklist/track.directive.js"></script>
+	<script type="text/javascript" src="app/common/tracklist/tracklist.directive.js"></script>
+	
+	<script type="text/javascript" src="app/discover/controller.js"></script>	
+	
+	<script type="text/javascript" src="app/browse/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/playlist/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/album/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/artist/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/user/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/featured/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/new/controller.js"></script>	
+	<script type="text/javascript" src="app/browse/genre/controller.js"></script>	
+	
+	<script type="text/javascript" src="app/queue/controller.js"></script>	
+	<script type="text/javascript" src="app/library/controller.js"></script>
+	<script type="text/javascript" src="app/local/controller.js"></script>
+	<script type="text/javascript" src="app/player/controller.js"></script>	
+	<script type="text/javascript" src="app/player/service.js"></script>	
+	<script type="text/javascript" src="app/search/controller.js"></script>	
+	<script type="text/javascript" src="app/settings/controller.js"></script>	
+	<script type="text/javascript" src="app/settings/service.js"></script>	
+    <!-- /build -->
+    
+    <!-- build:css app.min.css -->
+	<link rel="stylesheet" type="text/css" href="app.css" />
+    <!-- /build -->
+	
+	<link rel="shortcut icon" type="image/ico" href="assets/favicon.ico" />
+	<link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico" />
+	<link rel="shortcut-icon" href="assets/favicon.ico" />
+	
+</head>
+<body>
+
+	<div id="app" ng-app="spotmop" ng-controller="ApplicationController" ng-class="{ smallScreen: smallScreen(), mediumScreen: mediumScreen(), touchDevice: isTouchMode() }" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()">
+	
+		<div id="notifications"></div>
+		
+		<div id="sidebar" class="animate" ng-swipe-right="showMenu()" ng-swipe-left="hideMenu()" >
+			<div class="background-image" ng-if="!mediumScreen() && state().currentTlTrack.track.images.medium">
+				<preloadedimage watch="true" class="image blur" url="{{ state().currentTlTrack.track.images.medium }}"></preloadedimage>
+			</div>
+			<div class="inner">
+				<div class="search-form mobile-hide">
+					<form ng-submit="searchSubmit( query )">
+						<input type="text" name="query" placeholder="Search" class="query" ng-model="query" />
+						<button class="submit" type="submit">
+							<i class="fa fa-search"></i>
+						</button>
+					</form>
+				</div>
+				<ng-include src="'app/common/mainmenu.template.html'"></ng-include>	
+			</div>            
+		</div>
+            
+        <div id="dropzones" class="animate fadereveal">
+            <div class="dropzone queue droppable animate" dropaccept='["track","album","localtrack","localalbum","playlist"]' droptype="queue">
+                <div class="liner default-content">
+                    <i class="si play white doublesize"></i>
+                    <div class="label">Add to queue</div>
+                </div>
+                <div class="liner hover-content animate fadereveal">
+                    <div class="dropzone add-to-queue droppable" dropaccept='["track","album","localtrack","localalbum","playlist"]' droptype="queue">
+                        <i class="si play doublesize white"></i>
+                        <div class="label">Add to queue</div>
+                    </div>
+                    <div class="dropzone add-to-queue-next droppable" dropaccept='["track","album","localtrack","localalbum","playlist"]' droptype="queuenext">
+                        <div class="label">... and play next</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dropzone library droppable animate" dropaccept='["track","tltrack","album","artist","playlist"]' droptype="library">
+                <div class="liner">
+                    <i class="si music white doublesize"></i>
+                    <div class="label">Add to library</div>
+                </div>
+            </div>
+            <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist" ng-if="spotifyAuthorized">
+                <div class="liner default-content">
+                    <i class="si playlist white doublesize"></i>
+                    <div class="label">Add to playlist</div>
+                </div>
+                <div class="liner hover-content animate fadereveal">
+                    <a ng-repeat="playlist in playlistsMenu" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
+                        <span ng-bind="playlist.name"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+		
+		<ng-include src="'app/player/template.html'" ng-controller="PlayerController"></ng-include>	
+
+		<div id="body" class="body animate">
+			<div ui-view></div>
+		</div>
+		
+		<contextmenu></contextmenu>
+		<div class="drag-tracer"></div>
+		
+	</div>
+
+	<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		ga('create', 'UA-64701652-3', 'auto');
+		ga('send', 'pageview');
+	</script>
+	
+</body>
+</html>

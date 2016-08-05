@@ -97,32 +97,16 @@ angular.module('spotmop.services.pusher', [
 							if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
 							NotifyService.browserNotify( title, body, icon );
 							break;
+							
+						case 'soft_notification':
+							NotifyService.notify( message.data.body );
+							break;
 						
 						case 'enforced_refresh':
 							location.reload();
 							NotifyService.notify('System updating...');      
 							$cacheFactory.get('$http').removeAll();
 							$templateCache.removeAll();
-							break;
-							
-						case 'pairing_request_accepted':
-							NotifyService.notify('Pairing request with <em>'+message.origin.username+'</em> accepted');
-							
-							// add the clientid to our array of paired clients
-							var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
-							if( !clientsToSync ) clientsToSync = [];
-							clientsToSync.push( message.origin.clientid );
-							SettingsService.setSetting('pusher.pairedclients',clientsToSync);
-							break;
-							
-						case 'pairing_revoked':
-							NotifyService.notify('Pairing with <em>'+message.origin.username+'</em> has been revoked');
-							
-							// remove the clientid from our array of paired clients
-							var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
-							if( !clientsToSync ) clientsToSync = [];
-							clientsToSync.splice( clientsToSync.indexOf( message.origin.clientid ), 1 );
-							SettingsService.setSetting('pusher.pairedclients',clientsToSync);
 							break;
 					}
 				}

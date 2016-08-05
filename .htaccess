@@ -2,5 +2,10 @@
 # by navigating to localhost/test. Otherwise we'll redirect it to the Mopidy instance as per below
 
 RewriteEngine On
+
+# rewrite all root-level requests to the static folder
 RewriteCond %{REQUEST_URI} !/mopidy_spotmop/ [NC]
 RewriteRule (.*) /mopidy_spotmop/static/$1 [NC,L]
+
+# redirect our old /src/ dev link to the new dev.html file
+RewriteRule /src/ /dev.html? [L,R=301]

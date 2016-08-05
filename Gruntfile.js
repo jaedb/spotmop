@@ -71,7 +71,7 @@ module.exports = function(grunt) {
 			},
             build: {
                 files: {
-                    'mopidy_spotmop/static/index.html': 'mopidy_spotmop/static/testing.html'
+                    'mopidy_spotmop/static/index.html': 'mopidy_spotmop/static/dev.html'
                 }
             }
         },

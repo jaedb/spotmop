@@ -212,10 +212,12 @@
                                 <span ng-bind="connection.username | urlDecode"></span>
                                 <span ng-if="connection.connectionid == storage.pusher.connectionid">(you)</span>
                             </span>
-                            <span class="min-width w100 ip" ng-bind="connection.ip"></span>
-                            <span class="min-width w100 connectionid" ng-bind="connection.connectionid"></span>
+                            <span class="min-width w150">
+                                <span ng-bind="connection.ip"></span>
+                                <span class="grey-text">(<span ng-bind="connection.connectionid"></span>)</span>
+                            </span>
                             <span class="min-width w100" ng-if="connection.connectionid != storage.pusher.connectionid">
-                                <a ng-click="pushConfig( connection )">Push config</a>
+                                <a ng-click="pushConfig( connection )"><i class="fa fa-sign-in"></i>&nbsp; Push config</a>
                             </span>
                         </div>
                     </div>
