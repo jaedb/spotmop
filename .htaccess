@@ -2,5 +2,5 @@
 # by navigating to localhost/test. Otherwise we'll redirect it to the Mopidy instance as per below
 
 RewriteEngine On
-RewriteRule ^testing$ /mopidy_spotmop/static/testing.html [NC,L]
-#RewriteRule (.*) http://%{HTTP_HOST}:6680/spotmop/ [R=301,L]
+RewriteCond %{REQUEST_URI} !/mopidy_spotmop/ [NC]
+RewriteRule (.*) /mopidy_spotmop/static/$1 [NC,L]

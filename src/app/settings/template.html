@@ -214,9 +214,8 @@
                             </span>
                             <span class="min-width w100 ip" ng-bind="connection.ip"></span>
                             <span class="min-width w100 connectionid" ng-bind="connection.connectionid"></span>
-                            <span class="min-width w100 connectionid">
-                                <a ng-click="requestPairing( connection )" ng-if="storage.pusher.pairedclients.indexOf(connection.clientid) <= -1">Pair</a>
-                                <a ng-click="revokePairing( connection )" ng-if="storage.pusher.pairedclients.indexOf(connection.clientid) > -1">Unpair</a>
+                            <span class="min-width w100" ng-if="connection.connectionid != storage.pusher.connectionid">
+                                <a ng-click="pushConfig( connection )">Push config</a>
                             </span>
                         </div>
                     </div>
