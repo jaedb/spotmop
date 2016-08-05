@@ -29841,8 +29841,8 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){	
-
+.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){
+    
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
 		
@@ -30136,20 +30136,12 @@ angular.module('spotmop', [
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
 	// when a client requests sync pairing
-	$rootScope.$on('spotmop:pusher:pairing_requested', function(event, message){
-		if( confirm( message.origin.username +' wants to pair with you') == true ){
-		
-			// add the clientid to our array of paired clients
-			var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
-			if( !clientsToSync ) clientsToSync = [];
-			clientsToSync.push( message.origin.clientid );
-			SettingsService.setSetting('pusher.pairedclients',clientsToSync);
-			
-			// and notify the initiator that it's been confirmed
-			PusherService.send({
-				type: 'pairing_request_accepted',
-				recipients: [ message.origin.connectionid ],
-			});
+	$rootScope.$on('spotmop:pusher:config_push', function(event, message){
+		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this?') == true ){
+            if( message.data.spotify ) SettingsService.setSetting('spotify', message.data.spotify);
+            if( message.data.spotifyuser ) SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
+            if( message.data.mopidy ) SettingsService.setSetting('mopidy', message.data.mopidy);
+            location.reload();
 		}
 	});
 	
@@ -38501,18 +38493,17 @@ angular.module('spotmop.settings', [])
 	};
 	
 	/**
-	 * Request a sync with another connection
+	 * Send configuration to another connection
 	 **/
-	$scope.requestPairing = function( connection ){
+	$scope.pushConfig = function( connection ){
 		PusherService.send({
-			type: 'pairing_requested',
-			recipients: [ connection.connectionid ]
-		});
-	};
-	$scope.revokePairing = function( connection ){
-		PusherService.send({
-			type: 'pairing_revoked',
-			recipients: [ connection.connectionid ]
+			type: 'config_push',
+			recipients: [ connection.connectionid ],
+            data: {
+                mopidy: SettingsService.getSetting('mopidy'),
+                spotify: SettingsService.getSetting('spotify'),
+                spotifyuser: SettingsService.getSetting('spotifyuser')
+            }
 		});
 	};
 	

@@ -73,26 +73,17 @@ angular.module('spotmop.settings', [])
 	};
 	
 	/**
-	 * Request a sync with another connection
+	 * Send configuration to another connection
 	 **/
-	$scope.requestPairing = function( connection ){
+	$scope.pushConfig = function( connection ){
 		PusherService.send({
-			type: 'pairing_requested',
-			recipients: [ connection.connectionid ]
-		});
-	};
-	$scope.revokePairing = function( connection ){
-	
-		// remove the clientid from our array of paired clients
-		var clientsToSync = SettingsService.getSetting('pusher.pairedclients');
-		if( !clientsToSync ) clientsToSync = [];
-		clientsToSync.splice( clientsToSync.indexOf( connection.clientid ), 1 );
-		SettingsService.setSetting('pusher.pairedclients',clientsToSync);
-		
-		// and get our paired client to do the same
-		PusherService.send({
-			type: 'pairing_revoked',
-			recipients: [ connection.connectionid ]
+			type: 'config_push',
+			recipients: [ connection.connectionid ],
+            data: {
+                mopidy: SettingsService.getSetting('mopidy'),
+                spotify: SettingsService.getSetting('spotify'),
+                spotifyuser: SettingsService.getSetting('spotifyuser')
+            }
 		});
 	};
 	

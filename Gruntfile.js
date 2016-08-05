@@ -77,12 +77,16 @@ module.exports = function(grunt) {
         },
 		watch: {
 			scripts: {
-				files: ['src/app/**/*.js', 'src/**/*.html'],
-				tasks: ['copy','ngAnnotate','concat','uglify','processhtml']
+				files: ['src/app/**/*.js'],
+				tasks: ['copy','ngAnnotate','concat','uglify']
 			},
 			css: {
-				files: ['src/scss/**/*.scss', 'src/**/*.html'],
-				tasks: ['copy','sass','cssmin','processhtml']
+				files: ['src/scss/**/*.scss'],
+				tasks: ['copy','sass','cssmin']
+			},
+			html: {
+				files: ['src/**/*.html'],
+				tasks: ['copy','processhtml']
 			}
 		}
     });
