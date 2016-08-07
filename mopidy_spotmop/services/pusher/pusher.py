@@ -31,15 +31,17 @@ def digest_protocol( protocol ):
       clientid = protocol[0]
       connectionid = protocol[1]
       username = protocol[2]
+      generated = False
       
     # invalid, so just create a default connection, and auto-generate an ID
     except:
       clientid = str(uuid.uuid4().hex)
       connectionid = str(uuid.uuid4().hex)
       username = str(uuid.uuid4().hex)
+      generated = True
     
     # construct our protocol object, and return
-    return {"clientid": clientid, "connectionid": connectionid, "username": username}
+    return {"clientid": clientid, "connectionid": connectionid, "username": username, "generated": generated}
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -73,7 +75,16 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   
   def select_subprotocol(self, subprotocols):
     # select one of our subprotocol elements and return it. This confirms the connection has been accepted.
-    return digest_protocol( subprotocols )['clientid']
+    protocols = digest_protocol( subprotocols )
+    
+    # if we've auto-generated some ids, the provided subprotocols was a string, so just return it right back
+    # this allows a connection to be completed
+    if protocols['generated']:
+        return subprotocols[0]
+        
+    # otherwise, just return one of the supplied subprotocols
+    else:
+        return protocols['clientid']
   
   # server received a message
   def on_message(self, message):
