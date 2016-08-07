@@ -36684,7 +36684,9 @@ angular.module('spotmop.services.pusher', [
 				}
                 username = encodeURI(username);
                 
-				var pusher = new WebSocket(host, clientid+'_'+connectionid+'_'+username );
+				console.log( [ clientid, connectionid, username ] );
+				
+				var pusher = new WebSocket(host, [ clientid, connectionid, username ] );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');

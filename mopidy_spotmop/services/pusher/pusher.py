@@ -18,17 +18,19 @@ def send_message( event, data ):
         
 # digest a protocol header into it's id/name parts
 def digest_protocol( protocol ):
-
-    # facilitate wrapping list objects, silly various browser formats and also Jupiter's orbit...
-    protocol = ''.join(protocol)
-    protocol = protocol.replace(',','').replace('[','').replace(']','')
-    elements = protocol.split('_')
+    
+    # if we're a string, split into list
+    # this handles the different ways we get this passed (select_subprotocols gives string, headers.get gives list)
+    if isinstance(protocol, basestring):
+    
+        # make sure we strip any spaces (IE gives "element,element", proper browsers give "element, element")
+        protocol = [i.strip() for i in protocol.split(',')]
     
     # if we've been given a valid array
     try:
-      clientid = elements[0]
-      connectionid = elements[1]
-      username = elements[2]
+      clientid = protocol[0]
+      connectionid = protocol[1]
+      username = protocol[2]
       
     # invalid, so just create a default connection, and auto-generate an ID
     except:
@@ -37,7 +39,7 @@ def digest_protocol( protocol ):
       username = str(uuid.uuid4().hex)
     
     # construct our protocol object, and return
-    return {"protocol": protocol, "clientid": clientid, "connectionid": connectionid, "username": username,}
+    return {"clientid": clientid, "connectionid": connectionid, "username": username}
 
 ## PUSHER WEBSOCKET SERVER
 class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
@@ -52,7 +54,8 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
   def open(self):
     
     # decode our connection protocol value (which is a payload of id/name from javascript)
-    protocolElements = digest_protocol(self.request.headers.get('Sec-Websocket-Protocol', '[]'))        
+    protocolElements = digest_protocol(self.request.headers.get('Sec-Websocket-Protocol', []))
+    
     connectionid = protocolElements['connectionid']
     clientid = protocolElements['clientid']
     self.connectionid = connectionid
@@ -69,8 +72,8 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
     send_message( 'client_connected', client )
   
   def select_subprotocol(self, subprotocols):
-    # return the id. This lets the client know we've accepted this connection
-    return digest_protocol( subprotocols )['protocol']
+    # select one of our subprotocol elements and return it. This confirms the connection has been accepted.
+    return digest_protocol( subprotocols )['clientid']
   
   # server received a message
   def on_message(self, message):
