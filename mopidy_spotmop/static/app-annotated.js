@@ -35038,20 +35038,28 @@ angular.module('spotmop.services.player', [])
 		
 		// if we've been told what the new state is, let's just use that
 		if( typeof( newState ) !== 'undefined' ){
-			if( newState == 'playing' )
+			if( newState == 'playing' ){
 				state.playing = true;
-			else
+			}else if( newState == 'paused' ){
 				state.playing = false;
+			}else{
+				state.playing = false;
+				state.playPosition = 0;
+			}
 			
 			updateWindowTitle();
 				
 		// not sure of new state, so let's find out first
 		}else{
 			MopidyService.getState().then( function( newState ){
-				if( newState == 'playing' )
+				if( newState == 'playing' ){
 					state.playing = true;
-				else
+				}else if( newState == 'paused' ){
 					state.playing = false;
+				}else{
+					state.playing = false;
+					state.playPosition = 0;
+				}
 				
 				updateWindowTitle();
 			});
@@ -35200,10 +35208,19 @@ angular.module('spotmop.services.player', [])
 	/**
 	 * Update play progress position slider
 	 **/
+	var intervalCounter = 0;
 	$interval( 
 		function(){
-			if( state.playing && typeof(state.currentTlTrack) !== 'undefined' && typeof(state.currentTlTrack.track) !== 'undefined' && state.playPosition < state.currentTlTrack.track.length ){
-				state.playPosition += 1000;
+			if(
+				state.playing && 
+				typeof(state.currentTlTrack) !== 'undefined' && 
+				typeof(state.currentTlTrack.track) !== 'undefined' && 
+				state.playPosition < state.currentTlTrack.track.length ){
+					state.playPosition += 1000;
+					intervalCounter += 1;
+					if( intervalCounter % 10 == 0 ){
+						updatePlayPosition();
+					}
 			}
 		},
 		1000
