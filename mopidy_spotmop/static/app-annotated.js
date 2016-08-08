@@ -36355,9 +36355,7 @@ angular.module('spotmop.services.mopidy', [
 			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
 			
 				// then play it
-				.then( function( response ){	
-					
-					console.log( response );
+				.then( function( response ){
 					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
@@ -36684,8 +36682,7 @@ angular.module('spotmop.services.pusher', [
 				}
                 username = encodeURI(username);
 				
-				//var pusher = new WebSocket(host, [ clientid, connectionid, username ] );
-				var pusher = new WebSocket(host, clientid+'_'+connectionid+'_'+username );
+				var pusher = new WebSocket(host, [ clientid, connectionid, username ] );
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');

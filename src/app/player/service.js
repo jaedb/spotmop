@@ -160,10 +160,12 @@ angular.module('spotmop.services.player', [])
 		
 		// if we've been told what the new state is, let's just use that
 		if( typeof( newState ) !== 'undefined' ){
-			if( newState == 'playing' )
+			if( newState == 'playing' ){
 				state.playing = true;
-			else
+			}else{
 				state.playing = false;
+				state.currentTlTrack = false;
+			}
 			
 			updateWindowTitle();
 				

@@ -35038,10 +35038,12 @@ angular.module('spotmop.services.player', [])
 		
 		// if we've been told what the new state is, let's just use that
 		if( typeof( newState ) !== 'undefined' ){
-			if( newState == 'playing' )
+			if( newState == 'playing' ){
 				state.playing = true;
-			else
+			else{
 				state.playing = false;
+				state.currentTlTrack = false;
+			}
 			
 			updateWindowTitle();
 				
@@ -36355,9 +36357,7 @@ angular.module('spotmop.services.mopidy', [
 			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
 			
 				// then play it
-				.then( function( response ){	
-					
-					console.log( response );
+				.then( function( response ){
 					
 					// make sure we added the track successfully
 					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
