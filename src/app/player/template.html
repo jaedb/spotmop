@@ -35,8 +35,8 @@
 		<div class="controls">
 			<span class="button previous mobile-hide" ng-click="previous()"><i class="fa fa-step-backward"></i></span>
 			<span class="button play-pause" ng-click="playPause()">
-				<i class="fa fa-play fa-fw" ng-show="!state().playing"></i>
-				<i class="fa fa-pause fa-fw" ng-show="state().playing"></i>
+				<i class="fa fa-play fa-fw" ng-show="!state().isPlaying()"></i>
+				<i class="fa fa-pause fa-fw" ng-show="state().isPlaying()"></i>
 			</span>
 			<span class="button next" ng-click="next()"><i class="fa fa-step-forward"></i></span>
 		</div>
@@ -46,7 +46,7 @@
 	
 	<div class="progress slider" ng-click="seek($event)">
 		<div class="track animate">
-			<div class="fill" style="width: {{ state().playPositionPercent() }}%"></div>
+			<div class="fill" ng-class="{playing: state().isPlaying()}" style="width: {{ state().playPositionPercent() }}%"></div>
 		</div>
 	</div>
 	

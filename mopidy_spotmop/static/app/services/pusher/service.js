@@ -129,12 +129,7 @@ angular.module('spotmop.services.pusher', [
 			this.isConnected = false;
 		},
 		
-		send: function( data ){
-			
-			// make sure we have a recipients array, even if empty
-			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
-            
-            // send off the notification to the websocket
+		send: function( data ){            
 			service.pusher.send( JSON.stringify(data) );
 		},
         

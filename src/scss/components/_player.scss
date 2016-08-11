@@ -111,11 +111,12 @@
 		.track {
 			background: none;
 			height: 4px;
-			.fill {
-				-webkit-transition: all 1s linear;
-				-moz-transition: all 1s linear;
-				-o-transition: all 1s linear;
-				transition: all 1s linear;	
+			
+			.fill.playing {
+				-webkit-transition: all 0.5s linear;
+				-moz-transition: all 0.5s linear;
+				-o-transition: all 0.5s linear;
+				transition: all 0.5s linear;	
 			}
 		}
 		

@@ -34888,7 +34888,8 @@ angular.module('spotmop.services.player', [])
 	
 	// setup initial states
 	var state = {
-		playing: false,
+		playbackState: 'stopped',
+		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
 		isMute: false,
@@ -34932,10 +34933,7 @@ angular.module('spotmop.services.player', [])
 		
 		// figure out if we're playing already
 		MopidyService.getState().then( function( newState ){
-			if( newState == 'playing' )
-				state.playing = true;
-			else
-				state.playing = false;
+			state.playbackState = newState;
 		});
 	});
 	
@@ -34982,9 +34980,10 @@ angular.module('spotmop.services.player', [])
 		
 		// only if our new tlTrack differs from our current one
 		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
-			state.currentTlTrack = tlTrack.tl_track;		
+			state.playPosition = 0;
+			state.currentTlTrack = tlTrack.tl_track;
 			updateCurrentTrack( tlTrack.tl_track );
-			updatePlayerState();		
+			updatePlayerState();
 		}
 	});
 	
@@ -35038,29 +35037,15 @@ angular.module('spotmop.services.player', [])
 		
 		// if we've been told what the new state is, let's just use that
 		if( typeof( newState ) !== 'undefined' ){
-			if( newState == 'playing' ){
-				state.playing = true;
-			}else if( newState == 'paused' ){
-				state.playing = false;
-			}else{
-				state.playing = false;
-				state.playPosition = 0;
-			}
-			
+			state.playbackState = newState;
+			//if( newState == 'stopped' ) state.playPosition = 0;			
 			updateWindowTitle();
 				
 		// not sure of new state, so let's find out first
 		}else{
 			MopidyService.getState().then( function( newState ){
-				if( newState == 'playing' ){
-					state.playing = true;
-				}else if( newState == 'paused' ){
-					state.playing = false;
-				}else{
-					state.playing = false;
-					state.playPosition = 0;
-				}
-				
+				state.playbackState = newState;
+				//if( newState == 'stopped' ) state.playPosition = 0;	
 				updateWindowTitle();
 			});
 		}
@@ -35080,10 +35065,9 @@ angular.module('spotmop.services.player', [])
 		
 		// update all ui uses of the track (window title, player bar, etc)
 		var setCurrentTrack = function( tlTrack ){
-		
+			
 			// save the current tltrack for global usage
 			state.currentTlTrack = tlTrack;
-			
 			
 			// if we have an album image baked-in, let's use that
 			if( typeof(tlTrack.track.album.images) !== 'undefined' && tlTrack.track.album.images.length > 0 ){
@@ -35194,7 +35178,7 @@ angular.module('spotmop.services.player', [])
                 artistString += value.name;
             });
 
-            if( state.playing )
+            if( state.isPlaying() )
                 documentIcon = '\u25B6 ';
 
             newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
@@ -35208,20 +35192,23 @@ angular.module('spotmop.services.player', [])
 	/**
 	 * Update play progress position slider
 	 **/
-	var intervalCounter = 0;
 	$interval( 
 		function(){
-			if(
-				state.playing && 
+			//console.log( 'pos: '+state.playPosition +'  length:'+ state.currentTlTrack.track.length);
+			if( $rootScope.mopidyOnline ) updatePlayPosition();
+			/*if(
+				state.isPlaying() && 
 				typeof(state.currentTlTrack) !== 'undefined' && 
-				typeof(state.currentTlTrack.track) !== 'undefined' && 
-				state.playPosition < state.currentTlTrack.track.length ){
-					state.playPosition += 1000;
-					intervalCounter += 1;
-					if( intervalCounter % 10 == 0 ){
-						updatePlayPosition();
+				typeof(state.currentTlTrack.track) !== 'undefined' ){
+					
+					if( ( state.playPosition + 1000 ) < state.currentTlTrack.track.length ){
+						console.log( 'adding to '+state.playPosition+'  on  '+state.currentTlTrack.track.length );
+						state.playPosition += 1000;
+					}else{
+						console.log('doing overtime '+state.playPosition+'  on  '+state.currentTlTrack.track.length)
+						state.playPosition = 0;
 					}
-			}
+			}*/
 		},
 		1000
 	);
@@ -35231,7 +35218,7 @@ angular.module('spotmop.services.player', [])
 	 * Shortcut keys
 	 **/
 	$rootScope.$on('spotmop:keyboardShortcut:space', function( event ){
-		if( state.playing ) var icon = 'pause'; else var icon = 'play';
+		if( state.isPlaying() ) var icon = 'pause'; else var icon = 'play';
 		service.playPause();
 		NotifyService.shortcut( icon );
     });
@@ -35282,18 +35269,15 @@ angular.module('spotmop.services.player', [])
 		},
 		
 		playPause: function(){
-			if( state.playing ){
+			if( state.isPlaying() ){
 				MopidyService.pause();
-				state.playing = false;
 			}else{
 				MopidyService.play();
-				state.playing = true;
 			}
 		},
 		
 		stop: function(){
 			MopidyService.stopPlayback();
-			state.playing = false;
 		},
 		
 		next: function(){
@@ -36441,6 +36425,7 @@ angular.module('spotmop.services.mopidy', [
             
             PusherService.send({
 				type: 'notification',
+				ignore_self: true,
                 data: {
                     title: 'Track skipped',
                     body: name +' vetoed this track!',
@@ -36774,12 +36759,7 @@ angular.module('spotmop.services.pusher', [
 			this.isConnected = false;
 		},
 		
-		send: function( data ){
-			
-			// make sure we have a recipients array, even if empty
-			if( typeof(data.recipients) === 'undefined' ) data.recipients = [];
-            
-            // send off the notification to the websocket
+		send: function( data ){            
 			service.pusher.send( JSON.stringify(data) );
 		},
         

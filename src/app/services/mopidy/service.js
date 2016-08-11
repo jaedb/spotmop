@@ -275,6 +275,7 @@ angular.module('spotmop.services.mopidy', [
             
             PusherService.send({
 				type: 'notification',
+				ignore_self: true,
                 data: {
                     title: 'Track skipped',
                     body: name +' vetoed this track!',

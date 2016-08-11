@@ -99,16 +99,24 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
             logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
     
     # recipients array has items, so only send to specific clients
-    if messageJson['recipients']:    
-      for connectionid in messageJson['recipients']:
-        connectionid = connectionid.encode("utf-8")
-        connections[connectionid]['connection'].write_message(messageJson)
-    
+    if messageJson.has_key('recipients'):  
+        for connectionid in messageJson['recipients']:
+            connectionid = connectionid.encode("utf-8")
+            connections[connectionid]['connection'].write_message(messageJson)
+
     # empty, so send to all clients
     else:    
-      for connection in connections.itervalues():
-        connection['connection'].write_message(messageJson)
+        for connection in connections.itervalues():
         
+            # if we've set ignore_self, then don't send message to originating connection
+            if messageJson.has_key('ignore_self'):
+                if connection['client']['connectionid'] != messageJson['origin']['connectionid']:
+                    connection['connection'].write_message(messageJson)
+                    
+            # send it to everyone
+            else:
+                connection['connection'].write_message(messageJson)
+                    
     logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
   
   # connection closed
@@ -119,7 +127,11 @@ class PusherHandler(tornado.websocket.WebSocketHandler, CoreListener):
         logger.debug( 'Spotmop Pusher connection to '+ self.connectionid +' closed' )
         
         # now actually remove it
-        del connections[self.connectionid]
+        try:
+            del connections[self.connectionid]
+        except:
+            logger.info( 'Failed to close connection to '+ self.connectionid )
+            
         
         send_message( 'client_disconnected', clientRemoved )
   
