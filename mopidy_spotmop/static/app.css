@@ -3531,10 +3531,10 @@ input[type="submit"] {
     background: none;
     height: 4px; }
     .player .slider.progress .track .fill.playing {
-      -webkit-transition: all 0.5s linear;
-      -moz-transition: all 0.5s linear;
-      -o-transition: all 0.5s linear;
-      transition: all 0.5s linear; }
+      -webkit-transition: all 1s linear;
+      -moz-transition: all 1s linear;
+      -o-transition: all 1s linear;
+      transition: all 1s linear; }
   .player .slider.progress:hover .track {
     height: 12px;
     background: rgba(0, 0, 0, 0.15); }
