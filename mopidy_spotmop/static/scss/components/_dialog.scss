@@ -1,0 +1,198 @@
+/**
+ * Dialog (modal popup) styles
+ * 
+ * Spotmop
+ **/
+
+
+
+/* ============================================================================ BASE STYLES ======== */
+/* ================================================================================================= */
+
+
+.dialog .dialog-title {
+	padding-bottom: 20px;
+}
+
+.dialog .background {
+	background: rgba(0,0,0,0.95);
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 11;
+}
+
+.dialog .content {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 6% 20%;
+	color: #FFFFFF;
+	z-index: 12;
+	overflow-y: auto;
+}
+
+.dialog .button.close-dialog {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 13;
+    color: #FFFFFF;
+	width: 30px;
+}
+
+.dialog .button.close-dialog img {
+	max-width: 100%;
+}
+
+.dialog .button.destructive:hover {		color: rgb(214,47,47); }
+.dialog .button.productive:hover {		color: rgb(53,204,53); }
+
+
+
+/* ============================================================================ FORMS ============== */
+/* ================================================================================================= */
+
+
+.dialog .field .label {	
+	font-size: 16px;
+}
+
+.dialog .field.text input {
+	padding: 5px 0;
+	background: transparent;
+	font-family: "Roboto",Helvetica,Arial,sans-serif;
+	font-size: 14px;
+	font-weight: 200;
+	color: #FFFFFF;
+	border: 0;
+	border-bottom: 2px solid #FFFFFF;
+}
+
+.dialog .field.text input:focus {
+	border-color: #1cf4c4;
+}
+
+.dialog .field.large input {
+	padding: 10px 0;
+	font-size: 30px;
+	width: 70%;
+}
+
+.dialog .field.switch .label {
+	padding-top: 6px;
+}
+
+.dialog .field.radio input {
+	display: none;
+}
+
+.dialog .field.radio .label {
+	display: inline-block;
+	float: none;
+	width: auto;
+	padding: 5px 30px 5px 30px;
+	position: relative;
+	cursor: pointer;
+}
+
+.dialog .field.radio input + .label:before {
+	content: ' ';
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+    border-radius: 50%;
+	border: 2px solid #FFFFFF;
+	position: absolute;
+	top: 4px;
+	left: 0;
+}
+
+.dialog .field.radio input:checked + .label:before {
+    background: #FFFFFF;
+    box-shadow: inset 0px 0px 0px 5px #111111;
+}
+
+.dialog .switch-button:not(.on) > .switch-track > .indicator {
+	background: #FFFFFF;
+}
+
+.dialog .switch-button > .switch-track,
+.dialog .switch-button.on > .switch-track {
+	border-color: #FFFFFF;
+}
+
+.dialog .actions {
+	padding-left: 0;
+	padding-top: 30px;
+}
+
+.dialog .actions .working {
+    padding-top: 5px;
+    width: 30px;
+    height: 30px;
+}
+
+
+
+
+/* ========================================================================= DIALOG-SPECIFIC ======= */
+/* ================================================================================================= */
+
+
+/**
+ * Add tracks to playlist
+ **/
+ 
+.add-to-playlist-dialog .select-playlist {
+	padding-top: 15px;
+}
+
+.add-to-playlist-dialog .playlist-item {
+	font-size: 16px;
+	padding: 10px 3%;
+	border-top: 1px solid #333333;
+	width: 42%;
+	float: left;
+}
+
+.add-to-playlist-dialog .playlist-item:focus,
+.add-to-playlist-dialog .playlist-item:active {
+	background: #08d58f;
+}
+
+.add-to-playlist-dialog .playlist-item:nth-child(2n){
+	margin-left: 4%;
+}
+
+
+/**
+ * Volume controls
+ **/
+
+.volume-controls-dialog .volume {
+	padding-top: 50px;
+}
+
+.volume-controls-dialog .slider .track {
+	height: 30px;
+}
+
+
+
+/**
+ * Initial setup
+ **/
+
+.dialog .initial-setup-dialog .dialog-title {
+	padding-bottom: 0;
+}
+
+
+

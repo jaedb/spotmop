@@ -1,9 +1,11 @@
 # If you've pulled Spotmop via GitHub, you can run this using any webserver
-# by navigating to localhost/src. Otherwise we'll redirect it to the Mopidy instance as per below
+# by navigating to localhost/test. Otherwise we'll redirect it to the Mopidy instance as per below
 
 RewriteEngine On
-RewriteCond %{REQUEST_URI} !^/src
-RewriteCond %{REQUEST_URI} !^/artwork
-RewriteCond %{REQUEST_URI} !^/mopidy_spotmop
-RewriteRule (.*) http://%{HTTP_HOST}:6680/spotmop/ [R=301,L]
 
+# rewrite all root-level requests to the static folder
+RewriteCond %{REQUEST_URI} !/mopidy_spotmop/ [NC]
+RewriteRule (.*) /mopidy_spotmop/static/$1 [NC,L]
+
+# redirect our old /src/ dev link to the new dev.html file
+RewriteRule /src/ /dev.html? [L,R=301]

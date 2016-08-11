@@ -12,20 +12,20 @@
             
         </div>
         
-        <h4 class="section-title underline">Input</h4>       
-        <form ng-submit="run()">
+        <h4 class="section-title underline">Server requests</h4>       
+        <form ng-submit="mopidyTest.run()">
 
             <div class="field">
                 <div class="label">Method</div>
                 <div class="input">
-                    <input type="text" name="method" placeholder="mopidy.library.browse" ng-model="method" />
+                    <input type="text" name="method" ng-model="mopidyTest.method" />
                 </div>
             </div>
 
             <div class="field">
                 <div class="label">Payload (JSON string)</div>
                 <div class="input">
-                    <input type="text" name="method" placeholder="{ uri: '1234' }" ng-model="payload" />
+                    <input type="text" name="method" ng-model="mopidyTest.payload" />
                 </div>
             </div>
 
@@ -38,8 +38,27 @@
             
         </form>
         
+        <h4 class="section-title underline">Pusher connection</h4>       
+        <form ng-submit="pusherTest.run()">
+
+            <div class="field">
+                <div class="label">Payload (JSON string)</div>
+                <div class="input">
+                    <input type="text" name="method" ng-model="pusherTest.payload" />
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="label"></div>
+                <div class="input">
+                    <button class="button primary" type="submit">Send</button>
+                </div>
+            </div>
+            
+        </form>
+        
         <h4 class="section-title underline">Response</h4>        
-        <pre ng-bind="data | json"></pre>
+        <pre ng-bind="response | json"></pre>
         
 	</div>
 </div>
