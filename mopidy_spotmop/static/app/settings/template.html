@@ -33,7 +33,7 @@
 				<div class="field">
 					<div class="label">Username</div>
 					<div class="input">
-						<input type="text" name="pusher.name" placeholder="New user" class="autosave" ng-model="storage.pusher.name" ng-blur="savePusherName( storage.pusher.name )" />
+						<input type="text" name="pusher.username" placeholder="Username" class="autosave" ng-model="storage.pusher.username" ng-blur="savePusherName( storage.pusher.username )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -43,13 +43,6 @@
 					<div class="input">
 						<input type="text" name="pusher.port" placeholder="6681" class="autosave" ng-model="storage.pusher.port" ng-blur="saveField( $event )" />
 						<i class="fa fa-check autosave-success"></i>
-					</div>
-				</div>
-
-				<div class="field">
-					<div class="label">Disable browser notifications</div>
-					<div class="input">
-						<switch class="switch-button" name="pusher.disabled" value="storage.pusher.disabled"></switch>
 					</div>
 				</div>
 
@@ -210,20 +203,22 @@
                         <a class="button primary" ui-sref="testing"><i class="fa fa-flask"></i>&nbsp; Testing lab</a>
                     </div>
                 </div>
-
-                <div class="field">
-                    <div class="label">Current connection</div>
-                    <div class="input readonly">
-                        <span ng-bind="::storage.pusher.ip"></span> <span class="grey-text">(<span ng-bind="::storage.pusher.id"></span>)</span>
-                    </div>
-                </div>
-
+                
                 <div class="field current-connections">
                     <div class="label">Users connected</div>
                     <div class="input readonly">
-                        <div ng-repeat="client in clientConnections">
-                            <span class="min-width w100 ip" ng-bind="client.ip"></span>
-                            <span class="min-width w100 name" ng-bind="client.name"></span>
+                        <div ng-repeat="connection in pusherConnections">
+                            <span class="min-width w150 name">
+                                <span ng-bind="connection.username | urlDecode"></span>
+                                <span ng-if="connection.connectionid == storage.pusher.connectionid">(you)</span>
+                            </span>
+                            <span class="min-width w150">
+                                <span ng-bind="connection.ip"></span>
+                                <span class="grey-text">(<span ng-bind="connection.connectionid"></span>)</span>
+                            </span>
+                            <span class="min-width w100" ng-if="connection.connectionid != storage.pusher.connectionid">
+                                <a ng-click="pushConfig( connection )"><i class="fa fa-sign-in"></i>&nbsp; Push config</a>
+                            </span>
                         </div>
                     </div>
                     <div class="clear-both"></div>

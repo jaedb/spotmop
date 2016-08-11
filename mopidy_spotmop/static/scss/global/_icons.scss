@@ -1,0 +1,84 @@
+/**
+ * Spotmop
+ * Icons
+ **/
+ 
+.si {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	margin-top: 2px;
+	margin-right: 5px;
+	padding: 0;
+	background-size: contain;
+}
+ 
+.si.doublesize {
+	width: 32px;
+	height: 32px;
+}
+ 
+.si.play {				background-image: url('assets/icons/play.svg'); }
+.si.compass {			background-image: url('assets/icons/compass.svg'); }
+.si.playlist {			background-image: url('assets/icons/playlist.svg'); }
+.si.music {				background-image: url('assets/icons/music.svg'); }
+.si.cog {				background-image: url('assets/icons/cog.svg'); }
+.si.folder {			background-image: url('assets/icons/folder.svg'); }
+.si.leaf {				background-image: url('assets/icons/leaf.svg'); }
+.si.star {				background-image: url('assets/icons/star.svg'); }
+.si.mic {				background-image: url('assets/icons/mic.svg'); }
+.si.cd {				background-image: url('assets/icons/cd.svg'); }
+.si.grid {				background-image: url('assets/icons/grid.svg'); }
+.si.search {			background-image: url('assets/icons/search.svg'); }
+.si.chevron-right {		background-image: url('assets/icons/chevron-right.svg'); }
+.si.chevron-left {		background-image: url('assets/icons/chevron-left.svg'); }
+.si.sections {			background-image: url('assets/icons/sections.svg'); }
+.si.list {				background-image: url('assets/icons/list.svg'); }
+.si.spotify {			background-image: url('assets/icons/spotify.svg'); }
+.si.soundcloud {		background-image: url('assets/icons/soundcloud.svg'); }
+.si.local {				background-image: url('assets/icons/local.svg'); }
+.si.filter {			background-image: url('assets/icons/filter.svg'); }
+
+.si.white {
+	-webkit-filter: invert(1);
+	-moz-filter: invert(1);
+	filter: invert(1);
+}
+
+@media ( max-width: 800px ){
+    .si.mobile-white {
+        -webkit-filter: invert(1);
+        -moz-filter: invert(1);
+        filter: invert(1);
+    }
+}
+
+.si.light {
+	-webkit-filter: invert(1) brightness(75%);
+	-moz-filter: invert(1) brightness(75%);
+	filter: invert(1) brightness(75%);
+}
+
+.si.yellow {
+	-webkit-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+	-moz-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+	filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
+}
+
+.si.red {
+	-webkit-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+	-moz-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+	filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
+}
+
+.si.green {
+	-webkit-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+	-moz-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+	filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
+}
+
+
+

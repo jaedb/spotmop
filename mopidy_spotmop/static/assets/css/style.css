@@ -2132,7 +2132,17 @@ slider .item-container > .square-panel {
 }
 
 .discover .discover-section .section-title {
-	padding-bottom: 20px;
+	padding-bottom: 25px;
+}
+
+.seed-items {
+	padding-bottom: 30px;
+	font-style: italic;
+	color: #888888;
+	font-weight: 100;
+}
+
+.seed-items .seed-item {
 }
 
 
