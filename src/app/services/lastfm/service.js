@@ -24,7 +24,7 @@ angular.module('spotmop.services.lastfm', [])
             $http({
 					cache: true,
 					method: 'GET',
-					url: urlBase+'?format=json&api_key='+apiKey+'&'+params
+					url: urlBase+'?format=json&api_key='+apiKey+'&lang='+language+'&'+params
 				})
                 .success(function( response ){					
                     deferred.resolve( response );
@@ -62,6 +62,8 @@ angular.module('spotmop.services.lastfm', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'http://ws.audioscrobbler.com/2.0';
+	var language = SettingsService.getSetting("spotify.countrycode");
+	if (!language) language = 'EN';
 	var apiKey = SettingsService.getSetting("lastfm,key");
 	if( !apiKey ) apiKey = '4320a3ef51c9b3d69de552ac083c55e3';
 	

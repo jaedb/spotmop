@@ -1513,7 +1513,7 @@ angular.module('spotmop.services.spotify', [])
 	
 	// specify the base URL for the API endpoints
     var urlBase = 'https://api.spotify.com/v1/';
-	var country = SettingsService.getSetting("spotify.country");
+	var country = SettingsService.getSetting("spotify.countrycode");
 	if( !country ) country = 'NZ';
 	var locale = SettingsService.getSetting("spotify.locale");
 	if( !locale ) locale = 'en_NZ';
