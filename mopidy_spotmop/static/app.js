@@ -35432,9 +35432,9 @@ angular.module('spotmop.search', [])
 	
 	$scope.typeOptions = [
 			{ value: 'any', label: 'All' },
-			{ value: 'track_name', label: 'Tracks' },
-			{ value: 'artist,albumartist,composer,performer', label: 'Artists' },
-			{ value: 'album', label: 'Albums' }
+			{ value: 'album', label: 'Albums' },
+			{ value: 'artist', label: 'Artists' },
+			{ value: 'track_name', label: 'Tracks' }
 		];
 	
 	$scope.query = '';
@@ -35513,7 +35513,7 @@ angular.module('spotmop.search', [])
 					}
 					
 					if( typeof(source.artists) !== 'undefined' ){
-						$scope.results.artists = $scope.results.artists.concat( source.artists );
+						digestArtists( source.artists );
 					}
 					
 					if( typeof(source.albums) !== 'undefined' ){
@@ -35522,10 +35522,18 @@ angular.module('spotmop.search', [])
 				}
 			});
 			
-		function digestAlbums( items ){
-			console.log( items );
+		function digestArtists( items ){
+			console.table(items);
 			for( var i = 0; i < items.length; i++ ){
-				console.log(items[i]);
+				SpotifyService.getArtist( items[i].uri )
+					.then( function(artist){
+						$scope.results.artists = $scope.results.artists.concat( artist );
+					});
+			}
+		}
+			
+		function digestAlbums( items ){
+			for( var i = 0; i < items.length; i++ ){
 				SpotifyService.getAlbum( items[i].uri )
 					.then( function(album){
 						$scope.results.albums = $scope.results.albums.concat( album );
@@ -35546,7 +35554,7 @@ angular.module('spotmop.search', [])
      * Load more results
      * Triggered by scrolling to the bottom
      **/
-    
+    /*
     var loadingMoreResults = false;
 	
     function loadMoreResults( offset ){
@@ -35607,6 +35615,7 @@ angular.module('spotmop.search', [])
             loadMoreResults( nextOffset );
         }
 	});
+    */
 });
 /**
  * Create a Dialog service 
