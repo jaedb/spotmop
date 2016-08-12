@@ -1,4 +1,4 @@
-<track 
+<track
     ng-if="type == 'track'"
     ng-repeat="track in tracksWrapper() track by $index" 
     data-index="{{ $index }}">
@@ -9,12 +9,6 @@
     ng-repeat="track in tracksWrapper() track by $index" 
     data-index="{{ $index }}">
 </tltrack>
-
-<localtrack 
-    ng-if="type == 'localtrack'" 
-    ng-repeat="track in tracksWrapper() track by $index" 
-    data-index="{{ $index }}">
-</localtrack>
 
 <div ng-hide="tracksWrapper().length" class="no-items">
     No items

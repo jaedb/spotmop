@@ -159,12 +159,14 @@ angular.module('spotmop.services.mopidy', [
 		getImages: function(uris){
 			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
 		},
-		search: function(searchterm, type, backends){			
+		search: function(fields, searchterm, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
-			if( typeof(type) === 'undefined' || !type ) var type = 'any';
+			if( typeof(fields) === 'undefined' || !fields ) var fields = ['any'];
 			var query = {};
-			query[type] = [searchterm];
-			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
+			for( var i = 0; i < fields.length; i++ ){
+				query[fields[i]] = [searchterm];
+			}
+			return wrapMopidyFunc("mopidy.library.search", this)({ query: query, uris: backends });
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();

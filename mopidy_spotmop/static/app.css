@@ -1215,154 +1215,6 @@ h1 .flag {
   opacity: 1; }
 
 /**
- * Track rows
- * At least 75% of the functionality lives here. At least.
- **/
-.tracklist .track {
-  display: block;
-  padding: 10px;
-  border-top: 1px solid #EEEEEE;
-  border-bottom: 1px solid #EEEEEE;
-  margin-bottom: -1px;
-  cursor: pointer;
-  position: relative;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; }
-
-.track .title,
-.track .artist,
-.track .album,
-.track .info {
-  float: left;
-  min-height: 1px; }
-
-.track .source {
-  display: none; }
-
-.track .title {
-  width: 30%; }
-
-.track .artist {
-  width: 30%; }
-
-.track .album {
-  width: 30%; }
-
-.track .info {
-  width: 10%;
-  text-align: right; }
-
-.track .info .duration {
-  display: inline-block;
-  padding-right: 20px; }
-
-.track .info .popularity {
-  position: absolute;
-  top: 11px;
-  right: 10px; }
-
-.track .source {
-  display: none;
-  position: absolute;
-  top: 9px;
-  right: 5px; }
-
-.tracklist.queue-tracks .track .source,
-.tracklist.search-results.other .track .source {
-  display: inline-block; }
-
-body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
-  background: #F4F4F4;
-  border-color: #EEEEEE; }
-
-body.dragging .tracklist .track.selected {
-  opacity: 0.5; }
-
-.tracklist .track.selected,
-.tracklist .track.selected:hover {
-  background: #FFF39C; }
-
-.tracklist .track.playing {
-  font-weight: bold; }
-
-body.dragging .tracklist .track:hover,
-body.dragging .tracklist .track.dropping {
-  border-top: 3px solid #32b5f2;
-  margin-top: -3px; }
-
-/**
- * Folders (based on tracks)
- **/
-.track.folder .icon {
-  width: 24px;
-  float: left; }
-
-.track.folder .title {
-  width: auto; }
-
-/**
- * List (based on tracks also)
- **/
-.list .list-item {
-  display: block;
-  padding: 10px;
-  border-top: 1px solid #EEEEEE;
-  border-bottom: 1px solid #EEEEEE;
-  margin-bottom: -1px;
-  position: relative;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; }
-
-.list .list-item.header {
-  text-transform: uppercase;
-  color: #CCCCCC;
-  border-top: 0;
-  font-size: 11px;
-  padding-bottom: 2px; }
-
-.list .list-item.header .sortable:hover {
-  cursor: pointer;
-  color: #888888; }
-
-.list .list-item.header .sortable.active {
-  color: #32b5f2; }
-
-.list .list-item:not(.header):hover {
-  background: #F4F4F4;
-  border-color: #EEEEEE;
-  cursor: pointer; }
-
-.list .list-item .si {
-  margin-top: 0;
-  vertical-align: bottom; }
-
-.list .list-item .fa {
-  margin-right: 6px; }
-
-.list .list-item .info {
-  width: 5%;
-  text-align: right;
-  float: right; }
-
-@media (max-width: 800px) {
-  .list.album-items .release-date {
-    display: none; }
-
-  .list.album-items .name .si {
-    display: none; }
-
-  .list.album-items .name,
-  .list.album-items .artists {
-    width: 40%; } }
-/**
  * Thumbnail images
  * Just the default settings, which will be manipulated on a contextual basis
  **/
@@ -3072,6 +2924,143 @@ input[type="submit"] {
   float: right;
   opacity: 0.5; }
 
+/**
+ * Track rows
+ * At least 75% of the functionality lives here. At least.
+ **/
+.tracklist .track {
+  display: block;
+  padding: 10px;
+  border-top: 1px solid #EEEEEE;
+  border-bottom: 1px solid #EEEEEE;
+  margin-bottom: -1px;
+  cursor: pointer;
+  position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+  .tracklist .track .title,
+  .tracklist .track .artist,
+  .tracklist .track .album,
+  .tracklist .track .info {
+    float: left;
+    min-height: 1px; }
+  .tracklist .track .title {
+    width: 30%; }
+  .tracklist .track .artist {
+    width: 30%; }
+  .tracklist .track .album {
+    width: 30%; }
+  .tracklist .track .info {
+    width: 10%;
+    text-align: right; }
+  .tracklist .track .info .duration {
+    display: inline-block;
+    padding-right: 20px; }
+  .tracklist .track .info .popularity {
+    position: absolute;
+    top: 11px;
+    right: 10px; }
+  .tracklist .track .source {
+    display: none;
+    position: absolute;
+    top: 9px;
+    right: 3px; }
+
+.tracklist.search-results .track .source,
+.tracklist.queue .track .source {
+  display: inline-block; }
+
+body:not(.dragging):not(.touchDevice) .tracklist .track:not(.selected):hover {
+  background: #F4F4F4;
+  border-color: #EEEEEE; }
+
+body.dragging .tracklist .track.selected {
+  opacity: 0.5; }
+
+.tracklist .track.selected,
+.tracklist .track.selected:hover {
+  background: #FFF39C; }
+
+.tracklist .track.playing {
+  font-weight: bold; }
+
+body.dragging .tracklist .track:hover,
+body.dragging .tracklist .track.dropping {
+  border-top: 3px solid #32b5f2;
+  margin-top: -3px; }
+
+/**
+ * Folders (based on tracks)
+ **/
+.track.folder .icon {
+  width: 24px;
+  float: left; }
+
+.track.folder .title {
+  width: auto; }
+
+/**
+ * List (based on tracks also)
+ **/
+.list .list-item {
+  display: block;
+  padding: 10px;
+  border-top: 1px solid #EEEEEE;
+  border-bottom: 1px solid #EEEEEE;
+  margin-bottom: -1px;
+  position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+
+.list .list-item.header {
+  text-transform: uppercase;
+  color: #CCCCCC;
+  border-top: 0;
+  font-size: 11px;
+  padding-bottom: 2px; }
+
+.list .list-item.header .sortable:hover {
+  cursor: pointer;
+  color: #888888; }
+
+.list .list-item.header .sortable.active {
+  color: #32b5f2; }
+
+.list .list-item:not(.header):hover {
+  background: #F4F4F4;
+  border-color: #EEEEEE;
+  cursor: pointer; }
+
+.list .list-item .si {
+  margin-top: 0;
+  vertical-align: bottom; }
+
+.list .list-item .fa {
+  margin-right: 6px; }
+
+.list .list-item .info {
+  width: 5%;
+  text-align: right;
+  float: right; }
+
+@media (max-width: 800px) {
+  .list.album-items .release-date {
+    display: none; }
+
+  .list.album-items .name .si {
+    display: none; }
+
+  .list.album-items .name,
+  .list.album-items .artists {
+    width: 40%; } }
 /**
  * Context menu styles
  * Provides right-click behavior to tracks and other interactive elements

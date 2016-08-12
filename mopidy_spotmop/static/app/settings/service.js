@@ -59,6 +59,8 @@ angular.module('spotmop.services.settings', [])
 					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]] = value;
 					break;
 			}
+			
+			$rootScope.$broadcast('spotmop:settingchanged:'+setting, value);
 		},
 		
 		

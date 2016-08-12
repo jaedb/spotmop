@@ -33010,7 +33010,16 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService ){
+		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService, PlayerService ){
+			
+			// if we have a nested .track item (as in TlTrack objects), flatten it
+			if( typeof($scope.track.track) !== 'undefined' ){
+				$scope.track.uri = $scope.track.track.uri;
+				$scope.track.name = $scope.track.track.name;
+				$scope.track.artists = $scope.track.track.artists;
+				$scope.track.album = $scope.track.track.album;
+				$scope.track.length = $scope.track.track.length;
+			}
 			
 			/**
 			 * Single click
@@ -33063,6 +33072,15 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
+			// if we have a nested .track item (as in TlTrack objects), flatten it
+			if( typeof($scope.track.track) !== 'undefined' ){
+				$scope.track.uri = $scope.track.track.uri;
+				$scope.track.name = $scope.track.track.name;
+				$scope.track.artists = $scope.track.track.artists;
+				$scope.track.album = $scope.track.track.album;
+				$scope.track.length = $scope.track.track.length;
+			}
+			
 			// figure out if this track is currently playing
 			$scope.isCurrentlyPlaying = function(){
 				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
@@ -33070,8 +33088,7 @@ angular.module('spotmop.common.track', [])
 			
 			// figure out what the classes are for our source icon
 			$scope.sourceIconClasses = function(){
-				if( typeof($scope.track.track) === 'undefined' ) return false;
-				var source = $scope.track.track.uri.split(':')[0];
+				var source = $scope.track.uri.split(':')[0];
 				var state = 'light';
 				if( $scope.isCurrentlyPlaying() ){
 					if( source == 'spotify' ) state = 'green';
@@ -33130,58 +33147,6 @@ angular.module('spotmop.common.track', [])
 						}	
 					});
 				});
-			});
-		}
-	}
-})
-
-
-.directive('localtrack', function() {
-	return {
-		restrict: 'E',
-		templateUrl: 'app/common/tracklist/localtrack.template.html',
-		link: function( $scope, element, attrs ){		
-		},
-		controller: function( $element, $scope, $rootScope, MopidyService, PlayerService, NotifyService ){
-			
-			$scope.state = PlayerService.state;
-			
-			/**
-			 * Single click
-			 * Click of any mouse button. Figure out which button, and behave accordingly
-			 **/
-			$element.mouseup( function( event ){
-				
-				// left click
-				if( event.which === 1 ){
-				
-					if( !$rootScope.isTouchMode() )
-						$scope.$emit('spotmop:contextMenu:hide');
-					
-					// make sure we haven't clicked on a sub-link, and then fire up to the tracklist
-					if( !$(event.target).is('a') ){
-						$scope.$parent.trackClicked( $scope );
-					}
-					
-				// right click
-				}else if( event.which === 3 ){
-					
-					// employ our normal click behavior (ie select this track, ctrl click, etc, etc)
-					if( !$scope.track.selected ){
-						$scope.$parent.trackClicked( $scope );
-					}
-					
-					$scope.$emit('spotmop:contextMenu:show', event, 'localtrack');
-				}
-			});		
-			
-			
-			
-			/**
-			 * Double click
-			 **/
-			$element.dblclick( function( event ){
-				MopidyService.playTrack( [ $scope.track.uri ], 0 );
 			});
 		}
 	}
@@ -35438,64 +35403,42 @@ angular.module('spotmop.search', [])
 .config(function($stateProvider) {
 	$stateProvider
 		.state('search', {
-			url: "/search/:query/:type",
+			url: "/search/:query",
 			templateUrl: "app/search/template.html",
-			controller: 'SearchController',
-			
-			// this specifies default values if there are none defined in the URL
-			params: {
-				type: { squash: true, value: 'all' },
-				query: { squash: true, value: null }
-			}
+			controller: 'SearchController'
 		});
 })
 	
 /**
  * Main controller
  **/
-.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService ){
+.controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService, SettingsService ){
 	
-	$scope.tracklist = {tracks: [], type: 'track'};
-	$scope.albums = [];
-	$scope.artists = [];
-	$scope.playlists = [];
-	$scope.other = {tracks: [], type: 'track'};
-	$scope.type = $stateParams.type;
-	$scope.typeFilterOptions = [
-			{
-				type: 'all',
-				icon: 'list',
-				label: 'All'
-			},
-			{
-				type: 'artist',
-				icon: 'mic',
-				label: 'Artists'
-			},
-			{
-				type: 'album',
-				icon: 'cd',
-				label: 'Albums'
-			},
-			{
-				type: 'playlist',
-				icon: 'playlist',
-				label: 'Playlists'
-			},
-			{
-				type: 'track',
-				icon: 'music',
-				label: 'Tracks'
-			},
-			{
-				type: 'other',
-				icon: 'folder',
-				label: 'Other'
-			}
+	$scope.settings = SettingsService.getSettings();
+	$scope.results = {
+		tracks: [],
+		albums: [],
+		artists: [],
+		playlists: []
+	};
+	
+	$scope.sourceOptions = [
+			{ value: 'all', label: 'All' },
+			{ value: 'spotify', label: 'Spotify' },
+			{ value: 'local', label: 'Local' },
+			{ value: 'soundcloud', label: 'Soundcloud' },
+			{ value: 'yt', label: 'YouTube' }
 		];
+	
+	$scope.typeOptions = [
+			{ value: 'any', label: 'All' },
+			{ value: 'track_name', label: 'Tracks' },
+			{ value: 'artist,albumartist,composer,performer', label: 'Artists' },
+			{ value: 'album', label: 'Albums' }
+		];
+	
 	$scope.query = '';
-    if( $stateParams.query )
-        $scope.query = $filter('stripAccents')( $stateParams.query );
+    if( $stateParams.query ) $scope.query = $filter('stripAccents')( $stateParams.query );
 		
 	var nextOffset = 50;
         
@@ -35503,12 +35446,19 @@ angular.module('spotmop.search', [])
 	var searchDelayer;
 
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
-	if( !$scope.isTouchMode() )
-		$(document).find('.search-form input.query').focus();
+	if( !$scope.isTouchMode() ) $(document).find('.search-form input.query').focus();
 	
 	// if we've just loaded this page, and we have params, let's perform a search
-	if( $scope.query )
-		performSearch( $scope.type, $scope.query );
+	if( $scope.query ) performSearch( $scope.query );
+	
+	// when our source changes, perform a new search
+	// TODO: THIS CREATES DUPLICATES WHEN WE NAVIGATE ELSEWHERE AND THEN RETURN
+	$rootScope.$on('spotmop:settingchanged:search.source', function(event,value){
+		performSearch( $scope.query );
+	});
+	$rootScope.$on('spotmop:settingchanged:search.type', function(event,value){
+		performSearch( $scope.query );
+	});
 	
 	
 	/**
@@ -35517,77 +35467,14 @@ angular.module('spotmop.search', [])
 	 * @param type = string (type of search results, all/artist/playlist/album/etc)
 	 * @param query = string
 	 **/
-	function performSearch( type, query ){
-			
-		if( typeof(type) === 'undefined' )
-			var type = $scope.type;
+	function performSearch( query ){
 		
-		switch( type ){
-			
-			case 'track' :
-				SpotifyService.getSearchResults( 'track', query, 50 )
-					.then( function(response){
-						$scope.tracklist.tracks = $scope.tracklist.tracks.concat( response.tracks.items );
-						$scope.tracklist.type = 'track';
-						$scope.tracklist.next = response.tracks.next;
-						if( response.tracks.next )
-							nextOffset = response.tracks.offset + response.tracks.limit;
-						else
-							nextOffset = false;
-					});
-				break;
-			
-			case 'album' :
-				SpotifyService.getSearchResults( 'album', query, 50 )
-					.then( function(response){
-						console.log( response );
-						$scope.albums = response.albums;
-						if( response.albums.next )
-							nextOffset = response.albums.offset + response.albums.limit;
-						else
-							nextOffset = false;
-					});
-				break;
-					
-			case 'artist' :
-				SpotifyService.getSearchResults( 'artist', query, 50 )
-					.then( function(response){		
-						$scope.artists = response.artists;
-						$scope.next = response.artists.next;
-						$scope.offset = response.artists.offset;
-					});
-				break;
-					
-			case 'playlist' :
-				SpotifyService.getSearchResults( 'playlist', query, 50 )
-					.then( function(response){		
-						$scope.playlists = response.playlists;
-						$scope.next = response.playlists.next;
-						$scope.offset = response.playlists.offset;
-					});
-				break;
-					
-			case 'other' :
-				if( $rootScope.mopidyOnline ){
-					mopidySearch( $scope.query );
-				}else{
-					$rootScope.$on('mopidy:state:online', function(){
-						mopidySearch( $scope.query );
-					});
-				}
-				break;
-			
-			default :
-				SpotifyService.getSearchResults( 'track,album,artist,playlist', query, 50 )
-					.then( function(response){
-						$scope.albums = response.albums;
-						$scope.artists = response.artists;
-						$scope.playlists = response.playlists;
-						$scope.tracklist = response.tracks;
-						$scope.tracklist.type = 'track';
-						$scope.tracklist.tracks = response.tracks.items;
-					});	
-				break;
+		if( $rootScope.mopidyOnline ){
+			mopidySearch( $scope.query );
+		}else{
+			$rootScope.$on('mopidy:state:online', function(){
+				mopidySearch( $scope.query );
+			});
 		}
 	}
 	
@@ -35596,19 +35483,61 @@ angular.module('spotmop.search', [])
 	/**
 	 * Perform mopidy search
 	 **/
-	function mopidySearch( query ){		
-		MopidyService.search(query, false, ['soundcloud:','local:'])
-			.then( function(response){
-				// loop all our result sources (-1 in index because last item is the uri record)
-				for( var i = 0; i < response.length; i++ ){
-					if( typeof(response[i].tracks) !== 'undefined' ){
-						for( var j = 0; j < response[i].tracks.length - 1; j++ ){
-							$scope.other.tracks = $scope.other.tracks.concat( response[i].tracks[j] );
-						}
+	function mopidySearch( query ){
+		
+		// prepare our source option into a mopidy-friendly object
+		var sources = $scope.settings.search.source;
+		if( sources == 'all' ){
+			sources = null;
+		}else{
+			sources = [ sources+':' ];
+		}
+		
+		// explode our fields to an array
+		var fields = $scope.settings.search.type.split(',');
+		
+		// flush out any previous search results
+		$scope.results.tracks = [];
+		$scope.results.albums = [];
+		$scope.results.artists = [];
+		
+		// perform the search
+		MopidyService.search(fields, query, sources)
+			.then( function(sources){
+				console.log( sources );
+				for( var i = 0; i < sources.length; i++ ){
+					var source = sources[i];
+					
+					if( typeof(source.tracks) !== 'undefined' ){
+						$scope.results.tracks = $scope.results.tracks.concat( source.tracks );
+					}
+					
+					if( typeof(source.artists) !== 'undefined' ){
+						$scope.results.artists = $scope.results.artists.concat( source.artists );
+					}
+					
+					if( typeof(source.albums) !== 'undefined' ){
+						digestAlbums( source.albums );
 					}
 				}
 			});
-	}
+			
+		function digestAlbums( items ){
+			console.log( items );
+			for( var i = 0; i < items.length; i++ ){
+				console.log(items[i]);
+				SpotifyService.getAlbum( items[i].uri )
+					.then( function(album){
+						$scope.results.albums = $scope.results.albums.concat( album );
+					});
+			}
+		}
+			/*
+		MopidyService.testMethod('local.search', { query: { ['any': query] } })
+			.then( function(response){
+				console.log( response );
+			});*/
+	} 
 	
 	
 	
@@ -36299,12 +36228,14 @@ angular.module('spotmop.services.mopidy', [
 		getImages: function(uris){
 			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
 		},
-		search: function(searchterm, type, backends){			
+		search: function(fields, searchterm, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
-			if( typeof(type) === 'undefined' || !type ) var type = 'any';
+			if( typeof(fields) === 'undefined' || !fields ) var fields = ['any'];
 			var query = {};
-			query[type] = [searchterm];
-			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
+			for( var i = 0; i < fields.length; i++ ){
+				query[fields[i]] = [searchterm];
+			}
+			return wrapMopidyFunc("mopidy.library.search", this)({ query: query, uris: backends });
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
@@ -38631,6 +38562,8 @@ angular.module('spotmop.services.settings', [])
 					$localStorage[settingElements[0]][settingElements[1]][settingElements[2]][settingElements[3]] = value;
 					break;
 			}
+			
+			$rootScope.$broadcast('spotmop:settingchanged:'+setting, value);
 		},
 		
 		

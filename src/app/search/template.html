@@ -11,22 +11,8 @@
             </h1>
 
             <div class="utilities">
-                <div class="filter" ng-class="{'expanded': filterExpanded}">
-                    <div class="trigger mobile-show" ng-click="filterExpanded = !filterExpanded">
-                        <span class="si filter white"></span>
-                        <span class="label">Filter</span>
-                    </div>
-                    <div class="options-wrapper">
-                        <a class="filter-option animate"
-                            ng-repeat="option in typeFilterOptions"
-                            ui-sref="search({ query: query, type: option.type })"
-                            ng-class="{active: type == option.type}">
-                                <span class="si {{ option.icon }}"></span>
-                                <span class="label" ng-bind="option.label"></span>
-                        </a>
-                        <div class="clear-both"></div>
-                    </div>
-                </div>
+				<dropdownfield options="sourceOptions" settingname="search.source" iconclass="fa-database"></dropdownfield>
+				<dropdownfield options="typeOptions" settingname="search.type" iconclass="fa-filter"></dropdownfield>
             </div>
             
         </div>
@@ -40,165 +26,48 @@
 			</form>
 		</div>
 		
-		<div ng-if="query">
-			<div ng-if="type == 'artist'">				
-				<div class="artist-items square-panels">
-					<div class="item-container" ng-repeat="artist in artists.items track by $index">
-						<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
-                            candrag
-                            dragobj="artist"
-                            draggable="false">
-                                <div class="image-container">
-                                    <thumbnail size="medium" images="artist.images"></thumbnail>
-                                </div>
-                                <div class="info animate">
-                                    <div class="name" ng-bind="artist.name"></div>
-                                </div>
-						</a>
-					</div>
+		<div class="search-results-section artists" ng-if="results.artists">
+			<h4 class="section-title">Artists</h4>	
+			<div class="artist-items square-panels">
+				<div class="item-container" ng-repeat="artist in results.artists | limitTo: 4 track by $index">
+					<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
+						candrag
+						dragobj="artist"
+						draggable="false">
+							<div class="image-container">
+								<thumbnail size="medium" images="artist.images"></thumbnail>
+							</div>
+							<div class="info animate">
+								<div class="name" ng-bind="artist.name"></div>
+							</div>
+					</a>
 				</div>
-				<div ng-hide="artists.items.length || loading" class="no-items">
-					No items
-				</div>		
-				<div class="clear-both"></div>
-			</div>
-			
-			<div ng-if="type == 'album'">
-			
-				<div class="album-items square-panels">
-					<div class="item-container" ng-repeat="album in albums.items track by $index">
-						<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
-                            candrag
-                            dragobj="album"
-                            draggable="false">
-                                <div class="image-container">
-                                    <thumbnail size="medium" images="album.images"></thumbnail>
-                                </div>
-                                <div class="info animate">
-                                    <div class="name" ng-bind="album.name"></div>
-                                    <div class="secondary">
-                                        <span ng-repeat="artist in album.artists">
-                                            <span ng-bind="artist.name"></span><span ng-if="!$last">, </span>
-                                        </span>
-                                    </div>
-                                </div>
-						</a>
-					</div>
-				</div>		
-				<div ng-hide="albums.items.length || loading" class="no-items">
-					No items
-				</div>		
-				<div class="clear-both"></div>
-			</div>
-			
-			<div ng-if="type == 'playlist'">
-				<div class="playlist-items square-panels">
-					<div class="item-container" ng-repeat="playlist in playlists.items track by $index">
-						<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist"
-                            candrag
-                            dragobj="playlist"
-                            draggable="false">
-                                <div class="image-container">
-                                    <thumbnail size="medium" images="playlist.images"></thumbnail>
-                                </div>
-                                <div class="info animate">
-                                    <div class="name" ng-bind="playlist.name"></div>
-                                    <div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
-                                </div>
-						</a>
-					</div>
-				</div>		
-				<div ng-hide="playlists.items.length || loading" class="no-items">
-					No items
-				</div>		
-				<div class="clear-both"></div>
-			</div>
-			
-			<div ng-if="type == 'track'">
-                <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
-			</div>
-			
-			<div ng-if="type == 'other'">
-                <tracklist ng-if="other.tracks" tracks="other.tracks" type="localtrack" class="tracklist search-results other"></tracklist>
-			</div>
-			
-			<div ng-if="type == 'all'">
-				
-				<div class="search-results-section artists" ng-if="artists.items.length > 0">
-					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'artist' })">Artists</a></h4>	
-					<div class="artist-items square-panels">
-						<div class="item-container" ng-repeat="artist in artists.items | limitTo: 4 track by $index">
-							<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
-                                candrag
-                                dragobj="artist"
-                                draggable="false">
-                                    <div class="image-container">
-                                        <thumbnail size="medium" images="artist.images" size="small"></thumbnail>
-                                    </div>
-                                    <div class="info animate">
-                                        <div class="name" ng-bind="artist.name"></div>
-                                    </div>
-							</a>
-						</div>
-					</div>
-					<div class="clear-both"></div>
-				</div>
-				
-				<div class="search-results-section albums" ng-if="albums.items.length > 0">
-					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'album' })">Albums</a></h4>	
-					<div class="album-items square-panels">
-						<div class="item-container" ng-repeat="album in albums.items | limitTo: 4 track by $index">
-							<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
-                                candrag
-                                dragobj="album"
-                                draggable="false">
-                                    <div class="image-container">
-                                        <thumbnail size="medium" images="album.images" size="small"></thumbnail>
-                                    </div>
-                                    <div class="info animate">
-                                        <div class="name" ng-bind="album.name"></div>
-                                        <div class="secondary">
-                                            <span ng-repeat="artist in album.artists">
-                                                <span ng-bind="artist.name"></span><span ng-if="!$last">, </span>
-                                            </span>
-                                        </div>
-                                    </div>
-							</a>
-						</div>
-					</div>
-					<div class="clear-both"></div>
-				</div>	
-				
-				<div class="search-results-section playlists" ng-if="playlists.items.length > 0">
-					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'playlist' })">Playlists</a></h4>		
-					<div class="playlist-items square-panels">
-						<div class="item-container" ng-repeat="playlist in playlists.items | limitTo: 4 track by $index">
-							<a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist"
-                                candrag
-                                dragobj="playlist"
-                                draggable="false">
-                                    <div class="image-container">
-                                        <thumbnail size="medium" images="playlist.images" size="small"></thumbnail>
-                                    </div>
-                                    <div class="info animate">
-                                        <div class="name" ng-bind="playlist.name"></div>
-                                        <div class="secondary tracks"><span ng-bind="playlist.tracks.total"></span> tracks</div>
-                                    </div>
-							</a>
-						</div>
-					</div>
-					<div class="clear-both"></div>
-				</div>
-				
-				<div class="clear-both"></div>
-				
-				<div class="search-results-section tracks" ng-if="tracklist.tracks.length > 0">
-					<h4 class="section-title"><a ui-sref="search({ query: query, type: 'track' })">Tracks</a></h4>
-                    <tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist search-results"></tracklist>
-				</div>
-				
 			</div>
 		</div>
+		
+		<div class="search-results-section albums" ng-if="results.albums">
+			<h4 class="section-title">Albums</h4>	
+			<div class="album-items square-panels">
+				<div class="item-container" ng-repeat="album in results.albums | limitTo: 4 track by $index">
+					<a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
+						candrag
+						dragobj="album"
+						draggable="false">
+							<div class="image-container">
+								<thumbnail size="medium" images="album.images"></thumbnail>
+							</div>
+							<div class="info animate">
+								<div class="name" ng-bind="album.name"></div>
+							</div>
+					</a>
+				</div>
+			</div>
+		</div>
+		
+		<div class="clear-both"></div>
+		
+		<h4 class="section-title">Tracks</h4>	
+        <tracklist ng-if="results.tracks" tracks="results.tracks" type="track" class="tracklist search-results"></tracklist>
 		
 	</div>
 </div>
