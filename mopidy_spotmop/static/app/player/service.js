@@ -288,14 +288,15 @@ angular.module('spotmop.services.player', [])
             var documentIcon = '\u25A0 ';
             var artistString = '';
             
-            $.each(track.artists, function(key,value){
-                if( artistString != '' )
-                    artistString += ', ';
-                artistString += value.name;
-            });
+            if( track.artists ){
+                for( var i = 0; i < track.artists.length; i++ ){
+                    if( artistString != '' )
+                        artistString += ', ';
+                    artistString += track.artists[i].name;
+                };
+            }
 
-            if( state.isPlaying() )
-                documentIcon = '\u25B6 ';
+            if( state.isPlaying() ) documentIcon = '\u25B6 ';
 
             newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
         };
