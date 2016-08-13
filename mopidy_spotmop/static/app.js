@@ -35505,24 +35505,67 @@ angular.module('spotmop.search', [])
 		// perform the search
 		MopidyService.search(fields, query, sources)
 			.then( function(sources){
-				console.log( sources );
+                console.log( sources );
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					
-					if( typeof(source.tracks) !== 'undefined' ){
-						$scope.results.tracks = $scope.results.tracks.concat( source.tracks );
-					}
-					
-					if( typeof(source.artists) !== 'undefined' ){
-						digestArtists( source.artists );
-					}
-					
-					if( typeof(source.albums) !== 'undefined' ){
-						digestAlbums( source.albums );
-					}
+                    switch( $scope.settings.search.type ){
+                        
+                        case 'artist':
+                            if( typeof(source.tracks) !== 'undefined' ) digestTracksAsArtists( source.tracks );
+                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
+                            break;
+                            
+                        case 'album':
+                            if( typeof(source.tracks) !== 'undefined' ) digestTracksAsAlbums( source.tracks );
+                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
+                            break;
+                            
+                        default:
+                            if( typeof(source.tracks) !== 'undefined' ){
+                                $scope.results.tracks = $scope.results.tracks.concat( source.tracks );
+                                digestTracksAsArtists( source.tracks );
+                                digestTracksAsAlbums( source.tracks );
+                            }
+                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
+                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
+                            break;
+                    }
 				}
 			});
-			
+        
+        function digestTracksAsAlbums( items ){
+            var albums = [];
+            var albumUrisProcessed = [];
+            for( var i = 0; i < items.length; i++ ){
+                if( typeof(items[i].album) !== 'undefined' ){
+                    var album = items[i].album;
+                    if( albumUrisProcessed.indexOf( album.uri ) <= -1 ){
+                        albums.push( album );
+                        albumUrisProcessed.push( album.uri );
+                    }
+                }
+            }
+            $scope.results.albums = $scope.results.albums.concat( albums );
+        }
+        
+        function digestTracksAsArtists( items ){
+            var artists = [];
+            var artistUrisProcessed = [];
+            for( var i = 0; i < items.length; i++ ){
+                if( typeof(items[i].artists) !== 'undefined' ){
+                    for( var j = 0; j < items[i].artists.length; j++ ){
+                        var artist = items[i].artists[j];
+                        if( artistUrisProcessed.indexOf( artist.uri ) <= -1 ){
+                            artists.push( artist );
+                            artistUrisProcessed.push( artist.uri );
+                        }
+                    }
+                }
+            }
+            $scope.results.artists = $scope.results.artists.concat( artists );
+        }
+        
 		function digestArtists( items ){
 			console.table(items);
 			for( var i = 0; i < items.length; i++ ){
