@@ -18,16 +18,17 @@ angular.module('spotmop.services.player', [])
 		isConsume: false,
 		volume: 100,
 		playPosition: 0,
+		currentTracklist: [],
 		currentTlTrack: false,
 		currentTracklistPosition: function(){
 			if( state.currentTlTrack ){
 				
-				var currentTrackObject = $filter('filter')($rootScope.currentTracklist, {tlid: state.currentTlTrack.tlid});
+				var currentTrackObject = $filter('filter')(state.currentTracklist, {tlid: state.currentTlTrack.tlid});
 				var at_position = 0;
 				
 				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
 				if( currentTrackObject.length > 0 ){
-					at_position = $rootScope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
+					at_position = state.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
 				}
 				
 				return at_position;
@@ -60,7 +61,7 @@ angular.module('spotmop.services.player', [])
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
-		updateTracklist();
+        updateTracklist();
 	});
 	
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
@@ -257,14 +258,21 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 	};	
-	
-	
-	/**
-	 * Update our current tracklist
-	 **/
-	function updateTracklist(){
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$rootScope.currentTracklist = tlTracks;
+    
+    /**
+     * Fetch our tracklist from Mopidy, and update our record of it
+     **/
+    function updateTracklist(){
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){
+            
+            // loop all the tlTracks and flatten them to a consistent format
+            var tracks = [];            
+            for( var i = 0; i < tlTracks.length; i++ ){
+                var track = tlTracks[i].track;
+                track.tlid = tlTracks[i].tlid;
+                tracks.push( track );
+            }
+            $rootScope.currentTracklist = tracks;
 			
 			// no tracks? make sure we don't have anything 'playing'
 			// this would typically be called when we clear our tracklist, or have got to the end
@@ -273,7 +281,7 @@ angular.module('spotmop.services.player', [])
 				updateWindowTitle();
 			}
 		});
-	}
+    }
 		
 
 	/**

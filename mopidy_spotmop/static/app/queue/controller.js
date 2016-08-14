@@ -17,9 +17,15 @@ angular.module('spotmop.queue', [])
  **/
 .controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
-	$scope.totalTime = 0;
 	$scope.tracks = $rootScope.currentTracklist;
     $scope.limit = 50;
+	$scope.totalTime = function(){
+		var totalTime = 0;
+		$.each( $scope.tracks, function( key, track ){
+			totalTime += track.length;
+		});	
+		return Math.round(totalTime / 100000);
+	};
     
 	// once we're told we're ready to show more tracks
     var loadingMoreTracks = false;
@@ -58,23 +64,8 @@ angular.module('spotmop.queue', [])
         },
         function(newTracklist, oldTracklist){
 			$scope.tracks = newTracklist;
-			calculateTotalTime( newTracklist );
         }
     );
-	
-    
-	/**
-	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
-	 **/
-	function calculateTotalTime( tracklist ){
-		
-		// figure out the total time for all tracks
-		var totalTime = 0;
-		$.each( tracklist, function( key, track ){
-			totalTime += track.track.length;
-		});	
-		$scope.totalTime = Math.round(totalTime / 100000);
-	};
 	
 	
 	/**

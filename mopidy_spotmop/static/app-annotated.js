@@ -33072,15 +33072,6 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// if we have a nested .track item (as in TlTrack objects), flatten it
-			if( typeof($scope.track.track) !== 'undefined' ){
-				$scope.track.uri = $scope.track.track.uri;
-				$scope.track.name = $scope.track.track.name;
-				$scope.track.artists = $scope.track.track.artists;
-				$scope.track.album = $scope.track.track.album;
-				$scope.track.length = $scope.track.track.length;
-			}
-			
 			// figure out if this track is currently playing
 			$scope.isCurrentlyPlaying = function(){
 				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
@@ -34863,16 +34854,17 @@ angular.module('spotmop.services.player', [])
 		isConsume: false,
 		volume: 100,
 		playPosition: 0,
+		currentTracklist: [],
 		currentTlTrack: false,
 		currentTracklistPosition: function(){
 			if( state.currentTlTrack ){
 				
-				var currentTrackObject = $filter('filter')($rootScope.currentTracklist, {tlid: state.currentTlTrack.tlid});
+				var currentTrackObject = $filter('filter')(state.currentTracklist, {tlid: state.currentTlTrack.tlid});
 				var at_position = 0;
 				
 				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
 				if( currentTrackObject.length > 0 ){
-					at_position = $rootScope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
+					at_position = state.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
 				}
 				
 				return at_position;
@@ -34905,7 +34897,7 @@ angular.module('spotmop.services.player', [])
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
-		updateTracklist();
+        updateTracklist();
 	});
 	
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
@@ -35102,14 +35094,21 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 	};	
-	
-	
-	/**
-	 * Update our current tracklist
-	 **/
-	function updateTracklist(){
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$rootScope.currentTracklist = tlTracks;
+    
+    /**
+     * Fetch our tracklist from Mopidy, and update our record of it
+     **/
+    function updateTracklist(){
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){
+            
+            // loop all the tlTracks and flatten them to a consistent format
+            var tracks = [];            
+            for( var i = 0; i < tlTracks.length; i++ ){
+                var track = tlTracks[i].track;
+                track.tlid = tlTracks[i].tlid;
+                tracks.push( track );
+            }
+            $rootScope.currentTracklist = tracks;
 			
 			// no tracks? make sure we don't have anything 'playing'
 			// this would typically be called when we clear our tracklist, or have got to the end
@@ -35118,7 +35117,7 @@ angular.module('spotmop.services.player', [])
 				updateWindowTitle();
 			}
 		});
-	}
+    }
 		
 
 	/**
@@ -35315,9 +35314,15 @@ angular.module('spotmop.queue', [])
  **/
 .controller('QueueController', ["$scope", "$rootScope", "$filter", "$timeout", "$state", "MopidyService", "SpotifyService", "DialogService", function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
 	
-	$scope.totalTime = 0;
 	$scope.tracks = $rootScope.currentTracklist;
     $scope.limit = 50;
+	$scope.totalTime = function(){
+		var totalTime = 0;
+		$.each( $scope.tracks, function( key, track ){
+			totalTime += track.length;
+		});	
+		return Math.round(totalTime / 100000);
+	};
     
 	// once we're told we're ready to show more tracks
     var loadingMoreTracks = false;
@@ -35356,23 +35361,8 @@ angular.module('spotmop.queue', [])
         },
         function(newTracklist, oldTracklist){
 			$scope.tracks = newTracklist;
-			calculateTotalTime( newTracklist );
         }
     );
-	
-    
-	/**
-	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
-	 **/
-	function calculateTotalTime( tracklist ){
-		
-		// figure out the total time for all tracks
-		var totalTime = 0;
-		$.each( tracklist, function( key, track ){
-			totalTime += track.track.length;
-		});	
-		$scope.totalTime = Math.round(totalTime / 100000);
-	};
 	
 	
 	/**

@@ -69,15 +69,6 @@ angular.module('spotmop.common.track', [])
 			
 			$scope.state = PlayerService.state;
 			
-			// if we have a nested .track item (as in TlTrack objects), flatten it
-			if( typeof($scope.track.track) !== 'undefined' ){
-				$scope.track.uri = $scope.track.track.uri;
-				$scope.track.name = $scope.track.track.name;
-				$scope.track.artists = $scope.track.track.artists;
-				$scope.track.album = $scope.track.track.album;
-				$scope.track.length = $scope.track.track.length;
-			}
-			
 			// figure out if this track is currently playing
 			$scope.isCurrentlyPlaying = function(){
 				return ( $scope.track.tlid == $scope.state().currentTlTrack.tlid );
