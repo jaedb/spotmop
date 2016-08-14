@@ -33088,14 +33088,16 @@ angular.module('spotmop.common.track', [])
 			
 			// figure out what the classes are for our source icon
 			$scope.sourceIconClasses = function(){
-				var source = $scope.track.uri.split(':')[0];
-				var state = 'light';
-				if( $scope.isCurrentlyPlaying() ){
-					if( source == 'spotify' ) state = 'green';
-					if( source == 'local' ) state = 'yellow';
-					if( source == 'soundcloud' ) state = 'red';
-				}
-				return source +' '+ state;
+                if( typeof($scope.track.uri) !== 'undefined' ){
+                    var source = $scope.track.uri.split(':')[0];
+                    var state = 'light';
+                    if( $scope.isCurrentlyPlaying() ){
+                        if( source == 'spotify' ) state = 'green';
+                        if( source == 'local' ) state = 'yellow';
+                        if( source == 'soundcloud' ) state = 'red';
+                    }
+                    return source +' '+ state;
+                }
 			}
 			
 			/**
