@@ -35438,25 +35438,31 @@ angular.module('spotmop.search', [])
 					var source = sources[i];
 					
                     switch( $scope.settings.search.type ){
-                        
+						
                         case 'artist':
-                            if( typeof(source.tracks) !== 'undefined' ) digestTracksAsArtists( source.tracks );
-                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
+                            if( typeof(source.artists) !== 'undefined' ){
+								digestSpotifyArtists( source.artists );
+                            }else if( typeof(source.tracks) !== 'undefined' ){
+								digestTracksAsArtists( source.tracks );
+							}
                             break;
                             
                         case 'album':
-                            if( typeof(source.tracks) !== 'undefined' ) digestTracksAsAlbums( source.tracks );
-                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
+                            if( typeof(source.albums) !== 'undefined' ){
+								digestSpotifyAlbums( source.albums );
+                            }else if( typeof(source.tracks) !== 'undefined' ){
+								digestTracksAsAlbums( source.tracks );
+							}
                             break;
                             
                         default:
+                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
+                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
                             if( typeof(source.tracks) !== 'undefined' ){
                                 $scope.results.tracks = $scope.results.tracks.concat( source.tracks );
                                 digestTracksAsArtists( source.tracks );
                                 digestTracksAsAlbums( source.tracks );
                             }
-                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
-                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
                             break;
                     }
 				}
@@ -35494,29 +35500,27 @@ angular.module('spotmop.search', [])
             $scope.results.artists = $scope.results.artists.concat( artists );
         }
         
-		function digestArtists( items ){
-			console.table(items);
+		function digestSpotifyArtists( items ){
+			var ids = [];
 			for( var i = 0; i < items.length; i++ ){
-				SpotifyService.getArtist( items[i].uri )
-					.then( function(artist){
-						$scope.results.artists = $scope.results.artists.concat( artist );
-					});
+				ids.push( SpotifyService.getFromUri('artistid', items[i].uri) );
 			}
+			SpotifyService.getArtists( ids )
+				.then( function(response){
+					$scope.results.artists = $scope.results.artists.concat( response.artists );
+				});
 		}
 			
-		function digestAlbums( items ){
+		function digestSpotifyAlbums( items ){
+			var ids = [];
 			for( var i = 0; i < items.length; i++ ){
-				SpotifyService.getAlbum( items[i].uri )
-					.then( function(album){
-						$scope.results.albums = $scope.results.albums.concat( album );
-					});
+				ids.push( SpotifyService.getFromUri('albumid', items[i].uri) );
 			}
+			SpotifyService.getAlbums( ids )
+				.then( function(response){
+					$scope.results.albums = $scope.results.albums.concat( response.albums );
+				});
 		}
-			/*
-		MopidyService.testMethod('local.search', { query: { ['any': query] } })
-			.then( function(response){
-				console.log( response );
-			});*/
 	} 
 	
 	
