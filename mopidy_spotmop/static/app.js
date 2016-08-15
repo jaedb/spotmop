@@ -35456,8 +35456,12 @@ angular.module('spotmop.search', [])
                             break;
                             
                         default:
-                            if( typeof(source.artists) !== 'undefined' ) digestArtists( source.artists );
-                            if( typeof(source.albums) !== 'undefined' ) digestAlbums( source.albums );
+                            if( typeof(source.artists) !== 'undefined' ){
+								digestSpotifyArtists( source.artists );
+							}
+                            if( typeof(source.albums) !== 'undefined' ){
+								digestSpotifyAlbums( source.albums );
+							}
                             if( typeof(source.tracks) !== 'undefined' ){
                                 $scope.results.tracks = $scope.results.tracks.concat( source.tracks );
                                 digestTracksAsArtists( source.tracks );
@@ -35474,7 +35478,7 @@ angular.module('spotmop.search', [])
             for( var i = 0; i < items.length; i++ ){
                 if( typeof(items[i].album) !== 'undefined' ){
                     var album = items[i].album;
-                    if( albumUrisProcessed.indexOf( album.uri ) <= -1 ){
+                    if( typeof(album.uri) !== 'undefined' && albumUrisProcessed.indexOf( album.uri ) <= -1 ){
                         albums.push( album );
                         albumUrisProcessed.push( album.uri );
                     }
@@ -35490,7 +35494,7 @@ angular.module('spotmop.search', [])
                 if( typeof(items[i].artists) !== 'undefined' ){
                     for( var j = 0; j < items[i].artists.length; j++ ){
                         var artist = items[i].artists[j];
-                        if( artistUrisProcessed.indexOf( artist.uri ) <= -1 ){
+                        if( typeof(artist.uri) !== 'undefined' && artistUrisProcessed.indexOf( artist.uri ) <= -1 ){
                             artists.push( artist );
                             artistUrisProcessed.push( artist.uri );
                         }
