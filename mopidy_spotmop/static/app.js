@@ -30381,24 +30381,18 @@ angular.module('spotmop.browse.album', [])
 					track.album = $scope.album;
 				});
 				
-				var artisturis = [];
+				var artistids = [];
 				angular.forEach( response.artists, function( artist ){
-					artisturis.push( artist.uri );
+					artistids.push( SpotifyService.getFromUri('artistid', artist.uri) );
 				});
 				
 				// now get the artist objects
-				SpotifyService.getArtists( artisturis )
+				SpotifyService.getArtists( artistids )
 					.then( function( response ){
-                        $scope.album.artists = [];
-                        if( response.artists ){
-                            for( var i = 0; i < response.artists.length; i++ ){
-                                var artist = response.artists[i];
-                                $scope.album.artists.push( artist );
-                            };
-                        }
+                        $scope.album.artists = response;
 					});
 					
-				// if we're viewing from within an individual artist, get 'em
+				// if we're viewing from within an individual artist, get 'em for use in the breadcrumbs
 				if( typeof($stateParams.artisturi) !== 'undefined' ){		
 					// get the artist from Spotify
 					SpotifyService.getArtist( $stateParams.artisturi )
@@ -34471,8 +34465,8 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=album' )
 			.then( function( response ){
-				$scope.albums = response;
 				$scope.allAlbums = response;
+				$scope.albums = $filter('limitTo')(response,50);
 				getArtwork( $scope.albums );
 			});
 	}
@@ -34480,12 +34474,11 @@ angular.module('spotmop.local', [])
 	// fetch artwork from Mopidy
     function getArtwork( $albums ){
 	
-		var uris = [];
-		
+		var uris = [];        
 		for( var i = 0; i < $albums.length; i++ ){
 			uris.push( $albums[i].uri );
 		}
-		
+        
 		// chat with Mopidy and get the images for all these URIs
 		MopidyService.getImages( uris )
 			.then( function(response){
@@ -35381,11 +35374,10 @@ angular.module('spotmop.search', [])
 	if( $scope.query ) performSearch( $scope.query );
 	
 	// when our source changes, perform a new search
-	// TODO: THIS CREATES DUPLICATES WHEN WE NAVIGATE ELSEWHERE AND THEN RETURN
-	$rootScope.$on('spotmop:settingchanged:search.source', function(event,value){
+	$scope.$on('spotmop:settingchanged:search.source', function(event,value){
 		performSearch( $scope.query );
 	});
-	$rootScope.$on('spotmop:settingchanged:search.type', function(event,value){
+	$scope.$on('spotmop:settingchanged:search.type', function(event,value){
 		performSearch( $scope.query );
 	});
 	
@@ -35510,8 +35502,8 @@ angular.module('spotmop.search', [])
 				ids.push( SpotifyService.getFromUri('artistid', items[i].uri) );
 			}
 			SpotifyService.getArtists( ids )
-				.then( function(response){
-					$scope.results.artists = $scope.results.artists.concat( response.artists );
+				.then( function(artists){
+					$scope.results.artists = $scope.results.artists.concat( artists );
 				});
 		}
 			
@@ -35521,8 +35513,8 @@ angular.module('spotmop.search', [])
 				ids.push( SpotifyService.getFromUri('albumid', items[i].uri) );
 			}
 			SpotifyService.getAlbums( ids )
-				.then( function(response){
-					$scope.results.albums = $scope.results.albums.concat( response.albums );
+				.then( function(albums){
+					$scope.results.albums = $scope.results.albums.concat( albums );
 				});
 		}
 	} 
@@ -37784,7 +37776,7 @@ angular.module('spotmop.services.spotify', [])
 						var albumids = [];
 						
 						// loop all our albums to build a list of all the album ids we need
-						for( var i = 0; i < 20; i++ ){
+						for( var i = 0; i < batch.length; i++ ){
 							albumids.push( batch[i].id );
 						};
 						
@@ -37974,33 +37966,41 @@ angular.module('spotmop.services.spotify', [])
             return deferred.promise;
 		},
 		 
-		getArtists: function( artisturis ){
-			
-			var self = this;
-			var artistids = '';
-			
-			if( typeof(artisturis) === 'array' ){
-				angular.forEach( artisturis, function( artisturi ){
-					if( artistids != '' ) artistids += ',';
-					artistids += self.getFromUri( 'artistid', artisturi );
-				});
-			}else{
-				artistids = artisturis;
-			}
+		getArtists: function( artistids ){
 			
             var deferred = $q.defer();
+            
+            var readyToResolve = false;
+            var completeArtists = [];
+            var batchesRequired = Math.ceil( artistids.length / 20 );
+            
+            // batch our requests - Spotify only allows a max of 20 artist ids per request, d'oh!
+            for( var batchCounter = 1; batchCounter <= batchesRequired; batchCounter++ ){
+                
+                var batch = artistids.splice(0,20);
+                
+                var artistids_string = '';
+                for( var i = 0; i < batch.length; i++ ){
+                    if( i > 0 ) artistids_string += ','
+                    artistids_string += batch[i];
+                }
 
-            $http({
-					method: 'GET',
-					url: urlBase+'artists/?ids='+artistids
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
+                $http({
+                        cache: true,
+                        method: 'GET',
+                        url: urlBase+'artists?ids='+artistids_string+'&market='+country
+                    })
+                    .success(function( response ){
+                        completeArtists = completeArtists.concat( response.artists );									
+                        if( batchCounter >= batchesRequired ){
+                            deferred.resolve( completeArtists );
+                        }
+                    })
+                    .error(function( response ){					
+                        NotifyService.error( response.error.message );
+                        deferred.reject( response.error.message );
+                    });
+            }		
 				
             return deferred.promise;
 		},
@@ -38075,25 +38075,38 @@ angular.module('spotmop.services.spotify', [])
 		getAlbums: function( albumids ){
 			
             var deferred = $q.defer();
-			var albumids_string = '';
-			for( var i = 0; i < albumids.length; i++ ){
-				if( i > 0 )
-					albumids_string += ','
-				albumids_string += albumids[i];
-			}
+            
+            var readyToResolve = false;
+            var completeAlbums = [];
+            var batchesRequired = Math.ceil( albumids.length / 20 );
+            
+            // batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
+            for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+                
+                var batch = albumids.splice(0,20);
+                
+                var albumids_string = '';
+                for( var i = 0; i < batch.length; i++ ){
+                    if( i > 0 ) albumids_string += ','
+                    albumids_string += batch[i];
+                }
 
-            $http({
-					cache: true,
-					method: 'GET',
-					url: urlBase+'albums?ids='+albumids_string+'&market='+country
-				})
-                .success(function( response ){
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
+                $http({
+                        cache: true,
+                        method: 'GET',
+                        url: urlBase+'albums?ids='+albumids_string+'&market='+country
+                    })
+                    .success(function( response ){
+                        completeAlbums = completeAlbums.concat( response.albums );									
+                        if( batchCounter >= batchesRequired ){
+                            deferred.resolve( completeAlbums );
+                        }
+                    })
+                    .error(function( response ){					
+                        NotifyService.error( response.error.message );
+                        deferred.reject( response.error.message );
+                    });
+            }		
 				
             return deferred.promise;
 		},

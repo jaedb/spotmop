@@ -1944,19 +1944,20 @@ slider .item-container > .square-panel {
 	margin: -10px 0 30px;
 }
 
-.search-results-section.artists,
-.search-results-section.albums,
-.search-results-section.playlists {
-	width: 30.6667%;
+.search-results-section.artists {
+	width: 46%;
 	float: left;
+    padding-right: 4%;
 }
-.search-results-section.artists,
+
 .search-results-section.albums {
-	padding-right: 4%;
+	width: 46%;
+	float: left;
+    padding-left: 4%;
 }
 
 .search-results-section .square-panel {
-	width: 46%;
+	width: 29.3334%;
 }
 
 .search-results-section .square-panel .info {

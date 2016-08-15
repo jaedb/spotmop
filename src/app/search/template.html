@@ -28,10 +28,10 @@
            
         <div ng-if="!settings.search.type || settings.search.type == 'any'">
         
-            <div class="search-results-section artists">
-                <h4 class="section-title">Artists</h4>	
-                <div class="artist-items square-panels" ng-if="results.artists.length > 0">
-                    <div class="item-container" ng-repeat="artist in results.artists | limitTo: 4 track by $index">
+            <div class="search-results-section artists" ng-if="results.artists.length > 0">
+                <h4 class="section-title"><a ng-click="settings.search.type = 'artist'">Artists</a></h4>	
+                <div class="artist-items square-panels">
+                    <div class="item-container" ng-repeat="artist in results.artists | limitTo: 6 track by $index">
                         <a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
                             candrag
                             dragobj="artist"
@@ -45,13 +45,12 @@
                         </a>
                     </div>
                 </div>
-                <div ng-if="results.artists.length <= 0" class="no-items">No results</div>
             </div>
             
-            <div class="search-results-section albums">
-                <h4 class="section-title">Albums</h4>	
-                <div class="album-items square-panels" ng-if="results.albums.length > 0">
-                    <div class="item-container" ng-repeat="album in results.albums | limitTo: 4 track by $index">
+            <div class="search-results-section albums" ng-if="results.albums.length > 0">
+                <h4 class="section-title"><a ng-click="settings.search.type = 'album'">Albums</a></h4>	
+                <div class="album-items square-panels">
+                    <div class="item-container" ng-repeat="album in results.albums | limitTo: 6 track by $index">
                         <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
                             candrag
                             dragobj="album"
@@ -65,7 +64,6 @@
                         </a>
                     </div>
                 </div>
-                <div ng-if="results.albums.length <= 0" class="no-items">No results</div>
             </div>
             
             <div class="clear-both"></div>

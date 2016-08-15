@@ -55,11 +55,10 @@ angular.module('spotmop.search', [])
 	if( $scope.query ) performSearch( $scope.query );
 	
 	// when our source changes, perform a new search
-	// TODO: THIS CREATES DUPLICATES WHEN WE NAVIGATE ELSEWHERE AND THEN RETURN
-	$rootScope.$on('spotmop:settingchanged:search.source', function(event,value){
+	$scope.$on('spotmop:settingchanged:search.source', function(event,value){
 		performSearch( $scope.query );
 	});
-	$rootScope.$on('spotmop:settingchanged:search.type', function(event,value){
+	$scope.$on('spotmop:settingchanged:search.type', function(event,value){
 		performSearch( $scope.query );
 	});
 	
@@ -184,8 +183,8 @@ angular.module('spotmop.search', [])
 				ids.push( SpotifyService.getFromUri('artistid', items[i].uri) );
 			}
 			SpotifyService.getArtists( ids )
-				.then( function(response){
-					$scope.results.artists = $scope.results.artists.concat( response.artists );
+				.then( function(artists){
+					$scope.results.artists = $scope.results.artists.concat( artists );
 				});
 		}
 			
@@ -195,8 +194,8 @@ angular.module('spotmop.search', [])
 				ids.push( SpotifyService.getFromUri('albumid', items[i].uri) );
 			}
 			SpotifyService.getAlbums( ids )
-				.then( function(response){
-					$scope.results.albums = $scope.results.albums.concat( response.albums );
+				.then( function(albums){
+					$scope.results.albums = $scope.results.albums.concat( albums );
 				});
 		}
 	} 

@@ -1684,18 +1684,18 @@ slider .item-container > .square-panel {
 .search .sub-page-navigation {
   margin: -10px 0 30px; }
 
-.search-results-section.artists,
-.search-results-section.albums,
-.search-results-section.playlists {
-  width: 30.6667%;
-  float: left; }
-
-.search-results-section.artists,
-.search-results-section.albums {
+.search-results-section.artists {
+  width: 46%;
+  float: left;
   padding-right: 4%; }
 
+.search-results-section.albums {
+  width: 46%;
+  float: left;
+  padding-left: 4%; }
+
 .search-results-section .square-panel {
-  width: 46%; }
+  width: 29.3334%; }
 
 .search-results-section .square-panel .info {
   height: 60px; }
