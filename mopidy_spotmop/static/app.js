@@ -29864,7 +29864,6 @@ angular.module('spotmop', [
 		if( !mopidyhost || $location.host() == mopidyhost ) return true;
 	}
 	$scope.state = PlayerService.state;
-	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
@@ -31897,6 +31896,7 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
                     
+                            console.log($scope.dragobj);
 					if(
 						$scope.dragobj.type == 'album' ||
 						$scope.dragobj.type == 'localalbum' ||
@@ -34787,6 +34787,7 @@ angular.module('spotmop.services.player', [])
 		volume: 100,
 		playPosition: 0,
 		currentTracklist: [],
+		getCurrentTracklist: function(){ return state.currentTracklist; },
 		currentTlTrack: false,
 		currentTracklistPosition: function(){
 			if( state.currentTlTrack ){
@@ -35037,10 +35038,11 @@ angular.module('spotmop.services.player', [])
             var tracks = [];            
             for( var i = 0; i < tlTracks.length; i++ ){
                 var track = tlTracks[i].track;
+                track.type = 'tltrack';
                 track.tlid = tlTracks[i].tlid;
                 tracks.push( track );
             }
-            $rootScope.currentTracklist = tracks;
+            state.currentTracklist = tracks;
 			
 			// no tracks? make sure we don't have anything 'playing'
 			// this would typically be called when we clear our tracklist, or have got to the end
@@ -35244,19 +35246,20 @@ angular.module('spotmop.queue', [])
 /**
  * Main controller
  **/
-.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService, PlayerService ){
 	
-	$scope.tracks = $rootScope.currentTracklist;
+	$scope.player = PlayerService.state();
     $scope.limit = 50;
 	$scope.totalTime = function(){
 		var totalTime = 0;
-		$.each( $scope.tracks, function( key, track ){
+		$.each( $scope.player.currentTracklist, function( key, track ){
 			totalTime += track.length;
 		});	
 		return Math.round(totalTime / 100000);
 	};
     
 	// once we're told we're ready to show more tracks
+    /*
     var loadingMoreTracks = false;
     $scope.$on('spotmop:loadMore', function(){
         if( !loadingMoreTracks && $scope.tracks.length >= $scope.limit ){
@@ -35272,7 +35275,7 @@ angular.module('spotmop.queue', [])
                     100
                 );
         }
-	});
+	});*/
 
 	$scope.addUri = function(){
 		DialogService.create('addbyuri',$scope);
@@ -35287,14 +35290,13 @@ angular.module('spotmop.queue', [])
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes
      **/
-    $rootScope.$watch(
-        function( $rootScope ){
-            return $rootScope.currentTracklist;
-        },
+     /*
+    $scope.$watch(
+        'player.currentTracklist',
         function(newTracklist, oldTracklist){
 			$scope.tracks = newTracklist;
         }
-    );
+    );*/
 	
 	
 	/**
@@ -35302,7 +35304,7 @@ angular.module('spotmop.queue', [])
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		
-		var selectedTracks = $filter('filter')( $scope.tracks, { selected: true } );
+		var selectedTracks = $filter('filter')( $scope.player.currentTracklist, { selected: true } );
 		var tracksToDelete = [];
 		
 		// build an array of tlids to remove
@@ -35313,7 +35315,7 @@ angular.module('spotmop.queue', [])
 		// remove tracks from DOM (for snappier UX)
 		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
 		$scope.$apply( function(){
-			$scope.tracks = $filter('filter')( $scope.tracks, { selected: false } );
+			$scope.player.currentTracklist = $filter('filter')( $scope.player.currentTracklist, { selected: false } );
 		});
 		
 		MopidyService.removeFromTrackList( tracksToDelete );

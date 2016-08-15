@@ -94,7 +94,6 @@ angular.module('spotmop', [
 		if( !mopidyhost || $location.host() == mopidyhost ) return true;
 	}
 	$scope.state = PlayerService.state;
-	$rootScope.currentTracklist = [];
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){

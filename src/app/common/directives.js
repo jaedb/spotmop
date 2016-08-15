@@ -132,6 +132,7 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
                     
+                            console.log($scope.dragobj);
 					if(
 						$scope.dragobj.type == 'album' ||
 						$scope.dragobj.type == 'localalbum' ||

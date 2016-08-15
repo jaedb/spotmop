@@ -19,6 +19,7 @@ angular.module('spotmop.services.player', [])
 		volume: 100,
 		playPosition: 0,
 		currentTracklist: [],
+		getCurrentTracklist: function(){ return state.currentTracklist; },
 		currentTlTrack: false,
 		currentTracklistPosition: function(){
 			if( state.currentTlTrack ){
@@ -269,10 +270,11 @@ angular.module('spotmop.services.player', [])
             var tracks = [];            
             for( var i = 0; i < tlTracks.length; i++ ){
                 var track = tlTracks[i].track;
+                track.type = 'tltrack';
                 track.tlid = tlTracks[i].tlid;
                 tracks.push( track );
             }
-            $rootScope.currentTracklist = tracks;
+            state.currentTracklist = tracks;
 			
 			// no tracks? make sure we don't have anything 'playing'
 			// this would typically be called when we clear our tracklist, or have got to the end

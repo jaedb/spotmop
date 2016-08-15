@@ -72,14 +72,14 @@
 		
 		<div class="queue-intro">		
 			<div class="info-text">
-				<span ng-bind="currentTracklist.length"></span> track<span ng-show="currentTracklist.length != 1">s</span>
+				<span ng-bind="player.currentTracklist.length"></span> track<span ng-show="player.currentTracklist.length != 1">s</span>
 				&nbsp;|&nbsp; <span ng-bind="totalTime()"></span> minute<span ng-show="totalTime() != 1">s</span>
                 &nbsp;|&nbsp; <a ng-click="addUri()">Add URI</a>
                 &nbsp;|&nbsp; <a ng-click="clearQueue()">Clear</a>
 			</div>
 		</div>
-		
-        <tracklist ng-if="tracks" tracks="tracks" type="tltrack" class="tracklist queue droppable" dropaccept='["tltrack"]' droptype="queuetracklist" limit="{{ limit }}"></tracklist>
+    
+        <tracklist ng-if="player.currentTracklist" tracks="player.currentTracklist" type="tltrack" class="tracklist queue droppable" dropaccept='["tltrack"]' droptype="queuetracklist" limit="{{ limit }}"></tracklist>
 		
 	</div>
 </div>
