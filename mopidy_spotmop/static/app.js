@@ -35414,15 +35414,17 @@ angular.module('spotmop.search', [])
 	function mopidySearch( query ){
 		
 		// prepare our source option into a mopidy-friendly object
-		var sources = $scope.settings.search.source;
-		if( sources == 'all' ){
+		var sources = SettingsService.getSetting('spotmop.search.source');
+		if( sources == null || sources == 'all' ){
 			sources = null;
 		}else{
 			sources = [ sources+':' ];
 		}
 		
 		// explode our fields to an array
-		var fields = $scope.settings.search.type.split(',');
+		var type = SettingsService.getSetting('spotmop.search.type');
+		if( type == null ) type = 'any';
+		var fields = type.split(',');
 		
 		// flush out any previous search results
 		$scope.results.tracks = [];
@@ -35436,7 +35438,7 @@ angular.module('spotmop.search', [])
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					
-                    switch( $scope.settings.search.type ){
+                    switch( SettingsService.getSetting('spotmop.search.type') ){
 						
                         case 'artist':
                             if( typeof(source.artists) !== 'undefined' ){
@@ -35465,12 +35467,13 @@ angular.module('spotmop.search', [])
                                 $scope.results.tracks = $scope.results.tracks.concat( source.tracks );
 								
 								// only digest tracks as artists if we didn't get any explicit artist results
-								if( typeof(source.artists) === 'undefined' )
+								if( typeof(source.artists) === 'undefined' ){
 									digestTracksAsArtists( source.tracks, 6 );
-								
+								}
 								// only digest tracks as albums if we didn't get any explicit album results
-								if( typeof(source.albums) === 'undefined' )
+								if( typeof(source.albums) === 'undefined' ){
 									digestTracksAsAlbums( source.tracks, 6 );
+								}
                             }
                             break;
                     }
@@ -35482,7 +35485,7 @@ angular.module('spotmop.search', [])
             var albums = [];
             var albumUrisProcessed = [];
             for( var i = 0; i < limit; i++ ){
-                if( typeof(items[i].album) !== 'undefined' ){
+                if( typeof(items[i]) !== 'undefined' && typeof(items[i].album) !== 'undefined' ){
                     var album = items[i].album;
                     if( typeof(album.uri) !== 'undefined' && albumUrisProcessed.indexOf( album.uri ) <= -1 ){
                         albums.push( album );
@@ -35498,7 +35501,7 @@ angular.module('spotmop.search', [])
             var artists = [];
             var artistUrisProcessed = [];
             for( var i = 0; i < limit; i++ ){
-                if( typeof(items[i].artists) !== 'undefined' ){
+                if( typeof(items[i]) !== 'undefined' && typeof(items[i].artists) !== 'undefined' ){
                     for( var j = 0; j < items[i].artists.length; j++ ){
                         var artist = items[i].artists[j];
                         if( typeof(artist.uri) !== 'undefined' && artistUrisProcessed.indexOf( artist.uri ) <= -1 ){
@@ -35516,7 +35519,9 @@ angular.module('spotmop.search', [])
 			if( typeof(limit) === 'undefined') var limit = items.length;
 			var ids = [];
 			for( var i = 0; i < limit; i++ ){
-				ids.push( SpotifyService.getFromUri('artistid', items[i].uri) );
+				if( typeof(items[i]) !== 'undefined' &&  typeof(items[i].uri) !== 'undefined' ){
+					ids.push( SpotifyService.getFromUri('artistid', items[i].uri) );
+				}
 			}
 			SpotifyService.getArtists( ids )
 				.then( function(artists){
@@ -35529,7 +35534,9 @@ angular.module('spotmop.search', [])
 			if( typeof(limit) === 'undefined') var limit = items.length;
 			var ids = [];
 			for( var i = 0; i < limit; i++ ){
-				ids.push( SpotifyService.getFromUri('albumid', items[i].uri) );
+				if( typeof(items[i]) !== 'undefined' &&  typeof(items[i].uri) !== 'undefined' ){
+					ids.push( SpotifyService.getFromUri('albumid', items[i].uri) );
+				}
 			}
 			SpotifyService.getAlbums( ids )
 				.then( function(albums){
