@@ -93,7 +93,7 @@
                     </div>
                 </div>
             </div>
-            <div ng-if="!results.artists" class="no-items">No results</div>
+            <div ng-if="results.artists.length <= 0" class="no-items">No results</div>
             <div class="clear-both"></div>
         </div>
         
@@ -117,7 +117,7 @@
                     </div>
                 </div>
             </div>
-            <div ng-if="!results.artists" class="no-items">No results</div>
+            <div ng-if="results.albums.length <= 0" class="no-items">No results</div>
             <div class="clear-both"></div>
         </div>
         

@@ -43,7 +43,6 @@ angular.module('spotmop.browse.new', [])
     
     // go off and get more of this playlist's tracks
     function loadMoreNewReleases( offset ){
-		console.log('loading');
         
         // update our switch to prevent spamming for every scroll event
         loadingMoreNewReleases = true;

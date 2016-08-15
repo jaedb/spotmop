@@ -1066,7 +1066,7 @@ angular.module('spotmop.services.spotify', [])
 					var batchesRequired = Math.ceil( response.albums.items.length / 20 );
 					
 					// batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
-					for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+					for( var batchCounter = 0; batchCounter < batchesRequired; batchCounter++ ){
 						
 						var batch = response.albums.items.splice(0,20);
 						var albumids = [];
@@ -1079,7 +1079,7 @@ angular.module('spotmop.services.spotify', [])
 						// go get the albums
 						service.getAlbums( albumids )
 							.then( function(albums){
-								completeAlbums = completeAlbums.concat( albums.albums );									
+								completeAlbums = completeAlbums.concat( albums );									
 								if( batchCounter >= batchesRequired ){
 									response.albums.items = completeAlbums;
 									deferred.resolve( response );
@@ -1287,7 +1287,7 @@ angular.module('spotmop.services.spotify', [])
                         url: urlBase+'artists?ids='+artistids_string+'&market='+country
                     })
                     .success(function( response ){
-                        completeArtists = completeArtists.concat( response.artists );									
+                        completeArtists = completeArtists.concat( response.artists );						
                         if( batchCounter >= batchesRequired ){
                             deferred.resolve( completeArtists );
                         }
@@ -1375,9 +1375,9 @@ angular.module('spotmop.services.spotify', [])
             var readyToResolve = false;
             var completeAlbums = [];
             var batchesRequired = Math.ceil( albumids.length / 20 );
-            
+			
             // batch our requests - Spotify only allows a max of 20 albums per request, d'oh!
-            for( var batchCounter = 1; batchCounter < batchesRequired; batchCounter++ ){
+            for( var batchCounter = 0; batchCounter < batchesRequired; batchCounter++ ){
                 
                 var batch = albumids.splice(0,20);
                 
@@ -1393,7 +1393,7 @@ angular.module('spotmop.services.spotify', [])
                         url: urlBase+'albums?ids='+albumids_string+'&market='+country
                     })
                     .success(function( response ){
-                        completeAlbums = completeAlbums.concat( response.albums );									
+                        completeAlbums = completeAlbums.concat( response.albums );												
                         if( batchCounter >= batchesRequired ){
                             deferred.resolve( completeAlbums );
                         }

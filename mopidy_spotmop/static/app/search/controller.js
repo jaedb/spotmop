@@ -174,7 +174,8 @@ angular.module('spotmop.search', [])
                     }
                 }
             }
-            $scope.results.artists = $scope.results.artists.concat( artists );
+			
+			$scope.results.artists = $scope.results.artists.concat( artists );
         }
         
 		function digestSpotifyArtists( items ){
