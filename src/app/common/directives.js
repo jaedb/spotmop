@@ -132,7 +132,6 @@ angular.module('spotmop.directives', [])
                     
 					var tracerContent = '';
                     
-                            console.log($scope.dragobj);
 					if(
 						$scope.dragobj.type == 'album' ||
 						$scope.dragobj.type == 'localalbum' ||
@@ -167,7 +166,11 @@ angular.module('spotmop.directives', [])
 							// loop the first three items, and add these to our drag tracer
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+								
+								// only add if we haven't added the track already (ie the dragobj)
+								if( selectedTracks.eq(i).data('uri') != $scope.dragobj.uri ){
+									tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+								}
 							}
 						
 					}
