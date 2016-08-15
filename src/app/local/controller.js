@@ -172,7 +172,6 @@ angular.module('spotmop.local', [])
 				// process it and add to our $scope
 				var callback = function(n){
 					return function( response ){
-						console.log( response );
 						if( typeof(response) !== 'undefined' ){
 							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
 						}

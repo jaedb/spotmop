@@ -31896,7 +31896,7 @@ angular.module('spotmop.directives', [])
                     $('body').addClass('dragging');
                     
 					var tracerContent = '';
-					
+                    
 					if(
 						$scope.dragobj.type == 'album' ||
 						$scope.dragobj.type == 'localalbum' ||
@@ -32988,6 +32988,10 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: ["$element", "$scope", "$rootScope", "MopidyService", "NotifyService", "PlayerService", function( $element, $scope, $rootScope, MopidyService, NotifyService, PlayerService ){
 			
+            // parse our parent tracklist into the track itself
+            // useful for detecting drag event capabilities
+            $scope.track.type = $scope.$parent.type;
+            
 			// fetch our player service
 			$scope.state = PlayerService.state;
 			
@@ -33038,7 +33042,7 @@ angular.module('spotmop.common.track', [])
 						$scope.$parent.trackClicked( $scope );
 					}
 					
-					$scope.$emit('spotmop:contextMenu:show', event, $scope.$parent.type);
+					$scope.$emit('spotmop:contextMenu:show', event, $scope.track.type);
 				}
 			});
 			
@@ -34380,7 +34384,6 @@ angular.module('spotmop.local', [])
 				// process it and add to our $scope
 				var callback = function(n){
 					return function( response ){
-						console.log( response );
 						if( typeof(response) !== 'undefined' ){
 							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
 						}
@@ -37616,9 +37619,9 @@ angular.module('spotmop.services.spotify', [])
             
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			spotifyUser = SettingsService.getSetting('spotify.user');
-            if( !spotifyUser || userid != spotifyUser ) return false;		
+            
+			spotifyUser = SettingsService.getSetting('spotifyuser');
+            if( !spotifyUser || userid != spotifyUser.id ) return false;		
 			
             var deferred = $q.defer();
 
@@ -37636,7 +37639,8 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
+                .success(function( response ){	
+                    console.log( response );
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
@@ -38200,8 +38204,6 @@ angular.module('spotmop.services.spotify', [])
 						while( response.albums.items.length ){
 							batches.push( response.albums.items.splice(0,20) );
 						}
-						
-						console.log( batches );
 						
 						// now let's process our batches
 						for( var i = 0; i < batches.length; i++ ){

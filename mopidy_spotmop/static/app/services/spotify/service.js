@@ -911,9 +911,9 @@ angular.module('spotmop.services.spotify', [])
             
 			var userid = this.getFromUri( 'userid', playlisturi );
 			var playlistid = this.getFromUri( 'playlistid', playlisturi );
-			
-			spotifyUser = SettingsService.getSetting('spotify.user');
-            if( !spotifyUser || userid != spotifyUser ) return false;		
+            
+			spotifyUser = SettingsService.getSetting('spotifyuser');
+            if( !spotifyUser || userid != spotifyUser.id ) return false;		
 			
             var deferred = $q.defer();
 
@@ -931,7 +931,8 @@ angular.module('spotmop.services.spotify', [])
 						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
 					}
 				})
-                .success(function( response ){					
+                .success(function( response ){	
+                    console.log( response );
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
@@ -1495,8 +1496,6 @@ angular.module('spotmop.services.spotify', [])
 						while( response.albums.items.length ){
 							batches.push( response.albums.items.splice(0,20) );
 						}
-						
-						console.log( batches );
 						
 						// now let's process our batches
 						for( var i = 0; i < batches.length; i++ ){

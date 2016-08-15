@@ -9,6 +9,10 @@ angular.module('spotmop.common.track', [])
 		templateUrl: 'app/common/tracklist/track.template.html',
 		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService, PlayerService ){
 			
+            // parse our parent tracklist into the track itself
+            // useful for detecting drag event capabilities
+            $scope.track.type = $scope.$parent.type;
+            
 			// fetch our player service
 			$scope.state = PlayerService.state;
 			
@@ -59,7 +63,7 @@ angular.module('spotmop.common.track', [])
 						$scope.$parent.trackClicked( $scope );
 					}
 					
-					$scope.$emit('spotmop:contextMenu:show', event, $scope.$parent.type);
+					$scope.$emit('spotmop:contextMenu:show', event, $scope.track.type);
 				}
 			});
 			
