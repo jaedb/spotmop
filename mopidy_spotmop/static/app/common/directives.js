@@ -1046,13 +1046,11 @@ angular.module('spotmop.directives', [])
 			// mopidy-styled images
 			if( typeof(image.__model__) !== 'undefined' ){
 				
-				var mopidyhost = SettingsService.getSetting('mopidy.host');
-				if( !mopidyhost ) mopidyhost = window.location.hostname;
-				var mopidyip = SettingsService.getSetting('mopidy.host');
-				if( !mopidyip ) mopidyip = '6680';
+				if( typeof(image.uri) === 'object' )
+					image.url = image.uri[0];
+				else
+					image.url = image.uri;
 				
-				var baseUrl = 'http://'+ mopidyhost +':'+ mopidyip;
-				image.url = baseUrl +'/spotmop'+ image.uri;
 				delete image.uri;
 				
 				if( image.height ){
@@ -1068,7 +1066,7 @@ angular.module('spotmop.directives', [])
 				if( !standardised.small ) standardised.small = image.url;
 				if( !standardised.medium ) standardised.medium = image.url;
 				if( !standardised.large ) standardised.large = image.url;
-		
+				
 			// spotify-styled images
 			}else if( typeof(image.height) !== 'undefined' ){
 			

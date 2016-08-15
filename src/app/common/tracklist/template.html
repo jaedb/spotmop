@@ -1,14 +1,7 @@
 <track
-    ng-if="type == 'track'"
     ng-repeat="track in tracksWrapper() track by $index" 
     data-index="{{ $index }}">
 </track>
-
-<tltrack 
-    ng-if="type == 'tltrack'" 
-    ng-repeat="track in tracksWrapper() track by $index" 
-    data-index="{{ $index }}">
-</tltrack>
 
 <div ng-hide="tracksWrapper().length" class="no-items">
     No items

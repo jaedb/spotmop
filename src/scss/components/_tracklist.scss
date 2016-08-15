@@ -52,6 +52,23 @@
 			top: 9px;
 			right: 3px;
 		}
+		
+		&.playing {
+			font-weight: bold;
+		}
+
+		
+		/**
+		 * Folders
+		 **/
+		&.folder .icon {
+			width: 24px;
+			float: left;
+		}
+
+		&.folder .title {
+			width: auto;
+		}
 	}
 }
 
@@ -78,28 +95,10 @@ body.dragging .tracklist .track.selected {
 	background: #FFF39C;
 }
 
-.tracklist .track.playing {
-	font-weight: bold;
-}
-
 body.dragging .tracklist .track:hover,
 body.dragging .tracklist .track.dropping {
 	border-top: 3px solid #32b5f2;
 	margin-top: -3px;
-}
-
-
-/**
- * Folders (based on tracks)
- **/
-
-.track.folder .icon {
-	width: 24px;
-	float: left;
-}
-
-.track.folder .title {
-	width: auto;
 }
 
 

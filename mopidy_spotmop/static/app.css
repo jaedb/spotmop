@@ -2941,7 +2941,10 @@ input[type="submit"] {
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none; }
+  user-select: none;
+  /**
+   * Folders
+   **/ }
   .tracklist .track .title,
   .tracklist .track .artist,
   .tracklist .track .album,
@@ -2969,6 +2972,13 @@ input[type="submit"] {
     position: absolute;
     top: 9px;
     right: 3px; }
+  .tracklist .track.playing {
+    font-weight: bold; }
+  .tracklist .track.folder .icon {
+    width: 24px;
+    float: left; }
+  .tracklist .track.folder .title {
+    width: auto; }
 
 .tracklist.search-results .track .source,
 .tracklist.queue .track .source {
@@ -2985,23 +2995,10 @@ body.dragging .tracklist .track.selected {
 .tracklist .track.selected:hover {
   background: #FFF39C; }
 
-.tracklist .track.playing {
-  font-weight: bold; }
-
 body.dragging .tracklist .track:hover,
 body.dragging .tracklist .track.dropping {
   border-top: 3px solid #32b5f2;
   margin-top: -3px; }
-
-/**
- * Folders (based on tracks)
- **/
-.track.folder .icon {
-  width: 24px;
-  float: left; }
-
-.track.folder .title {
-  width: auto; }
 
 /**
  * List (based on tracks also)
