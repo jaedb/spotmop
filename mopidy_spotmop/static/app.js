@@ -35414,7 +35414,7 @@ angular.module('spotmop.search', [])
 	function mopidySearch( query ){
 		
 		// prepare our source option into a mopidy-friendly object
-		var sources = SettingsService.getSetting('spotmop.search.source');
+		var sources = SettingsService.getSetting('search.source');
 		if( sources == null || sources == 'all' ){
 			sources = null;
 		}else{
@@ -35422,7 +35422,7 @@ angular.module('spotmop.search', [])
 		}
 		
 		// explode our fields to an array
-		var type = SettingsService.getSetting('spotmop.search.type');
+		var type = SettingsService.getSetting('search.type');
 		if( type == null ) type = 'any';
 		var fields = type.split(',');
 		
@@ -35434,11 +35434,11 @@ angular.module('spotmop.search', [])
 		// perform the search
 		MopidyService.search(fields, query, sources)
 			.then( function(sources){
-                console.log( sources );
+				
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					
-                    switch( SettingsService.getSetting('spotmop.search.type') ){
+                    switch( SettingsService.getSetting('search.type') ){
 						
                         case 'artist':
                             if( typeof(source.artists) !== 'undefined' ){
