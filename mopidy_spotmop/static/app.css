@@ -3427,23 +3427,6 @@ body.dragging .tracklist .track.dropping {
     padding-top: 2px; }
 
   /**
-   * Tracklists
-   **/
-  .tracklist .track {
-    padding-right: 20px; }
-
-  .tracklist .track .popularity,
-  .tracklist .track .duration {
-    display: none; }
-
-  .tracklist .track .title {
-    width: 40%; }
-
-  .tracklist.album-items .track .title,
-  .tracklist.album-items .track .artist {
-    width: 50%; }
-
-  /**
    * Artist intro panel
    **/
   .artist-page .info-panel {
@@ -3600,7 +3583,8 @@ body.dragging .tracklist .track.dropping {
   .tracklist .track .title,
   .tracklist .track .artist {
     width: 50%; }
-
+  .tracklist .track .info .duration {
+    display: none; }
   .tracklist .track .album {
     clear: left;
     width: auto;
