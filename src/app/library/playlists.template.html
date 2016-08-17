@@ -3,8 +3,8 @@
 		
         <div class="page-header">
 		
-            <div class="utilities" ng-if="spotifyAuthorized">
-                <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()">
+            <div class="utilities">
+                <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()" ng-if="spotifyAuthorized">
                     <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">New</span>
                 </a>
 				<dropdownfield options="sortOptions" settingname="playlists.sortField" togglesettingname="playlists.sortReverse" iconclass="fa-sort"></dropdownfield>
@@ -22,9 +22,8 @@
         </div>
         
         <!-- GRID VIEW -->
-        
+		
 		<div class="playlist-items square-panels" ng-if="!settings.playlists.view || settings.playlists.view == 'grid'">
-			
 			<div ng-if="playlists.items.length">
 				<div class="item-container" ng-repeat="playlist in playlists.items | orderBy:settings.playlists.sortField:settings.playlists.sortReverse | filter:show track by playlist.uri">
 					<a
@@ -87,18 +86,22 @@
                         <span ng-bind="playlist.name"></span>
                     </div>
                     <div class="col w25 owner">
-                        <a ui-sref="browse.user({ uri: playlist.owner.uri })" ng-bind="playlist.owner.id" ng-click="$event.stopPropagation()"></a>
+                        <a ui-sref="browse.user({ uri: playlist.owner.uri })" ng-bind="playlist.owner.id" ng-click="$event.stopPropagation()" ng-if="playlist.owner"></a>
+                        <span ng-if="playlist.owner.id == undefined">-</span>
                     </div>
                     <div class="col w10 tracks">
-                        <span ng-bind="playlist.tracks.total | number:0"></span>
-                    </div>   
-                    <div class="col w10">
-                        <span ng-if="playlist.public">Public</span>
-                        <span ng-if="!playlist.public">Private</span>
+                        <span ng-if="playlist.tracks" ng-bind="playlist.tracks.total | number:0"></span>
+                        <span ng-if="playlist.tracks == undefined">-</span>
                     </div>
                     <div class="col w10">
-                        <span ng-if="playlist.collaborative">Yes</span>
-                        <span ng-if="!playlist.collaborative">No</span>
+                        <span ng-if="playlist.public == true">Public</span>
+                        <span ng-if="playlist.public == false">Private</span>
+                        <span ng-if="playlist.public == undefined">-</span>
+                    </div>
+                    <div class="col w10">
+                        <span ng-if="playlist.collaborative == true">Yes</span>
+                        <span ng-if="playlist.collaborative == false">No</span>
+                        <span ng-if="playlist.collaborative == undefined">-</span>
                     </div>
                     <div class="clear-both"></div>
 				</div>

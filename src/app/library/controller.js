@@ -399,7 +399,7 @@ angular.module('spotmop.library', [])
 			return true;
         }
         
-        if( playlist.owner.id == 'jaedb' ) return true;
+        if( typeof(playlist.owner) === 'undefined' || playlist.owner.id == 'jaedb' ) return true;
 		
 		return false;
 	};
@@ -430,7 +430,7 @@ angular.module('spotmop.library', [])
 					
 					// add them to our list
 					$scope.playlists.items = response;
-					
+									
 					// now go get the extra info (and artwork) from Spotify
 					// need to do this individually as there is no bulk endpoint, curses!
 					angular.forEach( response, function(playlist, i){
