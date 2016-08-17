@@ -20,6 +20,9 @@ angular.module('spotmop.browse.playlist', [])
 .controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
 	
 	// setup base variables
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
 	$scope.playlist = {images: []};
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
@@ -71,44 +74,45 @@ angular.module('spotmop.browse.playlist', [])
 	
 
 	// on load, fetch the playlist
-	SpotifyService.getPlaylist( $stateParams.uri )
-		.then(function( response ) {
+	if( $scope.origin == 'spotify' ){
+		SpotifyService.getPlaylist( $stateParams.uri )
+			.then(function( response ) {
+			
+				$scope.playlist = response;			
+				$scope.tracklist.next = response.tracks.next;
+				$scope.tracklist.previous = response.tracks.previous;
+				$scope.tracklist.offset = response.tracks.offset;
+				$scope.tracklist.total = response.tracks.total;
+				$scope.tracklist.tracks = reformatTracks( response.tracks.items );
+			
+				// parse description string and make into real html (people often have links here)
+				$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
+			
+				// get the owner
+				if( $rootScope.spotifyAuthorized ){
+					SpotifyService.getUser( $scope.playlist.owner.uri )
+						.then( function( response ){
+							$scope.playlist.owner = response;
+						});
+				}
+			
+				// figure out if we're following this playlist
+				if( $rootScope.spotifyAuthorized ){
+					SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+						.then( function( isFollowing ){
+							$scope.following = $.parseJSON(isFollowing);
+						});
+				}
 		
-			$scope.playlist = response;			
-			$scope.tracklist.next = response.tracks.next;
-			$scope.tracklist.previous = response.tracks.previous;
-			$scope.tracklist.offset = response.tracks.offset;
-			$scope.tracklist.total = response.tracks.total;
-			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
-		
-			// parse description string and make into real html (people often have links here)
-			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-        
-            // get the owner
-			if( $rootScope.spotifyAuthorized ){
-				SpotifyService.getUser( $scope.playlist.owner.uri )
-					.then( function( response ){
-						$scope.playlist.owner = response;
-					});
-			}
-        
-            // figure out if we're following this playlist
-			if( $rootScope.spotifyAuthorized ){
-				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-					.then( function( isFollowing ){
-						$scope.following = $.parseJSON(isFollowing);
-					});
-			}
-    
-			// if we're viewing from within a genre category, get the category
-			if( typeof($stateParams.categoryid) !== 'undefined' ){				
-				SpotifyService.getCategory( $stateParams.categoryid )
-					.then(function( response ) {
-						$scope.category = response;
-					});
-			}
-		});
-	
+				// if we're viewing from within a genre category, get the category
+				if( typeof($stateParams.categoryid) !== 'undefined' ){				
+					SpotifyService.getCategory( $stateParams.categoryid )
+						.then(function( response ) {
+							$scope.category = response;
+						});
+				}
+			});
+	}
 	
 	/**
 	 * When the user changes the order of a playlist tracklist

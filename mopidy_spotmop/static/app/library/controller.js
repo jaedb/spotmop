@@ -394,6 +394,8 @@ angular.module('spotmop.library', [])
 		];
 	$scope.playlists = { items: [] };
 	$scope.show = function( playlist ){
+		if( !$rootScope.spotifyAuthorized ) return true;
+		
         var filter = SettingsService.getSetting('playlists.filter');
         if( !filter || filter == 'all' ){
 			return true;
@@ -407,34 +409,21 @@ angular.module('spotmop.library', [])
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser.id');
 	
-	// if we have full spotify authorization
-	if( $rootScope.spotifyAuthorized ){	
-    
-		SpotifyService.getPlaylists( userid )
-			.then( function( response ){ // successful
+	// actually fetch the playlists
+	function fetchPlaylists(){		
+		MopidyService.getPlaylists()
+			.then( function( response ){
+				
+				// add them to our list
+				$scope.playlists.items = response;
+				
+				// now go get the extra info (and artwork) from Spotify
+				// need to do this individually as there is no bulk endpoint, curses!
+				angular.forEach( response, function(playlist, i){
 					
-					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
-						Spotify.refreshToken();
-                    }else{
-						$scope.playlists = response;
-					}
-				});
-	
-	// not authorized, so have to fetch via backend first
-	}else{
-        
-		function fetchPlaylists(){		
-			MopidyService.getPlaylists()
-				.then( function( response ){
-					
-					// add them to our list
-					$scope.playlists.items = response;
-									
-					// now go get the extra info (and artwork) from Spotify
-					// need to do this individually as there is no bulk endpoint, curses!
-					angular.forEach( response, function(playlist, i){
-					
+					// only lookup Spotify playlists
+					if( playlist.uri.startsWith('spotify:') ){
+						
 						// process it and add to our $scope
 						var callback = function(i){
 							return function( response ){
@@ -450,16 +439,16 @@ angular.module('spotmop.library', [])
 						
 						// run the actual request
 						SpotifyService.getPlaylist( playlist.uri ).then( callback );
-					});
+					}
 				});
-		}
-		
-		// on load of this page (whether first pageload or just a new navigation)
-		if( $rootScope.mopidyOnline )
-			fetchPlaylists();
-		else
-			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
-    }
+			});
+	}
+	
+	// on load of this page (whether first pageload or just a new navigation)
+	if( $rootScope.mopidyOnline )
+		fetchPlaylists();
+	else
+		$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
 	
 	
     /**

@@ -7,9 +7,23 @@
                 <a class="button create-playlist transparent pull-right" ng-click="createPlaylist()" ng-if="spotifyAuthorized">
                     <i class="fa fa-plus"></i>&nbsp; <span class="mobile-hide">New</span>
                 </a>
-				<dropdownfield options="sortOptions" settingname="playlists.sortField" togglesettingname="playlists.sortReverse" iconclass="fa-sort"></dropdownfield>
-				<dropdownfield options="viewOptions" settingname="playlists.view" iconclass="fa-eye"></dropdownfield>
-				<dropdownfield options="filterOptions" settingname="playlists.filter" iconclass="fa-filter"></dropdownfield>
+				<dropdownfield
+					options="sortOptions"
+					settingname="playlists.sortField"
+					togglesettingname="playlists.sortReverse"
+					iconclass="fa-sort">
+				</dropdownfield>
+				<dropdownfield
+					options="viewOptions"
+					settingname="playlists.view"
+					iconclass="fa-eye">
+				</dropdownfield>
+				<dropdownfield
+					options="filterOptions"
+					settingname="playlists.filter"
+					iconclass="fa-filter"
+					ng-if="spotifyAuthorized">
+				</dropdownfield>
             </div>
         
 			<span class="menu-reveal-trigger mobile-show" ng-click="showMenu()"><i class="fa fa-bars"></i></span>

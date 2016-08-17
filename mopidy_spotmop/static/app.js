@@ -31217,6 +31217,9 @@ angular.module('spotmop.browse.playlist', [])
 .controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
 	
 	// setup base variables
+	var uri = $stateParams.uri;
+	uri = uri = uri.replace('|','/');
+	$scope.origin = $filter('assetOrigin')(uri);
 	$scope.playlist = {images: []};
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
@@ -31268,44 +31271,45 @@ angular.module('spotmop.browse.playlist', [])
 	
 
 	// on load, fetch the playlist
-	SpotifyService.getPlaylist( $stateParams.uri )
-		.then(function( response ) {
+	if( $scope.origin == 'spotify' ){
+		SpotifyService.getPlaylist( $stateParams.uri )
+			.then(function( response ) {
+			
+				$scope.playlist = response;			
+				$scope.tracklist.next = response.tracks.next;
+				$scope.tracklist.previous = response.tracks.previous;
+				$scope.tracklist.offset = response.tracks.offset;
+				$scope.tracklist.total = response.tracks.total;
+				$scope.tracklist.tracks = reformatTracks( response.tracks.items );
+			
+				// parse description string and make into real html (people often have links here)
+				$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
+			
+				// get the owner
+				if( $rootScope.spotifyAuthorized ){
+					SpotifyService.getUser( $scope.playlist.owner.uri )
+						.then( function( response ){
+							$scope.playlist.owner = response;
+						});
+				}
+			
+				// figure out if we're following this playlist
+				if( $rootScope.spotifyAuthorized ){
+					SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+						.then( function( isFollowing ){
+							$scope.following = $.parseJSON(isFollowing);
+						});
+				}
 		
-			$scope.playlist = response;			
-			$scope.tracklist.next = response.tracks.next;
-			$scope.tracklist.previous = response.tracks.previous;
-			$scope.tracklist.offset = response.tracks.offset;
-			$scope.tracklist.total = response.tracks.total;
-			$scope.tracklist.tracks = reformatTracks( response.tracks.items );
-		
-			// parse description string and make into real html (people often have links here)
-			$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-        
-            // get the owner
-			if( $rootScope.spotifyAuthorized ){
-				SpotifyService.getUser( $scope.playlist.owner.uri )
-					.then( function( response ){
-						$scope.playlist.owner = response;
-					});
-			}
-        
-            // figure out if we're following this playlist
-			if( $rootScope.spotifyAuthorized ){
-				SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-					.then( function( isFollowing ){
-						$scope.following = $.parseJSON(isFollowing);
-					});
-			}
-    
-			// if we're viewing from within a genre category, get the category
-			if( typeof($stateParams.categoryid) !== 'undefined' ){				
-				SpotifyService.getCategory( $stateParams.categoryid )
-					.then(function( response ) {
-						$scope.category = response;
-					});
-			}
-		});
-	
+				// if we're viewing from within a genre category, get the category
+				if( typeof($stateParams.categoryid) !== 'undefined' ){				
+					SpotifyService.getCategory( $stateParams.categoryid )
+						.then(function( response ) {
+							$scope.category = response;
+						});
+				}
+			});
+	}
 	
 	/**
 	 * When the user changes the order of a playlist tracklist
@@ -34102,6 +34106,8 @@ angular.module('spotmop.library', [])
 		];
 	$scope.playlists = { items: [] };
 	$scope.show = function( playlist ){
+		if( !$rootScope.spotifyAuthorized ) return true;
+		
         var filter = SettingsService.getSetting('playlists.filter');
         if( !filter || filter == 'all' ){
 			return true;
@@ -34115,34 +34121,21 @@ angular.module('spotmop.library', [])
     // if we've got a userid already in storage, use that
     var userid = SettingsService.getSetting('spotifyuser.id');
 	
-	// if we have full spotify authorization
-	if( $rootScope.spotifyAuthorized ){	
-    
-		SpotifyService.getPlaylists( userid )
-			.then( function( response ){ // successful
+	// actually fetch the playlists
+	function fetchPlaylists(){		
+		MopidyService.getPlaylists()
+			.then( function( response ){
+				
+				// add them to our list
+				$scope.playlists.items = response;
+				
+				// now go get the extra info (and artwork) from Spotify
+				// need to do this individually as there is no bulk endpoint, curses!
+				angular.forEach( response, function(playlist, i){
 					
-					// if it was 401, refresh token
-					if( typeof(response.error) !== 'undefined' && response.error.status == 401 ){
-						Spotify.refreshToken();
-                    }else{
-						$scope.playlists = response;
-					}
-				});
-	
-	// not authorized, so have to fetch via backend first
-	}else{
-        
-		function fetchPlaylists(){		
-			MopidyService.getPlaylists()
-				.then( function( response ){
-					
-					// add them to our list
-					$scope.playlists.items = response;
-									
-					// now go get the extra info (and artwork) from Spotify
-					// need to do this individually as there is no bulk endpoint, curses!
-					angular.forEach( response, function(playlist, i){
-					
+					// only lookup Spotify playlists
+					if( playlist.uri.startsWith('spotify:') ){
+						
 						// process it and add to our $scope
 						var callback = function(i){
 							return function( response ){
@@ -34158,16 +34151,16 @@ angular.module('spotmop.library', [])
 						
 						// run the actual request
 						SpotifyService.getPlaylist( playlist.uri ).then( callback );
-					});
+					}
 				});
-		}
-		
-		// on load of this page (whether first pageload or just a new navigation)
-		if( $rootScope.mopidyOnline )
-			fetchPlaylists();
-		else
-			$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
-    }
+			});
+	}
+	
+	// on load of this page (whether first pageload or just a new navigation)
+	if( $rootScope.mopidyOnline )
+		fetchPlaylists();
+	else
+		$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
 	
 	
     /**
