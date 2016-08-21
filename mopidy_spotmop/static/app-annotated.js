@@ -31254,7 +31254,13 @@ angular.module('spotmop.browse.playlist', [])
 	
 	// play the whole playlist
 	$scope.playPlaylist = function(){
-		MopidyService.playStream( $scope.playlist.uri, $scope.tracklist.tracks.length );
+		
+		if( $scope.origin == 'spotify' ){
+			MopidyService.playStream( $scope.playlist.uri, $scope.tracklist.tracks.length );
+		}else{
+			console.log('Playing local playlist');
+			MopidyService.playLocalPlaylist( $scope.playlist.uri );
+		}
 	}
 	
     // figure out the total time for all tracks
@@ -31262,17 +31268,18 @@ angular.module('spotmop.browse.playlist', [])
         var totalTime = 0;
         if( $scope.tracklist.tracks.length > 0 ){
             angular.forEach( $scope.tracklist.tracks, function( track ){
-				if( typeof( track ) !== 'undefined' )
-					totalTime += track.duration_ms;
+				if( typeof( track ) !== 'undefined' ){
+					if( typeof(track.duration_ms) !== 'undefined' ) totalTime += track.duration_ms;
+					if( typeof(track.length) !== 'undefined' ) totalTime += track.length;
+				}
             });
         }
         return Math.round(totalTime / 60000);   
     }
 	
-
 	// on load, fetch the playlist
 	if( $scope.origin == 'spotify' ){
-		SpotifyService.getPlaylist( $stateParams.uri )
+		SpotifyService.getPlaylist( uri )
 			.then(function( response ) {
 			
 				$scope.playlist = response;			
@@ -31308,6 +31315,49 @@ angular.module('spotmop.browse.playlist', [])
 							$scope.category = response;
 						});
 				}
+			});
+	}else{
+		// on init, go get the items (or wait for mopidy to be online)
+		if( $scope.mopidyOnline ){
+			getPlaylistFromMopidy();
+		}else{
+			$scope.$on('mopidy:state:online', function(){
+				getPlaylistFromMopidy() 
+			});
+		}
+	}
+	
+	function getPlaylistFromMopidy(){
+		MopidyService.getPlaylist( uri )
+			.then( function(response){
+				
+				$scope.playlist.name = response.name;
+				$scope.playlist.uri = response.uri;
+				$scope.playlist.last_modified = response.last_modified;
+				$scope.tracklist.total = response.tracks.length;
+				
+				var uris = [];
+				for( var i = 0; i < response.tracks.length; i++ ){
+					uris.push( response.tracks[i].uri );
+				}
+				
+				// get the full track items (as one request)
+				MopidyService.getTracks( uris )
+					.then( function(trackWrappers){
+						
+						// plug each result into our playlist tracklist
+						angular.forEach( trackWrappers, function(value, key){
+							if( value.length > 0 ){
+								$scope.tracklist.tracks.push( value[0] );
+								
+								// if this track has album artwork
+								if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
+									$scope.playlist.images = value[0].album.images;
+								}
+							}
+						});
+					});
+				
 			});
 	}
 	
@@ -36322,6 +36372,49 @@ angular.module('spotmop.services.mopidy', [
 				.then(function() {
 					self.mopidy.playback.play();
 				}, consoleError);
+		},
+		playLocalPlaylist: function( uri ) {
+			var self = this;
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			var trackUris = [];
+			self.getPlaylist( uri )
+				.then( function(response){	
+					self.mopidy.tracklist.clear();				
+					for( var i = 0; i < response.tracks.length; i++ ){
+						trackUris.push( response.tracks[i].uri );
+					}
+				})
+				.then( function(){
+					
+					// add the first track immediately
+					return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+					
+						// then play it
+						.then( function( response ){
+							
+							// make sure we added the track successfully
+							// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+							var playTrack = null;					
+							if( response.length > 0 ){
+								playTrack = { tlid: response[0].tlid };
+							}
+							
+							return self.mopidy.playback.play( playTrack )
+						
+								// now add all the remaining tracks
+								.then( function(){
+									if( trackUris.length > 0 ){
+										return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+											.then( function(){
+												cfpLoadingBar.complete();
+											});
+									}
+								}, consoleError);
+						}, consoleError);
+				});
 		},
 		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
