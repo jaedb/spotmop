@@ -126,12 +126,6 @@ angular.module('spotmop.services.mopidy', [
 			this.stop();
 			this.start();
 		},
-		getPlaylists: function() {
-			return wrapMopidyFunc("mopidy.playlists.asList", this)();
-		},
-		getPlaylist: function(uri) {
-			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
-		},
 		getLibrary: function() {
 			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
 		},
@@ -365,6 +359,22 @@ angular.module('spotmop.services.mopidy', [
 			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
 				return true;
 			});
+		},
+		
+		/**
+		 * Playlists
+		 **/		 
+		getPlaylists: function() {
+			return wrapMopidyFunc("mopidy.playlists.asList", this)();
+		},
+		getPlaylist: function(uri) {
+			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		},
+		createPlaylist: function(name){
+			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name });
+		},
+		deletePlaylist: function(uri){
+			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
 		}
 
 	};

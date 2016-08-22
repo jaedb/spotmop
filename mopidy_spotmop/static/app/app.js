@@ -100,40 +100,26 @@ angular.module('spotmop', [
 		window.location.reload();
 	}
     $scope.playlistsMenu = [];
-    $scope.myPlaylists = {};
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
 	
-    /**
-     * Playlists submenu
-     **/
-    
-	// update the playlists menu
-	$scope.updatePlaylists = function( userid ){
 	
-		SpotifyService.getPlaylists( userid, 50 )
-			.then(function( response ) {
-				
-				$scope.myPlaylists = response.items;				
-                var newPlaylistsMenu = [];
-            
-				// loop all of our playlists, and set up a menu item for each
-				$.each( response.items, function( key, playlist ){
-
-					// we only want to add playlists that this user owns
-					if( playlist.owner.id == $scope.spotifyUser.id ){
-                        var playlistObject = playlist;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-						newPlaylistsMenu.push(playlistObject);
-					}
-				});
-                
-                // now reset our current list with this new list
-                $scope.playlistsMenu = newPlaylistsMenu;
+    /**
+     * Playlists
+	 * These are app-level so we don't need to re-fetch for the various uses (ie context menus, etc)
+	 * TODO: Move this into a PlaylistManager service 
+     **/
+    $scope.myPlaylists = [];
+	function updatePlaylists( userid ){
+		MopidyService.getPlaylists()
+			.then( function( response ){
+				$scope.myPlaylists = response;
 			});
-	}
+	};
+	$scope.$on('spotmop:playlists:changed', function( event, data ){
+		updatePlaylists();
+	});
     
 		
     
@@ -291,6 +277,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
+		updatePlaylists();
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){

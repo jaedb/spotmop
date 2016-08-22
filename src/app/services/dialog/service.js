@@ -82,7 +82,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
 		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
@@ -98,24 +98,40 @@ angular.module('spotmop.services.dialog', [])
 					else
 						$scope.playlistPublic = false;
 					
-					// perform the creation
-					SpotifyService.createPlaylist(
-							$scope.$parent.spotifyUser.id,
-							{ name: $scope.playlistName, public: $scope.playlistPublic } 
-						)
-						.then( function(response){
-						
-							// save new playlist to our playlist array
-							$scope.$parent.playlists.items.push( response );
+					// spotify playlist
+					if( $rootScope.spotifyAuthorized ){
+						SpotifyService.createPlaylist(
+								$scope.$parent.spotifyUser.id,
+								{ name: $scope.playlistName, public: $scope.playlistPublic } 
+							)
+							.then( function(response){
+								
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								$scope.$parent.playlists.items.push( response );
 							
-							// fetch the new playlists (for sidebar)
-							$scope.$parent.updatePlaylists();
-						
-							// and finally remove this dialog
-							DialogService.remove();
-							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-						});
-						
+								// now close our dialog
+								DialogService.remove();
+							});
+					
+					// local playlist
+					}else{
+						MopidyService.createPlaylist( $scope.playlistName )
+							.then( function( response ){
+								
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								$scope.$parent.playlists.items.push( response );
+								
+								// now close our dialog
+								DialogService.remove();
+							});
+					}
+					
 				}else{
 					$scope.error = true;
 				}

@@ -48,7 +48,7 @@
 		<span class="menu-item has-submenu" ng-show="context != 'localtrack'">
             Add to playlist <i class="fa fa-caret-right"></i>
             <div class="sub-menu">
-                <span class="menu-item" ng-repeat="playlist in playlistsMenu" ng-bind="playlist.name" singleclick="addToPlaylistByUri( playlist.uri )"></span>
+                <span class="menu-item" ng-repeat="playlist in myPlaylists" ng-bind="playlist.name" singleclick="addToPlaylistByUri( playlist.uri )"></span>
             </div>
         </span>
 		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToLibrary()">

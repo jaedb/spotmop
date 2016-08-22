@@ -29870,40 +29870,26 @@ angular.module('spotmop', [
 		window.location.reload();
 	}
     $scope.playlistsMenu = [];
-    $scope.myPlaylists = {};
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
 	
-    /**
-     * Playlists submenu
-     **/
-    
-	// update the playlists menu
-	$scope.updatePlaylists = function( userid ){
 	
-		SpotifyService.getPlaylists( userid, 50 )
-			.then(function( response ) {
-				
-				$scope.myPlaylists = response.items;				
-                var newPlaylistsMenu = [];
-            
-				// loop all of our playlists, and set up a menu item for each
-				$.each( response.items, function( key, playlist ){
-
-					// we only want to add playlists that this user owns
-					if( playlist.owner.id == $scope.spotifyUser.id ){
-                        var playlistObject = playlist;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-						newPlaylistsMenu.push(playlistObject);
-					}
-				});
-                
-                // now reset our current list with this new list
-                $scope.playlistsMenu = newPlaylistsMenu;
+    /**
+     * Playlists
+	 * These are app-level so we don't need to re-fetch for the various uses (ie context menus, etc)
+	 * TODO: Move this into a PlaylistManager service 
+     **/
+    $scope.myPlaylists = [];
+	function updatePlaylists( userid ){
+		MopidyService.getPlaylists()
+			.then( function( response ){
+				$scope.myPlaylists = response;
 			});
-	}
+	};
+	$scope.$on('spotmop:playlists:changed', function( event, data ){
+		updatePlaylists();
+	});
     
 		
     
@@ -30061,6 +30047,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
+		updatePlaylists();
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -31224,8 +31211,17 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
+	
+	$scope.deletePlaylist = function(){
+		MopidyService.deletePlaylist( uri )
+			.then( function(){
+				NotifyService.notify('Playlist deleted');
+				$rootScope.$broadcast('spotmop:playlists:changed');
+				$state.go('library.playlists');
+			});
+	}
     $scope.followPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
+        SpotifyService.followPlaylist( uri )
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Following playlist' );
@@ -31233,7 +31229,7 @@ angular.module('spotmop.browse.playlist', [])
             });
     }
     $scope.unfollowPlaylist = function(){
-        SpotifyService.unfollowPlaylist( $stateParams.uri )
+        SpotifyService.unfollowPlaylist( uri )
             .then( function(response){
                 $scope.following = false;
 				NotifyService.notify( 'Playlist removed' );
@@ -31241,7 +31237,7 @@ angular.module('spotmop.browse.playlist', [])
             });
     }
     $scope.recoverPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
+        SpotifyService.followPlaylist( uri )
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Playlist recovered' );
@@ -31331,32 +31327,41 @@ angular.module('spotmop.browse.playlist', [])
 		MopidyService.getPlaylist( uri )
 			.then( function(response){
 				
-				$scope.playlist.name = response.name;
-				$scope.playlist.uri = response.uri;
-				$scope.playlist.last_modified = response.last_modified;
-				$scope.tracklist.total = response.tracks.length;
-				
-				var uris = [];
-				for( var i = 0; i < response.tracks.length; i++ ){
-					uris.push( response.tracks[i].uri );
-				}
-				
-				// get the full track items (as one request)
-				MopidyService.getTracks( uris )
-					.then( function(trackWrappers){
+				if( !response ){
+					NotifyService.error('Could not load playlist');
+				}else{
+					$scope.playlist.name = response.name;
+					$scope.playlist.uri = response.uri;
+					$scope.playlist.last_modified = response.last_modified;
+					$scope.tracklist.total = 0;
+					
+					// if we have any tracks
+					if( typeof(response.tracks) !== 'undefined' ){
+						$scope.tracklist.total = response.tracks.length;
+					
+						var uris = [];
+						for( var i = 0; i < response.tracks.length; i++ ){
+							uris.push( response.tracks[i].uri );
+						}
 						
-						// plug each result into our playlist tracklist
-						angular.forEach( trackWrappers, function(value, key){
-							if( value.length > 0 ){
-								$scope.tracklist.tracks.push( value[0] );
+						// get the full track items (as one request)
+						MopidyService.getTracks( uris )
+							.then( function(trackWrappers){
 								
-								// if this track has album artwork
-								if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
-									$scope.playlist.images = value[0].album.images;
-								}
-							}
-						});
-					});
+								// plug each result into our playlist tracklist
+								angular.forEach( trackWrappers, function(value, key){
+									if( value.length > 0 ){
+										$scope.tracklist.tracks.push( value[0] );
+										
+										// if this track has album artwork
+										if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
+											$scope.playlist.images = value[0].album.images;
+										}
+									}
+								});
+							});
+					}
+				}
 				
 			});
 	}
@@ -33460,11 +33465,13 @@ angular.module('spotmop.common.tracklist', [])
              * Selected Tracks >> Add to playlist immediately
              **/
             $scope.$on('spotmop:tracklist:addSelectedTracksToPlaylistByUri', function(event, uri){
-				
+							
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
                 
+				// TODO: DETECT PLAYLIST TYPE
+				
                 var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
                 var selectedTracksUris = [];
 				var localTracksExcluded = 0;
@@ -35742,7 +35749,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: ["$scope", "$element", "$rootScope", "DialogService", "SettingsService", "SpotifyService", function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+		controller: ["$scope", "$element", "$rootScope", "DialogService", "MopidyService", "SettingsService", "SpotifyService", "NotifyService", function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
 		
 			$scope.playlistPublic = 'true';
             $scope.savePlaylist = function(){
@@ -35758,24 +35765,40 @@ angular.module('spotmop.services.dialog', [])
 					else
 						$scope.playlistPublic = false;
 					
-					// perform the creation
-					SpotifyService.createPlaylist(
-							$scope.$parent.spotifyUser.id,
-							{ name: $scope.playlistName, public: $scope.playlistPublic } 
-						)
-						.then( function(response){
-						
-							// save new playlist to our playlist array
-							$scope.$parent.playlists.items.push( response );
+					// spotify playlist
+					if( $rootScope.spotifyAuthorized ){
+						SpotifyService.createPlaylist(
+								$scope.$parent.spotifyUser.id,
+								{ name: $scope.playlistName, public: $scope.playlistPublic } 
+							)
+							.then( function(response){
+								
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								$scope.$parent.playlists.items.push( response );
 							
-							// fetch the new playlists (for sidebar)
-							$scope.$parent.updatePlaylists();
-						
-							// and finally remove this dialog
-							DialogService.remove();
-							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-						});
-						
+								// now close our dialog
+								DialogService.remove();
+							});
+					
+					// local playlist
+					}else{
+						MopidyService.createPlaylist( $scope.playlistName )
+							.then( function( response ){
+								
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								$scope.$parent.playlists.items.push( response );
+								
+								// now close our dialog
+								DialogService.remove();
+							});
+					}
+					
 				}else{
 					$scope.error = true;
 				}
@@ -36245,12 +36268,6 @@ angular.module('spotmop.services.mopidy', [
 			this.stop();
 			this.start();
 		},
-		getPlaylists: function() {
-			return wrapMopidyFunc("mopidy.playlists.asList", this)();
-		},
-		getPlaylist: function(uri) {
-			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
-		},
 		getLibrary: function() {
 			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
 		},
@@ -36484,6 +36501,22 @@ angular.module('spotmop.services.mopidy', [
 			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
 				return true;
 			});
+		},
+		
+		/**
+		 * Playlists
+		 **/		 
+		getPlaylists: function() {
+			return wrapMopidyFunc("mopidy.playlists.asList", this)();
+		},
+		getPlaylist: function(uri) {
+			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		},
+		createPlaylist: function(name){
+			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name });
+		},
+		deletePlaylist: function(uri){
+			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
 		}
 
 	};

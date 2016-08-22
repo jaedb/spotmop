@@ -320,11 +320,13 @@ angular.module('spotmop.common.tracklist', [])
              * Selected Tracks >> Add to playlist immediately
              **/
             $scope.$on('spotmop:tracklist:addSelectedTracksToPlaylistByUri', function(event, uri){
-				
+							
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
                 
+				// TODO: DETECT PLAYLIST TYPE
+				
                 var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
                 var selectedTracksUris = [];
 				var localTracksExcluded = 0;

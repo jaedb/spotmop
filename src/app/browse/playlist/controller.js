@@ -27,8 +27,17 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
+	
+	$scope.deletePlaylist = function(){
+		MopidyService.deletePlaylist( uri )
+			.then( function(){
+				NotifyService.notify('Playlist deleted');
+				$rootScope.$broadcast('spotmop:playlists:changed');
+				$state.go('library.playlists');
+			});
+	}
     $scope.followPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
+        SpotifyService.followPlaylist( uri )
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Following playlist' );
@@ -36,7 +45,7 @@ angular.module('spotmop.browse.playlist', [])
             });
     }
     $scope.unfollowPlaylist = function(){
-        SpotifyService.unfollowPlaylist( $stateParams.uri )
+        SpotifyService.unfollowPlaylist( uri )
             .then( function(response){
                 $scope.following = false;
 				NotifyService.notify( 'Playlist removed' );
@@ -44,7 +53,7 @@ angular.module('spotmop.browse.playlist', [])
             });
     }
     $scope.recoverPlaylist = function(){
-        SpotifyService.followPlaylist( $stateParams.uri )
+        SpotifyService.followPlaylist( uri )
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Playlist recovered' );
@@ -134,32 +143,41 @@ angular.module('spotmop.browse.playlist', [])
 		MopidyService.getPlaylist( uri )
 			.then( function(response){
 				
-				$scope.playlist.name = response.name;
-				$scope.playlist.uri = response.uri;
-				$scope.playlist.last_modified = response.last_modified;
-				$scope.tracklist.total = response.tracks.length;
-				
-				var uris = [];
-				for( var i = 0; i < response.tracks.length; i++ ){
-					uris.push( response.tracks[i].uri );
-				}
-				
-				// get the full track items (as one request)
-				MopidyService.getTracks( uris )
-					.then( function(trackWrappers){
+				if( !response ){
+					NotifyService.error('Could not load playlist');
+				}else{
+					$scope.playlist.name = response.name;
+					$scope.playlist.uri = response.uri;
+					$scope.playlist.last_modified = response.last_modified;
+					$scope.tracklist.total = 0;
+					
+					// if we have any tracks
+					if( typeof(response.tracks) !== 'undefined' ){
+						$scope.tracklist.total = response.tracks.length;
+					
+						var uris = [];
+						for( var i = 0; i < response.tracks.length; i++ ){
+							uris.push( response.tracks[i].uri );
+						}
 						
-						// plug each result into our playlist tracklist
-						angular.forEach( trackWrappers, function(value, key){
-							if( value.length > 0 ){
-								$scope.tracklist.tracks.push( value[0] );
+						// get the full track items (as one request)
+						MopidyService.getTracks( uris )
+							.then( function(trackWrappers){
 								
-								// if this track has album artwork
-								if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
-									$scope.playlist.images = value[0].album.images;
-								}
-							}
-						});
-					});
+								// plug each result into our playlist tracklist
+								angular.forEach( trackWrappers, function(value, key){
+									if( value.length > 0 ){
+										$scope.tracklist.tracks.push( value[0] );
+										
+										// if this track has album artwork
+										if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
+											$scope.playlist.images = value[0].album.images;
+										}
+									}
+								});
+							});
+					}
+				}
 				
 			});
 	}

@@ -21,6 +21,14 @@
 		<div class="buttons">
 		
 			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
+				
+			<span class="local-actions" ng-if="origin != 'spotify'">
+				<confirmation-button
+					default-text="Delete"
+					confirmation-text="Are you sure?"
+					on-confirmation="deletePlaylist">
+				</confirmation-button>
+			</span>
 			
             <span ng-if="spotifyAuthorized">
             
@@ -39,7 +47,7 @@
                         <span>Add to library</span>
                     </a>
                 </span>
-                
+				
                 <span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
                     <span ng-show="following">
                         <a class="button"
