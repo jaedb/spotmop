@@ -31302,39 +31302,43 @@ angular.module('spotmop.browse.playlist', [])
 		SpotifyService.getPlaylist( uri )
 			.then(function( response ) {
 			
-				$scope.playlist = response;			
-				$scope.tracklist.next = response.tracks.next;
-				$scope.tracklist.previous = response.tracks.previous;
-				$scope.tracklist.offset = response.tracks.offset;
-				$scope.tracklist.total = response.tracks.total;
-				$scope.tracklist.tracks = reformatTracks( response.tracks.items );
-			
-				// parse description string and make into real html (people often have links here)
-				$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-			
-				// get the owner
-				if( $rootScope.spotifyAuthorized ){
-					SpotifyService.getUser( $scope.playlist.owner.uri )
-						.then( function( response ){
-							$scope.playlist.owner = response;
-						});
-				}
-			
-				// figure out if we're following this playlist
-				if( $rootScope.spotifyAuthorized ){
-					SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-						.then( function( isFollowing ){
-							$scope.following = $.parseJSON(isFollowing);
-						});
-				}
-		
-				// if we're viewing from within a genre category, get the category
-				if( typeof($stateParams.categoryid) !== 'undefined' ){				
-					SpotifyService.getCategory( $stateParams.categoryid )
-						.then(function( response ) {
-							$scope.category = response;
-						});
-				}
+				if( typeof(response.error) !== 'undefined' ){
+					NotifyService.error(response.error.message);
+				}else{
+                    $scope.playlist = response;			
+                    $scope.tracklist.next = response.tracks.next;
+                    $scope.tracklist.previous = response.tracks.previous;
+                    $scope.tracklist.offset = response.tracks.offset;
+                    $scope.tracklist.total = response.tracks.total;
+                    $scope.tracklist.tracks = reformatTracks( response.tracks.items );
+                
+                    // parse description string and make into real html (people often have links here)
+                    $scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
+                
+                    // get the owner
+                    if( $rootScope.spotifyAuthorized ){
+                        SpotifyService.getUser( $scope.playlist.owner.uri )
+                            .then( function( response ){
+                                $scope.playlist.owner = response;
+                            });
+                    }
+                
+                    // figure out if we're following this playlist
+                    if( $rootScope.spotifyAuthorized ){
+                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+                            .then( function( isFollowing ){
+                                $scope.following = $.parseJSON(isFollowing);
+                            });
+                    }
+            
+                    // if we're viewing from within a genre category, get the category
+                    if( typeof($stateParams.categoryid) !== 'undefined' ){				
+                        SpotifyService.getCategory( $stateParams.categoryid )
+                            .then(function( response ) {
+                                $scope.category = response;
+                            });
+                    }
+                }
 			});
 	}else{
 		// on init, go get the items (or wait for mopidy to be online)
@@ -35776,6 +35780,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
 		
 			$scope.playlistPublic = 'true';
+			$scope.scheme = 'm3u';			
             $scope.savePlaylist = function(){
 				
 				if( $scope.playlistName && $scope.playlistName != '' ){
@@ -35790,7 +35795,7 @@ angular.module('spotmop.services.dialog', [])
 						$scope.playlistPublic = false;
 					
 					// spotify playlist
-					if( $rootScope.spotifyAuthorized ){
+					if( $scope.scheme == 'spotify' ){
 						SpotifyService.createPlaylist(
 								$scope.$parent.spotifyUser.id,
 								{ name: $scope.playlistName, public: $scope.playlistPublic } 
@@ -35809,9 +35814,9 @@ angular.module('spotmop.services.dialog', [])
 					
 					// local playlist
 					}else{
-						MopidyService.createPlaylist( $scope.playlistName )
+						MopidyService.createPlaylist( $scope.playlistName, $scope.scheme )
 							.then( function( response ){
-								
+                                
 								$scope.saving = false;
 								NotifyService.notify('Playlist created');
 								
@@ -36536,8 +36541,9 @@ angular.module('spotmop.services.mopidy', [
 		getPlaylist: function(uri) {
 			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
 		},
-		createPlaylist: function(name){
-			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name });
+		createPlaylist: function(name, uri_scheme){
+			if( typeof(uri_scheme) === 'undefined' ) var uri_scheme = 'm3u';
+			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name, uri_scheme: uri_scheme });
 		},
 		deletePlaylist: function(uri){
 			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });

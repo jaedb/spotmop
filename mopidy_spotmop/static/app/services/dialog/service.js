@@ -85,6 +85,7 @@ angular.module('spotmop.services.dialog', [])
 		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
 		
 			$scope.playlistPublic = 'true';
+			$scope.scheme = 'm3u';			
             $scope.savePlaylist = function(){
 				
 				if( $scope.playlistName && $scope.playlistName != '' ){
@@ -99,7 +100,7 @@ angular.module('spotmop.services.dialog', [])
 						$scope.playlistPublic = false;
 					
 					// spotify playlist
-					if( $rootScope.spotifyAuthorized ){
+					if( $scope.scheme == 'spotify' ){
 						SpotifyService.createPlaylist(
 								$scope.$parent.spotifyUser.id,
 								{ name: $scope.playlistName, public: $scope.playlistPublic } 
@@ -118,9 +119,9 @@ angular.module('spotmop.services.dialog', [])
 					
 					// local playlist
 					}else{
-						MopidyService.createPlaylist( $scope.playlistName )
+						MopidyService.createPlaylist( $scope.playlistName, $scope.scheme )
 							.then( function( response ){
-								
+                                
 								$scope.saving = false;
 								NotifyService.notify('Playlist created');
 								

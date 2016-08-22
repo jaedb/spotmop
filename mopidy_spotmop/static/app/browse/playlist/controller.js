@@ -94,39 +94,43 @@ angular.module('spotmop.browse.playlist', [])
 		SpotifyService.getPlaylist( uri )
 			.then(function( response ) {
 			
-				$scope.playlist = response;			
-				$scope.tracklist.next = response.tracks.next;
-				$scope.tracklist.previous = response.tracks.previous;
-				$scope.tracklist.offset = response.tracks.offset;
-				$scope.tracklist.total = response.tracks.total;
-				$scope.tracklist.tracks = reformatTracks( response.tracks.items );
-			
-				// parse description string and make into real html (people often have links here)
-				$scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
-			
-				// get the owner
-				if( $rootScope.spotifyAuthorized ){
-					SpotifyService.getUser( $scope.playlist.owner.uri )
-						.then( function( response ){
-							$scope.playlist.owner = response;
-						});
-				}
-			
-				// figure out if we're following this playlist
-				if( $rootScope.spotifyAuthorized ){
-					SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
-						.then( function( isFollowing ){
-							$scope.following = $.parseJSON(isFollowing);
-						});
-				}
-		
-				// if we're viewing from within a genre category, get the category
-				if( typeof($stateParams.categoryid) !== 'undefined' ){				
-					SpotifyService.getCategory( $stateParams.categoryid )
-						.then(function( response ) {
-							$scope.category = response;
-						});
-				}
+				if( typeof(response.error) !== 'undefined' ){
+					NotifyService.error(response.error.message);
+				}else{
+                    $scope.playlist = response;			
+                    $scope.tracklist.next = response.tracks.next;
+                    $scope.tracklist.previous = response.tracks.previous;
+                    $scope.tracklist.offset = response.tracks.offset;
+                    $scope.tracklist.total = response.tracks.total;
+                    $scope.tracklist.tracks = reformatTracks( response.tracks.items );
+                
+                    // parse description string and make into real html (people often have links here)
+                    $scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
+                
+                    // get the owner
+                    if( $rootScope.spotifyAuthorized ){
+                        SpotifyService.getUser( $scope.playlist.owner.uri )
+                            .then( function( response ){
+                                $scope.playlist.owner = response;
+                            });
+                    }
+                
+                    // figure out if we're following this playlist
+                    if( $rootScope.spotifyAuthorized ){
+                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+                            .then( function( isFollowing ){
+                                $scope.following = $.parseJSON(isFollowing);
+                            });
+                    }
+            
+                    // if we're viewing from within a genre category, get the category
+                    if( typeof($stateParams.categoryid) !== 'undefined' ){				
+                        SpotifyService.getCategory( $stateParams.categoryid )
+                            .then(function( response ) {
+                                $scope.category = response;
+                            });
+                    }
+                }
 			});
 	}else{
 		// on init, go get the items (or wait for mopidy to be online)

@@ -370,8 +370,9 @@ angular.module('spotmop.services.mopidy', [
 		getPlaylist: function(uri) {
 			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
 		},
-		createPlaylist: function(name){
-			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name });
+		createPlaylist: function(name, uri_scheme){
+			if( typeof(uri_scheme) === 'undefined' ) var uri_scheme = 'm3u';
+			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name, uri_scheme: uri_scheme });
 		},
 		deletePlaylist: function(uri){
 			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
