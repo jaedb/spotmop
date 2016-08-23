@@ -438,7 +438,7 @@ angular.module('spotmop.library', [])
 						}(i);
 						
 						// run the actual request
-						SpotifyService.getPlaylist( playlist.uri ).then( callback );
+						// TEMP FOR SPEED SpotifyService.getPlaylist( playlist.uri ).then( callback );
 					}
 				});
 			});

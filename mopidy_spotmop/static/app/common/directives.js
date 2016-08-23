@@ -945,7 +945,17 @@ angular.module('spotmop.directives', [])
 			
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
+				
+				// if we've just been revealed, broadcast to hide all other ones
+				if( $scope.visible ) $rootScope.$broadcast('spotmop:dropdownfield:revealed', $scope.settingname);
 			}
+			
+			// if another dropdown has been revealed, hide me
+			$rootScope.$on('spotmop:dropdownfield:revealed', function(event, settingname){
+				if( settingname != $scope.settingname ){
+					$scope.visible = false;
+				}
+			});
 			
 			// option selected
 			$scope.selectOption = function( option ){

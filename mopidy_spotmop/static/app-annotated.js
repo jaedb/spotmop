@@ -32795,7 +32795,17 @@ angular.module('spotmop.directives', [])
 			
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
+				
+				// if we've just been revealed, broadcast to hide all other ones
+				if( $scope.visible ) $rootScope.$broadcast('spotmop:dropdownfield:revealed', $scope.settingname);
 			}
+			
+			// if another dropdown has been revealed, hide me
+			$rootScope.$on('spotmop:dropdownfield:revealed', function(event, settingname){
+				if( settingname != $scope.settingname ){
+					$scope.visible = false;
+				}
+			});
 			
 			// option selected
 			$scope.selectOption = function( option ){
@@ -33495,52 +33505,59 @@ angular.module('spotmop.common.tracklist', [])
             $scope.$on('spotmop:tracklist:addSelectedTracksToPlaylistByUri', function(event, uri){
 							
 				// ignore if we're not the tracklist in focus
-				if( $rootScope.tracklistInFocus !== $scope.$id )
-					return;
-                
-				// TODO: DETECT PLAYLIST TYPE
+				if( $rootScope.tracklistInFocus !== $scope.$id ) return;
 				
                 var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
                 var selectedTracksUris = [];
-				var localTracksExcluded = 0;
-                
+				var tracksExcluded = 0;
+                var playlistUriScheme = $filter('assetOrigin')( uri );
+				
+				// Loop all our selected tracks to build a uri array
                 angular.forEach( selectedTracks, function(track){
-                    
-                    // if we have a nested track object (ie TlTrack objects)
-                    if( typeof(track.track) !== 'undefined' ){
-						if( track.track.uri.substring(0,6) == 'local:' ){
-							localTracksExcluded++;
-						}else{
-							selectedTracksUris.push( track.track.uri );
-						}
-                    
-                    // nope, so let's use a non-nested version
-                    }else{
-						if( track.uri.substring(0,6) == 'local:' ){
-							localTracksExcluded++;
-						}else{
+					
+					// If we're adding to a m3u playlist, add whatever ya want
+					if( playlistUriScheme == 'm3u' ){
+						selectedTracksUris.push( track.uri );
+					
+					// Adding to a different provider (ie spotify, soundcloud)
+					// so we can  only add items from said provider
+					}else{
+						if( $filter('assetOrigin')( track.uri ) == playlistUriScheme ){
 							selectedTracksUris.push( track.uri );
-						}
+						}else{
+							tracksExcluded++;
+						}						
 					}
                 });
 					
-				// if we have omitted some local tracks
-				if( localTracksExcluded > 0 ){
-					
-					// if they were all local tracks
+				// Notify user if we omitted any tracks
+				if( tracksExcluded > 0 ){
 					if( selectedTracksUris.length <= 0 ){
-						NotifyService.error( 'Cannot add local tracks to a Spotify playlist' );
+						NotifyService.error( 'No tracks could to be added to playlist' );
 						return false;
 					}else{
-						NotifyService.error( localTracksExcluded+' local tracks not added to Spotify playlist' );
+						NotifyService.error( tracksExcluded+' tracks not added to playlist' );
 					}
 				}
 				
                 // now add them to the playlist, for reals
-                SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
-                    .then( function(response){
-                        NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-                    });
+				switch(playlistUriScheme){
+					case 'spotify':
+						SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
+							.then( function(response){
+								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
+							});
+						break;
+					case 'm3u':
+						MopidyService.addTracksToPlaylist( uri, selectedTracksUris )
+							.then( function(response){
+								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
+							});
+						break;
+					default:
+						NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
+						break;
+				}
             });
 			
 			/**
@@ -34235,7 +34252,7 @@ angular.module('spotmop.library', [])
 						}(i);
 						
 						// run the actual request
-						SpotifyService.getPlaylist( playlist.uri ).then( callback );
+						// TEMP FOR SPEED SpotifyService.getPlaylist( playlist.uri ).then( callback );
 					}
 				});
 			});
@@ -36547,6 +36564,9 @@ angular.module('spotmop.services.mopidy', [
 		},
 		deletePlaylist: function(uri){
 			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
+		},
+		addTracksToPlaylist: function(uris){
+			return wrapMopidyFunc("mopidy.playlists.addTracks", this)({ uris: uris });
 		}
 
 	};

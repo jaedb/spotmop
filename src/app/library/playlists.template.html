@@ -65,14 +65,14 @@
 		
 		<div class="playlist-items list" ng-if="settings.playlists.view == 'list'">
             <div class="list-item header">
-                <div class="col w45">
+                <div class="col w40">
                     Name
                     <span ng-show="settings.playlists.sortField == 'name'">
                         <i ng-show="!settings.playlists.sortReverse" class="fa fa-caret-down"></i>
                         <i ng-show="settings.playlists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
-                <div class="col w25">
+                <div class="col w20">
                     Owner
                     <span ng-show="settings.playlists.sortField == 'owner.id'">
                         <i ng-show="!settings.playlists.sortReverse" class="fa fa-caret-down"></i>
@@ -92,14 +92,17 @@
                 <div class="col w10">
                     Collaborative
                 </div>
+                <div class="col w10">
+                    Source
+                </div>
                 <div class="clear-both"></div>
             </div>
 			<div class="item-container" ng-repeat="playlist in playlists.items | orderBy:settings.playlists.sortField:settings.playlists.sortReverse | filter:show track by playlist.uri">
 				<div ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item state-link">
-                    <div class="col w45 name">
+                    <div class="col w40 name">
                         <span ng-bind="playlist.name"></span>
                     </div>
-                    <div class="col w25 owner">
+                    <div class="col w20 owner">
                         <a ui-sref="browse.user({ uri: playlist.owner.uri })" ng-bind="playlist.owner.id" ng-click="$event.stopPropagation()" ng-if="playlist.owner"></a>
                         <span ng-if="playlist.owner.id == undefined">-</span>
                     </div>
@@ -117,6 +120,9 @@
                         <span ng-if="playlist.collaborative == false">No</span>
                         <span ng-if="playlist.collaborative == undefined">-</span>
                     </div>
+					<div class="col w10">        
+						<span ng-bind="playlist.uri | assetOrigin"></span>
+					</div>
                     <div class="clear-both"></div>
 				</div>
 			</div>		
