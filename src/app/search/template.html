@@ -65,6 +65,25 @@
                     </div>
                 </div>
             </div>
+			
+            <div class="search-results-section playlists" ng-if="results.playlists.length > 0">
+                <h4 class="section-title"><a ng-click="settings.search.type = 'playlists'">Playlists</a></h4>	
+                <div class="album-items square-panels">
+                    <div class="item-container" ng-repeat="playlist in results.playlists | limitTo: 6 track by $index">
+                        <a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist"
+                            candrag
+                            dragobj="playlist"
+                            draggable="false">
+                                <div class="image-container">
+                                    <thumbnail size="medium" images="playlist.images"></thumbnail>
+                                </div>
+                                <div class="info animate">
+                                    <div class="name" ng-bind="playlist.name"></div>
+                                </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
             
             <div class="clear-both"></div>
             

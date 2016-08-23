@@ -380,14 +380,6 @@ body.dragging .body * {
 	cursor: pointer;
 }
 
-.search-page .sub-page-navigation .menu-item:hover {
-	border-color: #AAAAAA;
-}
-
-.sub-page-navigation .menu-item.active {
-	border-color: #f5f5f5;
-}
-
 
 
 /**
@@ -1944,16 +1936,12 @@ slider .item-container > .square-panel {
 	margin: -10px 0 30px;
 }
 
-.search-results-section.artists {
-	width: 46%;
+.search-results-section.artists,
+.search-results-section.albums,
+.search-results-section.playlists {
+	width: 29.3334%;
 	float: left;
     padding-right: 4%;
-}
-
-.search-results-section.albums {
-	width: 46%;
-	float: left;
-    padding-left: 4%;
 }
 
 .search-results-section .square-panel {
