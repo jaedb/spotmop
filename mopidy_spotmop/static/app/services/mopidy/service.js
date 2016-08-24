@@ -377,8 +377,18 @@ angular.module('spotmop.services.mopidy', [
 		deletePlaylist: function(uri){
 			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
 		},
-		addTracksToPlaylist: function(uris){
-			return wrapMopidyFunc("mopidy.playlists.addTracks", this)({ uris: uris });
+		addTracksToPlaylist: function(uri, trackuris){
+			var self = this;			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+					for( var i = 0; i < trackuris.length; i++ ){
+						playlist.tracks.push({
+							__model__: "Track",
+							uri: trackuris[i]
+						});
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
 		}
 
 	};

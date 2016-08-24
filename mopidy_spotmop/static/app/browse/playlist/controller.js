@@ -157,8 +157,11 @@ angular.module('spotmop.browse.playlist', [])
 					
 					// if we have any tracks
 					if( typeof(response.tracks) !== 'undefined' ){
+						
+						// drop in the track references as placeholders for now
 						$scope.tracklist.total = response.tracks.length;
-					
+						$scope.tracklist.tracks = response.tracks;
+						
 						var uris = [];
 						for( var i = 0; i < response.tracks.length; i++ ){
 							uris.push( response.tracks[i].uri );
@@ -171,11 +174,21 @@ angular.module('spotmop.browse.playlist', [])
 								// plug each result into our playlist tracklist
 								angular.forEach( trackWrappers, function(value, key){
 									if( value.length > 0 ){
-										$scope.tracklist.tracks.push( value[0] );
+										
+										var track = value[0];
+										
+										// find the track reference, and drop in the full track data
+										var trackReferences = $filter('filter')( $scope.tracklist.tracks, {uri: track.uri} );
+										
+										// there could be multiple instances of this track, so accommodate this
+										for( var j = 0; j < trackReferences.length; j++){
+											var key = $scope.tracklist.tracks.indexOf( trackReferences[j] );
+											$scope.tracklist.tracks[ key ] = track;
+										}
 										
 										// if this track has album artwork
-										if( typeof(value[0].album) !== 'undefined' && typeof(value[0].album.images) !== 'undefined' && value[0].album.images.length > 0 && $scope.playlist.images.length <= 0 ){
-											$scope.playlist.images = value[0].album.images;
+										if( typeof(track.album) !== 'undefined' && typeof(track.album.images) !== 'undefined' && track.album.images.length > 0 && $scope.playlist.images.length <= 0 ){
+											$scope.playlist.images = track.album.images;
 										}
 									}
 								});

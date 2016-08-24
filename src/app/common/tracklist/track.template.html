@@ -11,7 +11,15 @@
             <i class="fa fa-square-o" ng-show="!track.selected"></i>
         </div>
         
-        <div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
+        <div
+			class="title"
+			ng-if="track.name && track.artists && track.album"
+			ng-bind="track.name"
+			ng-class="{ empty: !track.name }"></div>
+        <div
+			class="title"
+			ng-if="!track.name && !track.artists && !track.album"
+			ng-bind="track.uri"></div>
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
             <artistlist artists="track.artists"></artistlist>
