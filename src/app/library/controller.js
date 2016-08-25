@@ -346,7 +346,7 @@ angular.module('spotmop.library', [])
 /**
  * Library playlists
  **/
-.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
+.controller('LibraryPlaylistsController', function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService, PlaylistManagerService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -392,65 +392,21 @@ angular.module('spotmop.library', [])
 				label: 'Tracks'
 			}
 		];
-	$scope.playlists = { items: [] };
-	$scope.show = function( playlist ){
-		if( !$rootScope.spotifyAuthorized ) return true;
-		
-        var filter = SettingsService.getSetting('playlists.filter');
-        if( !filter || filter == 'all' ){
-			return true;
+	var state = PlaylistManagerService.state();
+    $scope.playlists = function(){
+		if( !$rootScope.spotifyAuthorized ){
+            return state.playlists;
         }
         
-        if( typeof(playlist.owner) === 'undefined' || playlist.owner.id == 'jaedb' ) return true;
-		
-		return false;
-	};
+        var filter = SettingsService.getSetting('playlists.filter');
+        if( !filter || filter == 'all' ){
+            return state.playlists;
+        }
+        
+        return state.myPlaylists;
+    }
 	
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser.id');
-	
-	// actually fetch the playlists
-	function fetchPlaylists(){		
-		MopidyService.getPlaylists()
-			.then( function( response ){
-				
-				// add them to our list
-				$scope.playlists.items = response;
-				
-				// now go get the extra info (and artwork) from Spotify
-				// need to do this individually as there is no bulk endpoint, curses!
-				angular.forEach( response, function(playlist, i){
-					
-					// only lookup Spotify playlists
-					if( playlist.uri.startsWith('spotify:') ){
-						
-						// process it and add to our $scope
-						var callback = function(i){
-							return function( response ){
-								
-								// make sure our response was not an error
-								if( typeof(response.error) === 'undefined' ){
-									
-									// update the existing playlist item with our updated data
-									$scope.playlists.items[i] = response;
-								}
-							};
-						}(i);
-						
-						// run the actual request
-						// TEMP FOR SPEED SpotifyService.getPlaylist( playlist.uri ).then( callback );
-					}
-				});
-			});
-	}
-	
-	// on load of this page (whether first pageload or just a new navigation)
-	if( $rootScope.mopidyOnline )
-		fetchPlaylists();
-	else
-		$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
-	
-	
+    
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom

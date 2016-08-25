@@ -29797,6 +29797,7 @@ angular.module('spotmop', [
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	'spotmop.services.pusher',
+	'spotmop.services.playlistManager',
 	
 	'spotmop.player',
 	'spotmop.queue',
@@ -29841,7 +29842,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){
+.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "PlaylistManagerService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -29850,9 +29851,9 @@ angular.module('spotmop', [
 		return !!('ontouchstart' in window);
 	}		
     $rootScope.isTouchMode = function(){
-		
+	
 		// detect our manual override
-		var pointerMode = SettingsService.getSetting('spotmop.pointerMode');
+		var pointerMode = SettingsService.getSetting('pointerMode');
 		if( pointerMode == 'touch' ) return true;
 		else if( pointerMode == 'click' ) return false;
 		
@@ -29869,52 +29870,9 @@ angular.module('spotmop', [
 	$scope.reloadApp = function(){
 		window.location.reload();
 	}
-    $scope.playlistsMenu = [];
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
-	
-	
-    /**
-     * Playlists
-	 * These are app-level so we don't need to re-fetch for the various uses (ie context menus, etc)
-	 * @param fetchFromServer = boolean (whether we need to get from the server first)
-	 * TODO: Move this into a PlaylistManager service 
-     **/
-    $scope.allPlaylists = [];
-    $scope.myPlaylists = [];
-	function updatePlaylists( fetchFromServer ){
-		if(typeof(fetchFromServer) === 'undefined') var fetchFromServer = true;
-		
-		if( fetchFromServer ){
-			MopidyService.getPlaylists()
-				.then( function( response ){
-					parsePlaylists( response );
-					$scope.allPlaylists = response;
-				});
-		}else{
-			parsePlaylists( $scope.allPlaylists );
-		}
-	};
-	function parsePlaylists( playlists ){
-		var myPlaylists = [];
-		for( var i = 0; i < playlists.length; i++ ){
-			var reference = playlists[i];
-			var origin = $filter('assetOrigin')(reference.uri);
-			if( origin == 'spotify' ){
-				var user = SettingsService.getSetting('spotifyuser.id');
-				if( $rootScope.spotifyAuthorized && reference.uri.startsWith('spotify:user:'+user) ){
-					myPlaylists.push( reference );
-				}
-			}else{
-				myPlaylists.push( reference );
-			}
-		}
-		$scope.myPlaylists = myPlaylists;
-	}
-	$scope.$on('spotmop:playlists:changed', function( event, data ){
-		updatePlaylists();
-	});
     
 
     
@@ -30072,7 +30030,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		updatePlaylists();
+		PlaylistManagerService.refreshPlaylists();
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -30092,19 +30050,16 @@ angular.module('spotmop', [
 		}else{
 			$rootScope.spotifyAuthorized = false;
 		}
-		updatePlaylists(false);
 	});
 	
 	$scope.$on('spotmop:spotify:online', function(){
 		$rootScope.spotifyOnline = true;
 		if( $rootScope.spotifyAuthorized ){
 			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			updatePlaylists(false);
 		}
 	});
 	
 	$scope.$on('spotmop:spotify:offline', function(){
-		updatePlaylists(false);
 		$rootScope.spotifyOnline = false;
 	});
 	
@@ -31661,8 +31616,10 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: ["$scope", "$rootScope", "$element", "$timeout", "NotifyService", function( $scope, $rootScope, $element, $timeout, NotifyService ){
-		
+		controller: ["$scope", "$rootScope", "$element", "$timeout", "NotifyService", "PlaylistManagerService", function( $scope, $rootScope, $element, $timeout, NotifyService, PlaylistManagerService ){
+            
+            $scope.state = PlaylistManagerService.state();
+            
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
@@ -34159,7 +34116,7 @@ angular.module('spotmop.library', [])
 /**
  * Library playlists
  **/
-.controller('LibraryPlaylistsController', ["$scope", "$rootScope", "$filter", "SpotifyService", "SettingsService", "DialogService", "MopidyService", "NotifyService", function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
+.controller('LibraryPlaylistsController', ["$scope", "$rootScope", "$filter", "SpotifyService", "SettingsService", "DialogService", "MopidyService", "NotifyService", "PlaylistManagerService", function PlaylistsController( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService, PlaylistManagerService ){
 	
 	// note: we use the existing playlist list to show playlists on this page	
 	$scope.createPlaylist = function(){
@@ -34205,65 +34162,21 @@ angular.module('spotmop.library', [])
 				label: 'Tracks'
 			}
 		];
-	$scope.playlists = { items: [] };
-	$scope.show = function( playlist ){
-		if( !$rootScope.spotifyAuthorized ) return true;
-		
-        var filter = SettingsService.getSetting('playlists.filter');
-        if( !filter || filter == 'all' ){
-			return true;
+	var state = PlaylistManagerService.state();
+    $scope.playlists = function(){
+		if( !$rootScope.spotifyAuthorized ){
+            return state.playlists;
         }
         
-        if( typeof(playlist.owner) === 'undefined' || playlist.owner.id == 'jaedb' ) return true;
-		
-		return false;
-	};
+        var filter = SettingsService.getSetting('playlists.filter');
+        if( !filter || filter == 'all' ){
+            return state.playlists;
+        }
+        
+        return state.myPlaylists;
+    }
 	
-    // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser.id');
-	
-	// actually fetch the playlists
-	function fetchPlaylists(){		
-		MopidyService.getPlaylists()
-			.then( function( response ){
-				
-				// add them to our list
-				$scope.playlists.items = response;
-				
-				// now go get the extra info (and artwork) from Spotify
-				// need to do this individually as there is no bulk endpoint, curses!
-				angular.forEach( response, function(playlist, i){
-					
-					// only lookup Spotify playlists
-					if( playlist.uri.startsWith('spotify:') ){
-						
-						// process it and add to our $scope
-						var callback = function(i){
-							return function( response ){
-								
-								// make sure our response was not an error
-								if( typeof(response.error) === 'undefined' ){
-									
-									// update the existing playlist item with our updated data
-									$scope.playlists.items[i] = response;
-								}
-							};
-						}(i);
-						
-						// run the actual request
-						// TEMP FOR SPEED SpotifyService.getPlaylist( playlist.uri ).then( callback );
-					}
-				});
-			});
-	}
-	
-	// on load of this page (whether first pageload or just a new navigation)
-	if( $rootScope.mopidyOnline )
-		fetchPlaylists();
-	else
-		$scope.$on('mopidy:state:online', function(){ fetchPlaylists(); });
-	
-	
+    
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
@@ -35729,7 +35642,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: ["$scope", "$element", "$rootScope", "DialogService", "MopidyService", "SettingsService", "SpotifyService", "NotifyService", function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
+		controller: ["$scope", "$element", "$rootScope", "DialogService", "MopidyService", "SettingsService", "SpotifyService", "NotifyService", "PlaylistManagerService", function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService, PlaylistManagerService ){
 		
 			$scope.playlistPublic = 'true';
 			$scope.scheme = 'm3u';			
@@ -35758,7 +35671,7 @@ angular.module('spotmop.services.dialog', [])
 								NotifyService.notify('Playlist created');
 								
 								// save new playlist to our playlist array
-								$scope.$parent.playlists.items.push( response );
+								PlaylistManagerService.addToPlaylists( response );
 							
 								// now close our dialog
 								DialogService.remove();
@@ -35773,7 +35686,7 @@ angular.module('spotmop.services.dialog', [])
 								NotifyService.notify('Playlist created');
 								
 								// save new playlist to our playlist array
-								$scope.$parent.playlists.items.push( response );
+								PlaylistManagerService.addToPlaylists( response );
 								
 								// now close our dialog
 								DialogService.remove();
@@ -35856,15 +35769,9 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: ["$scope", "$element", "$rootScope", "$filter", "DialogService", "SpotifyService", "SettingsService", "NotifyService", function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
+		controller: ["$scope", "$element", "$rootScope", "$filter", "DialogService", "SpotifyService", "SettingsService", "NotifyService", "PlaylistManagerService", function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService, PlaylistManagerService ){
             
-			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
-			
-			SpotifyService.getPlaylists( spotifyUserID, 50 )
-				.then(function( response ) {
-					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-				});
+			$scope.playlists = PlaylistManagerService.state().myPlaylists;
 			
 			/**
 			 * When we select the playlist for these tracks
@@ -36661,6 +36568,104 @@ angular.module('spotmop.services.notify', [])
 		}
 	}
 });
+
+
+
+
+
+
+
+
+
+/**
+ * Playlists manager servce
+ *
+ * This holds all of the Spotify API calls, and returns the response (or promise)
+ * back to the caller.
+ * @return dataFactory array
+ **/
+ 
+angular.module('spotmop.services.playlistManager', [])
+
+.factory("PlaylistManagerService", ['$rootScope', '$resource', '$localStorage', '$http', '$filter', '$q', 'SettingsService', 'NotifyService', 'MopidyService', 'SpotifyService', function( $rootScope, $resource, $localStorage, $http, $filter, $q, SettingsService, NotifyService, MopidyService, SpotifyService ){
+    
+	$rootScope.$on('spotmop:playlists:changed', function( event, data ){
+		service.refreshPlaylists();
+	});
+    
+    var state = {
+        playlists: [],
+        myPlaylists: []
+    }
+
+	// setup response object
+    var service = {
+        state: function(){
+            return state;
+        },
+        addToPlaylists: function(playlist){
+            state.playlists.push( playlist );
+            service.refreshMyPlaylists();
+        },
+        refreshMyPlaylists: function(){
+            state.myPlaylists = [];
+            for( var i = 0; i < state.playlists.length; i++ ){
+                var playlist = state.playlists[i];
+                var origin = $filter('assetOrigin')(playlist.uri);
+                if( origin == 'spotify' ){
+                    var user = SettingsService.getSetting('spotifyuser.id');
+                    if( $rootScope.spotifyAuthorized && playlist.uri.startsWith('spotify:user:'+user) ){
+                        state.myPlaylists.push( playlist );
+                    }
+                }else{
+                    state.myPlaylists.push( playlist );
+                }
+            }
+        },
+        refreshPlaylists: function(){
+			MopidyService.getPlaylists()
+				.then( function( response ){
+                    
+                    // store our playlist references for now
+					state.playlists = response;
+                    
+                    // if we've got a userid already in storage, use that
+                    var userid = SettingsService.getSetting('spotifyuser.id');
+                    
+                    // now go get the extra info (and artwork) from Spotify
+                    // need to do this individually as there is no bulk endpoint, curses!
+                    angular.forEach( state.playlists, function(playlist, i){
+                        
+                        // only lookup Spotify playlists
+                        if( playlist.uri.startsWith('spotify:') ){
+                            
+                            // process it and add to our $scope
+                            var callback = function(i){
+                                return function( response ){
+                                    
+                                    // make sure our response was not an error
+                                    if( typeof(response.error) === 'undefined' ){
+                                        
+                                        // update the existing playlist item with our updated data
+                                        state.playlists[i] = response;
+                                        
+                                        service.refreshMyPlaylists();
+                                    }
+                                };
+                            }(i);
+                            
+                            // run the actual request
+                            SpotifyService.getPlaylist( playlist.uri ).then( callback );
+                        }
+                    });
+				});
+        }
+	};
+	
+	// and finally, give us our service!
+	return service;
+}]);
+
 
 
 

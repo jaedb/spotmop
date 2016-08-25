@@ -45,10 +45,10 @@
 		<span class="menu-item" ng-show="context == 'track' || context == 'localtrack'" singleclick="enqueue()">
             Add to queue
         </span>
-		<span class="menu-item has-submenu" ng-show="context != 'localtrack'">
+		<span class="menu-item has-submenu">
             Add to playlist <i class="fa fa-caret-right"></i>
             <div class="sub-menu">
-                <span class="menu-item" ng-repeat="playlist in myPlaylists" ng-bind="playlist.name" singleclick="addToPlaylistByUri( playlist.uri )"></span>
+                <span class="menu-item" ng-repeat="playlist in playlists()" ng-bind="playlist.name" singleclick="addToPlaylistByUri( playlist.uri )"></span>
             </div>
         </span>
 		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="addToLibrary()">

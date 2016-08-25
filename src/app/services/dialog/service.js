@@ -82,7 +82,7 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService, PlaylistManagerService ){
 		
 			$scope.playlistPublic = 'true';
 			$scope.scheme = 'm3u';			
@@ -111,7 +111,7 @@ angular.module('spotmop.services.dialog', [])
 								NotifyService.notify('Playlist created');
 								
 								// save new playlist to our playlist array
-								$scope.$parent.playlists.items.push( response );
+								PlaylistManagerService.addToPlaylists( response );
 							
 								// now close our dialog
 								DialogService.remove();
@@ -126,7 +126,7 @@ angular.module('spotmop.services.dialog', [])
 								NotifyService.notify('Playlist created');
 								
 								// save new playlist to our playlist array
-								$scope.$parent.playlists.items.push( response );
+								PlaylistManagerService.addToPlaylists( response );
 								
 								// now close our dialog
 								DialogService.remove();
@@ -209,15 +209,9 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService, PlaylistManagerService ){
             
-			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
-			
-			SpotifyService.getPlaylists( spotifyUserID, 50 )
-				.then(function( response ) {
-					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-				});
+			$scope.playlists = PlaylistManagerService.state().myPlaylists;
 			
 			/**
 			 * When we select the playlist for these tracks

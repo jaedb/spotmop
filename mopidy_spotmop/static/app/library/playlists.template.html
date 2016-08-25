@@ -38,8 +38,8 @@
         <!-- GRID VIEW -->
 		
 		<div class="playlist-items square-panels" ng-if="!settings.playlists.view || settings.playlists.view == 'grid'">
-			<div ng-if="playlists.items.length">
-				<div class="item-container" ng-repeat="playlist in playlists.items | orderBy:settings.playlists.sortField:settings.playlists.sortReverse | filter:show track by playlist.uri">
+			<div ng-if="playlists().length">
+				<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.playlists.sortField:settings.playlists.sortReverse track by playlist.uri">
 					<a
                         ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })"
                         class="square-panel playlist"
@@ -97,7 +97,7 @@
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="playlist in playlists.items | orderBy:settings.playlists.sortField:settings.playlists.sortReverse | filter:show track by playlist.uri">
+			<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.playlists.sortField:settings.playlists.sortReverse track by playlist.uri">
 				<div ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item state-link">
                     <div class="col w40 name">
                         <span ng-bind="playlist.name"></span>
@@ -128,7 +128,7 @@
 			</div>		
 		</div>
 		
-        <div ng-hide="playlists.items.length" class="no-items">
+        <div ng-hide="playlists().length" class="no-items">
             No items
         </div>
 		

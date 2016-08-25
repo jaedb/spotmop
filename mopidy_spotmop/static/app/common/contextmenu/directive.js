@@ -11,8 +11,10 @@ angular.module('spotmop.common.contextmenu', [
 		templateUrl: 'app/common/contextmenu/template.html',
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $scope, $rootScope, $element, $timeout, NotifyService ){
-		
+		controller: function( $scope, $rootScope, $element, $timeout, NotifyService, PlaylistManagerService ){
+            
+            $scope.state = PlaylistManagerService.state();
+            
 			$(document).on('click', function(event){
 			
 				// only interested in left-clicks, right-clicks will be addressed accordingly
