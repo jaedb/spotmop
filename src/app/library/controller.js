@@ -392,22 +392,22 @@ angular.module('spotmop.library', [])
 				label: 'Tracks'
 			}
 		];
-    $scope.playlists = function(){
-        
+    $scope.playlists = function(){        
         var filter = SettingsService.getSetting('playlists.filter');
         if( !filter || filter == 'all' ){
             return PlaylistManagerService.playlists();
-        }
-        
+        }        
         return PlaylistManagerService.myPlaylists();
     }
+	
 	
     
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+    /*
+	NOT REQUIRED UNTIL WE RE-INTRODUCE SPOTIFY HTTP API PLAYLISTS
     var loadingMorePlaylists = false;
     
     // go off and get more of this playlist's tracks
@@ -440,6 +440,7 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
+	*/
 });
 
 

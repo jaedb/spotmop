@@ -19,7 +19,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService, PlaylistManagerService ){
 						
 			// store our selected track uris
 			$rootScope.selectedTrackURIs = [];
@@ -104,7 +104,7 @@ angular.module('spotmop.common.tracklist', [])
 				// if we're in a drag event, then we don't do nothin'
 				// this drag event will be handled by the 'candrag' directive
 				if( !$rootScope.dragging ){
-                    
+					
 					// if ctrl key held down
 					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
                         
@@ -124,7 +124,8 @@ angular.module('spotmop.common.tracklist', [])
 						});
 						
 						// and select only me
-						$track.$apply( function(){ $track.track.selected = true; });
+						// TODO: Figure out why this selects all instances of this object
+						$track.$apply( function(){ me.track.selected = true; });
 					}
 					
 					// if shift key held down, select all tracks between this track, and the last clicked one
@@ -317,57 +318,15 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id ) return;
 				
-                var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
-                var selectedTracksUris = [];
-				var tracksExcluded = 0;
-                var playlistUriScheme = $filter('assetOrigin')( uri );
+                var tracks = $filter('filter')( $scope.tracks, {selected: true} );
+                var trackUris = [];
 				
 				// Loop all our selected tracks to build a uri array
-                angular.forEach( selectedTracks, function(track){
-					
-					// If we're adding to a m3u playlist, add whatever ya want
-					if( playlistUriScheme == 'm3u' ){
-						selectedTracksUris.push( track.uri );
-					
-					// Adding to a different provider (ie spotify, soundcloud)
-					// so we can  only add items from said provider
-					}else{
-						if( $filter('assetOrigin')( track.uri ) == playlistUriScheme ){
-							selectedTracksUris.push( track.uri );
-						}else{
-							tracksExcluded++;
-						}						
-					}
+                angular.forEach( tracks, function(track){
+					trackUris.push( track.uri );
                 });
-					
-				// Notify user if we omitted any tracks
-				if( tracksExcluded > 0 ){
-					if( selectedTracksUris.length <= 0 ){
-						NotifyService.error( 'No tracks could to be added to playlist' );
-						return false;
-					}else{
-						NotifyService.error( tracksExcluded+' tracks not added to playlist' );
-					}
-				}
 				
-                // now add them to the playlist, for reals
-				switch(playlistUriScheme){
-					case 'spotify':
-						SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
-							.then( function(response){
-								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-							});
-						break;
-					case 'm3u':
-						MopidyService.addTracksToPlaylist( uri, selectedTracksUris )
-							.then( function(response){
-								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-							});
-						break;
-					default:
-						NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
-						break;
-				}
+				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
 			
 			/**

@@ -389,6 +389,23 @@ angular.module('spotmop.services.mopidy', [
 					}
 					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
 				});
+		},
+		deleteTracksFromPlaylist: function(uri, indexes){
+			var self = this;
+			
+			// reverse order our indexes (otherwise removing from top will affect the keys following)			
+			function descending(a,b){
+				return b-a;
+			}
+			indexes.sort(descending);
+			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+					for( var i = 0; i < indexes.length; i++ ){
+						playlist.tracks.splice(indexes[i], 1);
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
 		}
 
 	};

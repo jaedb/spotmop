@@ -31180,7 +31180,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', ["$scope", "$rootScope", "$filter", "$state", "$stateParams", "$sce", "SpotifyService", "MopidyService", "SettingsService", "DialogService", "NotifyService", function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
+.controller('PlaylistController', ["$scope", "$rootScope", "$filter", "$state", "$stateParams", "$sce", "SpotifyService", "MopidyService", "SettingsService", "DialogService", "NotifyService", "PlaylistManagerService", function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService, PlaylistManagerService ){
 	
 	// setup base variables
 	var uri = $stateParams.uri;
@@ -31413,61 +31413,40 @@ angular.module('spotmop.browse.playlist', [])
 	
 	/**
 	 * Delete the selected tracks
+	 * TODO: Move this into PlaylistManagerService
 	 **/
 	$scope.$on('spotmop:playlist:deleteSelectedTracks', function( trackuris ){		
 		deleteMySelectedTracks();
 	});
-	
-	function deleteMySelectedTracks(){
-	
-		var playlisturi = $state.params.uri;
-		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser.id');
-		
-		if( playlistOwnerID != currentUserID ){
-			NotifyService.error('Cannot modify to a playlist you don\'t own');
-			return false;
-		}
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var trackPositionsToDelete = [];
-		
-		// construct each track into a json object to delete
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
-			selectedTrack.transitioning = true;
-		});
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromPlaylist( $scope.playlist.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
-			.then( function(response){
-			
-					// rejected
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error( response.error.message );
-					
-						// un-transition and restore the tracks we couldn't delete
-						angular.forEach( selectedTracks, function( selectedTrack, index ){
-							selectedTrack.transitioning = false;
-						});
-					// successful
-					}else{						
-						// remove tracks from DOM
-						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
-						
-						// update our snapshot so Spotify knows which version of the playlist our positions refer to
-						$scope.playlist.snapshot_id = response.snapshot_id;
-					}
-				});
-	}
-		
-	
-	/**
-	 * When the delete key is broadcast, delete the selected tracks
-	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		deleteMySelectedTracks();
 	});
+	
+	function deleteMySelectedTracks(){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var indexes = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			indexes.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			
+			// visually flag as transitioning
+			selectedTrack.transitioning = true;
+		});
+		
+		// perform the change
+		PlaylistManagerService.deleteTracksFromPlaylist( $scope.playlist.uri, indexes, $scope.playlist.snapshot_id )
+			.then( function(response){
+				
+				// update spotify's snapshot_id
+				if( response.type == 'spotify' ) $scope.playlist.snapshot_id = response.snapshot_id;
+				
+				// remove our selected tracks
+				$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+			});
+	}
+	
 		
 	/**
 	 * Reformat the track structure to the unified tracklist.track
@@ -33174,7 +33153,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: ["$element", "$scope", "$filter", "$rootScope", "$stateParams", "MopidyService", "SpotifyService", "DialogService", "NotifyService", "SettingsService", "PlayerService", function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+		controller: ["$element", "$scope", "$filter", "$rootScope", "$stateParams", "MopidyService", "SpotifyService", "DialogService", "NotifyService", "SettingsService", "PlayerService", "PlaylistManagerService", function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService, PlaylistManagerService ){
 						
 			// store our selected track uris
 			$rootScope.selectedTrackURIs = [];
@@ -33259,7 +33238,7 @@ angular.module('spotmop.common.tracklist', [])
 				// if we're in a drag event, then we don't do nothin'
 				// this drag event will be handled by the 'candrag' directive
 				if( !$rootScope.dragging ){
-                    
+					
 					// if ctrl key held down
 					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
                         
@@ -33279,7 +33258,8 @@ angular.module('spotmop.common.tracklist', [])
 						});
 						
 						// and select only me
-						$track.$apply( function(){ $track.track.selected = true; });
+						// TODO: Figure out why this selects all instances of this object
+						$track.$apply( function(){ me.track.selected = true; });
 					}
 					
 					// if shift key held down, select all tracks between this track, and the last clicked one
@@ -33472,57 +33452,15 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id ) return;
 				
-                var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
-                var selectedTracksUris = [];
-				var tracksExcluded = 0;
-                var playlistUriScheme = $filter('assetOrigin')( uri );
+                var tracks = $filter('filter')( $scope.tracks, {selected: true} );
+                var trackUris = [];
 				
 				// Loop all our selected tracks to build a uri array
-                angular.forEach( selectedTracks, function(track){
-					
-					// If we're adding to a m3u playlist, add whatever ya want
-					if( playlistUriScheme == 'm3u' ){
-						selectedTracksUris.push( track.uri );
-					
-					// Adding to a different provider (ie spotify, soundcloud)
-					// so we can  only add items from said provider
-					}else{
-						if( $filter('assetOrigin')( track.uri ) == playlistUriScheme ){
-							selectedTracksUris.push( track.uri );
-						}else{
-							tracksExcluded++;
-						}						
-					}
+                angular.forEach( tracks, function(track){
+					trackUris.push( track.uri );
                 });
-					
-				// Notify user if we omitted any tracks
-				if( tracksExcluded > 0 ){
-					if( selectedTracksUris.length <= 0 ){
-						NotifyService.error( 'No tracks could to be added to playlist' );
-						return false;
-					}else{
-						NotifyService.error( tracksExcluded+' tracks not added to playlist' );
-					}
-				}
 				
-                // now add them to the playlist, for reals
-				switch(playlistUriScheme){
-					case 'spotify':
-						SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
-							.then( function(response){
-								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-							});
-						break;
-					case 'm3u':
-						MopidyService.addTracksToPlaylist( uri, selectedTracksUris )
-							.then( function(response){
-								NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-							});
-						break;
-					default:
-						NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
-						break;
-				}
+				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
 			
 			/**
@@ -34164,22 +34102,22 @@ angular.module('spotmop.library', [])
 				label: 'Tracks'
 			}
 		];
-    $scope.playlists = function(){
-        
+    $scope.playlists = function(){        
         var filter = SettingsService.getSetting('playlists.filter');
         if( !filter || filter == 'all' ){
             return PlaylistManagerService.playlists();
-        }
-        
+        }        
         return PlaylistManagerService.myPlaylists();
     }
+	
 	
     
     /**
      * Load more of the album's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+    /*
+	NOT REQUIRED UNTIL WE RE-INTRODUCE SPOTIFY HTTP API PLAYLISTS
     var loadingMorePlaylists = false;
     
     // go off and get more of this playlist's tracks
@@ -34212,6 +34150,7 @@ angular.module('spotmop.library', [])
             loadMorePlaylists( $scope.playlists.next );
         }
 	});
+	*/
 }]);
 
 
@@ -36417,6 +36356,23 @@ angular.module('spotmop.services.mopidy', [
 					}
 					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
 				});
+		},
+		deleteTracksFromPlaylist: function(uri, indexes){
+			var self = this;
+			
+			// reverse order our indexes (otherwise removing from top will affect the keys following)			
+			function descending(a,b){
+				return b-a;
+			}
+			indexes.sort(descending);
+			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+					for( var i = 0; i < indexes.length; i++ ){
+						playlist.tracks.splice(indexes[i], 1);
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
 		}
 
 	};
@@ -36621,6 +36577,10 @@ angular.module('spotmop.services.playlistManager', [])
                 }
             }
         },
+		refreshPlaylist: function( uri ){
+			// lookup playlist in our playlist array, and update data
+			// this will be called when a playlist has been modified
+		},
         refreshPlaylists: function(){
 			MopidyService.getPlaylists()
 				.then( function( response ){
@@ -36658,7 +36618,109 @@ angular.module('spotmop.services.playlistManager', [])
                         }
                     });
 				});
-        }
+        },
+		addTracksToPlaylist: function( uri, trackUris ){
+		
+			var trackUrisToAdd = [];
+			var trackUrisExcluded = 0;
+			var playlistUriScheme = $filter('assetOrigin')( uri );
+			
+			// Loop all our selected tracks to build a uri array
+			angular.forEach( trackUris, function(trackUri){
+				
+				// If we're adding to a m3u playlist, add whatever ya want
+				if( playlistUriScheme == 'm3u' ){
+					trackUrisToAdd.push( trackUri );
+				
+				// Adding to a different provider (ie spotify, soundcloud)
+				// so we can  only add items from said provider
+				}else{
+					if( $filter('assetOrigin')( trackUri ) == playlistUriScheme ){
+						trackUrisToAdd.push( trackUri );
+					}else{
+						trackUrisExcluded++;
+					}						
+				}
+			});
+				
+			// Notify user if we omitted any tracks
+			if( trackUrisExcluded > 0 ){
+				if( trackUrisToAdd.length <= 0 ){
+					NotifyService.error( 'No tracks could to be added to playlist' );
+					return false;
+				}else{
+					NotifyService.error( trackUrisExcluded+' tracks not added to playlist' );
+				}
+			}
+			
+			// now add them to the playlist, for reals
+			switch(playlistUriScheme){
+				case 'spotify':
+					SpotifyService.addTracksToPlaylist( uri, trackUrisToAdd )
+						.then( function(response){
+							NotifyService.notify('Added '+trackUrisToAdd.length+' tracks to playlist');
+							
+							// TODO: service.refreshPlaylist( uri );
+						});
+					break;
+				case 'm3u':
+					MopidyService.addTracksToPlaylist( uri, trackUrisToAdd )
+						.then( function(response){
+							NotifyService.notify('Added '+trackUrisToAdd.length+' tracks to playlist');
+							
+							// TODO: service.refreshPlaylist( uri );
+						});
+					break;
+				default:
+					NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
+					break;
+			}
+		},
+		deleteTracksFromPlaylist: function(uri, indexes, snapshot_id){
+			
+		    var deferred = $q.defer();
+			var playlistUriScheme = $filter('assetOrigin')( uri );
+			
+			// now delete them from the playlist, for reals
+			switch(playlistUriScheme){
+				case 'spotify':
+		
+					var playlistOwnerID = SpotifyService.getFromUri('userid', uri);
+					var currentUserID = SettingsService.getSetting('spotifyuser.id');
+					
+					if( playlistOwnerID != currentUserID ){
+						NotifyService.error('Cannot modify to a playlist you don\'t own');
+						return false;
+					}
+
+					// parse these uris to spotify and delete these tracks
+					SpotifyService.deleteTracksFromPlaylist( uri, snapshot_id, indexes )
+						.then( function(response){
+						
+								if( typeof(response.error) !== 'undefined' ){
+									NotifyService.error( response.error.message );
+									deferred.reject( response.error.message );									
+								}else{		
+									NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
+									deferred.resolve({ type: playlistUriScheme, indexes: indexes, snapshot_id: response.snapshot_id });
+								}
+							});
+					break;
+				case 'm3u':
+					MopidyService.deleteTracksFromPlaylist( uri, indexes )
+						.then( function(response){
+							NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
+							deferred.resolve({ type: playlistUriScheme, playlist: response });
+						});
+					break;
+				default:
+					NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
+					deferred.reject();	
+					break;
+			}
+				
+            return deferred.promise;
+		}
 	};
 	
 	// and finally, give us our service!

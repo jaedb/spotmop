@@ -17,7 +17,7 @@ angular.module('spotmop.browse.playlist', [])
 /**
  * Main controller
  **/
-.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService ){
+.controller('PlaylistController', function PlaylistController( $scope, $rootScope, $filter, $state, $stateParams, $sce, SpotifyService, MopidyService, SettingsService, DialogService, NotifyService, PlaylistManagerService ){
 	
 	// setup base variables
 	var uri = $stateParams.uri;
@@ -250,61 +250,40 @@ angular.module('spotmop.browse.playlist', [])
 	
 	/**
 	 * Delete the selected tracks
+	 * TODO: Move this into PlaylistManagerService
 	 **/
 	$scope.$on('spotmop:playlist:deleteSelectedTracks', function( trackuris ){		
 		deleteMySelectedTracks();
 	});
-	
-	function deleteMySelectedTracks(){
-	
-		var playlisturi = $state.params.uri;
-		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser.id');
-		
-		if( playlistOwnerID != currentUserID ){
-			NotifyService.error('Cannot modify to a playlist you don\'t own');
-			return false;
-		}
-		
-		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
-		var trackPositionsToDelete = [];
-		
-		// construct each track into a json object to delete
-		angular.forEach( selectedTracks, function( selectedTrack, index ){
-			trackPositionsToDelete.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
-			selectedTrack.transitioning = true;
-		});
-		
-		// parse these uris to spotify and delete these tracks
-		SpotifyService.deleteTracksFromPlaylist( $scope.playlist.uri, $scope.playlist.snapshot_id, trackPositionsToDelete )
-			.then( function(response){
-			
-					// rejected
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error( response.error.message );
-					
-						// un-transition and restore the tracks we couldn't delete
-						angular.forEach( selectedTracks, function( selectedTrack, index ){
-							selectedTrack.transitioning = false;
-						});
-					// successful
-					}else{						
-						// remove tracks from DOM
-						$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
-						
-						// update our snapshot so Spotify knows which version of the playlist our positions refer to
-						$scope.playlist.snapshot_id = response.snapshot_id;
-					}
-				});
-	}
-		
-	
-	/**
-	 * When the delete key is broadcast, delete the selected tracks
-	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		deleteMySelectedTracks();
 	});
+	
+	function deleteMySelectedTracks(){
+		
+		var selectedTracks = $filter('filter')( $scope.tracklist.tracks, { selected: true } );
+		var indexes = [];
+		
+		// construct each track into a json object to delete
+		angular.forEach( selectedTracks, function( selectedTrack, index ){
+			indexes.push( $scope.tracklist.tracks.indexOf( selectedTrack ) );
+			
+			// visually flag as transitioning
+			selectedTrack.transitioning = true;
+		});
+		
+		// perform the change
+		PlaylistManagerService.deleteTracksFromPlaylist( $scope.playlist.uri, indexes, $scope.playlist.snapshot_id )
+			.then( function(response){
+				
+				// update spotify's snapshot_id
+				if( response.type == 'spotify' ) $scope.playlist.snapshot_id = response.snapshot_id;
+				
+				// remove our selected tracks
+				$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+			});
+	}
+	
 		
 	/**
 	 * Reformat the track structure to the unified tracklist.track

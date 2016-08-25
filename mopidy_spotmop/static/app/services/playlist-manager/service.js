@@ -44,6 +44,10 @@ angular.module('spotmop.services.playlistManager', [])
                 }
             }
         },
+		refreshPlaylist: function( uri ){
+			// lookup playlist in our playlist array, and update data
+			// this will be called when a playlist has been modified
+		},
         refreshPlaylists: function(){
 			MopidyService.getPlaylists()
 				.then( function( response ){
@@ -81,7 +85,109 @@ angular.module('spotmop.services.playlistManager', [])
                         }
                     });
 				});
-        }
+        },
+		addTracksToPlaylist: function( uri, trackUris ){
+		
+			var trackUrisToAdd = [];
+			var trackUrisExcluded = 0;
+			var playlistUriScheme = $filter('assetOrigin')( uri );
+			
+			// Loop all our selected tracks to build a uri array
+			angular.forEach( trackUris, function(trackUri){
+				
+				// If we're adding to a m3u playlist, add whatever ya want
+				if( playlistUriScheme == 'm3u' ){
+					trackUrisToAdd.push( trackUri );
+				
+				// Adding to a different provider (ie spotify, soundcloud)
+				// so we can  only add items from said provider
+				}else{
+					if( $filter('assetOrigin')( trackUri ) == playlistUriScheme ){
+						trackUrisToAdd.push( trackUri );
+					}else{
+						trackUrisExcluded++;
+					}						
+				}
+			});
+				
+			// Notify user if we omitted any tracks
+			if( trackUrisExcluded > 0 ){
+				if( trackUrisToAdd.length <= 0 ){
+					NotifyService.error( 'No tracks could to be added to playlist' );
+					return false;
+				}else{
+					NotifyService.error( trackUrisExcluded+' tracks not added to playlist' );
+				}
+			}
+			
+			// now add them to the playlist, for reals
+			switch(playlistUriScheme){
+				case 'spotify':
+					SpotifyService.addTracksToPlaylist( uri, trackUrisToAdd )
+						.then( function(response){
+							NotifyService.notify('Added '+trackUrisToAdd.length+' tracks to playlist');
+							
+							// TODO: service.refreshPlaylist( uri );
+						});
+					break;
+				case 'm3u':
+					MopidyService.addTracksToPlaylist( uri, trackUrisToAdd )
+						.then( function(response){
+							NotifyService.notify('Added '+trackUrisToAdd.length+' tracks to playlist');
+							
+							// TODO: service.refreshPlaylist( uri );
+						});
+					break;
+				default:
+					NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
+					break;
+			}
+		},
+		deleteTracksFromPlaylist: function(uri, indexes, snapshot_id){
+			
+		    var deferred = $q.defer();
+			var playlistUriScheme = $filter('assetOrigin')( uri );
+			
+			// now delete them from the playlist, for reals
+			switch(playlistUriScheme){
+				case 'spotify':
+		
+					var playlistOwnerID = SpotifyService.getFromUri('userid', uri);
+					var currentUserID = SettingsService.getSetting('spotifyuser.id');
+					
+					if( playlistOwnerID != currentUserID ){
+						NotifyService.error('Cannot modify to a playlist you don\'t own');
+						return false;
+					}
+
+					// parse these uris to spotify and delete these tracks
+					SpotifyService.deleteTracksFromPlaylist( uri, snapshot_id, indexes )
+						.then( function(response){
+						
+								if( typeof(response.error) !== 'undefined' ){
+									NotifyService.error( response.error.message );
+									deferred.reject( response.error.message );									
+								}else{		
+									NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
+									deferred.resolve({ type: playlistUriScheme, indexes: indexes, snapshot_id: response.snapshot_id });
+								}
+							});
+					break;
+				case 'm3u':
+					MopidyService.deleteTracksFromPlaylist( uri, indexes )
+						.then( function(response){
+							NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
+							deferred.resolve({ type: playlistUriScheme, playlist: response });
+						});
+					break;
+				default:
+					NotifyService.error( 'Playlist scheme '+playlistUriScheme+' not supported' );
+					deferred.reject();	
+					break;
+			}
+				
+            return deferred.promise;
+		}
 	};
 	
 	// and finally, give us our service!
