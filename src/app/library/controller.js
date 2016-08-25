@@ -392,18 +392,14 @@ angular.module('spotmop.library', [])
 				label: 'Tracks'
 			}
 		];
-	var state = PlaylistManagerService.state();
     $scope.playlists = function(){
-		if( !$rootScope.spotifyAuthorized ){
-            return state.playlists;
-        }
         
         var filter = SettingsService.getSetting('playlists.filter');
         if( !filter || filter == 'all' ){
-            return state.playlists;
+            return PlaylistManagerService.playlists();
         }
         
-        return state.myPlaylists;
+        return PlaylistManagerService.myPlaylists();
     }
 	
     

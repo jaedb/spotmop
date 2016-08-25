@@ -14,32 +14,33 @@ angular.module('spotmop.services.playlistManager', [])
 		service.refreshPlaylists();
 	});
     
-    var state = {
-        playlists: [],
-        myPlaylists: []
-    }
+	var playlists = [];
+	var myPlaylists = [];
 
 	// setup response object
     var service = {
-        state: function(){
-            return state;
+        playlists: function(){
+            return playlists;
+        },
+        myPlaylists: function(){
+            return myPlaylists;
         },
         addToPlaylists: function(playlist){
-            state.playlists.push( playlist );
+            playlists.push( playlist );
             service.refreshMyPlaylists();
         },
         refreshMyPlaylists: function(){
-            state.myPlaylists = [];
-            for( var i = 0; i < state.playlists.length; i++ ){
-                var playlist = state.playlists[i];
+            myPlaylists = [];
+            for( var i = 0; i < playlists.length; i++ ){
+                var playlist = playlists[i];
                 var origin = $filter('assetOrigin')(playlist.uri);
                 if( origin == 'spotify' ){
                     var user = SettingsService.getSetting('spotifyuser.id');
                     if( $rootScope.spotifyAuthorized && playlist.uri.startsWith('spotify:user:'+user) ){
-                        state.myPlaylists.push( playlist );
+                        myPlaylists.push( playlist );
                     }
                 }else{
-                    state.myPlaylists.push( playlist );
+                    myPlaylists.push( playlist );
                 }
             }
         },
@@ -48,14 +49,14 @@ angular.module('spotmop.services.playlistManager', [])
 				.then( function( response ){
                     
                     // store our playlist references for now
-					state.playlists = response;
+					playlists = response;
                     
                     // if we've got a userid already in storage, use that
                     var userid = SettingsService.getSetting('spotifyuser.id');
                     
                     // now go get the extra info (and artwork) from Spotify
                     // need to do this individually as there is no bulk endpoint, curses!
-                    angular.forEach( state.playlists, function(playlist, i){
+                    angular.forEach( playlists, function(playlist, i){
                         
                         // only lookup Spotify playlists
                         if( playlist.uri.startsWith('spotify:') ){
@@ -68,7 +69,7 @@ angular.module('spotmop.services.playlistManager', [])
                                     if( typeof(response.error) === 'undefined' ){
                                         
                                         // update the existing playlist item with our updated data
-                                        state.playlists[i] = response;
+                                        playlists[i] = response;
                                         
                                         service.refreshMyPlaylists();
                                     }
