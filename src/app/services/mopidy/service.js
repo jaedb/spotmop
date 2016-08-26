@@ -381,6 +381,7 @@ angular.module('spotmop.services.mopidy', [
 			var self = this;			
 			return self.getPlaylist(uri)
 				.then( function(playlist){
+                    if( typeof(playlist.tracks) === 'undefined' ) playlist.tracks = [];
 					for( var i = 0; i < trackuris.length; i++ ){
 						playlist.tracks.push({
 							__model__: "Track",

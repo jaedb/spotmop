@@ -125,7 +125,7 @@ angular.module('spotmop.common.tracklist', [])
 						
 						// and select only me
 						// TODO: Figure out why this selects all instances of this object
-						$track.$apply( function(){ me.track.selected = true; });
+						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
 					// if shift key held down, select all tracks between this track, and the last clicked one

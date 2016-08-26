@@ -33259,7 +33259,7 @@ angular.module('spotmop.common.tracklist', [])
 						
 						// and select only me
 						// TODO: Figure out why this selects all instances of this object
-						$track.$apply( function(){ me.track.selected = true; });
+						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
 					// if shift key held down, select all tracks between this track, and the last clicked one
@@ -36348,6 +36348,7 @@ angular.module('spotmop.services.mopidy', [
 			var self = this;			
 			return self.getPlaylist(uri)
 				.then( function(playlist){
+                    if( typeof(playlist.tracks) === 'undefined' ) playlist.tracks = [];
 					for( var i = 0; i < trackuris.length; i++ ){
 						playlist.tracks.push({
 							__model__: "Track",
