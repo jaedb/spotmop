@@ -291,6 +291,30 @@
 		background: #222222;
 		color: #FFFFFF;
 		padding: 15px 20px;
+        
+        .utilities {
+        
+            .button {
+                margin-top: -4px !important;
+            }
+        
+            .field.dropdown {
+                .current-option .label {
+                    display: none;
+                }
+                .options {
+                    left: auto;
+                    right: 0px;
+                }
+                .option {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    i {
+                        margin: 2px 0 0px 0;
+                    }
+                }
+            }
+        }
 	}
 	
 	.album-page .page-header, .playlist-page .page-header {

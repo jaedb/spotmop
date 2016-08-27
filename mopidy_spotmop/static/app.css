@@ -3112,6 +3112,18 @@ body.dragging .tracklist .track.dropping {
     background: #222222;
     color: #FFFFFF;
     padding: 15px 20px; }
+    .page-header .utilities .button {
+      margin-top: -4px !important; }
+    .page-header .utilities .field.dropdown .current-option .label {
+      display: none; }
+    .page-header .utilities .field.dropdown .options {
+      left: auto;
+      right: 0px; }
+    .page-header .utilities .field.dropdown .option {
+      padding-left: 10px;
+      padding-right: 10px; }
+      .page-header .utilities .field.dropdown .option i {
+        margin: 2px 0 0px 0; }
 
   .album-page .page-header, .playlist-page .page-header {
     margin: 0; }
