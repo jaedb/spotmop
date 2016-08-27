@@ -95,6 +95,9 @@ angular.module('spotmop', [
 		if( !mopidyhost || $location.host() == mopidyhost ) return true;
 	}
 	$scope.state = PlayerService.state;
+	$scope.playlists = function(){
+        return PlaylistManagerService.myPlaylists();
+    }
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){

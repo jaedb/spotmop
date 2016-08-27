@@ -13,12 +13,12 @@
         
         <div
 			class="title"
-			ng-if="track.name && track.artists && track.album"
+			ng-if="track.name && track.artists"
 			ng-bind="track.name"
 			ng-class="{ empty: !track.name }"></div>
         <div
 			class="title"
-			ng-if="!track.name && !track.artists && !track.album"
+			ng-if="!track.name && !track.artists"
 			ng-bind="track.uri"></div>
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">

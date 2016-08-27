@@ -26,11 +26,7 @@ angular.module('spotmop.search', [])
 	};
 	
 	$scope.sourceOptions = [
-			{ value: 'all', label: 'All' },
-			{ value: 'spotify', label: 'Spotify' },
-			{ value: 'local', label: 'Local' },
-			{ value: 'soundcloud', label: 'Soundcloud' },
-			{ value: 'yt', label: 'YouTube' }
+			{ value: 'all', label: 'All' }
 		];
 	
 	$scope.typeOptions = [
@@ -67,18 +63,56 @@ angular.module('spotmop.search', [])
 	 * Initiate the seach process
 	 * We can't jump straight in, as we need to make sure Mopidy is online first
 	 **/
-	function initiateSearch(){		
-		if( $rootScope.mopidyOnline ){
+	function initiateSearch(){
+		if( $rootScope.mopidyOnline && $scope.query ){
 			performSearch( $scope.query );
 		}
 	}
 	
 	// when mopidy is online, perform the search
-	$rootScope.$on('mopidy:state:online', function(){
-		performSearch( $scope.query );
-	});
+    if( $rootScope.mopidyOnline ){
+        getUriSchemes();
+        initiateSearch();
+    }else{
+        $rootScope.$on('mopidy:state:online', function(){
+            getUriSchemes();
+            initiateSearch();
+        });
+    }
 	
 	
+    /**
+     * Figure out what URI Schemes are available
+     * Asks server, and then we map the results to human-friendly labels
+     **/
+    function getUriSchemes(){
+        MopidyService.getUriSchemes()
+            .then( function(schemes){
+                
+                var sourceOptions = [{ value: 'all', label: 'All' }];
+                
+                // remove core types and backends that don't support search (m3u hopefully coming soon!)
+                var ignore = ['http','https','mms','rtmp','rtmps','rtsp','sc','file','m3u'];
+                for( var i = 0; i < ignore.length; i++ ){
+                    var index = schemes.indexOf(ignore[i]);
+                    if(index > -1) schemes.splice(index, 1);
+                }
+                
+                // add remaining schemes to our options list
+                for( var i = 0; i < schemes.length; i++ ){
+                    var scheme = {};
+                    scheme.value = schemes[i];
+                    scheme.label = schemes[i][0].toUpperCase() + schemes[i].substr(1);
+                    sourceOptions.push( scheme );
+                }
+                
+                $timeout( function(){
+                    $scope.$apply(function(){
+                        $scope.sourceOptions = sourceOptions;
+                    });
+                },1);
+            });
+    }
 	
 	/**
 	 * Perform the actual searching
@@ -206,7 +240,6 @@ angular.module('spotmop.search', [])
 		}
 		SpotifyService.getArtists( ids )
 			.then( function(artists){
-				console.log( artists );
 				$scope.results.artists = $scope.results.artists.concat( artists );
 			});
 	}

@@ -126,6 +126,9 @@ angular.module('spotmop.services.mopidy', [
 			this.stop();
 			this.start();
 		},
+		getUriSchemes: function() {
+			return wrapMopidyFunc("mopidy.getUriSchemes", this)({});
+		},
 		getLibrary: function() {
 			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
 		},
