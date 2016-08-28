@@ -32027,9 +32027,9 @@ angular.module('spotmop.directives', [])
                         var margin = parseInt( wrapper.css('margin-top') );
                         
                         if( percent < 0.2 && margin < 0 ){
-                            wrapper.css('margin-top', '+=10px');
+                            wrapper.css('margin-top', margin + 10);
                         }else if( percent > 0.8 && margin <= ( wrapper.outerHeight() - zone.outerHeight() ) ){
-                            wrapper.css('margin-top', '-=10px');
+                            wrapper.css('margin-top', margin - 10);
                         }                      
                     }
 				}				
