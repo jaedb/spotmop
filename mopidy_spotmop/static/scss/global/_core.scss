@@ -489,6 +489,8 @@ body.dragging .body * {
 #dropzones .dropzone.playlists > .liner.hover-content {
 	padding: 0;
     position: relative;
+    height: 200px;
+    overflow-y: hidden;
 }
 
 #dropzones .dropzone.queue > .liner.hover-content {

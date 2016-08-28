@@ -30200,50 +30200,6 @@ angular.module('spotmop', [
                 $rootScope.ctrlKeyHeld = false;
         }
     );
-    
-    
-    
-    /**
-     * Dropzone scrolling
-     **/
-    var interval = false;
-    
-    function setMyInterval( wrapper, zone ){
-
-        var newMargin = false;
-        var margin = parseInt( wrapper.css('margin-top') );
-        
-        if( zone.hasClass('top') ){
-            if( margin < -150 ){
-                newMargin = margin + 150;
-            }else{
-                newMargin = '0px';
-            }
-        }else if( zone.hasClass('bottom') ){
-            if( margin > ( wrapper.parent().outerHeight() - wrapper.outerHeight() + 150 ) ){
-                newMargin = margin - 150;
-            }else{
-                newMargin = wrapper.parent().outerHeight() - wrapper.outerHeight();
-            }
-        }
-        console.log( newMargin );
-        if( newMargin ){
-            wrapper.css('margin-top', newMargin);
-        }
-    }
-    
-    $(document).on('mouseenter', '#dropzones .dropzone.playlists .scrolling-zone', function(event){
-        var zone = $(this);
-        interval = setInterval(
-            function(){
-                setMyInterval( $(document).find('#dropzones .playlists-wrapper'), zone );
-            },
-            200
-        );
-    });
-    $(document).on('mouseleave', '#dropzones .dropzone.playlists .scrolling-zone', function(event){
-        clearInterval(interval);
-    });
 	
 }]);
 
@@ -32058,6 +32014,24 @@ angular.module('spotmop.directives', [])
 					
 					// dropping on nested dropzone (ie playlist dropzone)
 					dropTarget.parent().closest('.droppable').addClass('dropping-within');
+                    
+                    // hovering over playlists zone
+                    if( dropTarget.parent().closest('.dropzone').hasClass('playlists') ){
+                        
+                        var zone = dropTarget.parent().closest('.dropzone');
+                        var wrapper = zone.find('.playlists-wrapper');
+                        var relativeY = event.pageY - zone.offset().top;
+                        var percent = relativeY / zone.outerHeight();
+                        
+                        var newMargin = false;
+                        var margin = parseInt( wrapper.css('margin-top') );
+                        
+                        if( percent < 0.2 && margin < 0 ){
+                            wrapper.css('margin-top', '+=10px');
+                        }else if( percent > 0.8 && margin <= ( wrapper.outerHeight() - zone.outerHeight() ) ){
+                            wrapper.css('margin-top', '-=10px');
+                        }                      
+                    }
 				}				
             }
             

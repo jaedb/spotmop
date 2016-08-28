@@ -123,13 +123,11 @@
                     <div class="label">Add to playlist</div>
                 </div>
                 <div class="liner hover-content animate fadereveal">
-                    <div class="scrolling-zone top"></div>
                     <div class="playlists-wrapper">
                         <a ng-repeat="playlist in playlists()" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
                             <span ng-bind="playlist.name"></span>
                         </a>
                     </div>
-                    <div class="scrolling-zone bottom"></div>
                 </div>
             </div>
         </div>

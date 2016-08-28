@@ -210,6 +210,24 @@ angular.module('spotmop.directives', [])
 					
 					// dropping on nested dropzone (ie playlist dropzone)
 					dropTarget.parent().closest('.droppable').addClass('dropping-within');
+                    
+                    // hovering over playlists zone
+                    if( dropTarget.parent().closest('.dropzone').hasClass('playlists') ){
+                        
+                        var zone = dropTarget.parent().closest('.dropzone');
+                        var wrapper = zone.find('.playlists-wrapper');
+                        var relativeY = event.pageY - zone.offset().top;
+                        var percent = relativeY / zone.outerHeight();
+                        
+                        var newMargin = false;
+                        var margin = parseInt( wrapper.css('margin-top') );
+                        
+                        if( percent < 0.2 && margin < 0 ){
+                            wrapper.css('margin-top', '+=10px');
+                        }else if( percent > 0.8 && margin <= ( wrapper.outerHeight() - zone.outerHeight() ) ){
+                            wrapper.css('margin-top', '-=10px');
+                        }                      
+                    }
 				}				
             }
             
