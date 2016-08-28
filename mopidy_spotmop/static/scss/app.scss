@@ -14,3 +14,42 @@
 
 @import 'vendor/font-awesome';
 @import 'vendor/fonts';
+
+#dropzones {
+    display: block !important;
+}
+
+#dropzones .dropzone.playlists > .liner.default-content {
+    display: none;
+}
+
+#dropzones .dropzone.playlists > .liner.hover-content {
+    display: block !important;
+    overflow-y: hidden;
+    height: 200px;
+}
+
+#dropzones .playlists-wrapper {
+	-webkit-transition: all 0.2s linear;
+	-moz-transition: all 0.2s linear;
+	-o-transition: all 0.2s linear;
+	transition: all 0.2s linear;
+}
+
+#dropzones .playlists .scrolling-zone {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 30px;
+    z-index: 9;
+    pointer-events: none;
+    
+    &.top {
+        top: 0;
+    }
+    &.bottom {
+        bottom: 0;
+    }
+}
+
+

@@ -453,7 +453,8 @@ body.dragging .body * {
 
 /** unique dropzones **/
 #dropzones .dropzone.playlists > .liner.hover-content {
-  padding: 0; }
+  padding: 0;
+  position: relative; }
 
 #dropzones .dropzone.queue > .liner.hover-content {
   padding: 0; }
@@ -5322,5 +5323,33 @@ body.dragging .tracklist .track.dropping {
   font-style: normal;
   src: url("assets/fonts/Roboto-regular.eot");
   src: url("assets/fonts/Roboto-regular.eot?#iefix") format("embedded-opentype"), local("Roboto"), local("Roboto-regular"), url("assets/fonts/Roboto-regular.woff2") format("woff2"), url("assets/fonts/Roboto-regular.woff") format("woff"), url("assets/fonts/Roboto-regular.ttf") format("truetype"), url("assets/fonts/Roboto-regular.svg#Roboto") format("svg"); }
+#dropzones {
+  display: block !important; }
+
+#dropzones .dropzone.playlists > .liner.default-content {
+  display: none; }
+
+#dropzones .dropzone.playlists > .liner.hover-content {
+  display: block !important;
+  overflow-y: hidden;
+  height: 200px; }
+
+#dropzones .playlists-wrapper {
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  transition: all 0.2s linear; }
+
+#dropzones .playlists .scrolling-zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  z-index: 9;
+  pointer-events: none; }
+  #dropzones .playlists .scrolling-zone.top {
+    top: 0; }
+  #dropzones .playlists .scrolling-zone.bottom {
+    bottom: 0; }
 
 /*# sourceMappingURL=app.css.map */
