@@ -213,20 +213,25 @@ angular.module('spotmop.directives', [])
                     
                     // hovering over playlists zone
                     if( dropTarget.parent().closest('.dropzone').hasClass('playlists') ){
-                        
+						
                         var zone = dropTarget.parent().closest('.dropzone');
                         var wrapper = zone.find('.playlists-wrapper');
+                        
+						// resize playlists zone 
+						var fromTop = zone.find('.hover-content').offset().top;
+						zone.find('.hover-content').css('height', $(window).height() - fromTop - 20 );
+						
+						// calculate our hover position (as a percent of the zone)
                         var relativeY = event.pageY - zone.offset().top;
                         var percent = relativeY / zone.outerHeight();
-                        
-                        var newMargin = false;
                         var margin = parseInt( wrapper.css('margin-top') );
                         
+						// and now scroll (if applicable)
                         if( percent < 0.2 && margin < 0 ){
-                            wrapper.css('margin-top', margin + 10);
-                        }else if( percent > 0.8 && margin <= ( wrapper.outerHeight() - zone.outerHeight() ) ){
-                            wrapper.css('margin-top', margin - 10);
-                        }                      
+                            wrapper.css('margin-top', margin + 5);
+                        }else if( percent > 0.8 && margin >= ( zone.outerHeight() - wrapper.outerHeight() ) ){
+                            wrapper.css('margin-top', margin - 5);
+                        }
                     }
 				}				
             }

@@ -122,7 +122,7 @@
                     <i class="si playlist white doublesize"></i>
                     <div class="label">Add to playlist</div>
                 </div>
-                <div class="liner hover-content animate fadereveal">
+                <div class="liner hover-content fadereveal">
                     <div class="playlists-wrapper">
                         <a ng-repeat="playlist in playlists()" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
                             <span ng-bind="playlist.name"></span>
