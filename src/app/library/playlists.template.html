@@ -107,7 +107,8 @@
                         <span ng-if="playlist.owner.id == undefined">-</span>
                     </div>
                     <div class="col w10 tracks">
-                        <span ng-if="playlist.tracks" ng-bind="playlist.tracks.total | number:0"></span>
+                        <span ng-if="playlist.tracks.total" ng-bind="playlist.tracks.total | number:0"></span>
+                        <span ng-if="!playlist.tracks.total && playlist.tracks" ng-bind="playlist.tracks.length | number:0"></span>
                         <span ng-if="playlist.tracks == undefined">-</span>
                     </div>
                     <div class="col w10">

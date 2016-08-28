@@ -13,6 +13,10 @@ angular.module('spotmop.services.playlistManager', [])
 	$rootScope.$on('spotmop:playlists:changed', function( event, data ){
 		service.refreshPlaylists();
 	});
+	
+	$rootScope.$on('spotmop:spotify:authenticationChanged', function( event, data ){
+		service.refreshPlaylists();
+	});
     
 	var playlists = [];
 	var myPlaylists = [];
@@ -49,41 +53,63 @@ angular.module('spotmop.services.playlistManager', [])
 			// this will be called when a playlist has been modified
 		},
         refreshPlaylists: function(){
+			
+			// get playlists from server
 			MopidyService.getPlaylists()
 				.then( function( response ){
                     
                     // store our playlist references for now
 					playlists = response;
                     
-                    // if we've got a userid already in storage, use that
-                    var userid = SettingsService.getSetting('spotifyuser.id');
-                    
                     // now go get the extra info (and artwork) from Spotify
                     // need to do this individually as there is no bulk endpoint, curses!
                     angular.forEach( playlists, function(playlist, i){
+                            
+						// process extra playlist data and add to our $scope
+						var callback = function(i){
+							return function( response ){
+								
+								// make sure our response was not an error
+								if( typeof(response.error) === 'undefined' ){
+									
+									// update the existing playlist item with our updated data
+									playlists[i] = response;									
+									service.refreshMyPlaylists();
+								}
+							};
+						}(i);
                         
-                        // only lookup Spotify playlists
+                        // if we're a spotify, then fetch more info from Spotify
                         if( playlist.uri.startsWith('spotify:') ){
-                            
-                            // process it and add to our $scope
-                            var callback = function(i){
-                                return function( response ){
-                                    
-                                    // make sure our response was not an error
-                                    if( typeof(response.error) === 'undefined' ){
-                                        
-                                        // update the existing playlist item with our updated data
-                                        playlists[i] = response;
-                                        
-                                        service.refreshMyPlaylists();
-                                    }
-                                };
-                            }(i);
-                            
-                            // run the actual request
                             SpotifyService.getPlaylist( playlist.uri ).then( callback );
-                        }
+							
+						// if it's a local, then we can fetch more details from the server
+                        }else if( playlist.uri.startsWith('m3u:') ){							
+							MopidyService.getPlaylist( playlist.uri ).then( callback );
+						}
                     });
+                    
+					// if we're authenticated with Spotify, fetch the authenticated user's playlists
+					// TODO: currently only gets first 50, need to implement lazy-loading
+					if( SpotifyService.isAuthorized() ){
+						var userid = SettingsService.getSetting('spotifyuser.id');
+						SpotifyService.getPlaylists( userid, 50 )
+							.then( function(response){
+								
+								// loop all the items
+								for( var i = 0; i < response.items.length; i++ ){
+									var playlist = response.items[i];
+									
+									// only add if it doesn't already exist in our server playlists list
+									var duplicates = $filter('filter')( playlists, {uri: playlist.uri});
+									if( duplicates.length <= 0 ){
+										playlists.push( playlist );
+									}
+								}
+                                
+								service.refreshMyPlaylists();
+							});
+					}
 				});
         },
 		addTracksToPlaylist: function( uri, trackUris ){
