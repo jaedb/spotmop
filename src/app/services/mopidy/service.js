@@ -84,7 +84,7 @@ angular.module('spotmop.services.mopidy', [
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({
-    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
+				webSocketUrl: "//" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING
     				callingConvention: 'by-position-or-by-name'
     			});
 		
