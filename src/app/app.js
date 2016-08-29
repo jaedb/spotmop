@@ -27,6 +27,7 @@ angular.module('spotmop', [
 	'spotmop.services.lastfm',
 	'spotmop.services.dialog',
 	'spotmop.services.pusher',
+	'spotmop.services.playlistManager',
 	
 	'spotmop.player',
 	'spotmop.queue',
@@ -71,7 +72,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, Analytics ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -80,9 +81,9 @@ angular.module('spotmop', [
 		return !!('ontouchstart' in window);
 	}		
     $rootScope.isTouchMode = function(){
-		
+	
 		// detect our manual override
-		var pointerMode = SettingsService.getSetting('spotmop.pointerMode');
+		var pointerMode = SettingsService.getSetting('pointerMode');
 		if( pointerMode == 'touch' ) return true;
 		else if( pointerMode == 'click' ) return false;
 		
@@ -94,49 +95,19 @@ angular.module('spotmop', [
 		if( !mopidyhost || $location.host() == mopidyhost ) return true;
 	}
 	$scope.state = PlayerService.state;
-	$rootScope.currentTracklist = [];
+	$scope.playlists = function(){
+        return PlaylistManagerService.myPlaylists();
+    }
 	$scope.spotifyUser = {};
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
 		window.location.reload();
 	}
-    $scope.playlistsMenu = [];
-    $scope.myPlaylists = {};
 	$scope.popupVolumeControls = function(){
         DialogService.create('volumeControls', $scope);
 	}
-	
-    /**
-     * Playlists submenu
-     **/
     
-	// update the playlists menu
-	$scope.updatePlaylists = function( userid ){
-	
-		SpotifyService.getPlaylists( userid, 50 )
-			.then(function( response ) {
-				
-				$scope.myPlaylists = response.items;				
-                var newPlaylistsMenu = [];
-            
-				// loop all of our playlists, and set up a menu item for each
-				$.each( response.items, function( key, playlist ){
 
-					// we only want to add playlists that this user owns
-					if( playlist.owner.id == $scope.spotifyUser.id ){
-                        var playlistObject = playlist;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-                        playlistObject.link = '/browse/playlist/'+playlist.uri;
-						newPlaylistsMenu.push(playlistObject);
-					}
-				});
-                
-                // now reset our current list with this new list
-                $scope.playlistsMenu = newPlaylistsMenu;
-			});
-	}
-    
-		
     
 	/**
 	 * Responsive
@@ -292,6 +263,7 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
+		PlaylistManagerService.refreshPlaylists();
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -307,11 +279,9 @@ angular.module('spotmop', [
 		if( newMethod == 'client' ){
 			$rootScope.spotifyAuthorized = true;
 			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			$scope.updatePlaylists( $scope.spotifyUser.id );
 			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
 		}else{
 			$rootScope.spotifyAuthorized = false;
-			$scope.playlistsMenu = [];
 		}
 	});
 	
@@ -319,12 +289,10 @@ angular.module('spotmop', [
 		$rootScope.spotifyOnline = true;
 		if( $rootScope.spotifyAuthorized ){
 			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			$scope.updatePlaylists( $scope.spotifyUser.id );
 		}
 	});
 	
 	$scope.$on('spotmop:spotify:offline', function(){
-		$scope.playlistsMenu = [];
 		$rootScope.spotifyOnline = false;
 	});
 	

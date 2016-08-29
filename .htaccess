@@ -3,6 +3,9 @@
 
 RewriteEngine On
 
+# rewrite all image requests to our default mopidy port
+RewriteRule ^images/(.*)$ http://%{HTTP_HOST}:6680/images/$1 [NC,L]
+
 # rewrite all root-level requests to the static folder
 RewriteCond %{REQUEST_URI} !/mopidy_spotmop/ [NC]
 RewriteRule (.*) /mopidy_spotmop/static/$1 [NC,L]

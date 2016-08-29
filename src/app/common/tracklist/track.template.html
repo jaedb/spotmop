@@ -1,17 +1,25 @@
 <div class="track"
-    ng-class="{ 'selected': track.selected, 'transitioning': track.transitioning }"
+    ng-class="{ 'playing': isCurrentlyPlaying(), 'selected': track.selected, 'transitioning': track.transitioning }"
     candrag
     dragobj="track"
     draggable="false"
     data-id="{{ track.id }}"
     data-uri="{{ track.uri }}">
-            
+	
         <div class="selected-state">
             <i class="fa fa-check-square-o" ng-show="track.selected"></i>
             <i class="fa fa-square-o" ng-show="!track.selected"></i>
         </div>
         
-        <div class="title" ng-bind="track.name" ng-class="{ empty: !track.name }"></div>
+        <div
+			class="title"
+			ng-if="track.name && track.artists"
+			ng-bind="track.name"
+			ng-class="{ empty: !track.name }"></div>
+        <div
+			class="title"
+			ng-if="!track.name && !track.artists"
+			ng-bind="track.uri"></div>
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
             <artistlist artists="track.artists"></artistlist>
@@ -37,7 +45,7 @@
             </div>
         
             <div class="source">
-                <span class="ssi {{ track.uri | splitstring:0 }}"></span>
+                <span class="si {{ sourceIconClasses() }}"></span>
             </div>
             
         </div>

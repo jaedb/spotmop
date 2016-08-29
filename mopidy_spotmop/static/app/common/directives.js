@@ -131,7 +131,7 @@ angular.module('spotmop.directives', [])
                     $('body').addClass('dragging');
                     
 					var tracerContent = '';
-					
+                    
 					if(
 						$scope.dragobj.type == 'album' ||
 						$scope.dragobj.type == 'localalbum' ||
@@ -166,7 +166,11 @@ angular.module('spotmop.directives', [])
 							// loop the first three items, and add these to our drag tracer
 							var selectedTracks = $(document).find('.track.selected');
 							for( var i = 0; i < selectedTracks.length && i < 3; i ++ ){
-								tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+								
+								// only add if we haven't added the track already (ie the dragobj)
+								if( selectedTracks.eq(i).data('uri') != $scope.dragobj.uri ){
+									tracerContent += '<div class="track-title">'+selectedTracks.eq(i).find('.title').html()+'</div>';
+								}
 							}
 						
 					}
@@ -206,6 +210,29 @@ angular.module('spotmop.directives', [])
 					
 					// dropping on nested dropzone (ie playlist dropzone)
 					dropTarget.parent().closest('.droppable').addClass('dropping-within');
+                    
+                    // hovering over playlists zone
+                    if( dropTarget.parent().closest('.dropzone').hasClass('playlists') ){
+						
+                        var zone = dropTarget.parent().closest('.dropzone');
+                        var wrapper = zone.find('.playlists-wrapper');
+                        
+						// resize playlists zone 
+						var fromTop = zone.find('.hover-content').offset().top;
+						zone.find('.hover-content').css('height', $(window).height() - fromTop - 20 );
+						
+						// calculate our hover position (as a percent of the zone)
+                        var relativeY = event.pageY - zone.offset().top;
+                        var percent = relativeY / zone.outerHeight();
+                        var margin = parseInt( wrapper.css('margin-top') );
+                        
+						// and now scroll (if applicable)
+                        if( percent < 0.2 && margin < 0 ){
+                            wrapper.css('margin-top', margin + 5);
+                        }else if( percent > 0.8 && margin >= ( zone.outerHeight() - wrapper.outerHeight() ) ){
+                            wrapper.css('margin-top', margin - 5);
+                        }
+                    }
 				}				
             }
             
@@ -941,7 +968,17 @@ angular.module('spotmop.directives', [])
 			
 			$scope.toggleVisibility = function(){
 				$scope.visible = !$scope.visible;
+				
+				// if we've just been revealed, broadcast to hide all other ones
+				if( $scope.visible ) $rootScope.$broadcast('spotmop:dropdownfield:revealed', $scope.settingname);
 			}
+			
+			// if another dropdown has been revealed, hide me
+			$rootScope.$on('spotmop:dropdownfield:revealed', function(event, settingname){
+				if( settingname != $scope.settingname ){
+					$scope.visible = false;
+				}
+			});
 			
 			// option selected
 			$scope.selectOption = function( option ){
@@ -1046,13 +1083,11 @@ angular.module('spotmop.directives', [])
 			// mopidy-styled images
 			if( typeof(image.__model__) !== 'undefined' ){
 				
-				var mopidyhost = SettingsService.getSetting('mopidy.host');
-				if( !mopidyhost ) mopidyhost = window.location.hostname;
-				var mopidyip = SettingsService.getSetting('mopidy.host');
-				if( !mopidyip ) mopidyip = '6680';
+				if( typeof(image.uri) === 'object' )
+					image.url = image.uri[0];
+				else
+					image.url = image.uri;
 				
-				var baseUrl = 'http://'+ mopidyhost +':'+ mopidyip;
-				image.url = baseUrl +'/spotmop'+ image.uri;
 				delete image.uri;
 				
 				if( image.height ){
@@ -1068,7 +1103,7 @@ angular.module('spotmop.directives', [])
 				if( !standardised.small ) standardised.small = image.url;
 				if( !standardised.medium ) standardised.medium = image.url;
 				if( !standardised.large ) standardised.large = image.url;
-		
+				
 			// spotify-styled images
 			}else if( typeof(image.height) !== 'undefined' ){
 			

@@ -2,13 +2,16 @@
 @import 'global/core';
 @import 'global/forms';
 @import 'global/icons';
-@import 'global/responsive';
 @import 'global/touch-devices';
 
+@import 'components/tracklist';
 @import 'components/context-menu';
 @import 'components/loading-bar';
 @import 'components/dialog';
 @import 'components/player';
 
+@import 'global/responsive';
+
 @import 'vendor/font-awesome';
 @import 'vendor/fonts';
+

@@ -31,7 +31,6 @@ class SpotmopExtension(ext.Extension):
         schema = super(SpotmopExtension, self).get_config_schema()
         schema['debug'] = config.Boolean()
         schema['pusherport'] = config.String()
-        schema['artworklocation'] = config.String()
         return schema
 
     def setup(self, registry):
@@ -52,9 +51,8 @@ def spotmop_client_factory(config, core):
 
 	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
     environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
-    artworklocation = config.get(__ext_name__)['artworklocation']
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
-
+    
     # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
     pusherport = str(config['spotmop']['pusherport'])
     application = tornado.web.Application([
@@ -85,7 +83,7 @@ def spotmop_client_factory(config, core):
 				'config': config
 			}),
         (r"/images/(.*)", tornado.web.StaticFileHandler, {
-            "path": artworklocation
+            "path": config['local-images']['image_dir']
         }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
 				"path": spotmoppath,

@@ -126,11 +126,8 @@ angular.module('spotmop.services.mopidy', [
 			this.stop();
 			this.start();
 		},
-		getPlaylists: function() {
-			return wrapMopidyFunc("mopidy.playlists.asList", this)();
-		},
-		getPlaylist: function(uri) {
-			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		getUriSchemes: function() {
+			return wrapMopidyFunc("mopidy.getUriSchemes", this)({});
 		},
 		getLibrary: function() {
 			return wrapMopidyFunc("mopidy.library.browse", this)({ uri: null });
@@ -159,12 +156,14 @@ angular.module('spotmop.services.mopidy', [
 		getImages: function(uris){
 			return wrapMopidyFunc("mopidy.library.getImages", this)({ uris: uris });
 		},
-		search: function(searchterm, type, backends){			
+		search: function(fields, searchterm, backends){			
 			if( typeof(backends) === 'undefined' ) var backends = null;			
-			if( typeof(type) === 'undefined' || !type ) var type = 'any';
+			if( typeof(fields) === 'undefined' || !fields ) var fields = ['any'];
 			var query = {};
-			query[type] = [searchterm];
-			return wrapMopidyFunc("mopidy.library.search", this)( { query: query, uris: backends } );
+			for( var i = 0; i < fields.length; i++ ){
+				query[fields[i]] = [searchterm];
+			}
+			return wrapMopidyFunc("mopidy.library.search", this)({ query: query, uris: backends });
 		},
 		getCurrentTrack: function() {
 			return wrapMopidyFunc("mopidy.playback.getCurrentTrack", this)();
@@ -252,6 +251,49 @@ angular.module('spotmop.services.mopidy', [
 					self.mopidy.playback.play();
 				}, consoleError);
 		},
+		playLocalPlaylist: function( uri ) {
+			var self = this;
+			
+			cfpLoadingBar.start();
+			cfpLoadingBar.set(0.25);
+			
+			var trackUris = [];
+			self.getPlaylist( uri )
+				.then( function(response){	
+					self.mopidy.tracklist.clear();				
+					for( var i = 0; i < response.tracks.length; i++ ){
+						trackUris.push( response.tracks[i].uri );
+					}
+				})
+				.then( function(){
+					
+					// add the first track immediately
+					return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+					
+						// then play it
+						.then( function( response ){
+							
+							// make sure we added the track successfully
+							// this handles failed adds due to geo-blocked spotify and typos in uris, etc
+							var playTrack = null;					
+							if( response.length > 0 ){
+								playTrack = { tlid: response[0].tlid };
+							}
+							
+							return self.mopidy.playback.play( playTrack )
+						
+								// now add all the remaining tracks
+								.then( function(){
+									if( trackUris.length > 0 ){
+										return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+											.then( function(){
+												cfpLoadingBar.complete();
+											});
+									}
+								}, consoleError);
+						}, consoleError);
+				});
+		},
 		play: function(){
 			return wrapMopidyFunc("mopidy.playback.play", this)();
 		},
@@ -320,6 +362,54 @@ angular.module('spotmop.services.mopidy', [
 			self.mopidy.tracklist.remove({tlid: tlids}).then( function(){
 				return true;
 			});
+		},
+		
+		/**
+		 * Playlists
+		 **/		 
+		getPlaylists: function() {
+			return wrapMopidyFunc("mopidy.playlists.asList", this)();
+		},
+		getPlaylist: function(uri) {
+			return wrapMopidyFunc("mopidy.playlists.lookup", this)({ uri: uri });
+		},
+		createPlaylist: function(name, uri_scheme){
+			if( typeof(uri_scheme) === 'undefined' ) var uri_scheme = 'm3u';
+			return wrapMopidyFunc("mopidy.playlists.create", this)({ name: name, uri_scheme: uri_scheme });
+		},
+		deletePlaylist: function(uri){
+			return wrapMopidyFunc("mopidy.playlists.delete", this)({ uri: uri });
+		},
+		addTracksToPlaylist: function(uri, trackuris){
+			var self = this;			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+                    if( typeof(playlist.tracks) === 'undefined' ) playlist.tracks = [];
+					for( var i = 0; i < trackuris.length; i++ ){
+						playlist.tracks.push({
+							__model__: "Track",
+							uri: trackuris[i]
+						});
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
+		},
+		deleteTracksFromPlaylist: function(uri, indexes){
+			var self = this;
+			
+			// reverse order our indexes (otherwise removing from top will affect the keys following)			
+			function descending(a,b){
+				return b-a;
+			}
+			indexes.sort(descending);
+			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+					for( var i = 0; i < indexes.length; i++ ){
+						playlist.tracks.splice(indexes[i], 1);
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
 		}
 
 	};

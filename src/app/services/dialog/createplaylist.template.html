@@ -11,12 +11,24 @@
 		
 		<div class="field radio">
 			<label>
-				<input type="radio" name="public" value="true" ng-model="playlistPublic" checked="checked" />
+				<input type="radio" name="public" value="true" ng-model="playlistPublic" />
 				<span class="label">Public</span>
 			</label>
 			<label>
 				<input type="radio" name="public" value="false" ng-model="playlistPublic" />
 				<span class="label">Private</span>
+			</label>
+			<div class="clear"></div>
+		</div>
+		
+		<div class="field radio">
+			<label>
+				<input type="radio" name="scheme" value="m3u" ng-model="scheme" />
+				<span class="label">Local (Mopidy)</span>
+			</label>
+			<label ng-class="{ disabled: !spotifyAuthorized }">
+				<input type="radio" name="scheme" value="spotify" ng-model="scheme" />
+				<span class="label">Remote (Spotify)</span>
 			</label>
 			<div class="clear"></div>
 		</div>

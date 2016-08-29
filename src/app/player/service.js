@@ -18,16 +18,18 @@ angular.module('spotmop.services.player', [])
 		isConsume: false,
 		volume: 100,
 		playPosition: 0,
+		currentTracklist: [],
+		getCurrentTracklist: function(){ return state.currentTracklist; },
 		currentTlTrack: false,
 		currentTracklistPosition: function(){
 			if( state.currentTlTrack ){
 				
-				var currentTrackObject = $filter('filter')($rootScope.currentTracklist, {tlid: state.currentTlTrack.tlid});
+				var currentTrackObject = $filter('filter')(state.currentTracklist, {tlid: state.currentTlTrack.tlid});
 				var at_position = 0;
 				
 				// make sure we got the track as a TlTrack object (damn picky Mopidy API!!)
 				if( currentTrackObject.length > 0 ){
-					at_position = $rootScope.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
+					at_position = state.currentTracklist.indexOf( currentTrackObject[0] ) + 1;
 				}
 				
 				return at_position;
@@ -60,7 +62,7 @@ angular.module('spotmop.services.player', [])
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
-		updateTracklist();
+        updateTracklist();
 	});
 	
 	$rootScope.$on('mopidy:event:optionsChanged', function(event, options){
@@ -72,7 +74,7 @@ angular.module('spotmop.services.player', [])
 	});
 	
 	$rootScope.$on('mopidy:event:seeked', function( event, position ){
-		updatePlayPosition( position.time_position );
+		setPlayPosition( position.time_position );
 	});
 	
 	$rootScope.$on('mopidy:event:volumeChanged', function( event, volume ){
@@ -102,10 +104,10 @@ angular.module('spotmop.services.player', [])
 		
 		// only if our new tlTrack differs from our current one
 		if( typeof(state.currentTlTrack.track) === 'undefined' || state.currentTlTrack.track.uri != tlTrack.tl_track.track.uri ){
-			state.playPosition = 0;
 			state.currentTlTrack = tlTrack.tl_track;
 			updateCurrentTrack( tlTrack.tl_track );
 			updatePlayerState();
+			setPlayPosition(0);
 		}
 	});
 	
@@ -114,15 +116,17 @@ angular.module('spotmop.services.player', [])
 	 * Set the new play position and, if required, figure it out first
 	 * @param newPosition = integer (optional)
 	 **/
-	function updatePlayPosition( newPosition ){
+	function setPlayPosition( newPosition ){
 	
 		// if we haven't been provided with a specific new position
 		if( typeof( newPosition ) === 'undefined' ){
 		
-			// go get the time position
-			MopidyService.getTimePosition().then( function(position){
-				state.playPosition = position;
-			});
+			// go get the time position (provided Mopidy is online)
+			if( $rootScope.mopidyOnline ){
+				MopidyService.getTimePosition().then( function(position){
+					state.playPosition = position;
+				});
+			}
 		
 		// we've been parsed the time position, so just use that
 		}else{
@@ -130,25 +134,21 @@ angular.module('spotmop.services.player', [])
 		}
 	}
 	
-	
-	/**
-	 * Update volume
-	 * Fetches (if required) the volume from mopidy and sets to state
-	 * @param volume = int (optional)
-	 **/
-	function updateVolume( newVolume ){
-	
-		// if we've been told what the new volume is, let's just use that
-		if( typeof( newVolume ) !== 'undefined' ){
-			state.volume = newVolume;
-			
-		// not told what new vol is, so let's fetch and set
-		}else{
-			MopidyService.getVolume().then(function( volume ){
-				state.volume = volume;
-			});
-		}
-	}
+	$interval( 
+		function(){		
+			if(
+				state.isPlaying() && 
+				typeof(state.currentTlTrack) !== 'undefined' && 
+				typeof(state.currentTlTrack.track) !== 'undefined' ){					
+					if( ( state.playPosition + 1000 ) < state.currentTlTrack.track.length ){
+						setPlayPosition( state.playPosition + 1000 );
+					}else{
+						setPlayPosition( 0 );
+					}
+			}
+		},
+		1000
+	);
 	
 	
 	/**
@@ -159,22 +159,18 @@ angular.module('spotmop.services.player', [])
 		
 		// if we've been told what the new state is, let's just use that
 		if( typeof( newState ) !== 'undefined' ){
-			state.playbackState = newState;
-			//if( newState == 'stopped' ) state.playPosition = 0;			
+			state.playbackState = newState;		
 			updateWindowTitle();
+			setPlayPosition();
 				
 		// not sure of new state, so let's find out first
 		}else{
 			MopidyService.getState().then( function( newState ){
 				state.playbackState = newState;
-				//if( newState == 'stopped' ) state.playPosition = 0;	
 				updateWindowTitle();
+				setPlayPosition();
 			});
-		}
-		
-		// commented out due to strange behavior in Mopidy 1.1.1 where on pause, the play position was erratic
-		// so let's just rely on our latest play position as factual. When we resume it'll re-fetch anyway.
-		// updatePlayPosition();		
+		}	
 	};
 	
 	
@@ -239,7 +235,7 @@ angular.module('spotmop.services.player', [])
 			}
 			
 			// update ui
-			updatePlayPosition();
+			//setPlayPosition();
 			updateWindowTitle();
 		}
 		
@@ -263,14 +259,22 @@ angular.module('spotmop.services.player', [])
 			});
 		}
 	};	
-	
-	
-	/**
-	 * Update our current tracklist
-	 **/
-	function updateTracklist(){
-		MopidyService.getCurrentTlTracks().then( function( tlTracks ){			
-			$rootScope.currentTracklist = tlTracks;
+    
+    /**
+     * Fetch our tracklist from Mopidy, and update our record of it
+     **/
+    function updateTracklist(){
+		MopidyService.getCurrentTlTracks().then( function( tlTracks ){
+            
+            // loop all the tlTracks and flatten them to a consistent format
+            var tracks = [];            
+            for( var i = 0; i < tlTracks.length; i++ ){
+                var track = tlTracks[i].track;
+                track.type = 'tltrack';
+                track.tlid = tlTracks[i].tlid;
+                tracks.push( track );
+            }
+            state.currentTracklist = tracks;
 			
 			// no tracks? make sure we don't have anything 'playing'
 			// this would typically be called when we clear our tracklist, or have got to the end
@@ -279,7 +283,7 @@ angular.module('spotmop.services.player', [])
 				updateWindowTitle();
 			}
 		});
-	}
+    }
 		
 
 	/**
@@ -294,14 +298,15 @@ angular.module('spotmop.services.player', [])
             var documentIcon = '\u25A0 ';
             var artistString = '';
             
-            $.each(track.artists, function(key,value){
-                if( artistString != '' )
-                    artistString += ', ';
-                artistString += value.name;
-            });
+            if( track.artists ){
+                for( var i = 0; i < track.artists.length; i++ ){
+                    if( artistString != '' )
+                        artistString += ', ';
+                    artistString += track.artists[i].name;
+                };
+            }
 
-            if( state.isPlaying() )
-                documentIcon = '\u25B6 ';
+            if( state.isPlaying() ) documentIcon = '\u25B6 ';
 
             newTitle = documentIcon +' '+ track.name +' - '+ artistString;        
         };
@@ -310,30 +315,26 @@ angular.module('spotmop.services.player', [])
 	}
 	
 	
-	
 	/**
-	 * Update play progress position slider
+	 * Update volume
+	 * Fetches (if required) the volume from mopidy and sets to state
+	 * @param volume = int (optional)
 	 **/
-	$interval( 
-		function(){
-			//console.log( 'pos: '+state.playPosition +'  length:'+ state.currentTlTrack.track.length);
-			if( $rootScope.mopidyOnline ) updatePlayPosition();
-			/*if(
-				state.isPlaying() && 
-				typeof(state.currentTlTrack) !== 'undefined' && 
-				typeof(state.currentTlTrack.track) !== 'undefined' ){
-					
-					if( ( state.playPosition + 1000 ) < state.currentTlTrack.track.length ){
-						console.log( 'adding to '+state.playPosition+'  on  '+state.currentTlTrack.track.length );
-						state.playPosition += 1000;
-					}else{
-						console.log('doing overtime '+state.playPosition+'  on  '+state.currentTlTrack.track.length)
-						state.playPosition = 0;
-					}
-			}*/
-		},
-		1000
-	);
+	function updateVolume( newVolume ){
+	
+		// if we've been told what the new volume is, let's just use that
+		if( typeof( newVolume ) !== 'undefined' ){
+			state.volume = newVolume;
+			
+		// not told what new vol is, so let's fetch and set
+		}else{
+			MopidyService.getVolume().then(function( volume ){
+				state.volume = volume;
+			});
+		}
+	}
+	
+	
 	
     
 	/**

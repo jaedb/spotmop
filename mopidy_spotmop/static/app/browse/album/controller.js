@@ -139,24 +139,18 @@ angular.module('spotmop.browse.album', [])
 					track.album = $scope.album;
 				});
 				
-				var artisturis = [];
+				var artistids = [];
 				angular.forEach( response.artists, function( artist ){
-					artisturis.push( artist.uri );
+					artistids.push( SpotifyService.getFromUri('artistid', artist.uri) );
 				});
 				
 				// now get the artist objects
-				SpotifyService.getArtists( artisturis )
+				SpotifyService.getArtists( artistids )
 					.then( function( response ){
-                        $scope.album.artists = [];
-                        if( response.artists ){
-                            for( var i = 0; i < response.artists.length; i++ ){
-                                var artist = response.artists[i];
-                                $scope.album.artists.push( artist );
-                            };
-                        }
+                        $scope.album.artists = response;
 					});
 					
-				// if we're viewing from within an individual artist, get 'em
+				// if we're viewing from within an individual artist, get 'em for use in the breadcrumbs
 				if( typeof($stateParams.artisturi) !== 'undefined' ){		
 					// get the artist from Spotify
 					SpotifyService.getArtist( $stateParams.artisturi )

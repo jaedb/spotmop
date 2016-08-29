@@ -291,6 +291,30 @@
 		background: #222222;
 		color: #FFFFFF;
 		padding: 15px 20px;
+        
+        .utilities {
+        
+            .button {
+                margin-top: -4px !important;
+            }
+        
+            .field.dropdown {
+                .current-option .label {
+                    display: none;
+                }
+                .options {
+                    left: auto;
+                    right: 0px;
+                }
+                .option {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    i {
+                        margin: 2px 0 0px 0;
+                    }
+                }
+            }
+        }
 	}
 	
 	.album-page .page-header, .playlist-page .page-header {
@@ -683,29 +707,6 @@
 	
 	
 	/**
-	 * Tracklists
-	 **/
-	
-	.tracklist .track {
-		padding-right: 20px;
-	}
-	 
-	.tracklist .track .popularity,
-	.tracklist .track .duration {
-		display: none;
-	}
-	
-	.tracklist .track .title {
-		width: 40%;
-	}
-	
-	.tracklist.album-items .track .title,
-	.tracklist.album-items .track .artist {
-		width: 50%;
-	}
-	
-	
-	/**
 	 * Artist intro panel
 	 **/
 	 
@@ -916,17 +917,25 @@
 	 * Tracklists
 	 **/
 	 
-	.tracklist .track .title,
-	.tracklist .track .artist {
-		width: 50%;
-	}
+	.tracklist .track {
+		.title,
+		.artist {
+			width: 50%;
+		}
+		
+		.info {
+			.duration {
+				display: none;
+			}
+		}
 	
-	.tracklist .track .album {
-		clear: left;
-		width: auto;
-		padding-left: 50%;
-		padding-right: 10px;
-		opacity: 0.5;
+		.album {
+			clear: left;
+			width: auto;
+			padding-left: 50%;
+			padding-right: 10px;
+			opacity: 0.5;
+		}
 	}
 		
 }

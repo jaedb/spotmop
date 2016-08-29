@@ -82,9 +82,10 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/createplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, DialogService, SettingsService, SpotifyService ){
+		controller: function( $scope, $element, $rootScope, DialogService, MopidyService, SettingsService, SpotifyService, NotifyService, PlaylistManagerService ){
 		
 			$scope.playlistPublic = 'true';
+			$scope.scheme = 'm3u';			
             $scope.savePlaylist = function(){
 				
 				if( $scope.playlistName && $scope.playlistName != '' ){
@@ -98,24 +99,40 @@ angular.module('spotmop.services.dialog', [])
 					else
 						$scope.playlistPublic = false;
 					
-					// perform the creation
-					SpotifyService.createPlaylist(
-							$scope.$parent.spotifyUser.id,
-							{ name: $scope.playlistName, public: $scope.playlistPublic } 
-						)
-						.then( function(response){
-						
-							// save new playlist to our playlist array
-							$scope.$parent.playlists.items.push( response );
+					// spotify playlist
+					if( $scope.scheme == 'spotify' ){
+						SpotifyService.createPlaylist(
+								$scope.$parent.spotifyUser.id,
+								{ name: $scope.playlistName, public: $scope.playlistPublic } 
+							)
+							.then( function(response){
+								
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								PlaylistManagerService.addToPlaylists( response );
 							
-							// fetch the new playlists (for sidebar)
-							$scope.$parent.updatePlaylists();
-						
-							// and finally remove this dialog
-							DialogService.remove();
-							$rootScope.$broadcast('spotmop:notifyUser', {id: 'saved', message: 'Saved', autoremove: true});
-						});
-						
+								// now close our dialog
+								DialogService.remove();
+							});
+					
+					// local playlist
+					}else{
+						MopidyService.createPlaylist( $scope.playlistName, $scope.scheme )
+							.then( function( response ){
+                                
+								$scope.saving = false;
+								NotifyService.notify('Playlist created');
+								
+								// save new playlist to our playlist array
+								PlaylistManagerService.addToPlaylists( response );
+								
+								// now close our dialog
+								DialogService.remove();
+							});
+					}
+					
 				}else{
 					$scope.error = true;
 				}
@@ -192,15 +209,9 @@ angular.module('spotmop.services.dialog', [])
 		replace: true,
 		transclude: true,
 		templateUrl: 'app/services/dialog/addtoplaylist.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService ){
+		controller: function( $scope, $element, $rootScope, $filter, DialogService, SpotifyService, SettingsService, NotifyService, PlaylistManagerService ){
             
-			$scope.playlists = [];
-			var spotifyUserID = SettingsService.getSetting('spotifyuser.id');
-			
-			SpotifyService.getPlaylists( spotifyUserID, 50 )
-				.then(function( response ) {
-					$scope.playlists = $filter('filter')( response.items, { owner: { id: spotifyUserID } } );
-				});
+			$scope.playlists = PlaylistManagerService.state().myPlaylists;
 			
 			/**
 			 * When we select the playlist for these tracks

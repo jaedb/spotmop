@@ -21,6 +21,14 @@
 		<div class="buttons">
 		
 			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
+				
+			<span class="local-actions" ng-if="origin != 'spotify'">
+				<confirmation-button
+					default-text="Delete"
+					confirmation-text="Are you sure?"
+					on-confirmation="deletePlaylist">
+				</confirmation-button>
+			</span>
 			
             <span ng-if="spotifyAuthorized">
             
@@ -34,11 +42,12 @@
                         <span ng-show="!hovering">In library</span>
                     </a>
                     <a class="button follow"
-                          ng-click="followPlaylist()">
+                        ng-click="followPlaylist()"
+						ng-if="origin == 'spotify'">
                         <span>Add to library</span>
                     </a>
                 </span>
-                
+				
                 <span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
                     <span ng-show="following">
                         <a class="button"
@@ -68,13 +77,13 @@
 			<div class="info-item capitalize">
 				<span ng-bind="tracklist.total">0</span> tracks<span ng-show="tracks.next">+</span>, <span ng-bind="totalTime()">0</span> minutes
 			</div>
-			<div class="info-item capitalize">
+			<div class="info-item capitalize" ng-if="playlist.followers">
 				<span ng-bind="playlist.followers.total | number:0"></span> followers
 			</div>
-			<div class="info-item capitalize" ng-hide="playlist.public">
+			<div class="info-item capitalize" ng-if="playlist.public == false">
 				<i class="fa fa-lock" ></i> Private playlist
 			</div>
-			<div class="info-item">
+			<div class="info-item" ng-if="playlist.owner">
 				<a class="playlist-owner" ui-sref="browse.user({ uri: playlist.owner.uri })">
                     <thumbnail size="small" images="playlist.owner.images"></thumbnail>	
                     <span class="name" ng-bind="playlist.owner.display_name"></span>
@@ -104,7 +113,10 @@
 					</span>
 					<span class="item">Playlist</span>
 				</div>
-				<h1 ng-bind="playlist.name"></h1>
+                <h1>
+                    <span ng-bind="playlist.name"></span>
+                    <span ng-if="origin != 'spotify'" class="flag blue">LOCAL</span>
+                </h1>
 				<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
 			</div>
 			

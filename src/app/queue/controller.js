@@ -15,13 +15,20 @@ angular.module('spotmop.queue', [])
 /**
  * Main controller
  **/
-.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService ){
+.controller('QueueController', function QueueController( $scope, $rootScope, $filter, $timeout, $state, MopidyService, SpotifyService, DialogService, PlayerService ){
 	
-	$scope.totalTime = 0;
-	$scope.tracks = $rootScope.currentTracklist;
+	$scope.player = PlayerService.state();
     $scope.limit = 50;
+	$scope.totalTime = function(){
+		var totalTime = 0;
+		$.each( $scope.player.currentTracklist, function( key, track ){
+			totalTime += track.length;
+		});	
+		return Math.round(totalTime / 100000);
+	};
     
 	// once we're told we're ready to show more tracks
+    /*
     var loadingMoreTracks = false;
     $scope.$on('spotmop:loadMore', function(){
         if( !loadingMoreTracks && $scope.tracks.length >= $scope.limit ){
@@ -37,7 +44,7 @@ angular.module('spotmop.queue', [])
                     100
                 );
         }
-	});
+	});*/
 
 	$scope.addUri = function(){
 		DialogService.create('addbyuri',$scope);
@@ -52,29 +59,13 @@ angular.module('spotmop.queue', [])
      * Watch the current tracklist
      * And update our totalTime when the tracklist changes
      **/
-    $rootScope.$watch(
-        function( $rootScope ){
-            return $rootScope.currentTracklist;
-        },
+     /*
+    $scope.$watch(
+        'player.currentTracklist',
         function(newTracklist, oldTracklist){
 			$scope.tracks = newTracklist;
-			calculateTotalTime( newTracklist );
         }
-    );
-	
-    
-	/**
-	 * Add all the ms lengths of the tracklist, and convert to total play time in minutes
-	 **/
-	function calculateTotalTime( tracklist ){
-		
-		// figure out the total time for all tracks
-		var totalTime = 0;
-		$.each( tracklist, function( key, track ){
-			totalTime += track.track.length;
-		});	
-		$scope.totalTime = Math.round(totalTime / 100000);
-	};
+    );*/
 	
 	
 	/**
@@ -82,7 +73,7 @@ angular.module('spotmop.queue', [])
 	 **/
 	$scope.$on('spotmop:keyboardShortcut:delete', function( event ){
 		
-		var selectedTracks = $filter('filter')( $scope.tracks, { selected: true } );
+		var selectedTracks = $filter('filter')( $scope.player.currentTracklist, { selected: true } );
 		var tracksToDelete = [];
 		
 		// build an array of tlids to remove
@@ -93,7 +84,7 @@ angular.module('spotmop.queue', [])
 		// remove tracks from DOM (for snappier UX)
 		// we also need to wrap this in a forced digest process to refresh the tracklist template immediately
 		$scope.$apply( function(){
-			$scope.tracks = $filter('filter')( $scope.tracks, { selected: false } );
+			$scope.player.currentTracklist = $filter('filter')( $scope.player.currentTracklist, { selected: false } );
 		});
 		
 		MopidyService.removeFromTrackList( tracksToDelete );

@@ -172,7 +172,6 @@ angular.module('spotmop.local', [])
 				// process it and add to our $scope
 				var callback = function(n){
 					return function( response ){
-						console.log( response );
 						if( typeof(response) !== 'undefined' ){
 							$scope.allArtists[n].images = $filter('sizedImages')(response.image);
 						}
@@ -257,8 +256,8 @@ angular.module('spotmop.local', [])
 		
 		MopidyService.getLibraryItems( 'local:directory?type=album' )
 			.then( function( response ){
-				$scope.albums = response;
 				$scope.allAlbums = response;
+				$scope.albums = $filter('limitTo')(response,50);
 				getArtwork( $scope.albums );
 			});
 	}
@@ -266,12 +265,11 @@ angular.module('spotmop.local', [])
 	// fetch artwork from Mopidy
     function getArtwork( $albums ){
 	
-		var uris = [];
-		
+		var uris = [];        
 		for( var i = 0; i < $albums.length; i++ ){
 			uris.push( $albums[i].uri );
 		}
-		
+        
 		// chat with Mopidy and get the images for all these URIs
 		MopidyService.getImages( uris )
 			.then( function(response){

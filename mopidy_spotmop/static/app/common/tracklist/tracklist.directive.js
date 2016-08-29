@@ -19,7 +19,7 @@ angular.module('spotmop.common.tracklist', [])
 		},
 		link: function( $scope, element, attrs ){
 		},
-		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService ){
+		controller: function( $element, $scope, $filter, $rootScope, $stateParams, MopidyService, SpotifyService, DialogService, NotifyService, SettingsService, PlayerService, PlaylistManagerService ){
 						
 			// store our selected track uris
 			$rootScope.selectedTrackURIs = [];
@@ -104,7 +104,7 @@ angular.module('spotmop.common.tracklist', [])
 				// if we're in a drag event, then we don't do nothin'
 				// this drag event will be handled by the 'candrag' directive
 				if( !$rootScope.dragging ){
-                    
+					
 					// if ctrl key held down
 					if( $rootScope.ctrlKeyHeld || $rootScope.isTouchMode() ){
                         
@@ -124,6 +124,7 @@ angular.module('spotmop.common.tracklist', [])
 						});
 						
 						// and select only me
+						// TODO: Figure out why this selects all instances of this object
 						$track.$apply( function(){ $track.track.selected = true; });
 					}
 					
@@ -303,14 +304,7 @@ angular.module('spotmop.common.tracklist', [])
 				var selectedTracksUris = [];
 				
 				angular.forEach( selectedTracks, function(track){
-					
-					// if we have a nested track object (ie TlTrack objects)
-					if( typeof(track.track) !== 'undefined' )
-						selectedTracksUris.push( track.track.uri );
-					
-					// nope, so let's use a non-nested version
-					else
-						selectedTracksUris.push( track.uri );
+					selectedTracksUris.push( track.uri );
 				});
 				
 				DialogService.create('addToPlaylist', $scope);
@@ -320,75 +314,35 @@ angular.module('spotmop.common.tracklist', [])
              * Selected Tracks >> Add to playlist immediately
              **/
             $scope.$on('spotmop:tracklist:addSelectedTracksToPlaylistByUri', function(event, uri){
-				
+							
 				// ignore if we're not the tracklist in focus
-				if( $rootScope.tracklistInFocus !== $scope.$id )
-					return;
-                
-                var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
-                var selectedTracksUris = [];
-				var localTracksExcluded = 0;
-                
-                angular.forEach( selectedTracks, function(track){
-                    
-                    // if we have a nested track object (ie TlTrack objects)
-                    if( typeof(track.track) !== 'undefined' ){
-						if( track.track.uri.substring(0,6) == 'local:' ){
-							localTracksExcluded++;
-						}else{
-							selectedTracksUris.push( track.track.uri );
-						}
-                    
-                    // nope, so let's use a non-nested version
-                    }else{
-						if( track.uri.substring(0,6) == 'local:' ){
-							localTracksExcluded++;
-						}else{
-							selectedTracksUris.push( track.uri );
-						}
-					}
-                });
-					
-				// if we have omitted some local tracks
-				if( localTracksExcluded > 0 ){
-					
-					// if they were all local tracks
-					if( selectedTracksUris.length <= 0 ){
-						NotifyService.error( 'Cannot add local tracks to a Spotify playlist' );
-						return false;
-					}else{
-						NotifyService.error( localTracksExcluded+' local tracks not added to Spotify playlist' );
-					}
-				}
+				if( $rootScope.tracklistInFocus !== $scope.$id ) return;
 				
-                // now add them to the playlist, for reals
-                SpotifyService.addTracksToPlaylist( uri, selectedTracksUris )
-                    .then( function(response){
-                        NotifyService.notify('Added '+selectedTracksUris.length+' tracks to playlist');
-                    });
+                var tracks = $filter('filter')( $scope.tracks, {selected: true} );
+                var trackUris = [];
+				
+				// Loop all our selected tracks to build a uri array
+                angular.forEach( tracks, function(track){
+					trackUris.push( track.uri );
+                });
+				
+				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
 			
 			/**
 			 * Selected Tracks >> Add to library
+			 * TODO: Disallow non-spotify tracks 
 			 **/
 			$scope.$on('spotmop:tracklist:addSelectedTracksToLibrary', function(event){
 				
 				// ignore if we're not the tracklist in focus
-				if( $rootScope.tracklistInFocus !== $scope.$id )
-					return;
+				if( $rootScope.tracklistInFocus !== $scope.$id ) return;
 				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var selectedTracksUris = [];
 				
 				angular.forEach( selectedTracks, function(track){
-					
-					// if we have a nested track object (ie TlTrack objects)
-					if( typeof(track.track) !== 'undefined' )
-						selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.track.uri) );
-					
-					// nope, so let's use a non-nested version
-					else
-						selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.uri) );
+					selectedTracksUris.push( SpotifyService.getFromUri('trackid', track.uri) );
 				});
 				
 				// tell spotify to go'on get

@@ -35,6 +35,7 @@
 	<script type="text/javascript" src="app/services/lastfm/service.js"></script>
 	<script type="text/javascript" src="app/services/dialog/service.js"></script>
 	<script type="text/javascript" src="app/services/pusher/service.js"></script>
+	<script type="text/javascript" src="app/services/playlist-manager/service.js"></script>
 	
 	<script type="text/javascript" src="app/common/directives.js"></script>
 	<script type="text/javascript" src="app/common/contextmenu/directive.js"></script>
@@ -116,19 +117,21 @@
                     <div class="label">Add to library</div>
                 </div>
             </div>
-            <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist" ng-if="spotifyAuthorized">
+            <div class="dropzone playlists droppable animate" dropaccept='["track","tltrack","album"]' droptype="playlist">
                 <div class="liner default-content">
                     <i class="si playlist white doublesize"></i>
                     <div class="label">Add to playlist</div>
                 </div>
-                <div class="liner hover-content animate fadereveal">
-                    <a ng-repeat="playlist in playlistsMenu" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
-                        <span ng-bind="playlist.name"></span>
-                    </a>
+                <div class="liner hover-content fadereveal">
+                    <div class="playlists-wrapper">
+                        <a ng-repeat="playlist in playlists()" class="menu-item droppable" ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })" dropaccept='["track","tltrack","album"]' droptype="playlist" data-uri="{{ playlist.uri }}">
+                            <span ng-bind="playlist.name"></span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-		
+
 		<ng-include src="'app/player/template.html'" ng-controller="PlayerController"></ng-include>	
 
 		<div id="body" class="body animate">
