@@ -33425,7 +33425,11 @@ angular.module('spotmop.common.tracklist', [])
 						
 					NotifyService.notify( message );
 					
-					MopidyService.playTrack( selectedTracksUris, 0 );
+					MopidyService.playTrack(
+						selectedTracksUris, 
+						0, 
+						PlayerService.state().currentTracklistPosition()
+					);
 				}
 			}
 			
@@ -36221,14 +36225,15 @@ angular.module('spotmop.services.mopidy', [
 		getState: function() {
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
-		playTrack: function(trackUris, trackToPlayIndex) {
+		playTrack: function( trackUris, trackToPlayIndex, at_position ){
 			var self = this;
+			if( typeof(at_position) === 'undefined' ) var at_position = 0;
 			
 			cfpLoadingBar.start();
 			cfpLoadingBar.set(0.25);
 			
 			// add the first track immediately
-			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: 0 })
+			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
 			
 				// then play it
 				.then( function( response ){
@@ -36245,7 +36250,7 @@ angular.module('spotmop.services.mopidy', [
 						// now add all the remaining tracks
 						.then( function(){
 							if( trackUris.length > 0 ){
-								return self.mopidy.tracklist.add({ uris: trackUris, at_position: 1 })
+								return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
 									.then( function(){
 										cfpLoadingBar.complete();
 									});

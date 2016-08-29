@@ -265,7 +265,11 @@ angular.module('spotmop.common.tracklist', [])
 						
 					NotifyService.notify( message );
 					
-					MopidyService.playTrack( selectedTracksUris, 0 );
+					MopidyService.playTrack(
+						selectedTracksUris, 
+						0, 
+						PlayerService.state().currentTracklistPosition()
+					);
 				}
 			}
 			
