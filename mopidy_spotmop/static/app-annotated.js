@@ -31475,7 +31475,7 @@ angular.module('spotmop.browse.playlist', [])
      * Load more of the playlist's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+    /*
     var loadingMoreTracks = false;
     
     // go off and get more of this playlist's tracks
@@ -31508,6 +31508,7 @@ angular.module('spotmop.browse.playlist', [])
             loadMoreTracks( $scope.tracklist.next );
         }
 	});
+	*/
 }]);
 'use strict';
 
@@ -36621,7 +36622,44 @@ angular.module('spotmop.services.playlistManager', [])
     
 	var playlists = [];
 	var myPlaylists = [];
-
+	
+	// fetch spotify playlists
+	function getSpotifyPlaylists( url ){		
+		if( typeof(url) !== 'undefined' ){			
+			SpotifyService.getUrl( url )
+				.then( function(response){
+					digestSpotifyPlaylists( response );
+				});			
+		}else{		
+			var userid = SettingsService.getSetting('spotifyuser.id');
+			SpotifyService.getPlaylists( userid, 50 )
+				.then( function(response){
+					digestSpotifyPlaylists( response );
+				});	
+		}
+	}
+	
+	function digestSpotifyPlaylists( response ){
+		
+		// loop all the items
+		for( var i = 0; i < response.items.length; i++ ){
+			var playlist = response.items[i];
+			
+			// only add if it doesn't already exist in our server playlists list
+			var duplicates = $filter('filter')( playlists, {uri: playlist.uri});
+			if( duplicates.length <= 0 ){
+				playlists.push( playlist );
+			}
+		}
+		
+		service.refreshMyPlaylists();
+		
+		// if we were given a next link, then start the party again
+		if( typeof(response.next) !== 'undefined' && response.next ){
+			getSpotifyPlaylists( response.next );
+		}
+	}
+	
 	// setup response object
     var service = {
         playlists: function(){
@@ -36693,23 +36731,7 @@ angular.module('spotmop.services.playlistManager', [])
 					// if we're authenticated with Spotify, fetch the authenticated user's playlists
 					// TODO: currently only gets first 50, need to implement lazy-loading
 					if( SpotifyService.isAuthorized() ){
-						var userid = SettingsService.getSetting('spotifyuser.id');
-						SpotifyService.getPlaylists( userid, 50 )
-							.then( function(response){
-								
-								// loop all the items
-								for( var i = 0; i < response.items.length; i++ ){
-									var playlist = response.items[i];
-									
-									// only add if it doesn't already exist in our server playlists list
-									var duplicates = $filter('filter')( playlists, {uri: playlist.uri});
-									if( duplicates.length <= 0 ){
-										playlists.push( playlist );
-									}
-								}
-                                
-								service.refreshMyPlaylists();
-							});
+						getSpotifyPlaylists();
 					}
 				});
         },
