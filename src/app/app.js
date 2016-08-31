@@ -173,9 +173,10 @@ angular.module('spotmop', [
 		var frameHeight = $(window).height();
 		var contentHeight = $(document).height();
 		var distanceFromBottom = contentHeight - ( scrollPosition + frameHeight );
-		
-		if( distanceFromBottom <= 100 )
+	
+		if( distanceFromBottom <= 100 ){
 			$scope.$broadcast('spotmop:loadMore');
+		}
 	}
 	
 	// listen for completion from our loading bar (which intercepts all http requests)
@@ -186,7 +187,7 @@ angular.module('spotmop', [
 	// listen for scrolling to load more stuff
 	$(document).on('scroll', function( event ){
 		$scope.checkForLazyLoading();
-			
+		
 		// only hide the contextmenu if we're NOT a touch device
 		if( !$rootScope.isTouchMode() ){
 			$rootScope.$broadcast('spotmop:contextMenu:hide');
