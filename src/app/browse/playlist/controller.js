@@ -309,7 +309,7 @@ angular.module('spotmop.browse.playlist', [])
      * Load more of the playlist's tracks
      * Triggered by scrolling to the bottom
      **/
-    /*
+	 
     var loadingMoreTracks = false;
     
     // go off and get more of this playlist's tracks
@@ -342,5 +342,4 @@ angular.module('spotmop.browse.playlist', [])
             loadMoreTracks( $scope.tracklist.next );
         }
 	});
-	*/
 });
