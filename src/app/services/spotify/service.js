@@ -18,7 +18,7 @@ angular.module('spotmop.services.spotify', [])
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
-			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
+			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
 			
 			// set container for spotify storage
@@ -41,7 +41,7 @@ angular.module('spotmop.services.spotify', [])
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authorized authenticator proxy
-				if( event.origin !== "http://jamesbarnsley.co.nz" )
+				if( !/^https?:\/\/jamesbarnsley\.co\.nz/.test(event.origin) )
 					return false;
 				
 				// convert to json
@@ -94,7 +94,7 @@ angular.module('spotmop.services.spotify', [])
 		 **/
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
-			frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
+			frame.attr('src', '//jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
 		},
 		
 		isAuthorized: function(){
@@ -116,7 +116,7 @@ angular.module('spotmop.services.spotify', [])
 			// sweet, client has authorized interface!
 			if( this.authenticationMethod == 'client' ){
 			
-				url = 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
+				url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
 			
 			// client hasn't authorized spotmop with spotify, so let's just use the backend
 			}else if( this.authenticationMethod == 'server' ){
@@ -125,7 +125,7 @@ angular.module('spotmop.services.spotify', [])
 				if( !mopidyhost ) mopidyhost = window.location.hostname;
 				var mopidyport = SettingsService.getSetting("mopidy.port");
 				if( !mopidyport ) mopidyport = "6680";
-				url = 'http://'+mopidyhost+':'+mopidyport+'/spotmop/auth';
+				url = '//'+mopidyhost+':'+mopidyport+'/spotmop/auth';
 			
 			// no authentication method, so cannot refresh token!
 			}else{
