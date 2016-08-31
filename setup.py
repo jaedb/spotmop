@@ -21,7 +21,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'setuptools >= 3.3',
-        'Mopidy >= 0.19',
+        'Mopidy >= 2.0',
+        'Mopidy-Local-Images >= 1.0',
         'ConfigObj'
     ],
     classifiers=[
