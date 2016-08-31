@@ -211,7 +211,7 @@ angular.module('spotmop.services.settings', [])
 	var mopidyport = service.getSetting("mopidy.port");
 	if( !mopidyport ) mopidyport = "6680";
 	
-	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
+	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
 	
 	return service;	
 }]);
