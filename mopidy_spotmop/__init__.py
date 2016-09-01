@@ -12,7 +12,7 @@ from services.auth import auth
 from services.queuer import queuer
 from mopidy import config, ext
 
-__version__ = '2.9.0'
+__version__ = '2.9.1'
 __ext_name__ = 'spotmop'
 __verbosemode__ = False
 
