@@ -36113,11 +36113,13 @@ angular.module('spotmop.services.mopidy', [
 			if( !mopidyhost ) mopidyhost = window.location.hostname;
             var mopidyport = SettingsService.getSetting("mopidy.port");
 			if( !mopidyport ) mopidyport = "6680";
+			var protocol = 'ws'; 
+			if( window.location.protocol != "http:" ) protocol = 'wss';
 			
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({
-				webSocketUrl: "//" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING
+				webSocketUrl: protocol+"://" + mopidyhost + ":" + mopidyport + "/mopidy/ws",
     				callingConvention: 'by-position-or-by-name'
     			});
 		
@@ -36890,9 +36892,11 @@ angular.module('spotmop.services.pusher', [
 			if( !pusherhost ) pusherhost = window.location.hostname;
 			var pusherport = SettingsService.getSetting("pusher.port");
 			if( !pusherport ) pusherport = "6681";
+			var protocol = 'ws';
+			if( window.location.protocol != "http:" ) protocol = 'wss'; 
 			
             try{
-				var host = '//'+pusherhost+':'+pusherport+'/pusher';
+				var host = protocol+'://'+pusherhost+':'+pusherport+'/pusher'; 
                 
                 var connectionid = Math.random().toString(36).substr(2, 9);
                 SettingsService.setSetting('pusher.connectionid', connectionid);
