@@ -295,11 +295,13 @@ angular.module('spotmop.browse.playlist', [])
 		
 		// loop all the tracks to add
 		angular.forEach( tracks, function( track ){
-			var newTrack = track.track;
-			newTrack.added_at = track.added_at;
-			newTrack.added_by = track.added_by;
-			newTrack.is_local = track.is_local;
-			reformattedTracks.push( newTrack );
+			if( track.track ){
+				var newTrack = track.track;
+				newTrack.added_at = track.added_at;
+				newTrack.added_by = track.added_by;
+				newTrack.is_local = track.is_local;
+				reformattedTracks.push( newTrack );
+			}
 		});
 		
 		return reformattedTracks;

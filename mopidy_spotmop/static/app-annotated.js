@@ -31462,11 +31462,13 @@ angular.module('spotmop.browse.playlist', [])
 		
 		// loop all the tracks to add
 		angular.forEach( tracks, function( track ){
-			var newTrack = track.track;
-			newTrack.added_at = track.added_at;
-			newTrack.added_by = track.added_by;
-			newTrack.is_local = track.is_local;
-			reformattedTracks.push( newTrack );
+			if( track.track ){
+				var newTrack = track.track;
+				newTrack.added_at = track.added_at;
+				newTrack.added_by = track.added_by;
+				newTrack.is_local = track.is_local;
+				reformattedTracks.push( newTrack );
+			}
 		});
 		
 		return reformattedTracks;
@@ -36012,7 +36014,7 @@ angular.module('spotmop.services.lastfm', [])
 	};
 	
 	// specify the base URL for the API endpoints
-    var urlBase = 'http://ws.audioscrobbler.com/2.0';
+    var urlBase = '//ws.audioscrobbler.com/2.0';
 	var apiKey = SettingsService.getSetting("lastfm,key");
 	if( !apiKey ) apiKey = '4320a3ef51c9b3d69de552ac083c55e3';
 	
@@ -36115,7 +36117,7 @@ angular.module('spotmop.services.mopidy', [
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({
-    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
+				webSocketUrl: "//" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING
     				callingConvention: 'by-position-or-by-name'
     			});
 		
@@ -36869,7 +36871,7 @@ angular.module('spotmop.services.pusher', [
 	var mopidyport = SettingsService.getSetting("mopidy.port");
 	if( !mopidyport ) mopidyport = "6680";
 	
-	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
+	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
 	$rootScope.$on('spotmop:pusher:client_connected', function(event, data){
 	
@@ -36890,7 +36892,7 @@ angular.module('spotmop.services.pusher', [
 			if( !pusherport ) pusherport = "6681";
 			
             try{
-				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
+				var host = '//'+pusherhost+':'+pusherport+'/pusher';
                 
                 var connectionid = Math.random().toString(36).substr(2, 9);
                 SettingsService.setSetting('pusher.connectionid', connectionid);
@@ -37045,7 +37047,7 @@ angular.module('spotmop.services.spotify', [])
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
-			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="http://jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
+			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
 			
 			// set container for spotify storage
@@ -37068,7 +37070,7 @@ angular.module('spotmop.services.spotify', [])
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authorized authenticator proxy
-				if( event.origin !== "http://jamesbarnsley.co.nz" )
+				if( !/^https?:\/\/jamesbarnsley\.co\.nz/.test(event.origin) )
 					return false;
 				
 				// convert to json
@@ -37121,7 +37123,7 @@ angular.module('spotmop.services.spotify', [])
 		 **/
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
-			frame.attr('src', 'http://jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
+			frame.attr('src', '//jamesbarnsley.co.nz/spotmop.php?action=authorize&app='+location.protocol+'//'+window.location.host );
 		},
 		
 		isAuthorized: function(){
@@ -37143,7 +37145,7 @@ angular.module('spotmop.services.spotify', [])
 			// sweet, client has authorized interface!
 			if( this.authenticationMethod == 'client' ){
 			
-				url = 'http://jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
+				url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
 			
 			// client hasn't authorized spotmop with spotify, so let's just use the backend
 			}else if( this.authenticationMethod == 'server' ){
@@ -37152,7 +37154,7 @@ angular.module('spotmop.services.spotify', [])
 				if( !mopidyhost ) mopidyhost = window.location.hostname;
 				var mopidyport = SettingsService.getSetting("mopidy.port");
 				if( !mopidyport ) mopidyport = "6680";
-				url = 'http://'+mopidyhost+':'+mopidyport+'/spotmop/auth';
+				url = '//'+mopidyhost+':'+mopidyport+'/spotmop/auth';
 			
 			// no authentication method, so cannot refresh token!
 			}else{
@@ -39037,7 +39039,7 @@ angular.module('spotmop.services.settings', [])
 	var mopidyport = service.getSetting("mopidy.port");
 	if( !mopidyport ) mopidyport = "6680";
 	
-	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
+	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
 	
 	return service;	
 }]);
