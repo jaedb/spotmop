@@ -89,7 +89,7 @@ angular.module('spotmop.settings', [])
 	
 	SettingsService.getVersion()
 		.then( function(response){
-			if( response.status != 'error' ){
+			if( response && response.status != 'error' ){
 				SettingsService.setSetting('version.installed',response.currentVersion);
 				SettingsService.setSetting('version.root',response.root);
 			}
