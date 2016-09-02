@@ -32035,7 +32035,10 @@ angular.module('spotmop.directives', [])
                         
 						// resize playlists zone 
 						var fromTop = zone.find('.hover-content').offset().top;
-						zone.find('.hover-content').css('height', $(window).height() - fromTop - 20 );
+						var newHeight = $(window).height() - fromTop - 20;
+						if( wrapper.outerHeight() < newHeight ) newHeight = wrapper.outerHeight();
+						if( newHeight < 175 ) newHeight = 175;
+						zone.find('.hover-content').css('height', newHeight );
 						
 						// calculate our hover position (as a percent of the zone)
                         var relativeY = event.pageY - zone.offset().top;
