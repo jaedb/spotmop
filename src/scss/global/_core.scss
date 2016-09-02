@@ -1903,24 +1903,25 @@ slider .item-container > .square-panel {
 
 .user-intro {
     padding-bottom: 30px;
-}
+	
+	.info {
+		padding-top: 30px;
+	}
 
-.user-intro .info {
-    padding-top: 30px;
-}
-
-.user-intro .info-text {
-    margin-top: -20px;
-}
-
-.user-intro .image-container .image {
-    width: 120px;
-    height: 120px;
-    border-radius: 120px;
-    float: left;
-    background-size: cover;
-    background-position: 50% 50%;
-    margin-right: 20px;
+	.info-text {
+		margin-top: -20px;
+	}
+	
+	.image-container {
+		width: 120px;
+		height: 120px;
+		margin-right: 20px;
+		float: left;
+		
+		.image {
+			border-radius: 120px;
+		}
+	}
 }
 
 
