@@ -670,19 +670,19 @@ angular.module('spotmop.directives', [])
 			var totalSlides = ( $scope.items.length / 5 ) - 1;
 			
 			$scope.prev = function(){
-				if( canSlide('prev') ){
+				if( $scope.canSlide('prev') ){
 					currentSlide--;
 					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
 				}
 			}
 			$scope.next = function(){
-				if( canSlide('next') ){
+				if( $scope.canSlide('next') ){
 					currentSlide++;
 					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
 				}
 			}
 			
-			function canSlide( direction ){
+			$scope.canSlide = function( direction ){
 				if( direction == 'prev' && currentSlide <= 0 ) return false;
 				if( direction == 'next' && currentSlide >= totalSlides ) return false;
 				return true;

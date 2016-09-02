@@ -1,5 +1,5 @@
 <div class="controls">
-    <span class="si chevron-left" ng-click="prev()"></span><span class="si chevron-right next" ng-click="next()"></span>
+    <span class="si chevron-left" ng-class="{ 'can-slide': canSlide('prev') }" ng-click="prev()"></span><span class="si chevron-right next" ng-class="{ 'can-slide': canSlide('next') }" ng-click="next()"></span>
 </div>
 <div class="slides swipedisabled">
     <div class="slides-content">
