@@ -201,6 +201,8 @@ angular.module('spotmop.services.spotify', [])
 				return 'album';		
 			if( exploded[0] == 'spotify' && exploded[1] == 'user' && exploded[3] == 'playlist' )
 				return 'playlist';		
+			if( exploded[0] == 'spotify' && exploded[1] == 'user' && exploded.length == 3 )
+				return 'user';		
 			return null;
 		},
         

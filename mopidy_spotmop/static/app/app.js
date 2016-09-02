@@ -214,7 +214,7 @@ angular.module('spotmop', [
 		}else{
 		
 			NotifyService.notify('You\'ve been redirected because that looked like a Spotify URI');
-		
+			
 			if( uriType == 'artist' ){
 				$(document).find('.search-form input').val('');
 				$state.go( 'browse.artist.overview', {uri: query } );
@@ -226,6 +226,10 @@ angular.module('spotmop', [
 			}else if( uriType == 'playlist' ){
 				$(document).find('.search-form input').val('');
 				$state.go( 'browse.playlist', {uri: query } );
+				
+			}else if( uriType == 'user' ){
+				$(document).find('.search-form input').val('');
+				$state.go( 'browse.user', {uri: query } );
 			}
 		}
 	};
