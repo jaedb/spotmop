@@ -211,7 +211,8 @@ angular.module('spotmop.services.playlistManager', [])
 					
 					if( playlistOwnerID != currentUserID ){
 						NotifyService.error('Cannot modify to a playlist you don\'t own');
-						return false;
+						deferred.reject();
+						break;
 					}
 
 					// parse these uris to spotify and delete these tracks
@@ -220,7 +221,7 @@ angular.module('spotmop.services.playlistManager', [])
 						
 								if( typeof(response.error) !== 'undefined' ){
 									NotifyService.error( response.error.message );
-									deferred.reject( response.error.message );									
+									deferred.reject( response.error.message );		
 								}else{		
 									NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
 									deferred.resolve({ type: playlistUriScheme, indexes: indexes, snapshot_id: response.snapshot_id });

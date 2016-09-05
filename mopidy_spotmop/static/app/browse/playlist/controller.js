@@ -27,6 +27,13 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
+	$scope.canEdit = function(){
+		if( $scope.origin == 'spotify' && typeof(playlist) !== 'undefined' && typeof(playlist.owner) !== 'undefined' ){
+			return ( playlist.owner.id == spotifyUser.id );
+		}else if( $scope.origin == 'm3u' ){
+			return true;
+		}
+	}
 	
 	$scope.deletePlaylist = function(){
 		MopidyService.deletePlaylist( uri )
@@ -290,6 +297,14 @@ angular.module('spotmop.browse.playlist', [])
 				
 				// remove our selected tracks
 				$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+			
+			// catch rejections (due to Spotify API or due to denied permission)
+			}, function(){
+				
+				// un-transition all our tracks
+				angular.forEach( selectedTracks, function( selectedTrack, index ){
+					selectedTrack.transitioning = false;
+				});
 			});
 	}
 	

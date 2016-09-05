@@ -31198,6 +31198,13 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
+	$scope.canEdit = function(){
+		if( $scope.origin == 'spotify' && typeof(playlist) !== 'undefined' && typeof(playlist.owner) !== 'undefined' ){
+			return ( playlist.owner.id == spotifyUser.id );
+		}else if( $scope.origin == 'm3u' ){
+			return true;
+		}
+	}
 	
 	$scope.deletePlaylist = function(){
 		MopidyService.deletePlaylist( uri )
@@ -31461,6 +31468,14 @@ angular.module('spotmop.browse.playlist', [])
 				
 				// remove our selected tracks
 				$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+			
+			// catch rejections (due to Spotify API or due to denied permission)
+			}, function(){
+				
+				// un-transition all our tracks
+				angular.forEach( selectedTracks, function( selectedTrack, index ){
+					selectedTrack.transitioning = false;
+				});
 			});
 	}
 	
@@ -32017,11 +32032,13 @@ angular.module('spotmop.directives', [])
 				// check to see if what we're hovering accepts what we're dragging				
 				var dropTarget = getDropTarget( event );
 				var accepts = targetAcceptsType( dropTarget );
+				
 				if( accepts ){
 					dropTarget.addClass('dropping');
 					
 					// if we're dropping on a track, add the dropping class to it too
 					// this allows us to style the drop location for Chrome that doesn't listen for :hover
+					// TODO: This doesn't seem to fire at all??
 					var trackDroppingOn = $(event.target);
 					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
 					if( trackDroppingOn.hasClass('track') ){
@@ -36847,7 +36864,8 @@ angular.module('spotmop.services.playlistManager', [])
 					
 					if( playlistOwnerID != currentUserID ){
 						NotifyService.error('Cannot modify to a playlist you don\'t own');
-						return false;
+						deferred.reject();
+						break;
 					}
 
 					// parse these uris to spotify and delete these tracks
@@ -36856,7 +36874,7 @@ angular.module('spotmop.services.playlistManager', [])
 						
 								if( typeof(response.error) !== 'undefined' ){
 									NotifyService.error( response.error.message );
-									deferred.reject( response.error.message );									
+									deferred.reject( response.error.message );		
 								}else{		
 									NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
 									deferred.resolve({ type: playlistUriScheme, indexes: indexes, snapshot_id: response.snapshot_id });
