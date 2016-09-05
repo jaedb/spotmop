@@ -1272,35 +1272,44 @@ h1 .flag {
 	opacity: 0.75;
 }
 
-.square-panel .info {
-	padding-top: 10px;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	border-top: 3px solid transparent;
-	margin-top: -3px;
-	position: relative;
-	height: 50px;
-}
+.square-panel {
+	.info {
+		padding-top: 10px;
+		box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		-webkit-box-sizing: border-box;
+		position: relative;
+		height: 50px;
 
-.square-panel .info.smaller {
-	height: 30px;
-}
+		&.smaller {
+			height: 30px;
+		}
 
-.square-panel:hover .info {
-	border-color: #08d58f;
-}
+		.secondary {
+			padding-top: 2px;
+			color: #AAAAAA;
+		}
 
-.square-panel .info .secondary {
-	padding-top: 2px;
-	color: #AAAAAA;
-}
-
-.square-panel .info .name,
-.square-panel .info .tracks {
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
+		.name,
+		.tracks {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+	}
+	
+	&:not(.circle) .info {
+		border-top: 3px solid transparent;
+		margin-top: -3px;
+	}
+	
+	&.circle .info {}
+	
+	&:hover {
+		.info {
+			border-color: #08d58f;
+		}
+	}
 }
 
 
@@ -1366,6 +1375,10 @@ h1 .flag {
 	background-color: #E9E9E9;
 	background-position: 50% 50%;
 	background-size: cover;
+}
+
+.thumbnail-image.image[circle] {
+	border-radius: 200px;
 }
 
  
@@ -1855,10 +1868,6 @@ h1 .flag {
 		height: 120px;
 		margin-right: 20px;
 		float: left;
-		
-		.image {
-			border-radius: 120px;
-		}
 	}
 }
 

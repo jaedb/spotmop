@@ -33633,13 +33633,44 @@ angular.module('spotmop.discover', [])
 	$scope.current = [];
 	$scope.sections = [];
 	
-	// get my old favorites
+	// Get recommended users
+	// Currently this is a hardcoded list of user ids as there isn't a clean API that provides
+	// a list of 'professional' Spotify users
+	var userURIs = ['spotify:user:bbc','spotify:user:filtr'];
+	var users = [];
+	var requestsCompleted = 0;
+	for( var i = 0; i < userURIs.length; i++ ){
+		
+		// process extra playlist data and add to our $scope
+		var callback = function(i){
+			return function( response ){
+				
+				requestsCompleted++;
+				
+				// make sure our response was not an error
+				if( typeof(response.error) === 'undefined' ) users.push( response );
+				
+				// we've just completed our last request
+				if( requestsCompleted == userURIs.length - 1 ){						
+					var section = {
+						title: 'Featured users',
+						artists: '',
+						items: users
+					}
+					$scope.sections.push( section );
+				}
+			};
+		}(i);
+		
+		SpotifyService.getUser( userURIs[i] ).then( callback );
+	}
+	
+	// Get my old favorites
 	SpotifyService.getMyFavorites('artists', 50, false, 'long_term').then( function(response){		
 		$scope.favorites.items = $filter('shuffle')(response.items);
-	});
+	});	
 	
-	
-	// get my short-term top tracks
+	// Get my short-term top tracks
 	SpotifyService.getMyFavorites('tracks', 50, false, 'short_term').then( function(response){
 		
 		// shuffle our tracks for interest, and limit to 5

@@ -1152,26 +1152,23 @@ h1 .flag {
   box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  border-top: 3px solid transparent;
-  margin-top: -3px;
   position: relative;
   height: 50px; }
-
-.square-panel .info.smaller {
-  height: 30px; }
-
+  .square-panel .info.smaller {
+    height: 30px; }
+  .square-panel .info .secondary {
+    padding-top: 2px;
+    color: #AAAAAA; }
+  .square-panel .info .name,
+  .square-panel .info .tracks {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis; }
+.square-panel:not(.circle) .info {
+  border-top: 3px solid transparent;
+  margin-top: -3px; }
 .square-panel:hover .info {
   border-color: #08d58f; }
-
-.square-panel .info .secondary {
-  padding-top: 2px;
-  color: #AAAAAA; }
-
-.square-panel .info .name,
-.square-panel .info .tracks {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis; }
 
 /**
  * Smaller version of square panels (ie 7-across)
@@ -1223,6 +1220,9 @@ h1 .flag {
   background-color: #E9E9E9;
   background-position: 50% 50%;
   background-size: cover; }
+
+.thumbnail-image.image[circle] {
+  border-radius: 200px; }
 
 /**
  * Intro panels
@@ -1603,8 +1603,6 @@ h1 .flag {
     height: 120px;
     margin-right: 20px;
     float: left; }
-    .user-intro .image-container .image {
-      border-radius: 120px; }
 
 /**
  * Search
