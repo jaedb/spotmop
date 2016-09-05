@@ -31199,11 +31199,13 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.totalTime = 0;
     $scope.following = false;
 	$scope.canEdit = function(){
-		if( $scope.origin == 'spotify' && typeof(playlist) !== 'undefined' && typeof(playlist.owner) !== 'undefined' ){
-			return ( playlist.owner.id == spotifyUser.id );
-		}else if( $scope.origin == 'm3u' ){
-			return true;
+		if( $scope.origin == 'm3u' ) return true;
+		if( $scope.origin == 'spotify' ){
+			if( typeof( $scope.playlist ) !== 'undefined' && typeof( $scope.playlist.owner ) !== 'undefined' ){
+				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotifyuser.id') );
+			}
 		}
+		return false;
 	}
 	
 	$scope.deletePlaylist = function(){
