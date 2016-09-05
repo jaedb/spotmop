@@ -36675,6 +36675,11 @@ angular.module('spotmop.services.playlistManager', [])
 	
 	function digestSpotifyPlaylists( response ){
 		
+		if( typeof( response.error ) !== 'undefined' ){
+			NotifyService.error( response.error_description );
+			return;
+		}
+		
 		// loop all the items
 		for( var i = 0; i < response.items.length; i++ ){
 			var playlist = response.items[i];
@@ -36686,11 +36691,13 @@ angular.module('spotmop.services.playlistManager', [])
 			}
 		}
 		
-		service.refreshMyPlaylists();
-		
 		// if we were given a next link, then start the party again
 		if( typeof(response.next) !== 'undefined' && response.next ){
 			getSpotifyPlaylists( response.next );
+			
+		// no next link, so we've got them all
+		}else{
+			service.refreshMyPlaylists();
 		}
 	}
 	

@@ -103,5 +103,6 @@ module.exports = function(grunt) {
 
     // Default task(s).
     grunt.registerTask('default', ['copy', 'concat', 'ngAnnotate', 'uglify', 'sass', 'cssmin', 'processhtml', 'watch']);
+    grunt.registerTask('dev', ['copy', 'sass', 'cssmin', 'processhtml', 'watch:css', 'watch:html']);
 
 };
