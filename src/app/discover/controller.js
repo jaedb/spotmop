@@ -36,7 +36,14 @@ angular.module('spotmop.discover', [])
 	// Get recommended users
 	// Currently this is a hardcoded list of user ids as there isn't a clean API that provides
 	// a list of 'professional' Spotify users
-	var userURIs = ['spotify:user:bbc','spotify:user:filtr'];
+	var userURIs = [
+		'spotify:user:spotify',
+		'spotify:user:bbc_playlister',
+		'spotify:user:filtr',
+		'spotify:user:arminvanbuurenofficial',
+		'spotify:user:dominorecords',
+		'spotify:user:spinninrecordsofficial'
+	];
 	var users = [];
 	var requestsCompleted = 0;
 	for( var i = 0; i < userURIs.length; i++ ){
