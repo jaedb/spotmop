@@ -9,7 +9,7 @@ import json
 from services.upgrade import upgrade
 from services.pusher import pusher
 from services.auth import auth
-from services.queuer import queuer
+from services.radio import radio
 from mopidy import config, ext
 
 __version__ = '2.9.1'
@@ -42,15 +42,9 @@ class SpotmopExtension(ext.Extension):
         })
 
         logger.info('Starting Spotmop web client '+ self.version)
-
-class ArtworkHandler(tornado.web.RequestHandler):
-    def get(self, file):
-        self.write("You requested the file " + file)
         
 def spotmop_client_factory(config, core):
 
-	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
-    environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
     spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
     
     # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
@@ -62,7 +56,7 @@ def spotmop_client_factory(config, core):
     ])
     application.listen(pusherport)
     
-    logger.info( 'Pusher server running on []:'+ str(pusherport) )
+    logger.info( 'Pusher server running on [0.0.0.0]:'+ str(pusherport) )
 	
     return [
 		(r'/upgrade', upgrade.UpgradeRequestHandler, {
@@ -78,7 +72,7 @@ def spotmop_client_factory(config, core):
 				'core': core,
 				'config': config
 			}),
-		(r'/queuer/([^/]*)', queuer.QueuerRequestHandler, {
+		(r'/radio([^/]*)', radio.RadioRequestHandler, {
 				'core': core,
 				'config': config
 			}),

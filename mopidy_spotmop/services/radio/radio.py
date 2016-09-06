@@ -1,24 +1,20 @@
-import os
-import tornado.web
-import base64
-import urllib, urllib2, json
+import os, tornado.web, base64, urllib, urllib2, json, pykka, subprocess
 from tornado.escape import json_encode, json_decode
-
+from mopidy import core
 from tornado.escape import json_encode
-import subprocess
 
 state = {
 	'mode': 'normal'
 }
 
-class QueuerRequestHandler(tornado.web.RequestHandler):
+class RadioRequestHandler(tornado.web.RequestHandler, core.CoreListener, pykka.ThreadingActor):
     
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
 
     def initialize(self, core, config):
         self.core = core
-        self.config =  config
+        self.config = config
 	
     ## get the current state
     def get(self, action):
@@ -28,9 +24,11 @@ class QueuerRequestHandler(tornado.web.RequestHandler):
     def post(self, mode):
         state['mode'] = 'radio'
         self.write(json_encode(state))
-
-
-def spotmop_queuer_factory(config, core):
+        
+    def on_event( event, kwargs ):
+        logger.info(event)
+        
+def spotmop_radio_factory(config, core):
     return [
-        ('/', QueuerRequestHandler, {'core': core, 'config': config})
+        ('/', RadioRequestHandler, {'core': core, 'config': config})
     ]
