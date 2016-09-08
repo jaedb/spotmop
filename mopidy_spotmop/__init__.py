@@ -1,10 +1,8 @@
 from __future__ import unicode_literals
 
-import logging
-import os
+import logging, os, json
 import tornado.web
 import tornado.websocket
-import json
 
 from services.upgrade import upgrade
 from services.pusher import pusher
@@ -41,6 +39,8 @@ class SpotmopExtension(ext.Extension):
             'factory': spotmop_client_factory
         })
 
+        registry.add('frontend', radio.RadioFrontend)
+        
         logger.info('Starting Spotmop web client '+ self.version)
         
 def spotmop_client_factory(config, core):

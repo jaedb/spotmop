@@ -1,13 +1,33 @@
-import os, tornado.web, base64, urllib, urllib2, json, pykka, subprocess
+import os, tornado.web, json, pykka, logging
 from tornado.escape import json_encode, json_decode
-from mopidy import core
-from tornado.escape import json_encode
 
-state = {
-	'mode': 'normal'
-}
+from mopidy.models import TlTrack, Track
+from mopidy.core.listener import CoreListener
+from mopidy.core.tracklist import TracklistController
 
-class RadioRequestHandler(tornado.web.RequestHandler, core.CoreListener, pykka.ThreadingActor):
+logger = logging.getLogger(__name__)
+
+## when enabled, RadioFrontend intervenes with track events
+radioMode = True
+
+class RadioFrontend(pykka.ThreadingActor, CoreListener, TracklistController):
+    def __init__(self, config, core):
+        super(RadioFrontend, self).__init__()
+        self.config = config
+        self.core = core
+    
+    ## When playback starts on any kind of track
+    def track_playback_started(self, tl_track):
+        try:
+            tracklistLength = self.core.tracklist.length.get()
+            logger.info(tracklistLength)
+            if( tracklistLength <= 2 and radioMode ):
+                logger.info( 'Intervene here' )
+        except RuntimeError:
+            logger.warning('RadioFrontend: Could not fetch tracklist length')
+            pass
+
+class RadioRequestHandler(tornado.web.RequestHandler, pykka.ThreadingActor, CoreListener):
     
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
@@ -25,10 +45,8 @@ class RadioRequestHandler(tornado.web.RequestHandler, core.CoreListener, pykka.T
         state['mode'] = 'radio'
         self.write(json_encode(state))
         
-    def on_event( event, kwargs ):
-        logger.info(event)
-        
 def spotmop_radio_factory(config, core):
     return [
         ('/', RadioRequestHandler, {'core': core, 'config': config})
     ]
+    

@@ -322,53 +322,28 @@ body.dragging .body * {
   padding-left: 39px; }
 
 /**
- * Playlist Submenu
- **/
-.main-menu .submenu.playlists {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 100%;
-  overflow: hidden;
-  background: rgba(48, 48, 48, 0.95);
-  padding: 20px 0;
-  z-index: 1;
-  display: block; }
-
-.main-menu .submenu.playlists .menu-item > a {
-  color: #FFFFFF;
-  font-size: 16px;
-  padding: 10px 0 10px 20px; }
-
-.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
-.dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
-  left: 20%; }
-
-/**
  * Sub-page navigation
  **/
 .sub-page-navigation {
   margin-bottom: 35px;
   margin-top: -15px; }
-
-.sub-page-navigation .menu-item {
-  padding: 12px 0;
-  margin-right: 25px;
-  border-bottom: 3px solid transparent;
-  display: inline-block;
-  font-size: 18px;
-  text-transform: capitalize; }
-
-.sub-page-navigation .menu-item > i {
-  font-size: 6px;
-  vertical-align: middle;
-  margin-top: -4px;
-  padding-right: 2px; }
-
-.sub-page-navigation .menu-item:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  cursor: pointer; }
+  .sub-page-navigation .menu-item {
+    padding: 12px 0;
+    margin-right: 25px;
+    border-bottom: 3px solid transparent;
+    display: inline-block;
+    font-size: 18px;
+    text-transform: capitalize; }
+    .sub-page-navigation .menu-item i {
+      font-size: 6px;
+      vertical-align: middle;
+      margin-top: -4px;
+      padding-right: 2px; }
+    .sub-page-navigation .menu-item:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      cursor: pointer; }
+    .sub-page-navigation .menu-item.active {
+      border-color: #FFFFFF; }
 
 /**
  * Critical services (Mopidy + Spotify)
