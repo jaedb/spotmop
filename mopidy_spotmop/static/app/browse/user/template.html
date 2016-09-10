@@ -7,11 +7,15 @@
 		</div>
 	
 		<div class="user-intro">
-			<div class="image-container" ng-repeat="image in user.images  | limitTo:1">
-				<div class="image animate" style="background-image: url({{ image.url }});"></div>
+			<div class="image-container">
+				<thumbnail size="medium" images="user.images" circle></thumbnail>	
 			</div>
 			<div class="info">
-				<h1><span ng-bind="user.display_name"></span><span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span></h1>
+				<h1>
+					<span ng-if="user.display_name" ng-bind="user.display_name"></span>
+					<span ng-if="!user.display_name" ng-bind="user.id"></span>
+					<span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span>
+				</h1>
 				<div class="info-text">
 					<span ng-bind="user.id"></span>
 					 &nbsp;|&nbsp; <span ng-bind="totalPlaylists"></span> Playlists

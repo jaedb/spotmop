@@ -85,7 +85,7 @@ function getAuthorizationCode( $url ){
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authentication proxy site
-				if( event.origin !== "http://jamesbarnsley.co.nz" )
+				if( !/^https?:\/\/jamesbarnsley\.co\.nz/.test(event.origin) )
 					return false;
 
 				// pass the message on to the Angular application

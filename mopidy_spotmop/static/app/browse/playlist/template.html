@@ -17,7 +17,7 @@
 			</div>
 		
 		</div>
-				
+		
 		<div class="buttons">
 		
 			<a class="button primary" ng-click="playPlaylist()"><i class="fa fa-play"></i>&nbsp; Play</a>
@@ -32,7 +32,7 @@
 			
             <span ng-if="spotifyAuthorized">
             
-                <span class="follow-unfollow" ng-show="playlist.owner.id != spotifyUser.id" ng-class="{ 'following': following }">
+                <span class="follow-unfollow" ng-show="!canEdit()" ng-class="{ 'following': following }">
                     <a class="button unfollow"
                           ng-class="{destructive: hovering}"
                           ng-click="unfollowPlaylist()"
@@ -48,7 +48,7 @@
                     </a>
                 </span>
 				
-                <span class="owner-actions" ng-show="playlist.owner.id == spotifyUser.id">
+                <span class="owner-actions" ng-show="canEdit()">
                     <span ng-show="following">
                         <a class="button"
                               ng-click="editPlaylist( $scope )">
@@ -86,7 +86,8 @@
 			<div class="info-item" ng-if="playlist.owner">
 				<a class="playlist-owner" ui-sref="browse.user({ uri: playlist.owner.uri })">
                     <thumbnail size="small" images="playlist.owner.images"></thumbnail>	
-                    <span class="name" ng-bind="playlist.owner.display_name"></span>
+                    <span class="name" ng-if="playlist.owner.display_name" ng-bind="playlist.owner.display_name"></span>
+                    <span class="name" ng-if="!playlist.owner.display_name" ng-bind="playlist.owner.id"></span>
                 </a>
 			</div>
 		</div>
@@ -120,7 +121,23 @@
 				<h2 class="description" ng-bind-html="playlist.description" ng-show="playlist.description">Loading</h2>	
 			</div>
 			
-			<tracklist ng-if="tracklist.tracks" tracks="tracklist.tracks" type="track" class="tracklist playlist-items droppable" dropaccept='["track"]' droptype="playlisttracklist" playlisturi="{{ playlist.uri }}"></tracklist>
+			<tracklist
+				ng-if="tracklist.tracks && canEdit()"
+				tracks="tracklist.tracks" 
+				type="track" 
+				class="tracklist playlist-items droppable" 
+				dropaccept='["track"]' 
+				droptype="playlisttracklist"
+				playlisturi="{{ playlist.uri }}">
+			</tracklist>
+			
+			<tracklist
+				ng-if="tracklist.tracks && !canEdit()"
+				tracks="tracklist.tracks" 
+				type="track" 
+				class="tracklist playlist-items"
+				playlisturi="{{ playlist.uri }}">
+			</tracklist>
 			
 		</div>
 	</div>

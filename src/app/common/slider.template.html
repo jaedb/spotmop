@@ -1,9 +1,25 @@
 <div class="controls">
-    <span class="si chevron-left" ng-click="prev()"></span><span class="si chevron-right next" ng-click="next()"></span>
+    <span class="si chevron-left" ng-class="{ 'can-slide': canSlide('prev') }" ng-click="prev()"></span><span class="si chevron-right next" ng-class="{ 'can-slide': canSlide('next') }" ng-click="next()"></span>
 </div>
 <div class="slides swipedisabled">
     <div class="slides-content">
         <div class="item-container" ng-repeat="item in items track by $index">
+            <a ui-sref="browse.user({ uri: item.uri })" ng-if="item.type == 'user'"
+                class="square-panel circle user draggable"
+                data-id="{{ item.id }}"
+                draggable="false"
+                candrag
+                dragobj="item">
+                <div class="image-container">
+                    <thumbnail images="item.images" size="medium" circle></thumbnail>
+                </div>
+                <div class="info smaller animate">
+                    <div class="name">
+						<span ng-bind="item.display_name" ng-if="item.display_name"></span>
+						<span ng-bind="item.id" ng-if="!item.display_name"></span>
+					</div>
+                </div>
+            </a>
             <a ui-sref="browse.artist.overview({ uri: item.uri })" ng-if="item.type == 'artist'"
                 class="square-panel artists draggable"
                 data-id="{{ item.id }}"

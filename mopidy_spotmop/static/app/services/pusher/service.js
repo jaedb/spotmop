@@ -15,7 +15,7 @@ angular.module('spotmop.services.pusher', [
 	var mopidyport = SettingsService.getSetting("mopidy.port");
 	if( !mopidyport ) mopidyport = "6680";
 	
-	var urlBase = 'http://'+ mopidyhost +':'+ mopidyport +'/spotmop/';
+	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
 	$rootScope.$on('spotmop:pusher:client_connected', function(event, data){
 	
@@ -34,9 +34,11 @@ angular.module('spotmop.services.pusher', [
 			if( !pusherhost ) pusherhost = window.location.hostname;
 			var pusherport = SettingsService.getSetting("pusher.port");
 			if( !pusherport ) pusherport = "6681";
+			var protocol = 'ws';
+			if( window.location.protocol != "http:" ) protocol = 'wss'; 
 			
             try{
-				var host = 'ws://'+pusherhost+':'+pusherport+'/pusher';
+				var host = protocol+'://'+pusherhost+':'+pusherport+'/pusher'; 
                 
                 var connectionid = Math.random().toString(36).substr(2, 9);
                 SettingsService.setSetting('pusher.connectionid', connectionid);

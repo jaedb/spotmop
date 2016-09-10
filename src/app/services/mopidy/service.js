@@ -80,11 +80,13 @@ angular.module('spotmop.services.mopidy', [
 			if( !mopidyhost ) mopidyhost = window.location.hostname;
             var mopidyport = SettingsService.getSetting("mopidy.port");
 			if( !mopidyport ) mopidyport = "6680";
+			var protocol = 'ws'; 
+			if( window.location.protocol != "http:" ) protocol = 'wss';
 			
 			// Initialize mopidy
             try{
     			this.mopidy = new Mopidy({
-    				webSocketUrl: "ws://" + mopidyhost + ":" + mopidyport + "/mopidy/ws", // FOR DEVELOPING 
+				webSocketUrl: protocol+"://" + mopidyhost + ":" + mopidyport + "/mopidy/ws",
     				callingConvention: 'by-position-or-by-name'
     			});
 		
@@ -386,6 +388,20 @@ angular.module('spotmop.services.mopidy', [
 			return self.getPlaylist(uri)
 				.then( function(playlist){
                     if( typeof(playlist.tracks) === 'undefined' ) playlist.tracks = [];
+					for( var i = 0; i < trackuris.length; i++ ){
+						playlist.tracks.push({
+							__model__: "Track",
+							uri: trackuris[i]
+						});
+					}
+					return wrapMopidyFunc("mopidy.playlists.save", self)({ playlist: playlist });
+				});
+		},
+		movePlaylistTracks: function(uri, trackuris){
+			var self = this;			
+			return self.getPlaylist(uri)
+				.then( function(playlist){
+                    playlist.tracks = [];
 					for( var i = 0; i < trackuris.length; i++ ){
 						playlist.tracks.push({
 							__model__: "Track",

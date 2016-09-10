@@ -121,7 +121,7 @@
                 <div class="field">
                     <div class="label">Country code</div>
                     <div class="input">
-                        <input type="text" name="countrycode" placeholder="NZ" class="autosave" ng-model="storage.countrycode" ng-blur="SaveFields( $event )" />
+                        <input type="text" name="spotify.country" placeholder="NZ" class="autosave" ng-model="storage.spotify.country" ng-blur="SaveFields( $event )" />
                         <i class="fa fa-check autosave-success"></i>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
                 <div class="field">
                     <div class="label">Locale</div>
                     <div class="input">
-                        <input type="text" name="spotifylocale" placeholder="en_NZ" class="autosave" ng-model="storage.spotifylocale" ng-blur="SaveFields( $event )" />
+                        <input type="text" name="spotify.locale" placeholder="en_NZ" class="autosave" ng-model="storage.spotify.locale" ng-blur="SaveFields( $event )" />
                         <i class="fa fa-check autosave-success"></i>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                             <span class="image-container" ng-repeat="image in storage.spotifyuser.images  | limitTo:1">
                                 <div class="image animate" style="background-image: url({{ image.url }});"></div>
                             </span>
-                            <span ng-bind="storage.spotifyuser.display_name"></span> (<a ng-bind="storage.spotifyuser.id" href="/browse/user/{{ storage.spotifyuser.uri }}"></a>)
+                            <span ng-bind="storage.spotifyuser.display_name"></span> (<a ng-bind="storage.spotifyuser.id" ui-sref="browse.user({ uri: storage.spotifyuser.uri })"></a>)
                             &nbsp;&nbsp;
                             <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
                         </span>

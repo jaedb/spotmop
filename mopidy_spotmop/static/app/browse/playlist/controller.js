@@ -27,6 +27,15 @@ angular.module('spotmop.browse.playlist', [])
 	$scope.tracklist = { tracks: [], type: 'track' };
 	$scope.totalTime = 0;
     $scope.following = false;
+	$scope.canEdit = function(){
+		if( $scope.origin == 'm3u' ) return true;
+		if( $scope.origin == 'spotify' ){
+			if( typeof( $scope.playlist ) !== 'undefined' && typeof( $scope.playlist.owner ) !== 'undefined' ){
+				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotifyuser.id') );
+			}
+		}
+		return false;
+	}
 	
 	$scope.deletePlaylist = function(){
 		MopidyService.deletePlaylist( uri )
@@ -211,41 +220,50 @@ angular.module('spotmop.browse.playlist', [])
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
 		var currentUserID = SettingsService.getSetting('spotifyuser.id');
         
-		if( playlistOwnerID != currentUserID ){
-			
-			NotifyService.error('Cannot edit a playlist you don\'t own');
-			
-		}else{
-			
-			// get spotify to start moving
-			SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
-			
-			var tracksToMove = [];
-			
-			// build an array of the tracks we need to move
-			for( var i = 0; i < range_length; i++ )
-				tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
-			
-			// if we're dragging items down the line further, account for the tracks that we've just removed
-			if( start < to_position )
-				to_position = to_position - range_length;
-			
-			// reverse the order of our tracks to move (unexplained as to why we need this...)
-			tracksToMove.reverse();
-			
-			// we need to apply this straight to the template, so we wrap in $apply
-			$scope.$apply( function(){
-			
-				// remove our tracks to move (remembering to adjust Spotify's range_length value)
-				$scope.tracklist.tracks.splice( start, range_length );
-				
-				// and now we add our moved tracks, to their new position
-				angular.forEach( tracksToMove, function(trackToMove){
-					$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
-				});
-			});
+		if( $scope.origin == 'spotify' ){
+			if( playlistOwnerID != currentUserID ){				
+				NotifyService.error('Cannot edit a playlist you don\'t own');				
+			}else{
+				SpotifyService.movePlaylistTracks( playlisturi, start, range_length, to_position );
+				moveTrackDom( start, range_length, to_position );
+			}
+		}else if( $scope.origin == 'm3u' ){
+			moveTrackDom( start, range_length, to_position );
+			var newTrackUrisOrder = [];
+			for( var i = 0; i < $scope.tracklist.tracks.length; i++ ){
+				newTrackUrisOrder.push( $scope.tracklist.tracks[i].uri );
+				MopidyService.movePlaylistTracks( $state.params.uri, newTrackUrisOrder );
+			}
 		}
 	});
+	
+	function moveTrackDom( start, range_length, to_position ){
+		
+		var tracksToMove = [];
+		
+		// build an array of the tracks we need to move
+		for( var i = 0; i < range_length; i++ )
+			tracksToMove.push( $scope.tracklist.tracks[ start + i ] );
+		
+		// if we're dragging items down the line further, account for the tracks that we've just removed
+		if( start < to_position )
+			to_position = to_position - range_length;
+		
+		// reverse the order of our tracks to move (unexplained as to why we need this...)
+		tracksToMove.reverse();
+		
+		// we need to apply this straight to the template, so we wrap in $apply
+		$scope.$apply( function(){
+		
+			// remove our tracks to move (remembering to adjust Spotify's range_length value)
+			$scope.tracklist.tracks.splice( start, range_length );
+			
+			// and now we add our moved tracks, to their new position
+			angular.forEach( tracksToMove, function(trackToMove){
+				$scope.tracklist.tracks.splice( to_position, 0, trackToMove );
+			});
+		});
+	}
 	
 	
 	/**
@@ -281,6 +299,14 @@ angular.module('spotmop.browse.playlist', [])
 				
 				// remove our selected tracks
 				$scope.tracklist.tracks = $filter('nullOrUndefined')( $scope.tracklist.tracks, 'selected' );
+			
+			// catch rejections (due to Spotify API or due to denied permission)
+			}, function(){
+				
+				// un-transition all our tracks
+				angular.forEach( selectedTracks, function( selectedTrack, index ){
+					selectedTrack.transitioning = false;
+				});
 			});
 	}
 	
@@ -295,11 +321,13 @@ angular.module('spotmop.browse.playlist', [])
 		
 		// loop all the tracks to add
 		angular.forEach( tracks, function( track ){
-			var newTrack = track.track;
-			newTrack.added_at = track.added_at;
-			newTrack.added_by = track.added_by;
-			newTrack.is_local = track.is_local;
-			reformattedTracks.push( newTrack );
+			if( track.track ){
+				var newTrack = track.track;
+				newTrack.added_at = track.added_at;
+				newTrack.added_by = track.added_by;
+				newTrack.is_local = track.is_local;
+				reformattedTracks.push( newTrack );
+			}
 		});
 		
 		return reformattedTracks;
@@ -309,7 +337,7 @@ angular.module('spotmop.browse.playlist', [])
      * Load more of the playlist's tracks
      * Triggered by scrolling to the bottom
      **/
-    
+	 
     var loadingMoreTracks = false;
     
     // go off and get more of this playlist's tracks

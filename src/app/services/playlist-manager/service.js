@@ -20,7 +20,51 @@ angular.module('spotmop.services.playlistManager', [])
     
 	var playlists = [];
 	var myPlaylists = [];
-
+	
+	// fetch spotify playlists
+	function getSpotifyPlaylists( url ){		
+		if( typeof(url) !== 'undefined' ){			
+			SpotifyService.getUrl( url )
+				.then( function(response){
+					digestSpotifyPlaylists( response );
+				});			
+		}else{		
+			var userid = SettingsService.getSetting('spotifyuser.id');
+			SpotifyService.getPlaylists( userid, 50 )
+				.then( function(response){
+					digestSpotifyPlaylists( response );
+				});	
+		}
+	}
+	
+	function digestSpotifyPlaylists( response ){
+		
+		if( typeof( response.error ) !== 'undefined' ){
+			NotifyService.error( response.error_description );
+			return;
+		}
+		
+		// loop all the items
+		for( var i = 0; i < response.items.length; i++ ){
+			var playlist = response.items[i];
+			
+			// only add if it doesn't already exist in our server playlists list
+			var duplicates = $filter('filter')( playlists, {uri: playlist.uri});
+			if( duplicates.length <= 0 ){
+				playlists.push( playlist );
+			}
+		}
+		
+		// if we were given a next link, then start the party again
+		if( typeof(response.next) !== 'undefined' && response.next ){
+			getSpotifyPlaylists( response.next );
+			
+		// no next link, so we've got them all
+		}else{
+			service.refreshMyPlaylists();
+		}
+	}
+	
 	// setup response object
     var service = {
         playlists: function(){
@@ -92,23 +136,7 @@ angular.module('spotmop.services.playlistManager', [])
 					// if we're authenticated with Spotify, fetch the authenticated user's playlists
 					// TODO: currently only gets first 50, need to implement lazy-loading
 					if( SpotifyService.isAuthorized() ){
-						var userid = SettingsService.getSetting('spotifyuser.id');
-						SpotifyService.getPlaylists( userid, 50 )
-							.then( function(response){
-								
-								// loop all the items
-								for( var i = 0; i < response.items.length; i++ ){
-									var playlist = response.items[i];
-									
-									// only add if it doesn't already exist in our server playlists list
-									var duplicates = $filter('filter')( playlists, {uri: playlist.uri});
-									if( duplicates.length <= 0 ){
-										playlists.push( playlist );
-									}
-								}
-                                
-								service.refreshMyPlaylists();
-							});
+						getSpotifyPlaylists();
 					}
 				});
         },
@@ -183,7 +211,8 @@ angular.module('spotmop.services.playlistManager', [])
 					
 					if( playlistOwnerID != currentUserID ){
 						NotifyService.error('Cannot modify to a playlist you don\'t own');
-						return false;
+						deferred.reject();
+						break;
 					}
 
 					// parse these uris to spotify and delete these tracks
@@ -192,7 +221,7 @@ angular.module('spotmop.services.playlistManager', [])
 						
 								if( typeof(response.error) !== 'undefined' ){
 									NotifyService.error( response.error.message );
-									deferred.reject( response.error.message );									
+									deferred.reject( response.error.message );		
 								}else{		
 									NotifyService.notify('Removed '+indexes.length+' tracks from playlist');
 									deferred.resolve({ type: playlistUriScheme, indexes: indexes, snapshot_id: response.snapshot_id });

@@ -197,11 +197,13 @@ angular.module('spotmop.directives', [])
 				// check to see if what we're hovering accepts what we're dragging				
 				var dropTarget = getDropTarget( event );
 				var accepts = targetAcceptsType( dropTarget );
+				
 				if( accepts ){
 					dropTarget.addClass('dropping');
 					
 					// if we're dropping on a track, add the dropping class to it too
 					// this allows us to style the drop location for Chrome that doesn't listen for :hover
+					// TODO: This doesn't seem to fire at all??
 					var trackDroppingOn = $(event.target);
 					if( !trackDroppingOn.hasClass('track') ) trackDroppingOn = trackDroppingOn.closest('.track');
 					if( trackDroppingOn.hasClass('track') ){
@@ -219,7 +221,10 @@ angular.module('spotmop.directives', [])
                         
 						// resize playlists zone 
 						var fromTop = zone.find('.hover-content').offset().top;
-						zone.find('.hover-content').css('height', $(window).height() - fromTop - 20 );
+						var newHeight = $(window).height() - fromTop - 20;
+						if( wrapper.outerHeight() < newHeight ) newHeight = wrapper.outerHeight();
+						if( newHeight < 175 ) newHeight = 175;
+						zone.find('.hover-content').css('height', newHeight );
 						
 						// calculate our hover position (as a percent of the zone)
                         var relativeY = event.pageY - zone.offset().top;
@@ -667,19 +672,19 @@ angular.module('spotmop.directives', [])
 			var totalSlides = ( $scope.items.length / 5 ) - 1;
 			
 			$scope.prev = function(){
-				if( canSlide('prev') ){
+				if( $scope.canSlide('prev') ){
 					currentSlide--;
 					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
 				}
 			}
 			$scope.next = function(){
-				if( canSlide('next') ){
+				if( $scope.canSlide('next') ){
 					currentSlide++;
 					sliderContent.animate({left: -(currentSlide)*100 +'%'},120);
 				}
 			}
 			
-			function canSlide( direction ){
+			$scope.canSlide = function( direction ){
 				if( direction == 'prev' && currentSlide <= 0 ) return false;
 				if( direction == 'next' && currentSlide >= totalSlides ) return false;
 				return true;
