@@ -34080,7 +34080,7 @@ angular.module('spotmop.library', [])
 				label: 'Artist'
 			},
 			{
-				value: 'album.added_at',
+				value: 'added_at',
 				label: 'Date added'
 			}
 		];
@@ -34093,7 +34093,7 @@ angular.module('spotmop.library', [])
 	if( $rootScope.spotifyAuthorized ){	
     
 		SpotifyService.getMyAlbums( userid )
-			.then( function( response ){				
+			.then( function( response ){
 					$scope.albums = response;
 				});
 	}
