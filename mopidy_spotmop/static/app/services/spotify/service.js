@@ -846,7 +846,7 @@ angular.module('spotmop.services.spotify', [])
 				limit = 40;
 			
 			var timestamp = $filter('date')(new Date(),'yyyy-MM-ddTHH:mm:ss');
-			var country = SettingsService.getSetting('spotify.countrycode');
+			var country = SettingsService.getSetting('spotify.country');
 			if( !country ) country = 'NZ';
             var deferred = $q.defer();
 
