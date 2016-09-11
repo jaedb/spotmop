@@ -10,15 +10,18 @@ from services.auth import auth
 from services.radio import radio
 from mopidy import config, ext
 
-__version__ = '2.9.1'
-__ext_name__ = 'spotmop'
-__verbosemode__ = False
-
 logger = logging.getLogger(__name__)
+__version__ = '2.9.1'
 
-class SpotmopExtension(ext.Extension):
+##
+# Core extension class
+#
+# Loads config and gets the party started. Initiates any additional frontends, etc.
+##
+class SpotmopExtension( ext.Extension ):
+
     dist_name = 'Mopidy-Spotmop'
-    ext_name = __ext_name__
+    ext_name = 'spotmop'
     version = __version__
 
     def get_default_config(self):
@@ -36,27 +39,18 @@ class SpotmopExtension(ext.Extension):
         # Add web extension
         registry.add('http:app', {
             'name': self.ext_name,
-            'factory': spotmop_client_factory
+            'factory': factory
         })
-
+        
+        # add our other frontends
         registry.add('frontend', radio.RadioFrontend)
+        registry.add('frontend', pusher.PusherFrontend)
         
         logger.info('Starting Spotmop web client '+ self.version)
         
-def spotmop_client_factory(config, core):
+def factory(config, core):
 
-    spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
-    
-    # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
-    pusherport = str(config['spotmop']['pusherport'])
-    application = tornado.web.Application([
-        ('/pusher', pusher.PusherHandler, {
-                'version': __version__
-            }),
-    ])
-    application.listen(pusherport)
-    
-    logger.info( 'Pusher server running on [0.0.0.0]:'+ str(pusherport) )
+    path = os.path.join( os.path.dirname(__file__), 'static')
 	
     return [
 		(r'/upgrade', upgrade.UpgradeRequestHandler, {
@@ -72,7 +66,7 @@ def spotmop_client_factory(config, core):
 				'core': core,
 				'config': config
 			}),
-		(r'/radio([^/]*)', radio.RadioRequestHandler, {
+		(r'/radio', radio.RadioRequestHandler, {
 				'core': core,
 				'config': config
 			}),
@@ -80,7 +74,7 @@ def spotmop_client_factory(config, core):
             "path": config['local-images']['image_dir']
         }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
-				"path": spotmoppath,
+				"path": path,
 				"default_filename": "index.html"
 			}),
     ]

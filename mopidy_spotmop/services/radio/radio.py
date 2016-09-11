@@ -4,11 +4,16 @@ from tornado.escape import json_encode, json_decode
 from mopidy.models import TlTrack, Track
 from mopidy.core.listener import CoreListener
 from mopidy.core.tracklist import TracklistController
+from mopidy_spotmop.services.pusher import pusher
 
 logger = logging.getLogger(__name__)
 
 ## when enabled, RadioFrontend intervenes with track events
-radioMode = True
+state = {
+    "radioMode": False,
+    "seed_tracks": [],
+    "seed_artists": [],
+}
 
 class RadioFrontend(pykka.ThreadingActor, CoreListener, TracklistController):
     def __init__(self, config, core):
@@ -21,7 +26,7 @@ class RadioFrontend(pykka.ThreadingActor, CoreListener, TracklistController):
         try:
             tracklistLength = self.core.tracklist.length.get()
             logger.info(tracklistLength)
-            if( tracklistLength <= 2 and radioMode ):
+            if( tracklistLength <= 2 and state['radioMode'] ):
                 logger.info( 'Intervene here' )
         except RuntimeError:
             logger.warning('RadioFrontend: Could not fetch tracklist length')
@@ -41,8 +46,24 @@ class RadioRequestHandler(tornado.web.RequestHandler, pykka.ThreadingActor, Core
         self.write(json_encode(state))
 	
     ## post to update the state
-    def post(self, mode):
-        state['mode'] = 'radio'
+    def post(self):
+        data = json_decode( self.request.body )
+        
+        # reset state to begin with
+        state = {}
+        
+        # and then update each of our properties, to match the JSON data
+        state['radioMode'] = data['radioMode']
+        state['seed_tracks'] = data['seed_tracks']
+        state['seed_artists'] = data['seed_artists']
+        
+        # broadcast update via Pusher
+        pusherHandler = self.core.extensions.mopidy_spotmop.pusher
+        pusher.PusherHandler.broadcast( pusherHandler, 'playback_mode', state )
+        
+        # self.core.send( "test_event" )#, { "data": "yeah nah" } )
+        
+        # now return the update state
         self.write(json_encode(state))
         
 def spotmop_radio_factory(config, core):
