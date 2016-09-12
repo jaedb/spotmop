@@ -17,6 +17,7 @@ connections = {}
 # @param data = array (any data required to include in our message)
 def send_message( event, data ):
     for connection in connections.itervalues():
+        logger.debug('Pusher: broadcasting '+event)
         message = '{"type": "'+event+'", "data": '+ json_encode( data ) +'}'
         connection['connection'].write_message( message )
         

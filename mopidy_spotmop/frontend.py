@@ -37,8 +37,6 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             self.pusher.listen(port)
             logger.info('Pusher server running at [0.0.0.0]:'+port)
             
-            #self.pusher.broadcast('testing',{ "yeah": "nah" })
-            
         except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
             logger.error('Error starting Pusher: %s', e)
             self.stop()

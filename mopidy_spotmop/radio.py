@@ -9,13 +9,19 @@ import pusher
 
 logger = logging.getLogger(__name__)
 
-## when enabled, RadioFrontend intervenes with track events
 state = {
-    "radioMode": False,
+    "radio_mode": False,
     "seed_tracks": [],
     "seed_artists": [],
 }
+oldState = {}
 
+
+##
+# Radio handler
+#
+# Listens for system-triggered playback events and handles radio functionality
+##
 class RadioHandler(pykka.ThreadingActor, CoreListener, TracklistController):
 
     def __init__(self, core, pusher):
@@ -29,24 +35,30 @@ class RadioHandler(pykka.ThreadingActor, CoreListener, TracklistController):
         try:
             tracklistLength = self.core.tracklist.length.get()
             logger.info(tracklistLength)
-            self.pusher.broadcast('testing',{ "yeah": "nah" })
-            if( tracklistLength <= 2 and state['radioMode'] ):
+            if( tracklistLength <= 2 and state['radio_mode'] ):
                 logger.info( 'Intervene here' )
         except RuntimeError:
-            logger.warning('RadioFrontend: Could not fetch tracklist length')
+            logger.warning('RadioHandler: Could not fetch tracklist length')
             pass
 
-class RadioRequestHandler(tornado.web.RequestHandler, pykka.ThreadingActor, CoreListener):
-    
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
+            
+##
+# Radio HTTP request handler
+#
+# Provides HTTP endpoint for radio-based interaction
+# TODO: Move this into the Pusher websocket to remove the need for yet another endpoint
+##
+class RadioRequestHandler(tornado.web.RequestHandler):
 
     def initialize(self, core, config):
         self.core = core
         self.config = config
+    
+    def set_default_headers(self):
+        self.set_header("Access-Control-Allow-Origin", "*")
 	
     ## get the current state
-    def get(self, action):
+    def get(self):
         self.write(json_encode(state))
 	
     ## post to update the state
@@ -54,24 +66,20 @@ class RadioRequestHandler(tornado.web.RequestHandler, pykka.ThreadingActor, Core
         data = json_decode( self.request.body )
         
         # reset state to begin with
+        global oldState, state
+        oldState = state
         state = {}
         
         # and then update each of our properties, to match the JSON data
-        state['radioMode'] = data['radioMode']
+        state['radio_mode'] = data['radio_mode']
         state['seed_tracks'] = data['seed_tracks']
         state['seed_artists'] = data['seed_artists']
         
-        # broadcast update via Pusher
-        pusherHandler = self.core.ext.mopidy_spotmop.pusher
-        pusher.PusherHandler.broadcast( pusherHandler, 'playback_mode', state )
-        
-        # self.core.send( "test_event" )#, { "data": "yeah nah" } )
+        # send notification (if values changed)
+        if( oldState['radio_mode'] != state['radio_mode'] ) or ( oldState['seed_tracks'] != state['seed_tracks'] ) or ( oldState['seed_artists'] != state['seed_artists'] ):
+            pusher.send_message('radio_changed', state )
         
         # now return the update state
         self.write(json_encode(state))
         
-def spotmop_radio_factory(config, core):
-    return [
-        ('/', RadioRequestHandler, {'core': core, 'config': config})
-    ]
     
