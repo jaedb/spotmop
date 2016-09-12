@@ -9,7 +9,7 @@ from mopidy import config, ext
 from mopidy.core import CoreListener
 
 # import our other Spotmop classes
-import upgrade, pusher, auth, radio
+import mopidy_spotmop, upgrade, pusher, auth, radio
 
 logger = logging.getLogger(__name__)
     
@@ -40,10 +40,13 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
             logger.error('Error starting Pusher: %s', e)
             self.stop()
-            
-        # try and setup our radio
-        try:
-            self.radio = radio.RadioHandler(self.core, self.pusher)
-        except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
-            logger.error('Error starting Radio handler: %s', e)
-            self.stop()
+    
+    # listen to core events, and get radio to perform checks        
+    def track_playback_ended( self, tl_track, time_position ):
+        radio.check_for_radio_update(self.core)
+        
+        
+        
+        
+        
+        

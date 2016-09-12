@@ -34,17 +34,17 @@ def digest_protocol( protocol ):
     
     # if we've been given a valid array
     try:
-      clientid = protocol[0]
-      connectionid = protocol[1]
-      username = protocol[2]
-      generated = False
+		clientid = protocol[0]
+		connectionid = protocol[1]
+		username = protocol[2]
+		generated = False
       
     # invalid, so just create a default connection, and auto-generate an ID
     except:
-      clientid = str(uuid.uuid4().hex)
-      connectionid = str(uuid.uuid4().hex)
-      username = str(uuid.uuid4().hex)
-      generated = True
+		clientid = str(uuid.uuid4().hex)
+		connectionid = str(uuid.uuid4().hex)
+		username = str(uuid.uuid4().hex)
+		generated = True
     
     # construct our protocol object, and return
     return {"clientid": clientid, "connectionid": connectionid, "username": username, "generated": generated}

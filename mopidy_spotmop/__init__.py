@@ -44,8 +44,6 @@ class SpotmopExtension( ext.Extension ):
         # add our frontend
         registry.add('frontend', SpotmopFrontend)
         
-        logger.info('Starting Spotmop web client '+ self.version)
-        
 def factory(config, core):
 
     path = os.path.join( os.path.dirname(__file__), 'static')
