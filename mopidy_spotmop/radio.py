@@ -4,7 +4,8 @@ from tornado.escape import json_encode, json_decode
 from mopidy.models import TlTrack, Track
 from mopidy.core.listener import CoreListener
 from mopidy.core.tracklist import TracklistController
-from mopidy_spotmop.services.pusher import pusher
+
+import pusher
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +16,20 @@ state = {
     "seed_artists": [],
 }
 
-class RadioFrontend(pykka.ThreadingActor, CoreListener, TracklistController):
-    def __init__(self, config, core):
-        super(RadioFrontend, self).__init__()
-        self.config = config
+class RadioHandler(pykka.ThreadingActor, CoreListener, TracklistController):
+
+    def __init__(self, core, pusher):
+        super(RadioHandler, self).__init__()
         self.core = core
+        self.pusher = pusher
     
-    ## When playback starts on any kind of track
+    # When playback starts on any kind of track
+    ## THIS IS NOT BEING CALLED??
     def track_playback_started(self, tl_track):
         try:
             tracklistLength = self.core.tracklist.length.get()
             logger.info(tracklistLength)
+            self.pusher.broadcast('testing',{ "yeah": "nah" })
             if( tracklistLength <= 2 and state['radioMode'] ):
                 logger.info( 'Intervene here' )
         except RuntimeError:
@@ -58,7 +62,7 @@ class RadioRequestHandler(tornado.web.RequestHandler, pykka.ThreadingActor, Core
         state['seed_artists'] = data['seed_artists']
         
         # broadcast update via Pusher
-        pusherHandler = self.core.extensions.mopidy_spotmop.pusher
+        pusherHandler = self.core.ext.mopidy_spotmop.pusher
         pusher.PusherHandler.broadcast( pusherHandler, 'playback_mode', state )
         
         # self.core.send( "test_event" )#, { "data": "yeah nah" } )

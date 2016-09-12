@@ -3,12 +3,11 @@ from __future__ import unicode_literals
 import logging, os, json
 import tornado.web
 import tornado.websocket
-
-from services.upgrade import upgrade
-from services.pusher import pusher
-from services.auth import auth
-from services.radio import radio
+from frontend import SpotmopFrontend
 from mopidy import config, ext
+
+# import our other Spotmop classes
+import upgrade, pusher, auth, radio
 
 logger = logging.getLogger(__name__)
 __version__ = '2.9.1'
@@ -35,16 +34,15 @@ class SpotmopExtension( ext.Extension ):
         return schema
 
     def setup(self, registry):
-
+        
         # Add web extension
         registry.add('http:app', {
             'name': self.ext_name,
             'factory': factory
         })
         
-        # add our other frontends
-        registry.add('frontend', radio.RadioFrontend)
-        registry.add('frontend', pusher.PusherFrontend)
+        # add our frontend
+        registry.add('frontend', SpotmopFrontend)
         
         logger.info('Starting Spotmop web client '+ self.version)
         

@@ -1,13 +1,16 @@
-import tornado.ioloop, tornado.web, tornado.websocket, tornado.template, datetime
-import logging, uuid, os, subprocess, pykka, pylast
+import tornado.ioloop, tornado.web, tornado.websocket, tornado.template
+import logging, uuid, os, subprocess, pykka
+from datetime import datetime
 from tornado.escape import json_encode, json_decode
 from mopidy import config, ext
 from mopidy.core import CoreListener
+import mopidy_spotmop
 
 logger = logging.getLogger(__name__)
 
 # container for all current pusher connections
 connections = {}
+  
   
 # send a message to all connections
 # @param event = string (event name, ie connection_opened)
@@ -16,6 +19,7 @@ def send_message( event, data ):
     for connection in connections.itervalues():
         message = '{"type": "'+event+'", "data": '+ json_encode( data ) +'}'
         connection['connection'].write_message( message )
+        
         
 # digest a protocol header into it's id/name parts
 def digest_protocol( protocol ):
@@ -45,19 +49,20 @@ def digest_protocol( protocol ):
     return {"clientid": clientid, "connectionid": connectionid, "username": username, "generated": generated}
 
     
+    
 ##
 # Websocket server
 #
 # This is the actual websocket thread that accepts, digests and emits messages.
 # TODO: Figure out how to merge this into the main Mopidy websocket to avoid needing two websocket servers
 ##    
-class PusherWebsocket(tornado.websocket.WebSocketHandler):
+class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
+    
+    def initialize(self):
+        self.version = mopidy_spotmop.__version__
 
     def check_origin(self, origin):
         return True
-    
-    def initialize(self):
-        self.version = 'asdf'#mopidy_spotmop.version
   
     # when a new connection is opened
     def open(self):
@@ -144,35 +149,13 @@ class PusherWebsocket(tornado.websocket.WebSocketHandler):
   
     def broadcast( self, type, body ):
         send_message( type, body )
-    
-###
-# Pusher frontend
-#
-# This provides a Mopidy-esque thread (?) wrapper for the Pusher websocket
-##
-class PusherFrontend(pykka.ThreadingActor, CoreListener):
 
-    def __init__(self, config, core):
-        super(PusherFrontend, self).__init__()
-        self.pusher = None
-        self.config = config
-        self.core = core
-
-    def on_start(self):
-        port = str(self.config['spotmop']['pusherport'])
-        try:
-            self.pusher = tornado.web.Application([ ('/pusher', PusherWebsocket) ])
-            self.pusher.listen(port)
-            logger.info('Pusher server running at [0.0.0.0]:'+port)
-        except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
-            logger.error('Error starting Pusher: %s', e)
-            self.stop()
-
+            
 ##
 # HTTP Requests handler
 #
 # Facilitates HTTP requests to get a list of all the current connections, etc
-# TODO: deprecate this in favor of a specific websocket message. Less extra endpoints the better!
+# TODO: deprecate this in favor of a specific websocket message. Less endpoints the better!
 ##
 class PusherRequestHandler(tornado.web.RequestHandler):
 
