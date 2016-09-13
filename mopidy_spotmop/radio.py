@@ -2,6 +2,7 @@ import os, tornado.web, json, pykka, logging
 from tornado.escape import json_encode, json_decode
 
 from mopidy.models import TlTrack, Track
+import mopidy.core
 from mopidy.core.listener import CoreListener
 from mopidy.core.tracklist import TracklistController
 
@@ -18,7 +19,7 @@ state = {
     "seed_genres": [],
     "seed_tracks": []
 }
-oldState = {}
+old_state = {}
     
 ##
 # See if we need to perform updates to our radio
@@ -55,6 +56,20 @@ def load_more_tracks(core):
     except:
         logger.error('RadioHandler: Failed to fetch recommendations from Spotify')
 
+
+def set_radio_state( new_state ):
+
+    # reset state to begin with
+    global old_state, state
+    old_state = state
+    state = new_state
+        
+    # send notification (if values changed)
+    if( old_state['radio_mode'] != state['radio_mode'] ) or ( old_state['seed_artists'] != state['seed_artists'] ) or ( old_state['seed_genres'] != state['seed_genres'] ) or ( old_state['seed_tracks'] != state['seed_tracks'] ):
+    
+        # send notification
+        pusher.send_message('radio_changed', state )
+        
         
      
 ##

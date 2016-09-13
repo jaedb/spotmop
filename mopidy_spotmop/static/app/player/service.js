@@ -6,7 +6,7 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService',  'PusherService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, PusherService, LastfmService ){
 	
 	// setup initial states
 	var state = {
@@ -60,15 +60,6 @@ angular.module('spotmop.services.player', [])
 		MopidyService.getState().then( function( newState ){
 			state.playbackState = newState;
 		});
-        
-        // figure out our radio mode
-        $http({
-                method: 'GET',
-                url: 'http://music.barnsley.nz:6680/spotmop/radio'
-            })
-            .success(function( response ){
-                state.radioMode = response.radio_mode;
-            });
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
@@ -441,7 +432,9 @@ angular.module('spotmop.services.player', [])
         startRadio: function(uris){
             
             var data = {
-                radio_mode: 1,
+				type: 'system',
+				method: 'change_radio',
+                enabled: 1,
                 seed_artists: [],
                 seed_genres: [],
                 seed_tracks: []
@@ -458,40 +451,23 @@ angular.module('spotmop.services.player', [])
                 }
             }
             
-            $http({
-					method: 'POST',
-					url: 'http://music.barnsley.nz:6680/spotmop/radio',
-					data: data
-				})
-                .success(function( response ){
-					NotifyService.notify('Starting radio...');
-                    state.radioMode = true;
-                })
-                .error(function( response ){
-					NotifyService.error('Could not start radio');
-                });
+			PusherService.send( data );
+			NotifyService.notify('Starting radio');
         },
         
         stopRadio: function(){     
             
             var data = {
-                radio_mode: 0,
+				type: 'system',
+				method: 'change_radio',
+                enabled: 0,
                 seed_artists: [],
                 seed_genres: [],
                 seed_tracks: []
             }
             
-            $http({
-					method: 'POST',
-					url: 'http://music.barnsley.nz:6680/spotmop/radio',
-					data: data
-				})
-                .success(function( response ){
-					state.radioMode = false;
-                })
-                .error(function( response ){
-					NotifyService.error('Could not start radio');
-                });
+			PusherService.send( data );
+			NotifyService.notify('Starting radio');
         },
 		
 		/**

@@ -1,16 +1,13 @@
 import tornado.ioloop, tornado.web, tornado.websocket, tornado.template
-import logging, uuid, os, subprocess, pykka
+import logging, uuid, os, subprocess, pykka, mopidy_spotmop
 from datetime import datetime
 from tornado.escape import json_encode, json_decode
-from mopidy import config, ext
-from mopidy.core import CoreListener
-import mopidy_spotmop
 
 logger = logging.getLogger(__name__)
 
 # container for all current pusher connections
 connections = {}
-  
+frontend = {}
   
 # send a message to all connections
 # @param event = string (event name, ie connection_opened)
@@ -50,7 +47,6 @@ def digest_protocol( protocol ):
     return {"clientid": clientid, "connectionid": connectionid, "username": username, "generated": generated}
 
     
-    
 ##
 # Websocket server
 #
@@ -59,11 +55,15 @@ def digest_protocol( protocol ):
 ##    
 class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
     
-    def initialize(self):
+    def initialize(self, frontend):
         self.version = mopidy_spotmop.__version__
+        self.frontend = frontend
 
     def check_origin(self, origin):
         return True
+        
+    def set_frontend(self, frontend):
+        self.frontend = frontend
   
     # when a new connection is opened
     def open(self):
@@ -105,33 +105,38 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
 
         # construct the origin client info
         messageJson['origin'] = { 'connectionid' : self.connectionid, 'clientid': connections[self.connectionid]['client']['clientid'], 'ip': self.request.remote_ip, 'username': connections[self.connectionid]['client']['username'] }
-
-        if messageJson['type'] == 'system':
-            logger.info('System message received '+messageJson['method'])
-
-        if messageJson['type'] == 'client_updated':
-            if messageJson['origin']['connectionid'] in connections:            
-                connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
-                logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
-
-        # recipients array has items, so only send to specific clients
-        if messageJson.has_key('recipients'):  
-            for connectionid in messageJson['recipients']:
-                connectionid = connectionid.encode("utf-8")
-                connections[connectionid]['connection'].write_message(messageJson)
-
-        # empty, so send to all clients
-        else:    
-            for connection in connections.itervalues():
+        
+        # system message
+        if messageJson['type'] == 'system':    
+            if messageJson['method'] == 'change_radio':
+                self.frontend.change_radio( messageJson )
+        
+        # standard message
+        else:
             
-                # if we've set ignore_self, then don't send message to originating connection
-                if messageJson.has_key('ignore_self'):
-                    if connection['client']['connectionid'] != messageJson['origin']['connectionid']:
+            if messageJson['type'] == 'client_updated':
+                if messageJson['origin']['connectionid'] in connections:            
+                    connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
+                    logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
+
+            # recipients array has items, so only send to specific clients
+            if messageJson.has_key('recipients'):  
+                for connectionid in messageJson['recipients']:
+                    connectionid = connectionid.encode("utf-8")
+                    connections[connectionid]['connection'].write_message(messageJson)
+
+            # empty, so send to all clients
+            else:    
+                for connection in connections.itervalues():
+                
+                    # if we've set ignore_self, then don't send message to originating connection
+                    if messageJson.has_key('ignore_self'):
+                        if connection['client']['connectionid'] != messageJson['origin']['connectionid']:
+                            connection['connection'].write_message(messageJson)
+                            
+                    # send it to everyone
+                    else:
                         connection['connection'].write_message(messageJson)
-                        
-                # send it to everyone
-                else:
-                    connection['connection'].write_message(messageJson)
                         
         logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
   
