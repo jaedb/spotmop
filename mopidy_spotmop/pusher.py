@@ -106,6 +106,9 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         # construct the origin client info
         messageJson['origin'] = { 'connectionid' : self.connectionid, 'clientid': connections[self.connectionid]['client']['clientid'], 'ip': self.request.remote_ip, 'username': connections[self.connectionid]['client']['username'] }
 
+        if messageJson['type'] == 'system':
+            logger.info('System message received '+messageJson['method'])
+
         if messageJson['type'] == 'client_updated':
             if messageJson['origin']['connectionid'] in connections:            
                 connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']

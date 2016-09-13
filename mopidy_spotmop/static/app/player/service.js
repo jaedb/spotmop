@@ -6,11 +6,12 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
 	
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
+        radioMode: false,
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -59,6 +60,15 @@ angular.module('spotmop.services.player', [])
 		MopidyService.getState().then( function( newState ){
 			state.playbackState = newState;
 		});
+        
+        // figure out our radio mode
+        $http({
+                method: 'GET',
+                url: 'http://music.barnsley.nz:6680/spotmop/radio'
+            })
+            .success(function( response ){
+                state.radioMode = response.radio_mode;
+            });
 	});
 	
 	$rootScope.$on('mopidy:event:tracklistChanged', function(event, options){
@@ -82,6 +92,9 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
+	$rootScope.$on('spotmop:pusher:radio_changed', function( event, state ){
+		state.radioMode = state.radio_mode;
+	});
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -420,6 +433,66 @@ angular.module('spotmop.services.player', [])
 			state.volume = percent;
 			MopidyService.setVolume( percent );
 		},
+        
+        /**
+         * Radio functionality
+         * TODO: Move this into a dedicated service
+         **/
+        startRadio: function(uris){
+            
+            var data = {
+                radio_mode: 1,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            for( var i = 0; i < uris.length; i++){
+                switch( SpotifyService.uriType( uris[i] ) ){
+                    case 'artist':
+                        data.seed_artists.push( uris[i] );
+                        break;
+                    case 'track':
+                        data.seed_tracks.push( uris[i] );
+                        break;
+                }
+            }
+            
+            $http({
+					method: 'POST',
+					url: 'http://music.barnsley.nz:6680/spotmop/radio',
+					data: data
+				})
+                .success(function( response ){
+					NotifyService.notify('Starting radio...');
+                    state.radioMode = true;
+                })
+                .error(function( response ){
+					NotifyService.error('Could not start radio');
+                });
+        },
+        
+        stopRadio: function(){     
+            
+            var data = {
+                radio_mode: 0,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            $http({
+					method: 'POST',
+					url: 'http://music.barnsley.nz:6680/spotmop/radio',
+					data: data
+				})
+                .success(function( response ){
+					state.radioMode = false;
+                })
+                .error(function( response ){
+					NotifyService.error('Could not start radio');
+                });
+        },
 		
 		/**
 		 * Playback behavior toggles

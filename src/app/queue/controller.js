@@ -53,6 +53,10 @@ angular.module('spotmop.queue', [])
 	$scope.clearQueue = function(){
 		MopidyService.clearCurrentTrackList();
 	};
+
+	$scope.stopRadio = function(){
+		PlayerService.stopRadio();
+	};
 	
 	
     /**

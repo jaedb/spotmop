@@ -28,7 +28,7 @@ oldState = {}
 def check_for_radio_update(core):
     try:
         tracklistLength = core.tracklist.length.get()        
-        if( tracklistLength <= 2 and state['radio_mode'] == 1 ):
+        if( tracklistLength <= 5 and state['radio_mode'] == 1 ):
             load_more_tracks(core)
             
     except RuntimeError:
@@ -45,7 +45,7 @@ def load_more_tracks(core):
         token = auth.AuthHelper().get_token()
         token = token['access_token']
         spotify = spotipy.Spotify( auth = token )
-        response = spotify.recommendations(seed_artists = state['seed_artists'], seed_genres = state['seed_genres'], seed_tracks = state['seed_tracks'], limit = 2)
+        response = spotify.recommendations(seed_artists = state['seed_artists'], seed_genres = state['seed_genres'], seed_tracks = state['seed_tracks'], limit = 5)
         
         uris = []
         for track in response['tracks']:
@@ -84,7 +84,15 @@ class RadioRequestHandler(tornado.web.RequestHandler):
     
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
-	
+        self.set_header('Access-Control-Allow-Credentials', 'true')
+        self.set_header("Access-Control-Allow-Headers", "Accept, Authorization, Origin, Content-Type")
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.set_header('Content-Type', 'application/json')
+
+    def options(self):
+        self.set_status(204)
+        self.finish()
+        
     ## get the current state
     def get(self):
         self.write(json_encode(state))
@@ -92,6 +100,8 @@ class RadioRequestHandler(tornado.web.RequestHandler):
     ## post to update the state
     def post(self):
         data = json_decode( self.request.body )
+        
+        logger.info('POST received')
         
         # reset state to begin with
         global oldState, state, wasConsume
