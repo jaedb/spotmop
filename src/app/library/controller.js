@@ -181,12 +181,8 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
     
 	SpotifyService.getMyArtists( userid )
-		.then( function( response ){ // successful
+		.then( function( response ){
 				$scope.artists = response.artists;
-				console.log( response.artists );
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
 			});
     
 	

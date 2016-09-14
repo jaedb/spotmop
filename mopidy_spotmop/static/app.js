@@ -29830,7 +29830,6 @@ angular.module('spotmop', [
 	cfpLoadingBarProvider.parentSelector = 'body';
 })
 
-
 .run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })
@@ -31288,12 +31287,10 @@ angular.module('spotmop.browse.playlist', [])
                     $scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
                 
                     // get the owner
-                    if( $rootScope.spotifyAuthorized ){
-                        SpotifyService.getUser( $scope.playlist.owner.uri )
-                            .then( function( response ){
-                                $scope.playlist.owner = response;
-                            });
-                    }
+					SpotifyService.getUser( $scope.playlist.owner.uri )
+						.then( function( response ){
+							$scope.playlist.owner = response;
+						});
                 
                     // figure out if we're following this playlist
                     if( $rootScope.spotifyAuthorized ){
@@ -31721,6 +31718,11 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.copyURIs = function(){
 				$rootScope.$broadcast('spotmop:tracklist:copyURIsToClipboard');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.startRadio = function(){
+				$rootScope.$broadcast('spotmop:tracklist:startRadio');
 				$element.fadeOut('fast');
 			}
 			
@@ -33425,7 +33427,13 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
-			
+				
+				// if we're in radio mode, turn it off
+				if( PlayerService.state().radio.enabled ){
+					PlayerService.stopRadio();
+					NotifyService.notify("Stopping radio");
+				}
+				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var firstSelectedTrack = selectedTracks[0];
 				
@@ -33530,6 +33538,29 @@ angular.module('spotmop.common.tracklist', [])
 				
 				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
+			
+			
+			/**
+			 * Misc other tracklist events
+			 **/
+			 
+			$scope.$on('spotmop:tracklist:startRadio', function(event){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = [];
+				
+				angular.forEach( selectedTracks, function(track){
+					
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris.push( track.track.uri );
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris.push( track.uri );
+				});
+				
+				PlayerService.startRadio( selectedTracksUris );
+			});
+            
 			
 			/**
 			 * Selected Tracks >> Add to library
@@ -33997,12 +34028,8 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
     
 	SpotifyService.getMyArtists( userid )
-		.then( function( response ){ // successful
+		.then( function( response ){
 				$scope.artists = response.artists;
-				console.log( response.artists );
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
 			});
     
 	
@@ -34826,11 +34853,14 @@ angular.module('spotmop.player', [
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService',  'PusherService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, PusherService, LastfmService ){
 	
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
+        radio: {
+			enabled: false
+		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -34902,6 +34932,13 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
+	$rootScope.$on('spotmop:pusher:radio_changed', function( event, message ){
+		state.radio = message.data;
+	});
+	
+	$rootScope.$on('spotmop:pusher:got_radio', function(event, message){
+        state.radio = message.data;
+	});
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -35240,6 +35277,51 @@ angular.module('spotmop.services.player', [])
 			state.volume = percent;
 			MopidyService.setVolume( percent );
 		},
+        
+        /**
+         * Radio functionality
+         * TODO: Move this into a dedicated service
+         **/
+        startRadio: function(uris){
+            
+            var data = {
+				type: 'system',
+				method: 'change_radio',
+                enabled: 1,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            for( var i = 0; i < uris.length; i++){
+                switch( SpotifyService.uriType( uris[i] ) ){
+                    case 'artist':
+                        data.seed_artists.push( uris[i] );
+                        break;
+                    case 'track':
+                        data.seed_tracks.push( uris[i] );
+                        break;
+                }
+            }
+            
+			state.radio.enabled = true;
+			PusherService.send( data );
+        },
+        
+        stopRadio: function(){     
+            
+            var data = {
+				type: 'system',
+				method: 'change_radio',
+                enabled: 0,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+			state.radio.enabled = false;
+			PusherService.send( data );
+        },
 		
 		/**
 		 * Playback behavior toggles
@@ -35335,6 +35417,10 @@ angular.module('spotmop.queue', [])
 
 	$scope.clearQueue = function(){
 		MopidyService.clearCurrentTrackList();
+	};
+
+	$scope.stopRadio = function(){
+		PlayerService.stopRadio();
 	};
 	
 	
@@ -36304,6 +36390,7 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
+			
 			var self = this;
 			if( typeof(at_position) === 'undefined' ) var at_position = 0;
 			
@@ -37013,6 +37100,7 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
+					service.send({ type: 'system', method: 'get_radio', data: {} });
 					this.isConnected = true;
 				}
 

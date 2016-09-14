@@ -1,26 +1,26 @@
 from __future__ import unicode_literals
 
-import logging
-import os
+import logging, os, json
 import tornado.web
 import tornado.websocket
-import json
-
-from services.upgrade import upgrade
-from services.pusher import pusher
-from services.auth import auth
-from services.queuer import queuer
+from frontend import SpotmopFrontend
 from mopidy import config, ext
 
-__version__ = '2.9.2'
-__ext_name__ = 'spotmop'
-__verbosemode__ = False
+# import our other Spotmop classes
+import upgrade, pusher, auth, radio
 
 logger = logging.getLogger(__name__)
+__version__ = '2.9.1'
 
-class SpotmopExtension(ext.Extension):
+##
+# Core extension class
+#
+# Loads config and gets the party started. Initiates any additional frontends, etc.
+##
+class SpotmopExtension( ext.Extension ):
+
     dist_name = 'Mopidy-Spotmop'
-    ext_name = __ext_name__
+    ext_name = 'spotmop'
     version = __version__
 
     def get_default_config(self):
@@ -34,35 +34,19 @@ class SpotmopExtension(ext.Extension):
         return schema
 
     def setup(self, registry):
-
+        
         # Add web extension
         registry.add('http:app', {
             'name': self.ext_name,
-            'factory': spotmop_client_factory
+            'factory': factory
         })
-
-        logger.info('Starting Spotmop web client '+ self.version)
-
-class ArtworkHandler(tornado.web.RequestHandler):
-    def get(self, file):
-        self.write("You requested the file " + file)
         
-def spotmop_client_factory(config, core):
+        # add our frontend
+        registry.add('frontend', SpotmopFrontend)
+        
+def factory(config, core):
 
-	# TODO create minified version of the project for production (or use Bower or Grunt for building??)
-    environment = 'dev' if config.get(__ext_name__)['debug'] is True else 'prod'
-    spotmoppath = os.path.join( os.path.dirname(__file__), 'static')
-    
-    # PUSHER: TODO: need to fire this up from within the PusherHandler class... somehow
-    pusherport = str(config['spotmop']['pusherport'])
-    application = tornado.web.Application([
-        ('/pusher', pusher.PusherHandler, {
-                'version': __version__
-            }),
-    ])
-    application.listen(pusherport)
-    
-    logger.info( 'Pusher server running on []:'+ str(pusherport) )
+    path = os.path.join( os.path.dirname(__file__), 'static')
 	
     return [
 		(r'/upgrade', upgrade.UpgradeRequestHandler, {
@@ -78,7 +62,7 @@ def spotmop_client_factory(config, core):
 				'core': core,
 				'config': config
 			}),
-		(r'/queuer/([^/]*)', queuer.QueuerRequestHandler, {
+		(r'/radio', radio.RadioRequestHandler, {
 				'core': core,
 				'config': config
 			}),
@@ -86,7 +70,7 @@ def spotmop_client_factory(config, core):
             "path": config['local-images']['image_dir']
         }),
         (r'/(.*)', tornado.web.StaticFileHandler, {
-				"path": spotmoppath,
+				"path": path,
 				"default_filename": "index.html"
 			}),
     ]

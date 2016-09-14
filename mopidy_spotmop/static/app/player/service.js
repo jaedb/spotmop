@@ -6,11 +6,14 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService',  'PusherService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, PusherService, LastfmService ){
 	
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
+        radio: {
+			enabled: false
+		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -82,6 +85,13 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
+	$rootScope.$on('spotmop:pusher:radio_changed', function( event, message ){
+		state.radio = message.data;
+	});
+	
+	$rootScope.$on('spotmop:pusher:got_radio', function(event, message){
+        state.radio = message.data;
+	});
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -420,6 +430,51 @@ angular.module('spotmop.services.player', [])
 			state.volume = percent;
 			MopidyService.setVolume( percent );
 		},
+        
+        /**
+         * Radio functionality
+         * TODO: Move this into a dedicated service
+         **/
+        startRadio: function(uris){
+            
+            var data = {
+				type: 'system',
+				method: 'change_radio',
+                enabled: 1,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            for( var i = 0; i < uris.length; i++){
+                switch( SpotifyService.uriType( uris[i] ) ){
+                    case 'artist':
+                        data.seed_artists.push( uris[i] );
+                        break;
+                    case 'track':
+                        data.seed_tracks.push( uris[i] );
+                        break;
+                }
+            }
+            
+			state.radio.enabled = true;
+			PusherService.send( data );
+        },
+        
+        stopRadio: function(){     
+            
+            var data = {
+				type: 'system',
+				method: 'change_radio',
+                enabled: 0,
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+			state.radio.enabled = false;
+			PusherService.send( data );
+        },
 		
 		/**
 		 * Playback behavior toggles

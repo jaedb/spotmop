@@ -13,6 +13,10 @@
 			<i class="fa fa-plus"></i>
 			<span class="text">Queue</span>
 		</span>
+		<span class="menu-item" singleclick="startRadio()" ng-show="context != 'localtrack'">
+			<i class="fa fa-music"></i>
+			<span class="text">Radio</span>
+		</span>
 		<span class="menu-item" singleclick="addToPlaylist()" ng-show="context != 'localtrack'">
 			<i class="fa fa-plus"></i>
 			<span class="text">Playlist</span>
@@ -41,6 +45,9 @@
         </span>
 		<span class="menu-item" ng-show="context == 'track' || context == 'localtrack'" singleclick="playNext()">
             Play next
+        </span>
+		<span class="menu-item" ng-show="context != 'localtrack'" singleclick="startRadio()">
+            Start radio
         </span>
 		<span class="menu-item" ng-show="context == 'track' || context == 'localtrack'" singleclick="enqueue()">
             Add to queue
