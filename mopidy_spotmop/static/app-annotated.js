@@ -33430,7 +33430,13 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
-			
+				
+				// if we're in radio mode, turn it off
+				if( PlayerService.state().radio.enabled ){
+					PlayerService.stopRadio();
+					NotifyService.notify("Stopping radio");
+				}
+				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var firstSelectedTrack = selectedTracks[0];
 				
@@ -35303,7 +35309,6 @@ angular.module('spotmop.services.player', [])
             
 			state.radio.enabled = true;
 			PusherService.send( data );
-			NotifyService.notify('Starting radio');
         },
         
         stopRadio: function(){     
@@ -35319,7 +35324,6 @@ angular.module('spotmop.services.player', [])
             
 			state.radio.enabled = false;
 			PusherService.send( data );
-			NotifyService.notify('Stopping radio');
         },
 		
 		/**
@@ -36389,6 +36393,7 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
+			
 			var self = this;
 			if( typeof(at_position) === 'undefined' ) var at_position = 0;
 			

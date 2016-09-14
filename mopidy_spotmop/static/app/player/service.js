@@ -459,7 +459,6 @@ angular.module('spotmop.services.player', [])
             
 			state.radio.enabled = true;
 			PusherService.send( data );
-			NotifyService.notify('Starting radio');
         },
         
         stopRadio: function(){     
@@ -475,7 +474,6 @@ angular.module('spotmop.services.player', [])
             
 			state.radio.enabled = false;
 			PusherService.send( data );
-			NotifyService.notify('Stopping radio');
         },
 		
 		/**

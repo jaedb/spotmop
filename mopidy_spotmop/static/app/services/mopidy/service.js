@@ -198,6 +198,7 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
+			
 			var self = this;
 			if( typeof(at_position) === 'undefined' ) var at_position = 0;
 			

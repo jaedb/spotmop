@@ -227,7 +227,13 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
-			
+				
+				// if we're in radio mode, turn it off
+				if( PlayerService.state().radio.enabled ){
+					PlayerService.stopRadio();
+					NotifyService.notify("Stopping radio");
+				}
+				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var firstSelectedTrack = selectedTracks[0];
 				

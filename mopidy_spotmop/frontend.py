@@ -112,14 +112,17 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             
             # set our new radio state
             self.radio = new_state
-        
-            # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
-            self.core.tracklist.set_consume( True )
             
-            # get our radio to start playing
+            # clear all tracks
             self.core.tracklist.clear()
-            self.load_more_tracks()
-            self.core.playback.play()
+            
+            if new_state['enabled'] == 1:
+                # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
+                self.core.tracklist.set_consume( True )
+                
+                # load me some tracks, and start playing!
+                self.load_more_tracks()
+                self.core.playback.play()
             
             # notify clients
             pusher.send_message('radio_changed', self.radio )
