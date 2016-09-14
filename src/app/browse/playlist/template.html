@@ -85,7 +85,7 @@
 			</div>
 			<div class="info-item" ng-if="playlist.owner">
 				<a class="playlist-owner" ui-sref="browse.user({ uri: playlist.owner.uri })">
-                    <thumbnail size="small" images="playlist.owner.images"></thumbnail>	
+                    <thumbnail size="small" images="playlist.owner.images"></thumbnail>
                     <span class="name" ng-if="playlist.owner.display_name" ng-bind="playlist.owner.display_name"></span>
                     <span class="name" ng-if="!playlist.owner.display_name" ng-bind="playlist.owner.id"></span>
                 </a>

@@ -60,7 +60,6 @@ angular.module('spotmop', [
 	cfpLoadingBarProvider.parentSelector = 'body';
 })
 
-
 .run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })

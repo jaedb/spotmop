@@ -29830,7 +29830,6 @@ angular.module('spotmop', [
 	cfpLoadingBarProvider.parentSelector = 'body';
 })
 
-
 .run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })
@@ -31288,12 +31287,10 @@ angular.module('spotmop.browse.playlist', [])
                     $scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
                 
                     // get the owner
-                    if( $rootScope.spotifyAuthorized ){
-                        SpotifyService.getUser( $scope.playlist.owner.uri )
-                            .then( function( response ){
-                                $scope.playlist.owner = response;
-                            });
-                    }
+					SpotifyService.getUser( $scope.playlist.owner.uri )
+						.then( function( response ){
+							$scope.playlist.owner = response;
+						});
                 
                     // figure out if we're following this playlist
                     if( $rootScope.spotifyAuthorized ){
