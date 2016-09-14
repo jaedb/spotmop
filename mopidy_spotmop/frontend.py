@@ -47,14 +47,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     # Listen for core events, and update our frontend as required
     ##
     def track_playback_ended( self, tl_track, time_position ):
-        try:
-            tracklistLength = self.core.tracklist.length.get()        
-            if( tracklistLength <= 5 and state['radio_mode'] == 1 ):
-                self.load_more_tracks()
-                
-        except RuntimeError:
-            logger.warning('RadioHandler: Could not fetch tracklist length')
-            pass
+        self.check_for_radio_update()
         
         
     ##

@@ -60,6 +60,7 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
+					service.send({ type: 'system', method: 'get_radio', data: {} });
 					this.isConnected = true;
 				}
 

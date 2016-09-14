@@ -34855,7 +34855,9 @@ angular.module('spotmop.services.player', [])
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
-        radioMode: false,
+        radio: {
+			enabled: false
+		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -34927,8 +34929,12 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
-	$rootScope.$on('spotmop:pusher:radio_changed', function( event, state ){
-		state.radioMode = state.radio_mode;
+	$rootScope.$on('spotmop:pusher:radio_changed', function( event, message ){
+		state.radio = message.data;
+	});
+	
+	$rootScope.$on('spotmop:pusher:got_radio', function(event, message){
+        state.radio = message.data;
 	});
 	
 	// update our toggle states from the mopidy server
@@ -35295,6 +35301,7 @@ angular.module('spotmop.services.player', [])
                 }
             }
             
+			state.radio.enabled = true;
 			PusherService.send( data );
 			NotifyService.notify('Starting radio');
         },
@@ -35310,8 +35317,9 @@ angular.module('spotmop.services.player', [])
                 seed_tracks: []
             }
             
+			state.radio.enabled = false;
 			PusherService.send( data );
-			NotifyService.notify('Starting radio');
+			NotifyService.notify('Stopping radio');
         },
 		
 		/**
@@ -37090,6 +37098,7 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
+					service.send({ type: 'system', method: 'get_radio', data: {} });
 					this.isConnected = true;
 				}
 

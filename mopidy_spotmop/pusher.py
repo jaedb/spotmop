@@ -61,9 +61,6 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
 
     def check_origin(self, origin):
         return True
-        
-    def set_frontend(self, frontend):
-        self.frontend = frontend
   
     # when a new connection is opened
     def open(self):
@@ -110,6 +107,8 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         if messageJson['type'] == 'system':    
             if messageJson['method'] == 'change_radio':
                 self.frontend.change_radio( messageJson )
+            if messageJson['method'] == 'get_radio':
+                send_message( 'got_radio', self.frontend.radio )
         
         # standard message
         else:
