@@ -299,7 +299,6 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:offline', function(){
 		$rootScope.spotifyOnline = false;
 	});
-	
     
 	
 	/**
@@ -353,8 +352,8 @@ angular.module('spotmop', [
             
             SpotifyService.start();
             
-            PusherService.send({
-                type: 'soft_notification',
+            PusherService.broadcast({
+                action: 'soft_notification',
                 recipients: [ message.origin.connectionid ],
                 data: {
                     body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'

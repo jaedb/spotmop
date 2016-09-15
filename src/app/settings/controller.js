@@ -76,8 +76,9 @@ angular.module('spotmop.settings', [])
 	 * Send configuration to another connection
 	 **/
 	$scope.pushConfig = function( connection ){
-		PusherService.send({
-			type: 'config_push',
+		PusherService.broadcast({
+			type: 'broadcast',
+			action: 'config_push',
 			recipients: [ connection.connectionid ],
             data: {
                 mopidy: SettingsService.getSetting('mopidy'),
@@ -108,8 +109,9 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( 'pusher.name', name );
 		
 		// and go tell the server to update
-		PusherService.send({
-			type: 'client_updated', 
+		PusherService.query({
+			type: 'query',
+			action: 'client_updated', 
 			data: {
 				attribute: 'name',
 				oldVal: oldPusherName,
@@ -123,13 +125,13 @@ angular.module('spotmop.settings', [])
     
     function updatePusherConnections(){
         PusherService.getConnections()
-            .then( function(connections){
-                $scope.pusherConnections = connections;
+            .then( function( response ){
+                $scope.pusherConnections = response.data;
             });
     }
-    
+	
     // update whenever setup is completed, or another client opens a connection
-    updatePusherConnections();
+    $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });

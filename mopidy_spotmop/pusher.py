@@ -9,14 +9,40 @@ logger = logging.getLogger(__name__)
 connections = {}
 frontend = {}
   
-# send a message to all connections
-# @param event = string (event name, ie connection_opened)
+  
+##
+# Send a message to an individual connection
+#
+# @param recipient_connection_ids = array
+# @param type = string (type of event, ie connection_opened)
+# @param action = string (action method of this message)
+# @param message_id = string (used for callbacks)
 # @param data = array (any data required to include in our message)
-def send_message( event, data ):
+##
+def send_message( recipient_connection_id, type, action, message_id, data ):          
+    message = {
+        'type': type,
+        'action': action,
+        'message_id': message_id,
+        'data': data
+    }
+    connections[recipient_connection_id]['connection'].write_message( json_encode(message) )
+        
+        
+##
+# Broadcast a message to all recipients
+#
+# @param action = string
+# @param data = array (the body of our message to send)
+##
+def broadcast( action, data ):    
     for connection in connections.itervalues():
-        logger.debug('Pusher: broadcasting '+event)
-        message = '{"type": "'+event+'", "data": '+ json_encode( data ) +'}'
-        connection['connection'].write_message( message )
+        message = {
+            'type': 'broadcast',
+            'action': action,
+            'data': data
+        }
+        connection['connection'].write_message( json_encode(message) )
         
         
 # digest a protocol header into it's id/name parts
@@ -80,8 +106,8 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
 
         logger.debug( 'New Spotmop Pusher connection: '+ connectionid +' ('+ clientid +'/'+ username +')' )
 
-        # notify all other clients that a new user has connected
-        send_message( 'client_connected', client )
+        # broadcast to all connections that a new user has connected
+        broadcast( 'client_connected', client )
   
     def select_subprotocol(self, subprotocols):
         # select one of our subprotocol elements and return it. This confirms the connection has been accepted.
@@ -103,20 +129,31 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         # construct the origin client info
         messageJson['origin'] = { 'connectionid' : self.connectionid, 'clientid': connections[self.connectionid]['client']['clientid'], 'ip': self.request.remote_ip, 'username': connections[self.connectionid]['client']['username'] }
         
-        # system message
-        if messageJson['type'] == 'system':    
-            if messageJson['method'] == 'change_radio':
-                self.frontend.change_radio( messageJson )
-            if messageJson['method'] == 'get_radio':
-                send_message( 'got_radio', self.frontend.radio )
+        # query-based message that is expecting a response
+        if messageJson['type'] == 'query':
         
-        # standard message
-        else:
+            # change our radio state
+            if messageJson['action'] == 'change_radio':
+                self.frontend.change_radio( messageJson )
             
-            if messageJson['type'] == 'client_updated':
+            # fetch our current radio state
+            if messageJson['action'] == 'get_radio':
+                send_message( self.connectionid, 'response', 'get_radio_state', messageJson['message_id'], self.frontend.radio )
+            
+            # fetch our pusher connections
+            if messageJson['action'] == 'get_connections':
+                connectionsDetailsList = []
+                for connection in connections.itervalues():
+                    connectionsDetailsList.append(connection['client'])
+                send_message( self.connectionid, 'response', 'get_connections', messageJson['message_id'], connectionsDetailsList )
+            
+            # connection update requested
+            if messageJson['action'] == 'update_connection':
                 if messageJson['origin']['connectionid'] in connections:            
                     connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
-                    logger.debug( 'Spotmop Pusher connection '+ self.connectionid +' updated' )
+        
+        # point-and-shoot one-way broadcast
+        elif messageJson['type'] == 'broadcast':
 
             # recipients array has items, so only send to specific clients
             if messageJson.has_key('recipients'):  
@@ -137,7 +174,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     else:
                         connection['connection'].write_message(messageJson)
                         
-        logger.debug( 'Spotmop Pusher message received from '+ self.connectionid )
+        logger.debug( 'Pusher: Message received from '+ self.connectionid )
   
     # connection closed
     def on_close(self):
@@ -150,41 +187,10 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
             try:
                 del connections[self.connectionid]
             except:
-                logger.info( 'Failed to close connection to '+ self.connectionid )
-                
+                logger.info( 'Failed to close connection to '+ self.connectionid )                
             
-            send_message( 'client_disconnected', clientRemoved )
-  
-    def broadcast( self, type, body ):
-        send_message( type, body )
-
-            
-##
-# HTTP Requests handler
-#
-# Facilitates HTTP requests to get a list of all the current connections, etc
-# TODO: deprecate this in favor of a specific websocket message. Less endpoints the better!
-##
-class PusherRequestHandler(tornado.web.RequestHandler):
-
-    def set_default_headers(self):
-        self.set_header("Access-Control-Allow-Origin", "*")
-        self.set_header("Access-Control-Allow-Methods", "GET,POST")
-        self.set_header("Access-Control-Allow-Headers", "X-Requested-With")
-        self.set_header("Content-Type", "application/json")
-
-    def initialize(self, core, config):
-		self.core = core
-		self.config = config
+            broadcast( 'client_disconnected', clientRemoved )
         
-    # get method
-    def get(self, action):
-    
-        if action == 'connections':
-            connectionsDetailsList = []
-            for connection in connections.itervalues():
-                connectionsDetailsList.append(connection['client'])
-            self.write(json_encode(connectionsDetailsList))
-
-    
+        
+        
   

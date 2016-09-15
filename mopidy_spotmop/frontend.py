@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import logging, os, json, pykka, pylast, spotipy, pusher, auth
+import logging, os, json, pykka, pylast, spotipy, pusher, urllib, urllib2
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
@@ -23,6 +23,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         super(SpotmopFrontend, self).__init__()
         self.config = config
         self.core = core
+        self.spotify_token = False
         self.radio = {
             "enabled": 0,
             "seed_artists": [],
@@ -42,6 +43,9 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
             logger.error('Error starting Pusher: %s', e)
             self.stop()
+            
+        # get a spotify authentication token and store for future use
+        self.spotify_token = self.get_spotify_token()
     
     ##
     # Listen for core events, and update our frontend as required
@@ -74,7 +78,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     def load_more_tracks( self ):
     
         try:
-            token = auth.AuthHelper().get_token()
+            token = self.spotify_token
             token = token['access_token']
         except:
             logger.error('SpotmopFrontend: Spotify authentication failed')
@@ -125,6 +129,29 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
                 self.core.playback.play()
             
             # notify clients
-            pusher.send_message('radio_changed', self.radio )
+            pusher.send_message('broadcast', 'radio_changed', False, self.radio )
         
+    
+    ##
+    # Get a spotify authentication token
+    #
+    # Uses the Client Credentials Flow, so is invisible to the user. We need this token for
+    # any backend spotify requests (we don't tap in to Mopidy-Spotify, yet). Also used for
+    # passing token to frontend for javascript requests without use of the Authorization Code Flow.
+    ##
+    def get_spotify_token( self ):
+        url = 'https://accounts.spotify.com/api/token'
+        authorization = 'YTg3ZmI0ZGJlZDMwNDc1YjhjZWMzODUyM2RmZjUzZTI6ZDdjODlkMDc1M2VmNDA2OGJiYTE2NzhjNmNmMjZlZDY='
+
+        headers = {'Authorization' : 'Basic ' + authorization}
+        data = {'grant_type': 'client_credentials'}            
+        data_encoded = urllib.urlencode( data )
+        req = urllib2.Request(url, data_encoded, headers)
+
+        try:
+            response = urllib2.urlopen(req, timeout=30).read()
+            response_dict = json.loads(response)
+            return response_dict
+        except urllib2.HTTPError as e:
+            return e
         

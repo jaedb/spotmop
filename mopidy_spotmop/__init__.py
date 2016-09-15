@@ -54,18 +54,6 @@ def factory(config, core):
 				'config': config,
 				'version': __version__ 
 			}),
-		(r'/pusher/([^/]+)', pusher.PusherRequestHandler, {
-				'core': core,
-				'config': config
-			}),
-		(r'/auth', auth.AuthRequestHandler, {
-				'core': core,
-				'config': config
-			}),
-		(r'/radio', radio.RadioRequestHandler, {
-				'core': core,
-				'config': config
-			}),
         (r"/images/(.*)", tornado.web.StaticFileHandler, {
             "path": config['local-images']['image_dir']
         }),

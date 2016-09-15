@@ -30069,7 +30069,6 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:offline', function(){
 		$rootScope.spotifyOnline = false;
 	});
-	
     
 	
 	/**
@@ -30123,8 +30122,8 @@ angular.module('spotmop', [
             
             SpotifyService.start();
             
-            PusherService.send({
-                type: 'soft_notification',
+            PusherService.broadcast({
+                action: 'soft_notification',
                 recipients: [ message.origin.connectionid ],
                 data: {
                     body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'
@@ -37057,9 +37056,27 @@ angular.module('spotmop.services.pusher', [
 	
 	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
-	$rootScope.$on('spotmop:pusher:client_connected', function(event, data){
+	// generate a complex unique id
+	function generateMessageID(){
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		});
+	}
 	
-	});
+	
+	
+	var deferredRequests = [];
+
+	function resolveRequest(requestId, message ){
+		var response = JSON.parse( message );
+		deferredRequests[request_id].resolve( response );
+		delete deferredRequests[request_id];
+	}
+
+	function rejectRequest(requestId, message) {
+		deferredRequests[requestId].reject( message );
+	}
     
 	var service = {
 		pusher: {},
@@ -37100,63 +37117,76 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
-					service.send({ type: 'system', method: 'get_radio', data: {} });
-					this.isConnected = true;
+					//service.send({ type: 'system', method: 'get_radio', data: {} });
+					service.isConnected = true;
+					$rootScope.pusherOnline = true;
 				}
 
 				pusher.onmessage = function( response ){
                     
 					var message = JSON.parse(response.data);
 					console.log(message);
+					
+					if( message.type == 'response' ){
+						
+						if( typeof( deferredRequests[ message.message_id ] ) !== 'undefined' ){
+							deferredRequests[ message.message_id ].resolve( message );
+						}else{
+							console.error('Incoming response missing a matching request');
+						}
+						
+					}else if( message.type == 'broadcast'){
                     
-					$rootScope.$broadcast('spotmop:pusher:'+message.type, message);
-					
-					switch( message.type ){
-					
-						// initial connection status message, just parse it through quietly
-						case 'client_connected':
+						$rootScope.$broadcast('spotmop:pusher:'+message.action, message);
 						
-							// if the new connection is mine
-							if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
-								console.info('Pusher connection '+message.data.connectionid+' accepted');
-								
-								// detect if the core has been updated
-								if( message.data.version != SettingsService.getSetting('version.installed') ){
-									NotifyService.notify('New version detected, clearing caches...');      
-									$cacheFactory.get('$http').removeAll();
-									$templateCache.removeAll();
-									SettingsService.setSetting('version.installed', message.data.version);
-									SettingsService.runUpgrade();
-								}
-							}							
-							break;
+						switch( message.action ){
 						
-						case 'notification':
-							var title = '';
-							var body = '';
-							var icon = '';
-							if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
-							if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
-							if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
-							NotifyService.browserNotify( title, body, icon );
-							break;
+							// initial connection status message, just parse it through quietly
+							case 'client_connected':
 							
-						case 'soft_notification':
-							NotifyService.notify( message.data.body );
-							break;
-						
-						case 'enforced_refresh':
-							location.reload();
-							NotifyService.notify('System updating...');      
-							$cacheFactory.get('$http').removeAll();
-							$templateCache.removeAll();
-							break;
+								// if the new connection is mine
+								if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
+									console.info('Pusher connection '+message.data.connectionid+' accepted');
+									
+									// detect if the core has been updated
+									if( message.data.version != SettingsService.getSetting('version.installed') ){
+										NotifyService.notify('New version detected, clearing caches...');      
+										$cacheFactory.get('$http').removeAll();
+										$templateCache.removeAll();
+										SettingsService.setSetting('version.installed', message.data.version);
+										SettingsService.runUpgrade();
+									}
+								}							
+								break;
+							
+							case 'notification':
+								var title = '';
+								var body = '';
+								var icon = '';
+								if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
+								if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
+								if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
+								NotifyService.browserNotify( title, body, icon );
+								break;
+								
+							case 'soft_notification':
+								NotifyService.notify( message.data.body );
+								break;
+							
+							case 'enforced_refresh':
+								location.reload();
+								NotifyService.notify('System updating...');      
+								$cacheFactory.get('$http').removeAll();
+								$templateCache.removeAll();
+								break;
+						}
 					}
 				}
 
 				pusher.onclose = function(){
 					$rootScope.$broadcast('spotmop:pusher:offline');
 					service.isConnected = false;
+					$rootScope.pusherOnline = false;
                     setTimeout(function(){ service.start() }, 5000);
 				}
 				
@@ -37168,46 +37198,40 @@ angular.module('spotmop.services.pusher', [
 		},
 		
 		stop: function() {
-			this.pusher = null;
-			this.isConnected = false;
+			service.pusher = null;
+			service.isConnected = false;
+			$rootScope.pusherOnline = false;
 		},
 		
-		send: function( data ){            
+		// point-and-shoot one-way broadcast
+		broadcast: function( data ){
 			service.pusher.send( JSON.stringify(data) );
 		},
-        
-        /**
-         * Notify the Pusher service of our name
-         * @param name (string)
-         * @return deferred promise
-         **/
-        setMe: function( name ){
-            var id = SettingsService.getSetting('pusher.id');
-            $.ajax({
-                method: 'GET',
-                cache: false,
-                url: urlBase+'pusher/me?id='+id+'&name='+name
-            });
-        },
+		
+		// lookup message that we need to resolve
+		query: function( data ){
+			return $q(function(resolve, reject){
+				
+				// construct a unique id
+				data.message_id = generateMessageID();
+				
+				// send the payload
+				service.pusher.send( JSON.stringify(data) );
+				
+				// add query to our deferred responses
+				deferredRequests[ data.message_id ] = {
+					resolve: resolve,
+					reject: reject
+				};
+			});
+		},
         
         /**
          * Get a list of all active connections
          **/
         getConnections: function(){
-            var deferred = $q.defer();
-            $http({
-                    method: 'GET',
-                    cache: false,
-                    url: urlBase+'pusher/connections'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
+			var message = { type: 'query', action: 'get_connections' };
+			return service.query( message );
         }
 	};
     
@@ -38926,8 +38950,9 @@ angular.module('spotmop.settings', [])
 	 * Send configuration to another connection
 	 **/
 	$scope.pushConfig = function( connection ){
-		PusherService.send({
-			type: 'config_push',
+		PusherService.broadcast({
+			type: 'broadcast',
+			action: 'config_push',
 			recipients: [ connection.connectionid ],
             data: {
                 mopidy: SettingsService.getSetting('mopidy'),
@@ -38958,8 +38983,9 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( 'pusher.name', name );
 		
 		// and go tell the server to update
-		PusherService.send({
-			type: 'client_updated', 
+		PusherService.query({
+			type: 'query',
+			action: 'client_updated', 
 			data: {
 				attribute: 'name',
 				oldVal: oldPusherName,
@@ -38973,13 +38999,13 @@ angular.module('spotmop.settings', [])
     
     function updatePusherConnections(){
         PusherService.getConnections()
-            .then( function(connections){
-                $scope.pusherConnections = connections;
+            .then( function( response ){
+                $scope.pusherConnections = response.data;
             });
     }
-    
+	
     // update whenever setup is completed, or another client opens a connection
-    updatePusherConnections();
+    $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
     $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
