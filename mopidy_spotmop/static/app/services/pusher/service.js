@@ -173,6 +173,9 @@ angular.module('spotmop.services.pusher', [
 		query: function( data ){
 			return $q(function(resolve, reject){
 				
+				// set type
+				data.type = 'query';
+				
 				// construct a unique id
 				data.message_id = generateMessageID();
 				
@@ -191,8 +194,7 @@ angular.module('spotmop.services.pusher', [
          * Get a list of all active connections
          **/
         getConnections: function(){
-			var message = { type: 'query', action: 'get_connections' };
-			return service.query( message );
+			return service.query({ action: 'get_connections' });
         }
 	};
     

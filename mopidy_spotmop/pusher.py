@@ -131,14 +131,6 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         
         # query-based message that is expecting a response
         if messageJson['type'] == 'query':
-        
-            # change our radio state
-            if messageJson['action'] == 'change_radio':
-                self.frontend.change_radio( messageJson )
-            
-            # fetch our current radio state
-            if messageJson['action'] == 'get_radio':
-                send_message( self.connectionid, 'response', 'get_radio_state', messageJson['message_id'], self.frontend.radio )
             
             # fetch our pusher connections
             if messageJson['action'] == 'get_connections':
@@ -149,8 +141,29 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
             
             # connection update requested
             if messageJson['action'] == 'update_connection':
+                response = {}
                 if messageJson['origin']['connectionid'] in connections:            
                     connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
+                    response = connections[messageJson['origin']['connectionid']]['client']
+                send_message( self.connectionid, 'response', 'update_connection', messageJson['message_id'], {'response': 'ok'} )
+        
+            # change our radio state
+            if messageJson['action'] == 'change_radio':
+                self.frontend.change_radio( messageJson )
+                send_message( self.connectionid, 'response', 'change_radio', messageJson['message_id'], {'response': 'ok'} )
+            
+            # fetch our current radio state
+            if messageJson['action'] == 'get_radio':
+                send_message( self.connectionid, 'response', 'get_radio_state', messageJson['message_id'], self.frontend.radio )
+        
+            # get our spotify authentication token
+            if messageJson['action'] == 'get_spotify_token':
+                send_message( self.connectionid, 'response', 'get_spotify_token', messageJson['message_id'], self.frontend.spotify_token )
+        
+            # refresh our spotify authentication token
+            if messageJson['action'] == 'refresh_spotify_token':
+                new_token = self.frontend.refresh_spotify_token()
+                send_message( self.connectionid, 'response', 'refresh_spotify_token', messageJson['message_id'], new_token )
         
         # point-and-shoot one-way broadcast
         elif messageJson['type'] == 'broadcast':

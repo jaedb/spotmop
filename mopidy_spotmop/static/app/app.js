@@ -331,7 +331,11 @@ angular.module('spotmop', [
      **/
 	PusherService.start();
 	MopidyService.start();
-	SpotifyService.start();
+	
+	// wait for pusher to connect before we kick in spotify
+	$rootScope.$on('spotmop:pusher:online', function(event,data){
+		SpotifyService.start();
+	});
 	
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);

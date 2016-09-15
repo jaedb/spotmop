@@ -30101,7 +30101,11 @@ angular.module('spotmop', [
      **/
 	PusherService.start();
 	MopidyService.start();
-	SpotifyService.start();
+	
+	// wait for pusher to connect before we kick in spotify
+	$rootScope.$on('spotmop:pusher:online', function(event,data){
+		SpotifyService.start();
+	});
 	
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
@@ -37212,6 +37216,9 @@ angular.module('spotmop.services.pusher', [
 		query: function( data ){
 			return $q(function(resolve, reject){
 				
+				// set type
+				data.type = 'query';
+				
 				// construct a unique id
 				data.message_id = generateMessageID();
 				
@@ -37230,8 +37237,7 @@ angular.module('spotmop.services.pusher', [
          * Get a list of all active connections
          **/
         getConnections: function(){
-			var message = { type: 'query', action: 'get_connections' };
-			return service.query( message );
+			return service.query({ action: 'get_connections' });
         }
 	};
     
@@ -37248,34 +37254,43 @@ angular.module('spotmop.services.pusher', [
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, NotifyService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, PusherService, NotifyService ){
+	
+	var savedAuthenticationCredentials = {
+		authorization_code: false,
+		access_token: false,
+		refresh_token: false,
+		access_token_expiry: false
+	}
+	if( typeof($localStorage.spotify) !== 'undefined' ){		
+		if( typeof($localStorage.spotify.AuthorizationCode) !== 'undefined')
+			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.AuthorizationCode;
+		else if( typeof($localStorage.spotify.authorization_code) !== 'undefined')
+			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.authorization_code;
+		
+		if( typeof($localStorage.spotify.AccessToken) !== 'undefined')
+			savedAuthenticationCredentials.access_token = $localStorage.spotify.AccessToken;
+		else if( typeof($localStorage.spotify.access_token) !== 'undefined')
+			savedAuthenticationCredentials.access_token = $localStorage.spotify.access_token;
+		
+		if( typeof($localStorage.spotify.RefreshToken) !== 'undefined')
+			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.RefreshToken;
+		else if( typeof($localStorage.spotify.refresh_token) !== 'undefined')
+			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.refresh_token;
+	}
 	
 	// setup response object
     var service = {
 		
 		authenticationMethod: 'server',
+		backupToken: false,
+		authenticationCredentials: savedAuthenticationCredentials,
 		
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
 			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
-			
-			// set container for spotify storage
-			if( typeof($localStorage.spotify) === 'undefined' )
-				$localStorage.spotify = {};
-				
-			if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
-				$localStorage.spotify.AccessToken = null;
-				
-			if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
-				$localStorage.spotify.RefreshToken = null;
-				
-			if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
-				$localStorage.spotify.AuthorizationCode = null;
-				
-			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
-				$localStorage.spotify.AccessTokenExpiry = null;
 			
 			// listen for incoming messages from the authorization iframe
 			window.addEventListener('message', function(event){
@@ -37289,12 +37304,11 @@ angular.module('spotmop.services.spotify', [])
 				
 				console.info('Spotify authorization successful');
 				
-				// take our returned data, and save it to our localStorage
-				$localStorage.spotify.AuthorizationCode = data.authorization_code;
-				$localStorage.spotify.AccessToken = data.access_token;
-				$localStorage.spotify.RefreshToken = data.refresh_token;
-				$rootScope.spotifyOnline = true;
+				// take our returned data, and save it
+				$localStorage.spotify = data;
+				this.authenticationCredentials = data;
 				this.authenticationMethod = 'client';
+				$rootScope.spotifyOnline = true;
 				
 				// get my details and store 'em
 				service.getMe()
@@ -37321,6 +37335,10 @@ angular.module('spotmop.services.spotify', [])
 			$rootScope.$broadcast('spotmop:spotify:online');
 		},
 		
+		getToken: function(){
+			return this.authenticationCredentials.access_token;
+		},
+		
 		logout: function(){
 			$localStorage.spotify = {};
 			this.authenticationMethod = 'server';
@@ -37338,9 +37356,17 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		isAuthorized: function(){
-			if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken )
+			if( this.authenticationCredentials.authorization_code )
 				return true;
 			return false;
+		},
+		
+		setAccessToken: function( access_token, access_token_expiry ){
+			this.authenticationCredentials.access_token = access_token;
+			this.authenticationCredentials.access_token_expiry = access_token_expiry;
+			$localStorage.spotify = this.authenticationCredentials;
+			console.log( 'Set new token' );
+			console.log( $localStorage.spotify );
 		},
 		
 		/**
@@ -37350,49 +37376,42 @@ angular.module('spotmop.services.spotify', [])
 		 **/
         refreshToken: function(){
 			
-            var deferred = $q.defer();
-			var url = '';
+			var self = this;
+			var deferred = $q.defer();
 			
-			// sweet, client has authorized interface!
-			if( this.authenticationMethod == 'client' ){
-			
-				url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
-			
-			// client hasn't authorized spotmop with spotify, so let's just use the backend
-			}else if( this.authenticationMethod == 'server' ){
+			if( this.authenticationMethod == 'server' ){
 				
-				var mopidyhost = SettingsService.getSetting("mopidy.host");
-				if( !mopidyhost ) mopidyhost = window.location.hostname;
-				var mopidyport = SettingsService.getSetting("mopidy.port");
-				if( !mopidyport ) mopidyport = "6680";
-				url = '//'+mopidyhost+':'+mopidyport+'/spotmop/auth';
-			
-			// no authentication method, so cannot refresh token!
-			}else{
-				return false;
+				PusherService.query({ action: 'refresh_spotify_token' })
+					.then( function(response){
+						self.setAccessToken( response.data.access_token, new Date().getTime() + 3600000 );
+						deferred.resolve( response.data );
+					});
+				
+			}else if( this.authenticationMethod == 'client' ){
+				
+				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+this.authenticationCredentials.refresh_token;
+							
+				$http({
+						method: 'GET',
+						url: url,
+						dataType: "json",
+						async: false,
+						timeout: 10000
+					})
+					.success(function( response ){
+						
+						// check for error response
+						if( typeof(response.error) !== 'undefined' ){
+							NotifyService.error('Spotify authorization error: '+response.error_description);
+							$rootScope.spotifyOnline = false;
+							deferred.reject( response.error.message );
+						}else{							
+							self.setAccessToken( response.access_token, new Date().getTime() + 3600000 );
+							$rootScope.spotifyOnline = true;					
+							deferred.resolve( response );
+						}
+					});
 			}
-			
-            $http({
-					method: 'GET',
-					url: url,
-					dataType: "json",
-					async: false,
-					timeout: 10000
-				})
-                .success(function( response ){
-					
-					// check for error response
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error('Spotify authorization error: '+response.error_description);
-						$rootScope.spotifyOnline = false;
-						deferred.reject( response.error.message );
-					}else{
-						$localStorage.spotify.AccessToken = response.access_token;
-						$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
-						$rootScope.spotifyOnline = true;					
-						deferred.resolve( response );
-					}
-                });
 				
             return deferred.promise;
         },
@@ -37457,7 +37476,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: $url,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37490,7 +37509,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37542,7 +37561,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following/contains?type='+type+'&ids='+id,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37604,7 +37623,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/tracks/?limit=50',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37640,7 +37659,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: trackids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37678,7 +37697,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: albumids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37710,7 +37729,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: albumids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37744,7 +37763,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: trackids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37773,7 +37792,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following?type=artist',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37806,7 +37825,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/albums?limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -37835,7 +37854,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37864,7 +37883,7 @@ angular.module('spotmop.services.spotify', [])
 					cache: false,
 					url: urlBase+'me/following?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37893,7 +37912,7 @@ angular.module('spotmop.services.spotify', [])
 					cache: false,
 					url: urlBase+'me/following?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37921,7 +37940,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'tracks?ids='+trackids,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37952,7 +37971,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37978,7 +37997,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38008,7 +38027,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38037,7 +38056,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'PUT',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38066,7 +38085,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'DELETE',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38095,7 +38114,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38130,7 +38149,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { uris: tracks } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38170,7 +38189,7 @@ angular.module('spotmop.services.spotify', [])
 					}),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -38199,7 +38218,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38232,7 +38251,7 @@ angular.module('spotmop.services.spotify', [])
 					data: data,
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38269,7 +38288,7 @@ angular.module('spotmop.services.spotify', [])
 					data: data,
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38298,7 +38317,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -38349,7 +38368,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38372,7 +38391,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories/'+categoryid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38398,7 +38417,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38431,7 +38450,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38462,7 +38481,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: url,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38690,7 +38709,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/albums/contains?ids='+albumids_string,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){
@@ -38723,7 +38742,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ this.getToken()
 					}
 				})
                 .success(function( response ){		

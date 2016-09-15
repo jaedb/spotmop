@@ -47,11 +47,18 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         # get a spotify authentication token and store for future use
         self.spotify_token = self.get_spotify_token()
     
+    
+    # refresh our spotify token
+    def refresh_spotify_token( self ):
+        self.spotify_token = self.get_spotify_token()
+        return self.spotify_token
+    
     ##
     # Listen for core events, and update our frontend as required
     ##
     def track_playback_ended( self, tl_track, time_position ):
         self.check_for_radio_update()
+        
         
         
     ##
