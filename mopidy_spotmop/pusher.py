@@ -162,20 +162,23 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     connectionsDetailsList
                 )
             
-            # connection update requested
-            elif messageJson['action'] == 'update_connection':
-                response = {}
-                if messageJson['origin']['connectionid'] in connections:            
-                    connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
-                    response = connections[messageJson['origin']['connectionid']]['client']
-                    
+            # change connection's client username
+            elif messageJson['action'] == 'change_username':
+                
+                # username is the only value we allow clients to change
+                connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']
+                
+                # respond to request
                 send_message(
                     self.connectionid, 
                     'response', 
                     'update_connection', 
                     messageJson['message_id'], 
-                    {'response': 'ok'} 
+                    connections[messageJson['origin']['connectionid']]['client']
                 )
+                
+                # notify all clients of this change
+                broadcast( 'connection_updated', connections[messageJson['origin']['connectionid']]['client'] )
         
             # change our radio state
             elif messageJson['action'] == 'change_radio':
@@ -229,6 +232,21 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     messageJson['message_id'], 
                     data 
                 )
+        
+            # get system version and check for upgrade
+            elif messageJson['action'] == 'perform_upgrade':
+                data = self.frontend.perform_upgrade()
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    'perform_upgrade', 
+                    messageJson['message_id'], 
+                    data 
+                )
+                
+                # notify all clients of this change
+                broadcast( 'upgraded', data )
+                
             
             # not an action we recognise!
             else:
@@ -237,7 +255,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    False 
+                    { 'error': 'Unhandled action' } 
                 )
         
         # point-and-shoot one-way broadcast

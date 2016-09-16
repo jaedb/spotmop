@@ -55,6 +55,7 @@ angular.module('spotmop.services.spotify', [])
 				$rootScope.spotifyOnline = true;
 				
 				// get my details and store 'em
+				// TODO: Figure out why this isn't firing a response???
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
@@ -91,8 +92,11 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		/**
-		 * Authorize this Spotmop instance with a Spotify account
-		 * This is only needed once (in theory) for this account on this device. It is used to acquire access tokens (which expire)
+		 * Request authorization with a Spotify account
+		 *
+		 * When granted, this provides the highest-level of access to a user's account. It is required
+		 * for advanced account and playlist management actions. It is also necessary for the bulk of 
+		 * Spotmop's functionality.
 		 **/
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
@@ -255,6 +259,8 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
+					console.log('got me');
+					console.log(response);
                     deferred.resolve( response );
                 })
                 .error(function( response ){					

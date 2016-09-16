@@ -37224,12 +37224,19 @@ angular.module('spotmop.services.pusher', [
 			$rootScope.pusherOnline = false;
 		},
 		
-		// point-and-shoot one-way broadcast
+		// Point-and-shoot, one-way broadcast
 		broadcast: function( data ){
+			
+			// Set type
+			data.type = 'broadcast';
+			
+			// Send off the payload
+			// We do not expect a response, so no loitering buddy...
 			service.pusher.send( JSON.stringify(data) );
 		},
 		
-		// lookup message that we need to resolve
+		// A query that we require a response from the server for
+		// We create a unique ID to map responses with our deferred requests' ID
 		query: function( data ){
 			return $q(function(resolve, reject){
 				
@@ -37318,6 +37325,7 @@ angular.module('spotmop.services.spotify', [])
 				$rootScope.spotifyOnline = true;
 				
 				// get my details and store 'em
+				// TODO: Figure out why this isn't firing a response???
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
@@ -37354,8 +37362,11 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		/**
-		 * Authorize this Spotmop instance with a Spotify account
-		 * This is only needed once (in theory) for this account on this device. It is used to acquire access tokens (which expire)
+		 * Request authorization with a Spotify account
+		 *
+		 * When granted, this provides the highest-level of access to a user's account. It is required
+		 * for advanced account and playlist management actions. It is also necessary for the bulk of 
+		 * Spotmop's functionality.
 		 **/
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
@@ -37518,6 +37529,8 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
+					console.log('got me');
+					console.log(response);
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
@@ -38937,18 +38950,12 @@ angular.module('spotmop.settings', [])
         SpotifyService.logout();
     };
 	$scope.upgrade = function(){
-		/*
-		NotifyService.notify( 'Upgrade started' );
-		SettingsService.upgrade()
-			.then( function(response){				
-				if( response.status == 'error' ){
-					NotifyService.error( response.message );
-				}else{
-					NotifyService.notify( response.message );
-					SettingsService.setSetting('version.upgradeAvailable', false);
-				}
+		$scope.upgrading = true;
+		PusherService.query({ action: 'perform_upgrade' })
+			.then( function(response){
+				$scope.upgrading = false;
+				console.log( response );
 			});
-			*/
 	}
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
@@ -38961,7 +38968,6 @@ angular.module('spotmop.settings', [])
 	 **/
 	$scope.pushConfig = function( connection ){
 		PusherService.broadcast({
-			type: 'broadcast',
 			action: 'config_push',
 			recipients: [ connection.connectionid ],
             data: {
@@ -38978,7 +38984,6 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
-	var oldPusherName = SettingsService.getSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
 	
 		// update our setting storage
@@ -38987,16 +38992,9 @@ angular.module('spotmop.settings', [])
 		// and go tell the server to update
 		PusherService.query({
 			type: 'query',
-			action: 'client_updated', 
-			data: {
-				attribute: 'name',
-				oldVal: oldPusherName,
-				newVal: name
-			}
+			action: 'change_username', 
+			data: name
 		});
-		
-		// and now update our old one
-		oldPusherName = name;
 	};	
     
     function updatePusherConnections(){
@@ -39008,9 +39006,9 @@ angular.module('spotmop.settings', [])
 	
     // update whenever setup is completed, or another client opens a connection
     $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
-    //$rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    //$rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    //$rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
+    $rootScope.$on('spotmop:pusher:connection_updated', function(event, data){ updatePusherConnections(); });
 }])
 
 

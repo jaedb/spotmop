@@ -164,6 +164,18 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             return e
         
     ##
+    # Perform a module upgrade
+    #
+    # Upgrade myself to the latest version available on PyPi
+    ##
+    def perform_upgrade( self ):
+    
+        # TODO
+    
+        return self.get_version()
+        
+        
+    ##
     # Get Spotmop version, and check for updates
     #
     # We compare our version with the latest available on GitHub

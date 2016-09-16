@@ -163,12 +163,19 @@ angular.module('spotmop.services.pusher', [
 			$rootScope.pusherOnline = false;
 		},
 		
-		// point-and-shoot one-way broadcast
+		// Point-and-shoot, one-way broadcast
 		broadcast: function( data ){
+			
+			// Set type
+			data.type = 'broadcast';
+			
+			// Send off the payload
+			// We do not expect a response, so no loitering buddy...
 			service.pusher.send( JSON.stringify(data) );
 		},
 		
-		// lookup message that we need to resolve
+		// A query that we require a response from the server for
+		// We create a unique ID to map responses with our deferred requests' ID
 		query: function( data ){
 			return $q(function(resolve, reject){
 				
