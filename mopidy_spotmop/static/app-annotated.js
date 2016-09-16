@@ -37075,8 +37075,6 @@ angular.module('spotmop.services.pusher', [
 		});
 	}
 	
-	
-	
 	var deferredRequests = [];
 
 	function resolveRequest(requestId, message ){
@@ -37088,11 +37086,18 @@ angular.module('spotmop.services.pusher', [
 	function rejectRequest(requestId, message) {
 		deferredRequests[requestId].reject( message );
 	}
+	
+	var state = {
+		isConnected: false,
+        connections: []
+    }
     
 	var service = {
+        
+        state: function(){
+            return state;
+        },
 		pusher: {},
-		
-		isConnected: false,
 		
 		start: function(){
             var self = this;
@@ -37128,8 +37133,8 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
-					service.isConnected = true;
-					$rootScope.pusherOnline = true;
+					state.isConnected = true;
+                    service.updateConnections();
 				}
 
 				pusher.onmessage = function( response ){
@@ -37153,7 +37158,9 @@ angular.module('spotmop.services.pusher', [
 						
 							// initial connection status message, just parse it through quietly
 							case 'client_connected':
-							
+                                
+                                service.updateConnections();
+                                
 								// if the new connection is mine
 								if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
 									console.info('Pusher connection '+message.data.connectionid+' accepted');
@@ -37168,6 +37175,14 @@ angular.module('spotmop.services.pusher', [
 									}
 								}							
 								break;
+						
+							case 'client_disconnected':                                
+                                service.updateConnections();
+                                break;
+						
+							case 'connection_updated':                                
+                                service.updateConnections();
+                                break;
 							
 							case 'notification':
 								var title = '';
@@ -37199,8 +37214,7 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onclose = function(){
 					$rootScope.$broadcast('spotmop:pusher:offline');
-					service.isConnected = false;
-					$rootScope.pusherOnline = false;
+					state.isConnected = false;
                     setTimeout(function(){ service.start() }, 5000);
 				}
 				
@@ -37213,7 +37227,7 @@ angular.module('spotmop.services.pusher', [
 		
 		stop: function() {
 			service.pusher = null;
-			service.isConnected = false;
+			state.isConnected = false;
 			$rootScope.pusherOnline = false;
 		},
 		
@@ -37253,8 +37267,11 @@ angular.module('spotmop.services.pusher', [
         /**
          * Get a list of all active connections
          **/
-        getConnections: function(){
-			return service.query({ action: 'get_connections' });
+        updateConnections: function(){
+			service.query({ action: 'get_connections' })
+                .then( function(response){
+                    state.connections = response.data;
+                });
         }
 	};
     
@@ -38926,6 +38943,7 @@ angular.module('spotmop.settings', [])
 	// load our current settings into the template
 	$scope.version;
 	$scope.storage = SettingsService.getSettings();
+    $scope.pusher = PusherService;
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
@@ -38985,20 +39003,7 @@ angular.module('spotmop.settings', [])
 			action: 'change_username', 
 			data: name
 		});
-	};	
-    
-    function updatePusherConnections(){
-        PusherService.getConnections()
-            .then( function( response ){
-                $scope.pusherConnections = response.data;
-            });
-    }
-	
-    // update whenever setup is completed, or another client opens a connection
-    $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:connection_updated', function(event, data){ updatePusherConnections(); });
+	};
 }])
 
 

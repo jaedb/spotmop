@@ -270,7 +270,12 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
             if messageJson.has_key('recipients'):  
                 for connectionid in messageJson['recipients']:
                     connectionid = connectionid.encode("utf-8")
-                    connections[connectionid]['connection'].write_message(messageJson)
+                    
+                    # make sure we actually have a connection matching the provided connectionid
+                    if connectionid in connections:
+                        connections[connectionid]['connection'].write_message(messageJson)
+                    else:
+                        logger.warn('Pusher: Tried to broadcast to connectionid '+connectionid+' but it doesn\'t exist!');
 
             # empty, so send to all clients
             else:    

@@ -26,6 +26,7 @@ angular.module('spotmop.settings', [])
 	// load our current settings into the template
 	$scope.version;
 	$scope.storage = SettingsService.getSettings();
+    $scope.pusher = PusherService;
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
@@ -85,20 +86,7 @@ angular.module('spotmop.settings', [])
 			action: 'change_username', 
 			data: name
 		});
-	};	
-    
-    function updatePusherConnections(){
-        PusherService.getConnections()
-            .then( function( response ){
-                $scope.pusherConnections = response.data;
-            });
-    }
-	
-    // update whenever setup is completed, or another client opens a connection
-    $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:connection_updated', function(event, data){ updatePusherConnections(); });
+	};
 })
 
 

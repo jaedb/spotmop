@@ -210,7 +210,8 @@
                 <div class="field current-connections">
                     <div class="label">Users connected</div>
                     <div class="input readonly">
-                        <div ng-repeat="connection in pusherConnections">
+                    
+                        <div ng-repeat="connection in pusher.state().connections">
                             <span class="min-width w150 name">
                                 <span ng-bind="connection.username | urlDecode"></span>
                                 <span ng-if="connection.connectionid == storage.pusher.connectionid">(you)</span>

@@ -3,9 +3,8 @@ from __future__ import unicode_literals
 import logging, os, json
 import tornado.web
 import tornado.websocket
-from frontend import SpotmopFrontend
 from mopidy import config, ext
-import pusher
+from frontend import SpotmopFrontend
 
 logger = logging.getLogger(__name__)
 __version__ = '2.10.0'
