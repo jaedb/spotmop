@@ -26,10 +26,10 @@
 			</form>
 		</div>
            
-        <div ng-if="!settings.search.type || settings.search.type == 'any'">
+        <div ng-if="!settings.state().search.type || settings.state().search.type == 'any'">
         
             <div class="search-results-section artists" ng-if="results.artists.length > 0">
-                <h4 class="section-title"><a ng-click="settings.search.type = 'artist'">Artists</a></h4>	
+                <h4 class="section-title"><a ng-click="settings.state().search.type = 'artist'">Artists</a></h4>	
                 <div class="artist-items square-panels">
                     <div class="item-container" ng-repeat="artist in results.artists | limitTo: 6 track by $index">
                         <a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
@@ -48,7 +48,7 @@
             </div>
             
             <div class="search-results-section albums" ng-if="results.albums.length > 0">
-                <h4 class="section-title"><a ng-click="settings.search.type = 'album'">Albums</a></h4>	
+                <h4 class="section-title"><a ng-click="settings.state().search.type = 'album'">Albums</a></h4>	
                 <div class="album-items square-panels">
                     <div class="item-container" ng-repeat="album in results.albums | limitTo: 6 track by $index">
                         <a ui-sref="browse.album({ uri: album.uri })" class="square-panel album"
@@ -67,7 +67,7 @@
             </div>
 			
             <div class="search-results-section playlists" ng-if="results.playlists.length > 0">
-                <h4 class="section-title"><a ng-click="settings.search.type = 'playlists'">Playlists</a></h4>	
+                <h4 class="section-title"><a ng-click="settings.state().search.type = 'playlists'">Playlists</a></h4>	
                 <div class="album-items square-panels">
                     <div class="item-container" ng-repeat="playlist in results.playlists | limitTo: 6 track by $index">
                         <a ui-sref="browse.playlist({ uri: playlist.uri })" class="square-panel playlist"
@@ -94,7 +94,7 @@
         
         <!-- VIEW SPLIT -->
         
-        <div ng-if="settings.search.type == 'artist'">
+        <div ng-if="settings.state().search.type == 'artist'">
             <div ng-if="results.artists">
                 <div class="artist-items square-panels">
                     <div class="item-container" ng-repeat="artist in results.artists track by $index">
@@ -118,7 +118,7 @@
         
         <!-- VIEW SPLIT -->
         
-        <div ng-if="settings.search.type == 'album'">
+        <div ng-if="settings.state().search.type == 'album'">
             <div ng-if="results.albums">
                 <div class="album-items square-panels">
                     <div class="item-container" ng-repeat="album in results.albums track by $index">
@@ -142,7 +142,7 @@
         
         <!-- VIEW SPLIT -->
         
-        <div ng-if="settings.search.type == 'track_name'">
+        <div ng-if="settings.state().search.type == 'track_name'">
             <tracklist ng-if="results.tracks" tracks="results.tracks" type="track" class="tracklist search-results"></tracklist>
         </div>
         

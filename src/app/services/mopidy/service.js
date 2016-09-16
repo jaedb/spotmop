@@ -319,7 +319,7 @@ angular.module('spotmop.services.mopidy', [
 			var spotifyuser = SettingsService.getSetting('spotifyuser');  
 			if( spotifyuser ) icon = spotifyuser.images[0].url;
             
-            PusherService.send({
+            PusherService.broadcast({
 				type: 'notification',
 				ignore_self: true,
                 data: {

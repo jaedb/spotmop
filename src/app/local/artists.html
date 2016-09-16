@@ -22,8 +22,8 @@
         
         <!-- GRID VIEW -->
         
-        <div class="artist-items square-panels" ng-if="!settings.local.view || settings.local.view == 'grid'">
-            <div class="item-container" ng-repeat="artist in artists | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by artist.uri">
+        <div class="artist-items square-panels" ng-if="!settings.state().local.view || settings.state().local.view == 'grid'">
+            <div class="item-container" ng-repeat="artist in artists | orderBy:settings.state().local.sortField:settings.state().local.sortReverse | limitTo:limit track by artist.uri">
                 <a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel artist"
                     candrag
                     dragobj="artist"
@@ -40,18 +40,18 @@
         
         <!-- LIST VIEW -->
 		
-		<div class="artist-items list" ng-if="settings.local.view == 'list'">
+		<div class="artist-items list" ng-if="settings.state().local.view == 'list'">
             <div class="list-item header">
                 <div class="col w100">
                     Name
-                    <span ng-show="settings.local.sortField == 'name'">
-                        <i ng-show="!settings.local.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.local.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().local.sortField == 'name'">
+                        <i ng-show="!settings.state().local.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().local.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="artist in artists | orderBy:settings.local.sortField:settings.local.sortReverse | limitTo:limit track by artist.uri">
+			<div class="item-container" ng-repeat="artist in artists | orderBy:settings.state().local.sortField:settings.state().local.sortReverse | limitTo:limit track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
                     <div class="col w100 name">
                         <span ng-bind="artist.name"></span>

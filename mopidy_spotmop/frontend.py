@@ -108,39 +108,55 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             
     
     ##
-    # Change our radio config
+    # Start radio
+    #
+    # Take the provided radio details, and start a new radio process
     ##
-    def change_radio( self, messageJson ):
+    def start_radio( self, new_state ):
         
-        # reset state to begin with
-        old_state = self.radio
-        new_state = {}
+        # TODO: validate payload has the required seed values
         
-        # set each of our properties, to match the JSON data
-        new_state['enabled'] = messageJson['enabled']
-        new_state['seed_artists'] = messageJson['seed_artists']
-        new_state['seed_genres'] = messageJson['seed_genres']
-        new_state['seed_tracks'] = messageJson['seed_tracks']
-            
-        # make sure we've actually changed something
-        if( old_state['enabled'] != new_state['enabled'] ) or ( old_state['seed_artists'] != new_state['seed_artists'] ) or ( old_state['seed_genres'] != new_state['seed_genres'] ) or ( old_state['seed_tracks'] != new_state['seed_tracks'] ):
-            
-            # set our new radio state
-            self.radio = new_state
-            
-            # clear all tracks
-            self.core.tracklist.clear()
-            
-            if new_state['enabled'] == 1:
-                # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
-                self.core.tracklist.set_consume( True )
-                
-                # load me some tracks, and start playing!
-                self.load_more_tracks()
-                self.core.playback.play()
-            
-            # notify clients
-            pusher.send_message('broadcast', 'radio_changed', False, self.radio )
+        # set our new radio state
+        self.radio = new_state
+        self.radio['enabled'] = 1;
+        
+        # clear all tracks
+        self.core.tracklist.clear()
+        
+        # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
+        self.core.tracklist.set_consume( True )
+        
+        # load me some tracks, and start playing!
+        self.load_more_tracks()
+        self.core.playback.play()
+        
+        # notify clients
+        pusher.broadcast( 'radio_started', self.radio )
+        
+        # return new radio state to initial call
+        return self.radio
+        
+    ##
+    # Stop radio
+    ##
+    def stop_radio( self ):
+        
+        # reset radio
+        self.radio = {
+            "enabled": 0,
+            "seed_artists": [],
+            "seed_genres": [],
+            "seed_tracks": []
+        }
+        
+        # clear all tracks
+        self.core.tracklist.clear()
+        
+        # notify clients
+        pusher.broadcast( 'radio_stopped', self.radio )
+        
+        # return new radio state to initial call
+        return self.radio
         
     
     ##

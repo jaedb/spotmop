@@ -37,9 +37,9 @@
         
         <!-- GRID VIEW -->
 		
-		<div class="playlist-items square-panels" ng-if="!settings.playlists.view || settings.playlists.view == 'grid'">
+		<div class="playlist-items square-panels" ng-if="!settings.state().playlists.view || settings.state().playlists.view == 'grid'">
 			<div ng-if="playlists().length">
-				<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.playlists.sortField:settings.playlists.sortReverse track by playlist.uri">
+				<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.state().playlists.sortField:settings.state().playlists.sortReverse track by playlist.uri">
 					<a
                         ui-sref="library.playlist({ uri: {{ 'playlist.uri' }} })"
                         class="square-panel playlist"
@@ -63,27 +63,27 @@
         
         <!-- LIST VIEW -->
 		
-		<div class="playlist-items list" ng-if="settings.playlists.view == 'list'">
+		<div class="playlist-items list" ng-if="settings.state().playlists.view == 'list'">
             <div class="list-item header">
                 <div class="col w40">
                     Name
-                    <span ng-show="settings.playlists.sortField == 'name'">
-                        <i ng-show="!settings.playlists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.playlists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().playlists.sortField == 'name'">
+                        <i ng-show="!settings.state().playlists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().playlists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w20">
                     Owner
-                    <span ng-show="settings.playlists.sortField == 'owner.id'">
-                        <i ng-show="!settings.playlists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.playlists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().playlists.sortField == 'owner.id'">
+                        <i ng-show="!settings.state().playlists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().playlists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w10">
                     Tracks
-                    <span ng-show="settings.playlists.sortField == 'tracks.total'">
-                        <i ng-show="!settings.playlists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.playlists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().playlists.sortField == 'tracks.total'">
+                        <i ng-show="!settings.state().playlists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().playlists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w10">
@@ -97,7 +97,7 @@
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.playlists.sortField:settings.playlists.sortReverse track by playlist.uri">
+			<div class="item-container" ng-repeat="playlist in playlists() | orderBy:settings.state().playlists.sortField:settings.state().playlists.sortReverse track by playlist.uri">
 				<div ui-sref="browse.playlist({ uri: playlist.uri })" class="list-item state-link">
                     <div class="col w40 name">
                         <span ng-bind="playlist.name"></span>

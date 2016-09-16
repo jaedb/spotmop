@@ -143,7 +143,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     $scope.limit = 50;
 	var uri;
@@ -231,7 +230,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 		
-	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
     $scope.limit = 50;
 	var uri;

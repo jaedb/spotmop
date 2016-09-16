@@ -25,7 +25,7 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.storage = SettingsService.getSettings();
+	$scope.settings = SettingsService;
     $scope.pusher = PusherService;
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){

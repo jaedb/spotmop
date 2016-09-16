@@ -85,12 +85,19 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
-	$rootScope.$on('spotmop:pusher:radio_changed', function( event, message ){
+	$rootScope.$on('spotmop:pusher:online', function( event, message ){
+		PusherService.query({ action: 'get_radio' })
+            .then( function(response){
+                state.radio = response.data;
+            });
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
 		state.radio = message.data;
 	});
 	
-	$rootScope.$on('spotmop:pusher:got_radio', function(event, message){
-        state.radio = message.data;
+	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
+		state.radio = message.data;
 	});
 	
 	// update our toggle states from the mopidy server
@@ -438,9 +445,7 @@ angular.module('spotmop.services.player', [])
         startRadio: function(uris){
             
             var data = {
-				type: 'system',
-				method: 'change_radio',
-                enabled: 1,
+				action: 'start_radio',
                 seed_artists: [],
                 seed_genres: [],
                 seed_tracks: []
@@ -457,23 +462,17 @@ angular.module('spotmop.services.player', [])
                 }
             }
             
-			state.radio.enabled = true;
-			PusherService.send( data );
+			PusherService.query( data )
+                .then( function(response){
+                    state.radio = response.data;
+                });
         },
         
-        stopRadio: function(){     
-            
-            var data = {
-				type: 'system',
-				method: 'change_radio',
-                enabled: 0,
-                seed_artists: [],
-                seed_genres: [],
-                seed_tracks: []
-            }
-            
-			state.radio.enabled = false;
-			PusherService.send( data );
+        stopRadio: function(){
+			PusherService.query({ action: 'stop_radio' })
+                .then( function(response){
+                    state.radio = response.data;
+                });
         },
 		
 		/**

@@ -30099,13 +30099,20 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	PusherService.start();
-	MopidyService.start();
+    $scope.settings = SettingsService;
+    $scope.settings.start();
+    
+    $scope.pusher = PusherService;
+    $scope.pusher.start();
+    
+    $scope.mopidy = MopidyService;
+    $scope.mopidy.start();
 	
 	// wait for pusher to connect before we kick in spotify
 	$rootScope.$on('spotmop:pusher:online', function(event,data){
-		SpotifyService.start();
-		PusherService.query({ action: 'get_version' })
+        $scope.spotify = SpotifyService;
+        $scope.spotify.start();
+		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
 				SettingsService.setSetting('version',response.data);
 				if( response.data.upgrade_available ){
@@ -34002,7 +34009,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'grid',
@@ -34088,7 +34094,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'detail',
@@ -34206,7 +34211,6 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.filterOptions = [
 			{
 				value: 'all',
@@ -34444,7 +34448,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     $scope.limit = 50;
 	var uri;
@@ -34532,7 +34535,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 		
-	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
     $scope.limit = 50;
 	var uri;
@@ -34942,12 +34944,19 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
-	$rootScope.$on('spotmop:pusher:radio_changed', function( event, message ){
+	$rootScope.$on('spotmop:pusher:online', function( event, message ){
+		PusherService.query({ action: 'get_radio' })
+            .then( function(response){
+                state.radio = response.data;
+            });
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
 		state.radio = message.data;
 	});
 	
-	$rootScope.$on('spotmop:pusher:got_radio', function(event, message){
-        state.radio = message.data;
+	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
+		state.radio = message.data;
 	});
 	
 	// update our toggle states from the mopidy server
@@ -35295,9 +35304,7 @@ angular.module('spotmop.services.player', [])
         startRadio: function(uris){
             
             var data = {
-				type: 'system',
-				method: 'change_radio',
-                enabled: 1,
+				action: 'start_radio',
                 seed_artists: [],
                 seed_genres: [],
                 seed_tracks: []
@@ -35314,23 +35321,17 @@ angular.module('spotmop.services.player', [])
                 }
             }
             
-			state.radio.enabled = true;
-			PusherService.send( data );
+			PusherService.query( data )
+                .then( function(response){
+                    state.radio = response.data;
+                });
         },
         
-        stopRadio: function(){     
-            
-            var data = {
-				type: 'system',
-				method: 'change_radio',
-                enabled: 0,
-                seed_artists: [],
-                seed_genres: [],
-                seed_tracks: []
-            }
-            
-			state.radio.enabled = false;
-			PusherService.send( data );
+        stopRadio: function(){
+			PusherService.query({ action: 'stop_radio' })
+                .then( function(response){
+                    state.radio = response.data;
+                });
         },
 		
 		/**
@@ -35489,7 +35490,6 @@ angular.module('spotmop.search', [])
  **/
 .controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService, SettingsService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.results = {
 		tracks: [],
 		albums: [],
@@ -36017,62 +36017,6 @@ angular.module('spotmop.services.dialog', [])
 
 
 /**
- * Dialog: Setup new user
- * Initial setup
- **/
-
-.directive('initialsetupdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
-			
-			$scope.settings = SettingsService.getSettings();
-			
-			// default to on
-			SettingsService.setSetting('spotify.authorizationenabled',true);
-			SettingsService.setSetting('keyboardShortcutsEnabled',true);
-			SettingsService.setSetting('pointerMode','default');
-		
-            $scope.saving = false;
-            $scope.save = function(){          
-				if( $scope.name && $scope.name != '' ){
-					
-					// set state to saving (this swaps save button for spinner)
-					$scope.saving = true;
-					
-					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('spotify.authorizationenabled') ){
-						SpotifyService.authorize();
-					}
-					
-					// perform the creation
-					SettingsService.setSetting('pusher.name', $scope.name);
-					
-					// and go tell the server to update
-					PusherService.send({
-						type: 'client_updated', 
-						data: {
-							attribute: 'name',
-							oldVal: '',
-							newVal: $scope.name
-						}
-					});
-					
-					DialogService.remove();
-				}else{
-					$scope.error = true;
-				}
-            }
-		}
-	};
-})
-
-
-/**
  * Dialog: Add asset to the queue by URI
  * Accepts whatever format is provided by the backends (ie spotify: soundcloud: local:)
  **/
@@ -36521,7 +36465,7 @@ angular.module('spotmop.services.mopidy', [
 			var spotifyuser = SettingsService.getSetting('spotifyuser');  
 			if( spotifyuser ) icon = spotifyuser.images[0].url;
             
-            PusherService.send({
+            PusherService.broadcast({
 				type: 'notification',
 				ignore_self: true,
                 data: {
@@ -38942,7 +38886,7 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.storage = SettingsService.getSettings();
+	$scope.settings = SettingsService;
     $scope.pusher = PusherService;
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
@@ -39057,10 +39001,20 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
+   
+    var state = {};
     
 	// setup response object
 	service = {
 		
+        state: function(){
+            return state;
+        },
+        
+        start: function(){
+            state = $localStorage;
+        },
+        
 		/**
 		 * Set a setting
 		 * @param setting = string (the setting to change)
@@ -39136,10 +39090,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		getSettings: function(){
-			return $localStorage;
 		},
 		
 		// perform post-upgrade commands

@@ -11,10 +11,20 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
+   
+    var state = {};
     
 	// setup response object
 	service = {
 		
+        state: function(){
+            return state;
+        },
+        
+        start: function(){
+            state = $localStorage;
+        },
+        
 		/**
 		 * Set a setting
 		 * @param setting = string (the setting to change)
@@ -90,10 +100,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		getSettings: function(){
-			return $localStorage;
 		},
 		
 		// perform post-upgrade commands

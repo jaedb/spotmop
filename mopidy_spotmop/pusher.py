@@ -157,7 +157,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message(
                     self.connectionid, 
                     'response', 
-                    'get_connections', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
                     connectionsDetailsList
                 )
@@ -172,7 +172,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message(
                     self.connectionid, 
                     'response', 
-                    'update_connection', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
                     connections[messageJson['origin']['connectionid']]['client']
                 )
@@ -180,15 +180,26 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 # notify all clients of this change
                 broadcast( 'connection_updated', connections[messageJson['origin']['connectionid']]['client'] )
         
-            # change our radio state
-            elif messageJson['action'] == 'change_radio':
-                self.frontend.change_radio( messageJson )
+            # start radio
+            elif messageJson['action'] == 'start_radio':
+                radio = self.frontend.start_radio( messageJson )
                 send_message( 
                     self.connectionid, 
                     'response', 
-                    'change_radio', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
-                    {'response': 'ok'} 
+                    radio
+                )
+        
+            # stop radio
+            elif messageJson['action'] == 'stop_radio':
+                radio = self.frontend.stop_radio()
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    messageJson['action'], 
+                    messageJson['message_id'], 
+                    radio
                 )
             
             # fetch our current radio state
@@ -196,7 +207,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message( 
                     self.connectionid, 
                     'response', 
-                    'get_radio_state', 
+                    messageJson['action'], 
                     messageJson['message_id'],
                     self.frontend.radio
                 )
@@ -206,7 +217,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message(
                     self.connectionid,
                     'response',
-                    'get_spotify_token',
+                    messageJson['action'],
                     messageJson['message_id'],
                     self.frontend.spotify_token
                 )
@@ -217,7 +228,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message( 
                     self.connectionid, 
                     'response', 
-                    'refresh_spotify_token', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
                     new_token 
                 )
@@ -228,7 +239,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message( 
                     self.connectionid, 
                     'response', 
-                    'get_version', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
                     data 
                 )
@@ -240,7 +251,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 send_message( 
                     self.connectionid, 
                     'response', 
-                    'perform_upgrade', 
+                    messageJson['action'], 
                     messageJson['message_id'], 
                     data 
                 )
