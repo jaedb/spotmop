@@ -8,7 +8,7 @@ from mopidy import config, ext
 import pusher
 
 logger = logging.getLogger(__name__)
-__version__ = '2.9.1'
+__version__ = '2.10.0'
 
 ##
 # Core extension class

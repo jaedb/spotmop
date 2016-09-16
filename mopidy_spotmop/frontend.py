@@ -6,6 +6,7 @@ import tornado.websocket
 import tornado.ioloop
 from mopidy import config, ext
 from mopidy.core import CoreListener
+from pkg_resources import parse_version
 
 # import logger
 logger = logging.getLogger(__name__)
@@ -169,14 +170,30 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     ##
     # Get Spotmop version, and check for updates
     #
-    # We compare our version with the latest available on GitHub
+    # We compare our version with the latest available on PyPi
     ##
     def get_version( self ):
+        
+        url = 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
+        req = urllib2.Request(url)
+        
+        try:
+            response = urllib2.urlopen(req, timeout=30).read()
+            response = json.loads(response)
+            latest_version = response['info']['version']
+        except urllib2.HTTPError as e:
+            latest_version = False
+        
+        # compare our versions, and convert result to boolean
+        upgrade_available = cmp( parse_version( latest_version ), parse_version( self.version ) )
+        upgrade_available = ( upgrade_available == 1 )
+        
+        # prepare our response
         data = {
             'version': self.version,
             'is_root': self.is_root,
-            'upgrade_available': True,
-            'new_version': '2.11.5' # TODO: Fetch from GitHub
+            'upgrade_available': upgrade_available,
+            'latest_version': latest_version
         }
         return data
         

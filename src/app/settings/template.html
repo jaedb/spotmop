@@ -64,7 +64,7 @@
 						<span ng-show="storage.version.upgrade_available">
 						
 							<span ng-show="storage.version.is_root">
-								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ storage.version.new_version }}</a>
+								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ storage.version.latest_version }}</a>
 								<a class="button secondary disabled" ng-show="upgrading"><i class="fa fa-spin fa-circle-o-notch"></i>&nbsp; Upgrading</a>
 							</span>
 							

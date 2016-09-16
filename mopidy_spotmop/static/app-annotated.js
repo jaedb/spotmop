@@ -30109,19 +30109,8 @@ angular.module('spotmop', [
 			.then( function(response){
 				SettingsService.setSetting('version',response.data);
 				if( response.data.upgrade_available ){
-					NotifyService.notify( 'New version ('+response.data.new_version+') available!' );
+					NotifyService.notify( 'New version ('+response.data.latest_version+') available!' );
 				}
-				//console.log( response );
-				/*
-				SettingsService.setSetting('version.latest', response);
-				if( SettingsService.getSetting('version.installed') < response ){
-					SettingsService.setSetting('version.upgradeAvailable',true);
-					NotifyService.notify( 'Upgrade is available!' );
-				}else{
-					SettingsService.setSetting('version.upgradeAvailable',false);
-					NotifyService.notify( 'You\'re already running the latest version' );
-				}
-				*/
 			});
 	});
 	
