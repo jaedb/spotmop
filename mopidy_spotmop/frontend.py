@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 
-import logging, os, json, pykka, pylast, spotipy, pusher, auth
+import logging, json, pykka, pylast, spotipy, pusher, urllib, urllib2, os, sys, mopidy_spotmop, subprocess
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 from mopidy import config, ext
 from mopidy.core import CoreListener
+from pkg_resources import parse_version
 
 # import logger
 logger = logging.getLogger(__name__)
@@ -23,6 +24,9 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         super(SpotmopFrontend, self).__init__()
         self.config = config
         self.core = core
+        self.spotify_token = False
+        self.version = mopidy_spotmop.__version__
+        self.is_root = ( os.geteuid() == 0 )
         self.radio = {
             "enabled": 0,
             "seed_artists": [],
@@ -31,6 +35,8 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         }
 
     def on_start(self):
+        
+        logger.info('Starting Spotmop '+self.version)
         
         # try and start a pusher server
         port = str(self.config['spotmop']['pusherport'])
@@ -42,12 +48,21 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
             logger.error('Error starting Pusher: %s', e)
             self.stop()
+            
+        # get a spotify authentication token and store for future use
+        self.spotify_token = self.get_spotify_token()
+    
+    
+    # refresh our spotify token
+    def refresh_spotify_token( self ):
+        self.spotify_token = self.get_spotify_token()
+        return self.spotify_token
     
     ##
     # Listen for core events, and update our frontend as required
     ##
     def track_playback_ended( self, tl_track, time_position ):
-        self.check_for_radio_update()
+        self.check_for_radio_update()        
         
         
     ##
@@ -74,7 +89,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     def load_more_tracks( self ):
     
         try:
-            token = auth.AuthHelper().get_token()
+            token = self.spotify_token
             token = token['access_token']
         except:
             logger.error('SpotmopFrontend: Spotify authentication failed')
@@ -93,38 +108,131 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             
     
     ##
-    # Change our radio config
+    # Start radio
+    #
+    # Take the provided radio details, and start a new radio process
     ##
-    def change_radio( self, messageJson ):
+    def start_radio( self, new_state ):
         
-        # reset state to begin with
-        old_state = self.radio
-        new_state = {}
+        # TODO: validate payload has the required seed values
         
-        # set each of our properties, to match the JSON data
-        new_state['enabled'] = messageJson['enabled']
-        new_state['seed_artists'] = messageJson['seed_artists']
-        new_state['seed_genres'] = messageJson['seed_genres']
-        new_state['seed_tracks'] = messageJson['seed_tracks']
-            
-        # make sure we've actually changed something
-        if( old_state['enabled'] != new_state['enabled'] ) or ( old_state['seed_artists'] != new_state['seed_artists'] ) or ( old_state['seed_genres'] != new_state['seed_genres'] ) or ( old_state['seed_tracks'] != new_state['seed_tracks'] ):
-            
-            # set our new radio state
-            self.radio = new_state
-            
-            # clear all tracks
-            self.core.tracklist.clear()
-            
-            if new_state['enabled'] == 1:
-                # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
-                self.core.tracklist.set_consume( True )
-                
-                # load me some tracks, and start playing!
-                self.load_more_tracks()
-                self.core.playback.play()
-            
-            # notify clients
-            pusher.send_message('radio_changed', self.radio )
+        # set our new radio state
+        self.radio = new_state
+        self.radio['enabled'] = 1;
+        
+        # clear all tracks
+        self.core.tracklist.clear()
+        
+        # explicitly set consume, to ensure we don't end up with a huge tracklist (and it's how a radio should 'feel')
+        self.core.tracklist.set_consume( True )
+        
+        # load me some tracks, and start playing!
+        self.load_more_tracks()
+        self.core.playback.play()
+        
+        # notify clients
+        pusher.broadcast( 'radio_started', self.radio )
+        
+        # return new radio state to initial call
+        return self.radio
+        
+    ##
+    # Stop radio
+    ##
+    def stop_radio( self ):
+        
+        # reset radio
+        self.radio = {
+            "enabled": 0,
+            "seed_artists": [],
+            "seed_genres": [],
+            "seed_tracks": []
+        }
+        
+        # clear all tracks
+        self.core.tracklist.clear()
+        
+        # notify clients
+        pusher.broadcast( 'radio_stopped', self.radio )
+        
+        # return new radio state to initial call
+        return self.radio
+        
+    
+    ##
+    # Get a spotify authentication token
+    #
+    # Uses the Client Credentials Flow, so is invisible to the user. We need this token for
+    # any backend spotify requests (we don't tap in to Mopidy-Spotify, yet). Also used for
+    # passing token to frontend for javascript requests without use of the Authorization Code Flow.
+    ##
+    def get_spotify_token( self ):
+        url = 'https://accounts.spotify.com/api/token'
+        authorization = 'YTg3ZmI0ZGJlZDMwNDc1YjhjZWMzODUyM2RmZjUzZTI6ZDdjODlkMDc1M2VmNDA2OGJiYTE2NzhjNmNmMjZlZDY='
+
+        headers = {'Authorization' : 'Basic ' + authorization}
+        data = {'grant_type': 'client_credentials'}            
+        data_encoded = urllib.urlencode( data )
+        req = urllib2.Request(url, data_encoded, headers)
+
+        try:
+            response = urllib2.urlopen(req, timeout=30).read()
+            response_dict = json.loads(response)
+            return response_dict
+        except urllib2.HTTPError as e:
+            return e
+        
+        
+    ##
+    # Get Spotmop version, and check for updates
+    #
+    # We compare our version with the latest available on PyPi
+    ##
+    def get_version( self ):
+        
+        url = 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
+        req = urllib2.Request(url)
+        
+        try:
+            response = urllib2.urlopen(req, timeout=30).read()
+            response = json.loads(response)
+            latest_version = response['info']['version']
+        except urllib2.HTTPError as e:
+            latest_version = False
+        
+        # compare our versions, and convert result to boolean
+        upgrade_available = cmp( parse_version( latest_version ), parse_version( self.version ) )
+        upgrade_available = ( upgrade_available == 1 )
+        
+        # prepare our response
+        data = {
+            'version': self.version,
+            'is_root': self.is_root,
+            'upgrade_available': upgrade_available,
+            'latest_version': latest_version
+        }
+        return data
+        
+        
+    ##
+    # Upgrade Spotmop module
+    #
+    # Upgrade myself to the latest version available on PyPi
+    ##
+    def perform_upgrade( self ):
+        try:
+            subprocess.check_call(["pip", "install", "--upgrade", "Mopidy-Spotmop"])
+            return True
+        except subprocess.CalledProcessError:
+            return False
+        
+    ##
+    # Restart Mopidy
+    #
+    # This is untested and may require installation of an upstart script to properly restart
+    ##
+    def restart( self ):
+        os.execl(sys.executable, *([sys.executable]+sys.argv))
+        
         
         

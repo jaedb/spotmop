@@ -33,7 +33,7 @@
 				<div class="field">
 					<div class="label">Username</div>
 					<div class="input">
-						<input type="text" name="pusher.username" placeholder="Username" class="autosave" ng-model="storage.pusher.username" ng-blur="savePusherName( storage.pusher.username )" />
+						<input type="text" name="pusher.username" placeholder="Username" class="autosave" ng-model="settings.state().pusher.username" ng-blur="savePusherName( settings.state().pusher.username )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -41,7 +41,7 @@
 				<div class="field">
 					<div class="label">Notifications port</div>
 					<div class="input">
-						<input type="text" name="pusher.port" placeholder="6681" class="autosave" ng-model="storage.pusher.port" ng-blur="saveField( $event )" />
+						<input type="text" name="pusher.port" placeholder="6681" class="autosave" ng-model="settings.state().pusher.port" ng-blur="saveField( $event )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -49,7 +49,7 @@
 				<div class="field shortcut-keys">
 					<div class="label">Keyboard shortcuts</div>
 					<div class="input">
-						<switch class="switch-button" name="keyboardShortcutsEnabled" value="storage.keyboardShortcutsEnabled"></switch>
+						<switch class="switch-button" name="keyboardShortcutsEnabled" value="settings.state().keyboardShortcutsEnabled"></switch>
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -57,18 +57,21 @@
 				<div class="field">
 					<div class="label">Current version</div>
 					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="storage.version.installed"></span>						
-						&nbsp;
-                        <span class="upgrading" ng-show="storage.version.root">
-                        
-                            <a ng-click="upgradeCheck()">Check for upgrade</a>
-                            
-                            <span ng-show="storage.version.upgradeAvailable && storage.version.installed < storage.version.latest">
-                                <a ng-click="upgrade()">Upgrade to <span ng-bind="storage.version.latest"></span></a>
-                            </span>
-                            
-                        </span>
-                        <span class="upgrading" ng-show="!storage.version.root">Mopidy must be running as root to upgrade</span>
+					
+						<span ng-bind="settings.state().version.version"></span>
+						<span ng-show="!settings.state().version.upgrade_available">(latest version)</span>
+						
+						<span ng-show="settings.state().version.upgrade_available">
+						
+							<span ng-show="settings.state().version.is_root">
+								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ settings.state().version.latest_version }}</a>
+								<a class="button secondary disabled" ng-show="upgrading"><i class="fa fa-spin fa-circle-o-notch"></i>&nbsp; Upgrading</a>
+							</span>
+							
+							<span ng-show="!settings.state().version.is_root">Mopidy must be running as root to upgrade</span>
+							
+						</span>
+						
 					</div>
 					<div class="clear-both"></div>
 				</div>
@@ -93,7 +96,7 @@
 				<div class="field">
 					<div class="label">Hostname</div>
 					<div class="input">
-						<input type="text" name="mopidy.host" placeholder="localhost" class="autosave" ng-model="storage.mopidy.host" ng-blur="saveField( $event )" />
+						<input type="text" name="mopidy.host" placeholder="localhost" class="autosave" ng-model="settings.state().mopidy.host" ng-blur="saveField( $event )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -101,7 +104,7 @@
 				<div class="field">
 					<div class="label">Port</div>
 					<div class="input">
-						<input type="text" name="mopidy.port" placeholder="6680" class="autosave" ng-model="storage.mopidy.port" ng-blur="SaveFields( $event )" />
+						<input type="text" name="mopidy.port" placeholder="6680" class="autosave" ng-model="settings.state().mopidy.port" ng-blur="SaveFields( $event )" />
 						<i class="fa fa-check autosave-success"></i>
 					</div>
 				</div>
@@ -121,7 +124,7 @@
                 <div class="field">
                     <div class="label">Country code</div>
                     <div class="input">
-                        <input type="text" name="spotify.country" placeholder="NZ" class="autosave" ng-model="storage.spotify.country" ng-blur="SaveFields( $event )" />
+                        <input type="text" name="spotify.country" placeholder="NZ" class="autosave" ng-model="settings.state().spotify.country" ng-blur="SaveFields( $event )" />
                         <i class="fa fa-check autosave-success"></i>
                     </div>
                 </div>
@@ -129,7 +132,7 @@
                 <div class="field">
                     <div class="label">Locale</div>
                     <div class="input">
-                        <input type="text" name="spotify.locale" placeholder="en_NZ" class="autosave" ng-model="storage.spotify.locale" ng-blur="SaveFields( $event )" />
+                        <input type="text" name="spotify.locale" placeholder="en_NZ" class="autosave" ng-model="settings.state().spotify.locale" ng-blur="SaveFields( $event )" />
                         <i class="fa fa-check autosave-success"></i>
                     </div>
                 </div>
@@ -138,10 +141,10 @@
                     <div class="label">Current user</div>
                     <div class="input">
                         <span class="my-profile">
-                            <span class="image-container" ng-repeat="image in storage.spotifyuser.images  | limitTo:1">
+                            <span class="image-container" ng-repeat="image in settings.state().spotifyuser.images  | limitTo:1">
                                 <div class="image animate" style="background-image: url({{ image.url }});"></div>
                             </span>
-                            <span ng-bind="storage.spotifyuser.display_name"></span> (<a ng-bind="storage.spotifyuser.id" ui-sref="browse.user({ uri: storage.spotifyuser.uri })"></a>)
+                            <span ng-bind="settings.state().spotifyuser.display_name"></span> (<a ng-bind="settings.state().spotifyuser.id" ui-sref="browse.user({ uri: settings.state().spotifyuser.uri })"></a>)
                             &nbsp;&nbsp;
                             <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
                         </span>
@@ -155,7 +158,7 @@
                     </div>
 				</div>
 
-                <div class="field" ng-if="storage.advancedMode && spotifyOnline">
+                <div class="field" ng-if="settings.state().advancedMode && spotifyOnline">
                     <div class="label">Spotify authentication</div>
                     <div class="input">
                         <a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
@@ -176,15 +179,15 @@
                     <div class="label">Touch support</div>
                     <div class="input">
                         <label>
-                            <input type="radio" name="pointerMode" ng-model="storage.pointerMode" value="default" />
+                            <input type="radio" name="pointerMode" ng-model="settings.state().pointerMode" value="default" />
                             <span class="label">Device default (<span ng-if="isTouchDevice()">touch</span><span ng-if="!isTouchDevice()">click</span>)</span>
                         </label>
                         <label>
-                            <input type="radio" name="pointerMode" ng-model="storage.pointerMode" value="click" />
+                            <input type="radio" name="pointerMode" ng-model="settings.state().pointerMode" value="click" />
                             <span class="label">Force click</span>
                         </label>
                         <label>
-                            <input type="radio" name="pointerMode" ng-model="storage.pointerMode" value="touch" />
+                            <input type="radio" name="pointerMode" ng-model="settings.state().pointerMode" value="touch" />
                             <span class="label">Force touch</span>
                         </label>
                     </div>
@@ -207,16 +210,17 @@
                 <div class="field current-connections">
                     <div class="label">Users connected</div>
                     <div class="input readonly">
-                        <div ng-repeat="connection in pusherConnections">
+                    
+                        <div ng-repeat="connection in pusher.state().connections">
                             <span class="min-width w150 name">
                                 <span ng-bind="connection.username | urlDecode"></span>
-                                <span ng-if="connection.connectionid == storage.pusher.connectionid">(you)</span>
+                                <span ng-if="connection.connectionid == settings.state().pusher.connectionid">(you)</span>
                             </span>
                             <span class="min-width w150">
                                 <span ng-bind="connection.ip"></span>
                                 <span class="grey-text">(<span ng-bind="connection.connectionid"></span>)</span>
                             </span>
-                            <span class="min-width w100" ng-if="connection.connectionid != storage.pusher.connectionid">
+                            <span class="min-width w100" ng-if="connection.connectionid != settings.state().pusher.connectionid">
                                 <a ng-click="pushConfig( connection )"><i class="fa fa-sign-in"></i>&nbsp; Push config</a>
                             </span>
                         </div>

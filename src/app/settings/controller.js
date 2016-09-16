@@ -25,7 +25,8 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.storage = SettingsService.getSettings();
+	$scope.settings = SettingsService;
+    $scope.pusher = PusherService;
 	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
@@ -40,30 +41,11 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
-	$scope.upgradeCheck = function(){
-		NotifyService.notify( 'Checking for updates' );
-		SettingsService.upgradeCheck()
-			.then( function(response){				
-				SettingsService.setSetting('version.latest', response);
-				if( SettingsService.getSetting('version.installed') < response ){
-					SettingsService.setSetting('version.upgradeAvailable',true);
-					NotifyService.notify( 'Upgrade is available!' );
-				}else{
-					SettingsService.setSetting('version.upgradeAvailable',false);
-					NotifyService.notify( 'You\'re already running the latest version' );
-				}
-			});
-	}
 	$scope.upgrade = function(){
-		NotifyService.notify( 'Upgrade started' );
-		SettingsService.upgrade()
-			.then( function(response){				
-				if( response.status == 'error' ){
-					NotifyService.error( response.message );
-				}else{
-					NotifyService.notify( response.message );
-					SettingsService.setSetting('version.upgradeAvailable', false);
-				}
+		$scope.upgrading = true;
+		PusherService.query({ action: 'perform_upgrade' })
+			.then( function(response){
+				$scope.upgrading = false;
 			});
 	}
 	$scope.resetSettings = function(){
@@ -76,8 +58,8 @@ angular.module('spotmop.settings', [])
 	 * Send configuration to another connection
 	 **/
 	$scope.pushConfig = function( connection ){
-		PusherService.send({
-			type: 'config_push',
+		PusherService.broadcast({
+			action: 'config_push',
 			recipients: [ connection.connectionid ],
             data: {
                 mopidy: SettingsService.getSetting('mopidy'),
@@ -87,52 +69,24 @@ angular.module('spotmop.settings', [])
 		});
 	};
 	
-	SettingsService.getVersion()
-		.then( function(response){
-			if( response && response.status != 'error' ){
-				SettingsService.setSetting('version.installed',response.currentVersion);
-				SettingsService.setSetting('version.root',response.root);
-			}
-		});
-	
 	// save the fields to the localStorage
 	// this is fired when an input field is blurred
 	$scope.saveField = function( event ){
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
-	var oldPusherName = SettingsService.getSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
 	
 		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
 		
 		// and go tell the server to update
-		PusherService.send({
-			type: 'client_updated', 
-			data: {
-				attribute: 'name',
-				oldVal: oldPusherName,
-				newVal: name
-			}
+		PusherService.query({
+			type: 'query',
+			action: 'change_username', 
+			data: name
 		});
-		
-		// and now update our old one
-		oldPusherName = name;
-	};	
-    
-    function updatePusherConnections(){
-        PusherService.getConnections()
-            .then( function(connections){
-                $scope.pusherConnections = connections;
-            });
-    }
-    
-    // update whenever setup is completed, or another client opens a connection
-    updatePusherConnections();
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
+	};
 })
 
 
@@ -156,10 +110,18 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"broadcast", "action": "notification", "recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
-				PusherService.send( JSON.parse($scope.pusherTest.payload) );
-				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
+                var data = JSON.parse($scope.pusherTest.payload);
+                if( data['type'] == 'broadcast' ){
+                    PusherService.broadcast( data );
+                    $scope.response = {status: 'sent', data: data };
+                }else{
+                    PusherService.query( data )
+                        .then( function(response){
+                            $scope.response = response;
+                        });
+                }
 			}
 		}
 	

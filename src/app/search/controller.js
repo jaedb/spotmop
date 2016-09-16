@@ -17,7 +17,6 @@ angular.module('spotmop.search', [])
  **/
 .controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService, SettingsService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.results = {
 		tracks: [],
 		albums: [],

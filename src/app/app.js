@@ -299,7 +299,6 @@ angular.module('spotmop', [
 	$scope.$on('spotmop:spotify:offline', function(){
 		$rootScope.spotifyOnline = false;
 	});
-	
     
 	
 	/**
@@ -330,9 +329,27 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	PusherService.start();
-	MopidyService.start();
-	SpotifyService.start();
+    $scope.settings = SettingsService;
+    $scope.settings.start();
+    
+    $scope.pusher = PusherService;
+    $scope.pusher.start();
+    
+    $scope.mopidy = MopidyService;
+    $scope.mopidy.start();
+	
+	// wait for pusher to connect before we kick in spotify
+	$rootScope.$on('spotmop:pusher:online', function(event,data){
+        $scope.spotify = SpotifyService;
+        $scope.spotify.start();
+		$scope.pusher.query({ action: 'get_version' })
+			.then( function(response){
+				SettingsService.setSetting('version',response.data);
+				if( response.data.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.latest_version+') available!' );
+				}
+			});
+	});
 	
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
@@ -353,8 +370,8 @@ angular.module('spotmop', [
             
             SpotifyService.start();
             
-            PusherService.send({
-                type: 'soft_notification',
+            PusherService.broadcast({
+                action: 'soft_notification',
                 recipients: [ message.origin.connectionid ],
                 data: {
                     body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'

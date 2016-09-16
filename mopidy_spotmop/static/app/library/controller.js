@@ -145,7 +145,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'grid',
@@ -231,7 +230,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'detail',
@@ -349,7 +347,6 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.filterOptions = [
 			{
 				value: 'all',
