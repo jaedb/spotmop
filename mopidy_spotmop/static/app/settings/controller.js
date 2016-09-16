@@ -40,21 +40,8 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
-	$scope.upgradeCheck = function(){
-		NotifyService.notify( 'Checking for updates' );
-		SettingsService.upgradeCheck()
-			.then( function(response){				
-				SettingsService.setSetting('version.latest', response);
-				if( SettingsService.getSetting('version.installed') < response ){
-					SettingsService.setSetting('version.upgradeAvailable',true);
-					NotifyService.notify( 'Upgrade is available!' );
-				}else{
-					SettingsService.setSetting('version.upgradeAvailable',false);
-					NotifyService.notify( 'You\'re already running the latest version' );
-				}
-			});
-	}
 	$scope.upgrade = function(){
+		/*
 		NotifyService.notify( 'Upgrade started' );
 		SettingsService.upgrade()
 			.then( function(response){				
@@ -65,6 +52,7 @@ angular.module('spotmop.settings', [])
 					SettingsService.setSetting('version.upgradeAvailable', false);
 				}
 			});
+			*/
 	}
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
@@ -87,14 +75,6 @@ angular.module('spotmop.settings', [])
             }
 		});
 	};
-	
-	SettingsService.getVersion()
-		.then( function(response){
-			if( response && response.status != 'error' ){
-				SettingsService.setSetting('version.installed',response.currentVersion);
-				SettingsService.setSetting('version.root',response.root);
-			}
-		});
 	
 	// save the fields to the localStorage
 	// this is fired when an input field is blurred
@@ -132,9 +112,9 @@ angular.module('spotmop.settings', [])
 	
     // update whenever setup is completed, or another client opens a connection
     $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
 })
 
 

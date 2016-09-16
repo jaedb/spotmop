@@ -78,7 +78,6 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
-					//service.send({ type: 'system', method: 'get_radio', data: {} });
 					service.isConnected = true;
 					$rootScope.pusherOnline = true;
 				}
@@ -115,7 +114,7 @@ angular.module('spotmop.services.pusher', [
 										$cacheFactory.get('$http').removeAll();
 										$templateCache.removeAll();
 										SettingsService.setSetting('version.installed', message.data.version);
-										SettingsService.runUpgrade();
+										SettingsService.postUpgrade();
 									}
 								}							
 								break;

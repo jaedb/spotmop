@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import logging, os, json, pykka, pylast, spotipy, pusher, urllib, urllib2
+import logging, json, pykka, pylast, spotipy, pusher, urllib, urllib2, os, mopidy_spotmop
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
@@ -24,6 +24,8 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         self.config = config
         self.core = core
         self.spotify_token = False
+        self.version = mopidy_spotmop.__version__
+        self.is_root = ( os.geteuid() == 0 )
         self.radio = {
             "enabled": 0,
             "seed_artists": [],
@@ -57,8 +59,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     # Listen for core events, and update our frontend as required
     ##
     def track_playback_ended( self, tl_track, time_position ):
-        self.check_for_radio_update()
-        
+        self.check_for_radio_update()        
         
         
     ##
@@ -161,4 +162,18 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             return response_dict
         except urllib2.HTTPError as e:
             return e
+        
+    ##
+    # Get Spotmop version, and check for updates
+    #
+    # We compare our version with the latest available on GitHub
+    ##
+    def get_version( self ):
+        data = {
+            'version': self.version,
+            'is_root': self.is_root,
+            'upgrade_available': True,
+            'new_version': '2.11.5'
+        }
+        return data
         

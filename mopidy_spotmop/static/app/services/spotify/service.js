@@ -10,43 +10,33 @@ angular.module('spotmop.services.spotify', [])
 
 .factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, PusherService, NotifyService ){
 	
-	var savedAuthenticationCredentials = {
-		authorization_code: false,
-		access_token: false,
+	var auth = {
+		authentication_code: false,
 		refresh_token: false,
-		access_token_expiry: false
-	}
-	if( typeof($localStorage.spotify) !== 'undefined' ){		
-		if( typeof($localStorage.spotify.AuthorizationCode) !== 'undefined')
-			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.AuthorizationCode;
-		else if( typeof($localStorage.spotify.authorization_code) !== 'undefined')
-			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.authorization_code;
-		
-		if( typeof($localStorage.spotify.AccessToken) !== 'undefined')
-			savedAuthenticationCredentials.access_token = $localStorage.spotify.AccessToken;
-		else if( typeof($localStorage.spotify.access_token) !== 'undefined')
-			savedAuthenticationCredentials.access_token = $localStorage.spotify.access_token;
-		
-		if( typeof($localStorage.spotify.RefreshToken) !== 'undefined')
-			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.RefreshToken;
-		else if( typeof($localStorage.spotify.refresh_token) !== 'undefined')
-			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.refresh_token;
+		access_token: false,
+		access_token_expiry: false,
+		scope: false
+	};
+	
+	if( typeof($localStorage.spotify_auth) !== 'undefined' ){
+		auth = $localStorage.spotify_auth;
 	}
 	
 	// setup response object
     var service = {
 		
-		authenticationMethod: 'server',
-		backupToken: false,
-		authenticationCredentials: savedAuthenticationCredentials,
-		
+		auth_method: 'server',
+		auth: auth,
+				
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
+			// TODO: upgrade spotmop php
 			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
 			
 			// listen for incoming messages from the authorization iframe
+			// this is triggered when authentication is granted from the popup
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authorized authenticator proxy
@@ -59,45 +49,45 @@ angular.module('spotmop.services.spotify', [])
 				console.info('Spotify authorization successful');
 				
 				// take our returned data, and save it
-				$localStorage.spotify = data;
-				this.authenticationCredentials = data;
-				this.authenticationMethod = 'client';
+				$localStorage.spotify_auth = data;
+				this.auth = data;
+				this.auth_method = 'client';
 				$rootScope.spotifyOnline = true;
 				
 				// get my details and store 'em
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
-						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
 					});
 				
-			}, false);
-			
+			}, false);			
 			
 			/**
 			 * The real starter
 			 **/
 			if( this.isAuthorized() ){
 				$rootScope.spotifyAuthorized = true;
-				this.authenticationMethod = 'client';
+				this.auth_method = 'client';
 			}else{
 				SettingsService.setSetting('spotifyuser', false);
 				$rootScope.spotifyAuthorized = false;
-				this.authenticationMethod = 'server';
+				this.auth_method = 'server';
 			}
 			
 			$rootScope.$broadcast('spotmop:spotify:online');
 		},
 		
 		getToken: function(){
-			return this.authenticationCredentials.access_token;
+			return this.auth.access_token;
 		},
 		
 		logout: function(){
 			$localStorage.spotify = {};
-			this.authenticationMethod = 'server';
+			this.auth_method = 'server';
+			this.auth = {};
 			this.refreshToken();
-			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
 		},
 		
 		/**
@@ -110,17 +100,15 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		isAuthorized: function(){
-			if( this.authenticationCredentials.authorization_code )
+			if( this.auth.authorization_code )
 				return true;
 			return false;
 		},
 		
 		setAccessToken: function( access_token, access_token_expiry ){
-			this.authenticationCredentials.access_token = access_token;
-			this.authenticationCredentials.access_token_expiry = access_token_expiry;
-			$localStorage.spotify = this.authenticationCredentials;
-			console.log( 'Set new token' );
-			console.log( $localStorage.spotify );
+			this.auth.access_token = access_token;
+			this.auth.access_token_expiry = access_token_expiry;
+			$localStorage.spotify_auth = this.auth;
 		},
 		
 		/**
@@ -133,7 +121,7 @@ angular.module('spotmop.services.spotify', [])
 			var self = this;
 			var deferred = $q.defer();
 			
-			if( this.authenticationMethod == 'server' ){
+			if( this.auth_method == 'server' ){
 				
 				PusherService.query({ action: 'refresh_spotify_token' })
 					.then( function(response){
@@ -141,9 +129,9 @@ angular.module('spotmop.services.spotify', [])
 						deferred.resolve( response.data );
 					});
 				
-			}else if( this.authenticationMethod == 'client' ){
+			}else if( this.auth_method == 'client' ){
 				
-				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+this.authenticationCredentials.refresh_token;
+				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+this.auth.refresh_token;
 							
 				$http({
 						method: 'GET',
@@ -267,11 +255,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });

@@ -30105,6 +30105,24 @@ angular.module('spotmop', [
 	// wait for pusher to connect before we kick in spotify
 	$rootScope.$on('spotmop:pusher:online', function(event,data){
 		SpotifyService.start();
+		PusherService.query({ action: 'get_version' })
+			.then( function(response){
+				SettingsService.setSetting('version',response.data);
+				if( response.data.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.new_version+') available!' );
+				}
+				//console.log( response );
+				/*
+				SettingsService.setSetting('version.latest', response);
+				if( SettingsService.getSetting('version.installed') < response ){
+					SettingsService.setSetting('version.upgradeAvailable',true);
+					NotifyService.notify( 'Upgrade is available!' );
+				}else{
+					SettingsService.setSetting('version.upgradeAvailable',false);
+					NotifyService.notify( 'You\'re already running the latest version' );
+				}
+				*/
+			});
 	});
 	
 	// set default settings 
@@ -37121,7 +37139,6 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
-					//service.send({ type: 'system', method: 'get_radio', data: {} });
 					service.isConnected = true;
 					$rootScope.pusherOnline = true;
 				}
@@ -37158,7 +37175,7 @@ angular.module('spotmop.services.pusher', [
 										$cacheFactory.get('$http').removeAll();
 										$templateCache.removeAll();
 										SettingsService.setSetting('version.installed', message.data.version);
-										SettingsService.runUpgrade();
+										SettingsService.postUpgrade();
 									}
 								}							
 								break;
@@ -37256,43 +37273,33 @@ angular.module('spotmop.services.spotify', [])
 
 .factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, PusherService, NotifyService ){
 	
-	var savedAuthenticationCredentials = {
-		authorization_code: false,
-		access_token: false,
+	var auth = {
+		authentication_code: false,
 		refresh_token: false,
-		access_token_expiry: false
-	}
-	if( typeof($localStorage.spotify) !== 'undefined' ){		
-		if( typeof($localStorage.spotify.AuthorizationCode) !== 'undefined')
-			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.AuthorizationCode;
-		else if( typeof($localStorage.spotify.authorization_code) !== 'undefined')
-			savedAuthenticationCredentials.authorization_code = $localStorage.spotify.authorization_code;
-		
-		if( typeof($localStorage.spotify.AccessToken) !== 'undefined')
-			savedAuthenticationCredentials.access_token = $localStorage.spotify.AccessToken;
-		else if( typeof($localStorage.spotify.access_token) !== 'undefined')
-			savedAuthenticationCredentials.access_token = $localStorage.spotify.access_token;
-		
-		if( typeof($localStorage.spotify.RefreshToken) !== 'undefined')
-			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.RefreshToken;
-		else if( typeof($localStorage.spotify.refresh_token) !== 'undefined')
-			savedAuthenticationCredentials.refresh_token = $localStorage.spotify.refresh_token;
+		access_token: false,
+		access_token_expiry: false,
+		scope: false
+	};
+	
+	if( typeof($localStorage.spotify_auth) !== 'undefined' ){
+		auth = $localStorage.spotify_auth;
 	}
 	
 	// setup response object
     var service = {
 		
-		authenticationMethod: 'server',
-		backupToken: false,
-		authenticationCredentials: savedAuthenticationCredentials,
-		
+		auth_method: 'server',
+		auth: auth,
+				
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
+			// TODO: upgrade spotmop php
 			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
 			
 			// listen for incoming messages from the authorization iframe
+			// this is triggered when authentication is granted from the popup
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authorized authenticator proxy
@@ -37305,45 +37312,45 @@ angular.module('spotmop.services.spotify', [])
 				console.info('Spotify authorization successful');
 				
 				// take our returned data, and save it
-				$localStorage.spotify = data;
-				this.authenticationCredentials = data;
-				this.authenticationMethod = 'client';
+				$localStorage.spotify_auth = data;
+				this.auth = data;
+				this.auth_method = 'client';
 				$rootScope.spotifyOnline = true;
 				
 				// get my details and store 'em
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
-						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
 					});
 				
-			}, false);
-			
+			}, false);			
 			
 			/**
 			 * The real starter
 			 **/
 			if( this.isAuthorized() ){
 				$rootScope.spotifyAuthorized = true;
-				this.authenticationMethod = 'client';
+				this.auth_method = 'client';
 			}else{
 				SettingsService.setSetting('spotifyuser', false);
 				$rootScope.spotifyAuthorized = false;
-				this.authenticationMethod = 'server';
+				this.auth_method = 'server';
 			}
 			
 			$rootScope.$broadcast('spotmop:spotify:online');
 		},
 		
 		getToken: function(){
-			return this.authenticationCredentials.access_token;
+			return this.auth.access_token;
 		},
 		
 		logout: function(){
 			$localStorage.spotify = {};
-			this.authenticationMethod = 'server';
+			this.auth_method = 'server';
+			this.auth = {};
 			this.refreshToken();
-			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
 		},
 		
 		/**
@@ -37356,17 +37363,15 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		isAuthorized: function(){
-			if( this.authenticationCredentials.authorization_code )
+			if( this.auth.authorization_code )
 				return true;
 			return false;
 		},
 		
 		setAccessToken: function( access_token, access_token_expiry ){
-			this.authenticationCredentials.access_token = access_token;
-			this.authenticationCredentials.access_token_expiry = access_token_expiry;
-			$localStorage.spotify = this.authenticationCredentials;
-			console.log( 'Set new token' );
-			console.log( $localStorage.spotify );
+			this.auth.access_token = access_token;
+			this.auth.access_token_expiry = access_token_expiry;
+			$localStorage.spotify_auth = this.auth;
 		},
 		
 		/**
@@ -37379,7 +37384,7 @@ angular.module('spotmop.services.spotify', [])
 			var self = this;
 			var deferred = $q.defer();
 			
-			if( this.authenticationMethod == 'server' ){
+			if( this.auth_method == 'server' ){
 				
 				PusherService.query({ action: 'refresh_spotify_token' })
 					.then( function(response){
@@ -37387,9 +37392,9 @@ angular.module('spotmop.services.spotify', [])
 						deferred.resolve( response.data );
 					});
 				
-			}else if( this.authenticationMethod == 'client' ){
+			}else if( this.auth_method == 'client' ){
 				
-				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+this.authenticationCredentials.refresh_token;
+				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+this.auth.refresh_token;
 							
 				$http({
 						method: 'GET',
@@ -37513,11 +37518,9 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
@@ -38933,21 +38936,8 @@ angular.module('spotmop.settings', [])
     $scope.spotifyLogout = function(){
         SpotifyService.logout();
     };
-	$scope.upgradeCheck = function(){
-		NotifyService.notify( 'Checking for updates' );
-		SettingsService.upgradeCheck()
-			.then( function(response){				
-				SettingsService.setSetting('version.latest', response);
-				if( SettingsService.getSetting('version.installed') < response ){
-					SettingsService.setSetting('version.upgradeAvailable',true);
-					NotifyService.notify( 'Upgrade is available!' );
-				}else{
-					SettingsService.setSetting('version.upgradeAvailable',false);
-					NotifyService.notify( 'You\'re already running the latest version' );
-				}
-			});
-	}
 	$scope.upgrade = function(){
+		/*
 		NotifyService.notify( 'Upgrade started' );
 		SettingsService.upgrade()
 			.then( function(response){				
@@ -38958,6 +38948,7 @@ angular.module('spotmop.settings', [])
 					SettingsService.setSetting('version.upgradeAvailable', false);
 				}
 			});
+			*/
 	}
 	$scope.resetSettings = function(){
 		NotifyService.notify( 'All settings reset... reloading' );		
@@ -38980,14 +38971,6 @@ angular.module('spotmop.settings', [])
             }
 		});
 	};
-	
-	SettingsService.getVersion()
-		.then( function(response){
-			if( response && response.status != 'error' ){
-				SettingsService.setSetting('version.installed',response.currentVersion);
-				SettingsService.setSetting('version.root',response.root);
-			}
-		});
 	
 	// save the fields to the localStorage
 	// this is fired when an input field is blurred
@@ -39025,9 +39008,9 @@ angular.module('spotmop.settings', [])
 	
     // update whenever setup is completed, or another client opens a connection
     $rootScope.$on('spotmop:pusher:online', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
+    //$rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
 }])
 
 
@@ -39157,113 +39140,13 @@ angular.module('spotmop.services.settings', [])
 		getSettings: function(){
 			return $localStorage;
 		},
-        
-		getUser: function( username ){            
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'users'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-            return deferred.promise;
-		},
-        
-		setUser: function( username ){		
-            return $.ajax({
-                url: urlBase+'users',
-                method: "POST",
-                data: '{"name":"'+ username +'"}'
-            });
-		},
-		
-		
-		/**
-		 * Identify the client, by IP address
-		 **/
-		identifyClient: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'pusher/me'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		
-		/**
-		 * Spotmop extension upgrade
-		 **/
-		upgradeCheck: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response.info.version );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		upgrade: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'POST',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
 		
 		// perform post-upgrade commands
-		runUpgrade: function(){
+		postUpgrade: function(){
 			
 			// depreciated settings
 			service.setSetting('emulateTouchDevice',false);
 			service.setSetting('pointerMode','default');
-		},
-		
-		
-		/**
-		 * Identify our current Spotmop version
-		 **/
-		getVersion: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
 		}
 	};
 		

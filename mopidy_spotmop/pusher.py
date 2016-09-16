@@ -1,5 +1,5 @@
 import tornado.ioloop, tornado.web, tornado.websocket, tornado.template
-import logging, uuid, os, subprocess, pykka, mopidy_spotmop
+import logging, uuid, subprocess, pykka
 from datetime import datetime
 from tornado.escape import json_encode, json_decode
 
@@ -82,7 +82,6 @@ def digest_protocol( protocol ):
 class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
     
     def initialize(self, frontend):
-        self.version = mopidy_spotmop.__version__
         self.frontend = frontend
 
     def check_origin(self, origin):
@@ -101,10 +100,19 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         created = datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S')
 
         # construct our client object, and add to our list of connections
-        client = { "clientid": clientid, "connectionid": connectionid, "username": username, "ip": self.request.remote_ip, "created": created, "version": self.version }
-        connections[connectionid] = { 'client': client, 'connection': self }
+        client = {
+            'clientid': clientid,
+            'connectionid': connectionid,
+            'username': username,
+            'ip': self.request.remote_ip,
+            'created': created
+        }
+        connections[connectionid] = {
+            'client': client,
+            'connection': self
+        }
 
-        logger.debug( 'New Spotmop Pusher connection: '+ connectionid +' ('+ clientid +'/'+ username +')' )
+        logger.info( 'Pusher connection established: '+ connectionid +' ('+ clientid +'/'+ username +')' )
 
         # broadcast to all connections that a new user has connected
         broadcast( 'client_connected', client )
@@ -127,43 +135,110 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         messageJson = json_decode(message)
 
         # construct the origin client info
-        messageJson['origin'] = { 'connectionid' : self.connectionid, 'clientid': connections[self.connectionid]['client']['clientid'], 'ip': self.request.remote_ip, 'username': connections[self.connectionid]['client']['username'] }
+        messageJson['origin'] = {
+            'connectionid' : self.connectionid,
+            'clientid': connections[self.connectionid]['client']['clientid'],
+            'ip': self.request.remote_ip,
+            'username': connections[self.connectionid]['client']['username']
+        }
+        
+        logger.debug('Pusher message received: '+message)
         
         # query-based message that is expecting a response
         if messageJson['type'] == 'query':
             
             # fetch our pusher connections
             if messageJson['action'] == 'get_connections':
+            
                 connectionsDetailsList = []
                 for connection in connections.itervalues():
                     connectionsDetailsList.append(connection['client'])
-                send_message( self.connectionid, 'response', 'get_connections', messageJson['message_id'], connectionsDetailsList )
+                    
+                send_message(
+                    self.connectionid, 
+                    'response', 
+                    'get_connections', 
+                    messageJson['message_id'], 
+                    connectionsDetailsList
+                )
             
             # connection update requested
-            if messageJson['action'] == 'update_connection':
+            elif messageJson['action'] == 'update_connection':
                 response = {}
                 if messageJson['origin']['connectionid'] in connections:            
                     connections[messageJson['origin']['connectionid']]['client']['username'] = messageJson['data']['newVal']
                     response = connections[messageJson['origin']['connectionid']]['client']
-                send_message( self.connectionid, 'response', 'update_connection', messageJson['message_id'], {'response': 'ok'} )
+                    
+                send_message(
+                    self.connectionid, 
+                    'response', 
+                    'update_connection', 
+                    messageJson['message_id'], 
+                    {'response': 'ok'} 
+                )
         
             # change our radio state
-            if messageJson['action'] == 'change_radio':
+            elif messageJson['action'] == 'change_radio':
                 self.frontend.change_radio( messageJson )
-                send_message( self.connectionid, 'response', 'change_radio', messageJson['message_id'], {'response': 'ok'} )
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    'change_radio', 
+                    messageJson['message_id'], 
+                    {'response': 'ok'} 
+                )
             
             # fetch our current radio state
-            if messageJson['action'] == 'get_radio':
-                send_message( self.connectionid, 'response', 'get_radio_state', messageJson['message_id'], self.frontend.radio )
+            elif messageJson['action'] == 'get_radio':
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    'get_radio_state', 
+                    messageJson['message_id'],
+                    self.frontend.radio
+                )
         
             # get our spotify authentication token
-            if messageJson['action'] == 'get_spotify_token':
-                send_message( self.connectionid, 'response', 'get_spotify_token', messageJson['message_id'], self.frontend.spotify_token )
+            elif messageJson['action'] == 'get_spotify_token':
+                send_message(
+                    self.connectionid,
+                    'response',
+                    'get_spotify_token',
+                    messageJson['message_id'],
+                    self.frontend.spotify_token
+                )
         
             # refresh our spotify authentication token
-            if messageJson['action'] == 'refresh_spotify_token':
+            elif messageJson['action'] == 'refresh_spotify_token':
                 new_token = self.frontend.refresh_spotify_token()
-                send_message( self.connectionid, 'response', 'refresh_spotify_token', messageJson['message_id'], new_token )
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    'refresh_spotify_token', 
+                    messageJson['message_id'], 
+                    new_token 
+                )
+        
+            # get system version and check for upgrade
+            elif messageJson['action'] == 'get_version':
+                data = self.frontend.get_version()
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    'get_version', 
+                    messageJson['message_id'], 
+                    data 
+                )
+            
+            # not an action we recognise!
+            else:
+                send_message( 
+                    self.connectionid, 
+                    'response', 
+                    messageJson['action'], 
+                    messageJson['message_id'], 
+                    False 
+                )
         
         # point-and-shoot one-way broadcast
         elif messageJson['type'] == 'broadcast':

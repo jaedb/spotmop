@@ -335,6 +335,24 @@ angular.module('spotmop', [
 	// wait for pusher to connect before we kick in spotify
 	$rootScope.$on('spotmop:pusher:online', function(event,data){
 		SpotifyService.start();
+		PusherService.query({ action: 'get_version' })
+			.then( function(response){
+				SettingsService.setSetting('version',response.data);
+				if( response.data.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.new_version+') available!' );
+				}
+				//console.log( response );
+				/*
+				SettingsService.setSetting('version.latest', response);
+				if( SettingsService.getSetting('version.installed') < response ){
+					SettingsService.setSetting('version.upgradeAvailable',true);
+					NotifyService.notify( 'Upgrade is available!' );
+				}else{
+					SettingsService.setSetting('version.upgradeAvailable',false);
+					NotifyService.notify( 'You\'re already running the latest version' );
+				}
+				*/
+			});
 	});
 	
 	// set default settings 

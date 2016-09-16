@@ -57,18 +57,12 @@
 				<div class="field">
 					<div class="label">Current version</div>
 					<div class="input readonly">
-						<span class="spotmop-version" ng-bind="storage.version.installed"></span>						
+						<span class="spotmop-version" ng-bind="storage.version.version"></span>						
 						&nbsp;
-                        <span class="upgrading" ng-show="storage.version.root">
-                        
-                            <a ng-click="upgradeCheck()">Check for upgrade</a>
-                            
-                            <span ng-show="storage.version.upgradeAvailable && storage.version.installed < storage.version.latest">
-                                <a ng-click="upgrade()">Upgrade to <span ng-bind="storage.version.latest"></span></a>
-                            </span>
-                            
-                        </span>
-                        <span class="upgrading" ng-show="!storage.version.root">Mopidy must be running as root to upgrade</span>
+						<span class="upgrading" ng-show="storage.version.upgrade_available">
+							<a ng-click="upgrade()">Upgrade to <span ng-bind="storage.version.new_version"></span></a>
+						</span>
+                        <span class="upgrading" ng-show="!storage.version.is_root">Mopidy must be running as root to upgrade</span>
 					</div>
 					<div class="clear-both"></div>
 				</div>
