@@ -132,6 +132,10 @@ angular.module('spotmop.services.pusher', [
 							case 'soft_notification':
 								NotifyService.notify( message.data.body );
 								break;
+								
+							case 'upgraded':
+								NotifyService.notify( 'Mopidy has been upgraded to '+message.data.version );
+								break;
 							
 							case 'enforced_refresh':
 								location.reload();

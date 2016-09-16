@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import logging, json, pykka, pylast, spotipy, pusher, urllib, urllib2, os, mopidy_spotmop
+import logging, json, pykka, pylast, spotipy, pusher, urllib, urllib2, os, sys, mopidy_spotmop, subprocess
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
@@ -34,6 +34,8 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         }
 
     def on_start(self):
+        
+        logger.info('Starting Spotmop '+self.version)
         
         # try and start a pusher server
         port = str(self.config['spotmop']['pusherport'])
@@ -163,17 +165,6 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         except urllib2.HTTPError as e:
             return e
         
-    ##
-    # Perform a module upgrade
-    #
-    # Upgrade myself to the latest version available on PyPi
-    ##
-    def perform_upgrade( self ):
-    
-        # TODO
-    
-        return self.get_version()
-        
         
     ##
     # Get Spotmop version, and check for updates
@@ -185,7 +176,30 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             'version': self.version,
             'is_root': self.is_root,
             'upgrade_available': True,
-            'new_version': '2.11.5'
+            'new_version': '2.11.5' # TODO: Fetch from GitHub
         }
         return data
+        
+        
+    ##
+    # Upgrade Spotmop module
+    #
+    # Upgrade myself to the latest version available on PyPi
+    ##
+    def perform_upgrade( self ):
+        try:
+            subprocess.check_call(["pip", "install", "--upgrade", "Mopidy-Spotmop"])
+            return True
+        except subprocess.CalledProcessError:
+            return False
+        
+    ##
+    # Restart Mopidy
+    #
+    # This is untested and may require installation of an upstart script to properly restart
+    ##
+    def restart( self ):
+        os.execl(sys.executable, *([sys.executable]+sys.argv))
+        
+        
         

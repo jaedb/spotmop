@@ -50,16 +50,16 @@ angular.module('spotmop.services.spotify', [])
 				
 				// take our returned data, and save it
 				$localStorage.spotify_auth = data;
-				this.auth = data;
-				this.auth_method = 'client';
+				service.auth = data;
+				service.auth_method = 'client';
 				$rootScope.spotifyOnline = true;
+				$rootScope.spotifyAuthorized = true;
 				
 				// get my details and store 'em
-				// TODO: Figure out why this isn't firing a response???
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
-						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', service.auth_method);
 					});
 				
 			}, false);			
@@ -243,14 +243,14 @@ angular.module('spotmop.services.spotify', [])
          **/
         
         getMe: function(){
-			
+            
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
 			}
-
+            
             $http({
 					method: 'GET',
 					url: urlBase+'me/',
@@ -259,8 +259,6 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					console.log('got me');
-					console.log(response);
                     deferred.resolve( response );
                 })
                 .error(function( response ){					

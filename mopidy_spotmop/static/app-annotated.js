@@ -37193,6 +37193,10 @@ angular.module('spotmop.services.pusher', [
 							case 'soft_notification':
 								NotifyService.notify( message.data.body );
 								break;
+								
+							case 'upgraded':
+								NotifyService.notify( 'Mopidy has been upgraded to '+message.data.version );
+								break;
 							
 							case 'enforced_refresh':
 								location.reload();
@@ -37320,16 +37324,16 @@ angular.module('spotmop.services.spotify', [])
 				
 				// take our returned data, and save it
 				$localStorage.spotify_auth = data;
-				this.auth = data;
-				this.auth_method = 'client';
+				service.auth = data;
+				service.auth_method = 'client';
 				$rootScope.spotifyOnline = true;
+				$rootScope.spotifyAuthorized = true;
 				
 				// get my details and store 'em
-				// TODO: Figure out why this isn't firing a response???
 				service.getMe()
 					.then( function(response){
 						SettingsService.setSetting('spotifyuser', response);
-						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.auth_method);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', service.auth_method);
 					});
 				
 			}, false);			
@@ -37513,14 +37517,14 @@ angular.module('spotmop.services.spotify', [])
          **/
         
         getMe: function(){
-			
+            
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
 			}
-
+            
             $http({
 					method: 'GET',
 					url: urlBase+'me/',
@@ -37529,8 +37533,6 @@ angular.module('spotmop.services.spotify', [])
 					}
 				})
                 .success(function( response ){
-					console.log('got me');
-					console.log(response);
                     deferred.resolve( response );
                 })
                 .error(function( response ){					
@@ -38954,7 +38956,6 @@ angular.module('spotmop.settings', [])
 		PusherService.query({ action: 'perform_upgrade' })
 			.then( function(response){
 				$scope.upgrading = false;
-				console.log( response );
 			});
 	}
 	$scope.resetSettings = function(){
@@ -39032,10 +39033,18 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"broadcast", "action": "notification", "recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
-				PusherService.send( JSON.parse($scope.pusherTest.payload) );
-				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
+                var data = JSON.parse($scope.pusherTest.payload);
+                if( data['type'] == 'broadcast' ){
+                    PusherService.broadcast( data );
+                    $scope.response = {status: 'sent', data: data };
+                }else{
+                    PusherService.query( data )
+                        .then( function(response){
+                            $scope.response = response;
+                        });
+                }
 			}
 		}
 	

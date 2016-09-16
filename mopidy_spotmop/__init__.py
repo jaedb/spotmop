@@ -5,9 +5,7 @@ import tornado.web
 import tornado.websocket
 from frontend import SpotmopFrontend
 from mopidy import config, ext
-
-# import our other Spotmop classes
-import upgrade, pusher, auth, radio
+import pusher
 
 logger = logging.getLogger(__name__)
 __version__ = '2.9.1'
@@ -49,11 +47,6 @@ def factory(config, core):
     path = os.path.join( os.path.dirname(__file__), 'static')
 	
     return [
-		(r'/upgrade', upgrade.UpgradeRequestHandler, {
-				'core': core,
-				'config': config,
-				'version': __version__ 
-			}),
         (r"/images/(.*)", tornado.web.StaticFileHandler, {
             "path": config['local-images']['image_dir']
         }),

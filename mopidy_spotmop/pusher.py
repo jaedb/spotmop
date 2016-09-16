@@ -235,7 +235,8 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
         
             # get system version and check for upgrade
             elif messageJson['action'] == 'perform_upgrade':
-                data = self.frontend.perform_upgrade()
+                data = self.frontend.get_version()
+                data['upgrade_successful'] = self.frontend.perform_upgrade()
                 send_message( 
                     self.connectionid, 
                     'response', 
@@ -246,6 +247,10 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                 
                 # notify all clients of this change
                 broadcast( 'upgraded', data )
+        
+            # restart mopidy
+            elif messageJson['action'] == 'restart':
+                self.frontend.restart()
                 
             
             # not an action we recognise!

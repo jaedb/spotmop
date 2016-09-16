@@ -45,7 +45,6 @@ angular.module('spotmop.settings', [])
 		PusherService.query({ action: 'perform_upgrade' })
 			.then( function(response){
 				$scope.upgrading = false;
-				console.log( response );
 			});
 	}
 	$scope.resetSettings = function(){
@@ -123,10 +122,18 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"broadcast", "action": "notification", "recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
-				PusherService.send( JSON.parse($scope.pusherTest.payload) );
-				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
+                var data = JSON.parse($scope.pusherTest.payload);
+                if( data['type'] == 'broadcast' ){
+                    PusherService.broadcast( data );
+                    $scope.response = {status: 'sent', data: data };
+                }else{
+                    PusherService.query( data )
+                        .then( function(response){
+                            $scope.response = response;
+                        });
+                }
 			}
 		}
 	

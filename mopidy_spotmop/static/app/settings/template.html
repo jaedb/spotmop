@@ -64,8 +64,8 @@
 						<span ng-show="storage.version.upgrade_available">
 						
 							<span ng-show="storage.version.is_root">
-								<a ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ storage.version.new_version }}</a>
-								<span ng-show="upgrading">&nbsp;&nbsp; <i class="fa fa-spin fa-circle-o-notch"></i>&nbsp; Upgrading</span>
+								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ storage.version.new_version }}</a>
+								<a class="button secondary disabled" ng-show="upgrading"><i class="fa fa-spin fa-circle-o-notch"></i>&nbsp; Upgrading</a>
 							</span>
 							
 							<span ng-show="!storage.version.is_root">Mopidy must be running as root to upgrade</span>
