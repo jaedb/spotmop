@@ -1672,6 +1672,10 @@ h1 .flag {
   clear: both;
   padding-top: 20px;
   text-align: top; }
+  .field .disabled .label,
+  .field .disabled label {
+    opacity: 0.5;
+    cursor: not-allowed !important; }
   .field .label {
     float: left;
     width: 13%;

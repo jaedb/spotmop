@@ -8,6 +8,12 @@
 	clear: both;
 	padding-top: 20px;
 	text-align: top;
+    
+    .disabled .label,
+    .disabled label {
+        opacity: 0.5;
+        cursor: not-allowed !important;
+    }
 	
 	.label {
 		float: left;

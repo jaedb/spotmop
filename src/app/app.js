@@ -276,32 +276,6 @@ angular.module('spotmop', [
     
 	
 	/**
-	 * Spotify is online and authorized
-	 **/
-	$rootScope.spotifyAuthorized = false;
-	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
-		if( newMethod == 'client' ){
-			$rootScope.spotifyAuthorized = true;
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
-		}else{
-			$rootScope.spotifyAuthorized = false;
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:online', function(){
-		$rootScope.spotifyOnline = true;
-		if( $rootScope.spotifyAuthorized ){
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:offline', function(){
-		$rootScope.spotifyOnline = false;
-	});
-    
-	
-	/**
 	 * Settings
 	 **/
 	
@@ -350,6 +324,12 @@ angular.module('spotmop', [
 					NotifyService.notify( 'New version ('+response.data.latest_version+') available!' );
 				}
 			});
+	});
+    
+	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
+		if( newMethod == 'client' ){
+			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+		}
 	});
 	
 	// set default settings 

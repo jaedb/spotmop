@@ -39,7 +39,7 @@
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-            <span ng-if="spotifyAuthorized && origin == 'spotify'">
+            <span ng-if="spotify.isAuthorized() && origin == 'spotify'">
                 <a class="button" ng-click="addToLibrary()" ng-if="!isInLibrary">Add to library</a>
                 <a class="button" ng-click="removeFromLibrary()" ng-if="isInLibrary">Remove from library</a>
             </span>

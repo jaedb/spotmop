@@ -268,7 +268,7 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
-	if( $rootScope.spotifyAuthorized ){	
+	if( $scope.spotify.isAuthorized() ){	
     
 		SpotifyService.getMyAlbums( userid )
 			.then( function( response ){

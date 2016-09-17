@@ -37,7 +37,7 @@ angular.module('spotmop.services.dialog', [])
 /**
  * Directive to handle wrapping functionality
  **/
-.directive('dialog', function( $compile ){
+.directive('dialog', function( $compile, SpotifyService ){
 	
 	return {
 		restrict: 'E',
@@ -52,6 +52,8 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: function( $scope, $element, DialogService ){
 			
+            $scope.spotify = SpotifyService;
+            
 			$scope.closeDisabled = false;
 			if( $scope.type == 'initialsetup' )
 				$scope.closeDisabled = true;

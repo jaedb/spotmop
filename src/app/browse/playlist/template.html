@@ -30,7 +30,7 @@
 				</confirmation-button>
 			</span>
 			
-            <span ng-if="spotifyAuthorized">
+            <span ng-if="spotify.isAuthorized()">
             
                 <span class="follow-unfollow" ng-show="!canEdit()" ng-class="{ 'following': following }">
                     <a class="button unfollow"

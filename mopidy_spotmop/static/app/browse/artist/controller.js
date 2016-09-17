@@ -101,7 +101,7 @@ angular.module('spotmop.browse.artist', [])
 			});
 
 		// figure out if we're following this playlist
-		if( $rootScope.spotifyAuthorized ){
+		if( $scope.spotify.isAuthorized() ){
 			
 			var spotifyuserid = SettingsService.getSetting('spotifyuser.id');
 			if( !spotifyuserid ) return false;
