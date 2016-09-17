@@ -1,12 +1,13 @@
 from __future__ import unicode_literals
 
-import logging, json, pykka, pylast, spotipy, pusher, urllib, urllib2, os, sys, mopidy_spotmop, subprocess
+import logging, json, pykka, pylast, pusher, urllib, urllib2, os, sys, mopidy_spotmop, subprocess
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 from mopidy import config, ext
 from mopidy.core import CoreListener
 from pkg_resources import parse_version
+from spotipy import Spotify
 
 # import logger
 logger = logging.getLogger(__name__)
@@ -24,9 +25,9 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         super(SpotmopFrontend, self).__init__()
         self.config = config
         self.core = core
-        self.spotify_token = False
         self.version = mopidy_spotmop.__version__
         self.is_root = ( os.geteuid() == 0 )
+        self.spotify_token = False
         self.radio = {
             "enabled": 0,
             "seed_artists": [],
@@ -48,9 +49,9 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         except( pylast.NetworkError, pylast.MalformedResponseError, pylast.WSError ) as e:
             logger.error('Error starting Pusher: %s', e)
             self.stop()
-            
+        
         # get a fresh spotify authentication token and store for future use
-        self.spotify_token = self.refresh_spotify_token()
+        self.refresh_spotify_token()
     
     ##
     # Listen for core events, and update our frontend as required
@@ -81,15 +82,19 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     # We need to build a Spotify authentication token first, and then fetch recommendations
     ##
     def load_more_tracks( self ):
-    
+        
+        # this is crude, but it means we don't need to handle expired tokens
+        # TODO: address this when it's clear what Jodal and the team want to do with Pyspotify
+        self.refresh_spotify_token()
+        
         try:
             token = self.spotify_token
             token = token['access_token']
         except:
-            logger.error('SpotmopFrontend: Spotify authentication failed')
+            logger.error('SpotmopFrontend: access_token missing or invalid')
             
         try:
-            spotify = spotipy.Spotify( auth = token )
+            spotify = Spotify( auth = token )
             response = spotify.recommendations(seed_artists = self.radio['seed_artists'], seed_genres = self.radio['seed_genres'], seed_tracks = self.radio['seed_tracks'], limit = 5)
             
             uris = []
@@ -161,11 +166,12 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
     # passing token to frontend for javascript requests without use of the Authorization Code Flow.
     ##
     def refresh_spotify_token( self ):
+    
         url = 'https://accounts.spotify.com/api/token'
         authorization = 'YTg3ZmI0ZGJlZDMwNDc1YjhjZWMzODUyM2RmZjUzZTI6ZDdjODlkMDc1M2VmNDA2OGJiYTE2NzhjNmNmMjZlZDY='
 
         headers = {'Authorization' : 'Basic ' + authorization}
-        data = {'grant_type': 'client_credentials'}            
+        data = {'grant_type': 'client_credentials'}
         data_encoded = urllib.urlencode( data )
         req = urllib2.Request(url, data_encoded, headers)
 
