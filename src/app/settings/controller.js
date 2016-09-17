@@ -31,16 +31,6 @@ angular.module('spotmop.settings', [])
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};
-	$scope.authorizeSpotify = function(){
-		SpotifyService.authorize();
-	};
-    $scope.refreshSpotifyToken = function(){
-		NotifyService.notify( 'Refreshing token' );
-        SpotifyService.refreshToken().then( function(){});
-    };
-    $scope.spotifyLogout = function(){
-        SpotifyService.logout();
-    };
 	$scope.upgrade = function(){
 		$scope.upgrading = true;
 		PusherService.query({ action: 'perform_upgrade' })
@@ -64,7 +54,7 @@ angular.module('spotmop.settings', [])
             data: {
                 mopidy: SettingsService.getSetting('mopidy'),
                 spotify: SettingsService.getSetting('spotify'),
-                spotifyuser: SettingsService.getSetting('spotifyuser')
+                pusher: SettingsService.getSetting('pusher')
             }
 		});
 	};

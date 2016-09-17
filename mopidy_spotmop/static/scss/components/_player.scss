@@ -98,7 +98,8 @@
  * Scrobbling
  **/
 
-.player .slider {
+.player .slider,
+.volume .slider {
 	
 	&.progress {
 		padding-top: 5px;
@@ -139,6 +140,12 @@
 			max-width: 100%;
 		}
 	}
+}
+
+.volume-controls-dialog .slider {
+	.track {
+		height: 12px;
+    }
 }
 
 

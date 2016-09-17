@@ -49,14 +49,8 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             logger.error('Error starting Pusher: %s', e)
             self.stop()
             
-        # get a spotify authentication token and store for future use
-        self.spotify_token = self.get_spotify_token()
-    
-    
-    # refresh our spotify token
-    def refresh_spotify_token( self ):
-        self.spotify_token = self.get_spotify_token()
-        return self.spotify_token
+        # get a fresh spotify authentication token and store for future use
+        self.spotify_token = self.refresh_spotify_token()
     
     ##
     # Listen for core events, and update our frontend as required
@@ -160,13 +154,13 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         
     
     ##
-    # Get a spotify authentication token
+    # Get a new spotify authentication token
     #
     # Uses the Client Credentials Flow, so is invisible to the user. We need this token for
     # any backend spotify requests (we don't tap in to Mopidy-Spotify, yet). Also used for
     # passing token to frontend for javascript requests without use of the Authorization Code Flow.
     ##
-    def get_spotify_token( self ):
+    def refresh_spotify_token( self ):
         url = 'https://accounts.spotify.com/api/token'
         authorization = 'YTg3ZmI0ZGJlZDMwNDc1YjhjZWMzODUyM2RmZjUzZTI6ZDdjODlkMDc1M2VmNDA2OGJiYTE2NzhjNmNmMjZlZDY='
 
@@ -178,9 +172,15 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         try:
             response = urllib2.urlopen(req, timeout=30).read()
             response_dict = json.loads(response)
+            self.spotify_token = response_dict
             return response_dict
         except urllib2.HTTPError as e:
             return e
+        
+   
+    # get our spotify token
+    def get_spotify_token( self ):
+        return self.spotify_token
         
         
     ##

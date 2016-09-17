@@ -2665,35 +2665,44 @@ body.dragging .tracklist .track.dropping {
 /**
  * Scrobbling
  **/
-.player .slider.progress {
+.player .slider.progress,
+.volume .slider.progress {
   padding-top: 5px;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 8; }
-  .player .slider.progress .track {
+  .player .slider.progress .track,
+  .volume .slider.progress .track {
     background: none;
     height: 4px; }
-    .player .slider.progress .track .fill.playing {
+    .player .slider.progress .track .fill.playing,
+    .volume .slider.progress .track .fill.playing {
       -webkit-transition: all 1s linear;
       -moz-transition: all 1s linear;
       -o-transition: all 1s linear;
       transition: all 1s linear; }
-  .player .slider.progress:hover .track {
+  .player .slider.progress:hover .track,
+  .volume .slider.progress:hover .track {
     height: 12px;
     background: rgba(0, 0, 0, 0.15); }
-.player .slider .track {
+.player .slider .track,
+.volume .slider .track {
   position: relative;
   height: 2px;
   background: rgba(255, 255, 255, 0.3); }
-  .player .slider .track .fill {
+  .player .slider .track .fill,
+  .volume .slider .track .fill {
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
     background: #08d58f;
     max-width: 100%; }
+
+.volume-controls-dialog .slider .track {
+  height: 12px; }
 
 /**
  * Full player

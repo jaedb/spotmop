@@ -16,7 +16,7 @@
                 Mopidy offline
             </div>
 		
-            <div class="flag bad" ng-show="!spotifyOnline">
+            <div class="flag bad" ng-show="!spotify.state().online">
                 <i class="fa fa-exclamation-triangle white-text"></i>
                 &nbsp;
                 Spotify offline
@@ -137,33 +137,26 @@
                     </div>
                 </div>
                 
-                <div class="field current-user" ng-if="spotifyAuthorized">
+                <div class="field current-user" ng-if="spotify.isAuthorized()">
                     <div class="label">Current user</div>
                     <div class="input">
                         <span class="my-profile">
-                            <span class="image-container" ng-repeat="image in settings.state().spotifyuser.images  | limitTo:1">
+                            <span class="image-container" ng-repeat="image in spotify.state().user.images  | limitTo:1">
                                 <div class="image animate" style="background-image: url({{ image.url }});"></div>
                             </span>
-                            <span ng-bind="settings.state().spotifyuser.display_name"></span> (<a ng-bind="settings.state().spotifyuser.id" ui-sref="browse.user({ uri: settings.state().spotifyuser.uri })"></a>)
+                            <span ng-bind="spotify.state().user.display_name"></span> (<a ng-bind="spotify.state().user.id" ui-sref="browse.user({ uri: spotify.state().user.uri })"></a>)
                             &nbsp;&nbsp;
-                            <a ng-click="spotifyLogout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
+                            <a ng-click="spotify.logout()"><i class="fa fa-close"></i>&nbsp; Log out</a>
                         </span>
                     </div>
                 </div>
             
-                <div class="field" ng-if="!spotifyAuthorized">
+                <div class="field" ng-if="!spotify.isAuthorized()">
                     <div class="label">Connect to Spotify</div>
                     <div class="input">
-                        <a class="button primary" ng-click="authorizeSpotify()"><i class="fa fa-tick"></i>&nbsp; Login to Spotify</a>
+                        <a class="button primary" ng-click="spotify.authorize()"><i class="fa fa-tick"></i>&nbsp; Login to Spotify</a>
                     </div>
 				</div>
-
-                <div class="field" ng-if="settings.state().advancedMode && spotifyOnline">
-                    <div class="label">Spotify authentication</div>
-                    <div class="input">
-                        <a class="button" ng-click="refreshSpotifyToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
-                    </div>
-                </div>
 
 				<div class="clear-both"></div>
 			
@@ -190,6 +183,13 @@
                             <input type="radio" name="pointerMode" ng-model="settings.state().pointerMode" value="touch" />
                             <span class="label">Force touch</span>
                         </label>
+                    </div>
+                </div>
+
+                <div class="field" ng-if="spotify.state().online">
+                    <div class="label">Spotify authentication</div>
+                    <div class="input">
+                        <a class="button" ng-click="spotify.refreshToken()"><i class="fa fa-refresh"></i>&nbsp; Force token refresh</a>
                     </div>
                 </div>
 

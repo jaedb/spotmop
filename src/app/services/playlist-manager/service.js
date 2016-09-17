@@ -84,7 +84,7 @@ angular.module('spotmop.services.playlistManager', [])
                 var origin = $filter('assetOrigin')(playlist.uri);
                 if( origin == 'spotify' ){
                     var user = SettingsService.getSetting('spotifyuser.id');
-                    if( $rootScope.spotifyAuthorized && playlist.uri.startsWith('spotify:user:'+user) ){
+                    if( SpotifyService.isAuthorized() && playlist.uri.startsWith('spotify:user:'+user) ){
                         myPlaylists.push( playlist );
                     }
                 }else{

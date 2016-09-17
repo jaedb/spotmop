@@ -337,10 +337,11 @@ angular.module('spotmop', [
     
     $scope.mopidy = MopidyService;
     $scope.mopidy.start();
+    
+    $scope.spotify = SpotifyService;
 	
 	// wait for pusher to connect before we kick in spotify
 	$rootScope.$on('spotmop:pusher:online', function(event,data){
-        $scope.spotify = SpotifyService;
         $scope.spotify.start();
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
@@ -356,19 +357,18 @@ angular.module('spotmop', [
 	
 	// when a client requests sync pairing
 	$rootScope.$on('spotmop:pusher:config_push', function(event, message){
-        console.log( message );
+        
 		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this? This will overwrite your current Spotify and Mopidy configuration. ') == true ){
             
             if( message.data.spotify === null ) message.data.spotify = {};
             SettingsService.setSetting('spotify', message.data.spotify);
+            $scope.spotify.setState( message.data.spotify );
             
-            if( message.data.spotifyuser === null ) message.data.spotifyuser = {};
-            SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
+            if( message.data.pusher === null ) message.data.pusher = {};
+            SettingsService.setSetting('pusher', message.data.pusher);
             
             if( message.data.mopidy === null ) message.data.mopidy = {};
             SettingsService.setSetting('mopidy', message.data.mopidy);
-            
-            SpotifyService.start();
             
             PusherService.broadcast({
                 action: 'soft_notification',
