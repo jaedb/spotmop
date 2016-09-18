@@ -100,14 +100,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		// perform post-upgrade commands
-		postUpgrade: function(){
-			
-			// depreciated settings
-			service.setSetting('emulateTouchDevice',false);
-			service.setSetting('pointerMode','default');
 		}
 	};
 		

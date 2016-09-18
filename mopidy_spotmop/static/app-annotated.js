@@ -29841,7 +29841,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "PlaylistManagerService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
+.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "$cacheFactory", "$templateCache", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "PlaylistManagerService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, $cacheFactory, $templateCache, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -30037,7 +30037,12 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		PlaylistManagerService.refreshPlaylists();
+		
+		// refresh our spotify token, then fetch all our playlists
+		SpotifyService.refreshToken()
+			.then( function(){
+				PlaylistManagerService.refreshPlaylists();
+			});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -30089,7 +30094,16 @@ angular.module('spotmop', [
         $scope.spotify.start();
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
+				
+				// detect recent upgrades first
+				if( SettingsService.setSetting('version') != response.data.version ){
+					NotifyService.notify('New version detected, clearing caches...');      
+					$cacheFactory.get('$http').removeAll();
+					$templateCache.removeAll();
+				}
+				
 				SettingsService.setSetting('version',response.data.version);
+				
 				if( response.data.version.upgrade_available ){
 					NotifyService.notify( 'New version ('+response.data.version.latest_version+') available!' );
 				}
@@ -37084,24 +37098,8 @@ angular.module('spotmop.services.pusher', [
 						
 						switch( message.action ){
 						
-							// initial connection status message, just parse it through quietly
-							case 'client_connected':
-                                
-                                service.updateConnections();
-                                
-								// if the new connection is mine
-								if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
-									console.info('Pusher connection '+message.data.connectionid+' accepted');
-									
-									// detect if the core has been updated
-									if( message.data.version != SettingsService.getSetting('version.installed') ){
-										NotifyService.notify('New version detected, clearing caches...');      
-										$cacheFactory.get('$http').removeAll();
-										$templateCache.removeAll();
-										SettingsService.setSetting('version.installed', message.data.version);
-										SettingsService.postUpgrade();
-									}
-								}							
+							case 'client_connected':                                
+                                service.updateConnections();					
 								break;
 						
 							case 'client_disconnected':                                
@@ -37216,7 +37214,7 @@ angular.module('spotmop.services.pusher', [
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, PusherService, NotifyService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, PusherService, NotifyService ){
 	
     // set out-of-the-box defaults
 	var state = {
@@ -37234,7 +37232,19 @@ angular.module('spotmop.services.spotify', [])
 	
     // if we have local storage, then load this in
 	if( SettingsService.getSetting('spotify') ){
-		state = SettingsService.getSetting('spotify');
+		
+		// old-style user storage
+		if( SettingsService.getSetting('spotifyuser') )
+			state.user = SettingsService.getSetting('spotifyuser');
+		
+		if( SettingsService.getSetting('spotify.auth_method') )
+			state.auth_method = SettingsService.getSetting('spotify.auth_method');
+		
+		if( SettingsService.getSetting('spotify.auth') )
+			state.auth = SettingsService.getSetting('spotify.auth');
+		
+		if( SettingsService.getSetting('spotify.user') )
+			state.user = SettingsService.getSetting('spotify.user');
 	}
 	
 	// setup response object
@@ -37337,8 +37347,8 @@ angular.module('spotmop.services.spotify', [])
 				
 				PusherService.query({ action: 'refresh_spotify_token' })
 					.then( function(response){
-						service.setAccessToken( response.data.access_token, new Date().getTime() + 3600000 );
-						deferred.resolve( response.data );
+						service.setAccessToken( response.data.token.access_token, new Date().getTime() + 3600000 );
+						deferred.resolve( response.data.token );
 					});
 				
 			}else if( state.auth_method == 'client' ){
@@ -39063,14 +39073,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		// perform post-upgrade commands
-		postUpgrade: function(){
-			
-			// depreciated settings
-			service.setSetting('emulateTouchDevice',false);
-			service.setSetting('pointerMode','default');
 		}
 	};
 		

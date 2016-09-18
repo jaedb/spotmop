@@ -106,24 +106,8 @@ angular.module('spotmop.services.pusher', [
 						
 						switch( message.action ){
 						
-							// initial connection status message, just parse it through quietly
-							case 'client_connected':
-                                
-                                service.updateConnections();
-                                
-								// if the new connection is mine
-								if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
-									console.info('Pusher connection '+message.data.connectionid+' accepted');
-									
-									// detect if the core has been updated
-									if( message.data.version != SettingsService.getSetting('version.installed') ){
-										NotifyService.notify('New version detected, clearing caches...');      
-										$cacheFactory.get('$http').removeAll();
-										$templateCache.removeAll();
-										SettingsService.setSetting('version.installed', message.data.version);
-										SettingsService.postUpgrade();
-									}
-								}							
+							case 'client_connected':                                
+                                service.updateConnections();					
 								break;
 						
 							case 'client_disconnected':                                

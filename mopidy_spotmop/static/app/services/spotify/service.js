@@ -8,7 +8,7 @@
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, PusherService, NotifyService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, PusherService, NotifyService ){
 	
     // set out-of-the-box defaults
 	var state = {
@@ -26,7 +26,19 @@ angular.module('spotmop.services.spotify', [])
 	
     // if we have local storage, then load this in
 	if( SettingsService.getSetting('spotify') ){
-		state = SettingsService.getSetting('spotify');
+		
+		// old-style user storage
+		if( SettingsService.getSetting('spotifyuser') )
+			state.user = SettingsService.getSetting('spotifyuser');
+		
+		if( SettingsService.getSetting('spotify.auth_method') )
+			state.auth_method = SettingsService.getSetting('spotify.auth_method');
+		
+		if( SettingsService.getSetting('spotify.auth') )
+			state.auth = SettingsService.getSetting('spotify.auth');
+		
+		if( SettingsService.getSetting('spotify.user') )
+			state.user = SettingsService.getSetting('spotify.user');
 	}
 	
 	// setup response object
@@ -129,8 +141,8 @@ angular.module('spotmop.services.spotify', [])
 				
 				PusherService.query({ action: 'refresh_spotify_token' })
 					.then( function(response){
-						service.setAccessToken( response.data.access_token, new Date().getTime() + 3600000 );
-						deferred.resolve( response.data );
+						service.setAccessToken( response.data.token.access_token, new Date().getTime() + 3600000 );
+						deferred.resolve( response.data.token );
 					});
 				
 			}else if( state.auth_method == 'client' ){

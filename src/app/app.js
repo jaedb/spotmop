@@ -71,7 +71,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, $cacheFactory, $templateCache, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -267,7 +267,12 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		PlaylistManagerService.refreshPlaylists();
+		
+		// refresh our spotify token, then fetch all our playlists
+		SpotifyService.refreshToken()
+			.then( function(){
+				PlaylistManagerService.refreshPlaylists();
+			});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
@@ -319,7 +324,16 @@ angular.module('spotmop', [
         $scope.spotify.start();
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
+				
+				// detect recent upgrades first
+				if( SettingsService.setSetting('version') != response.data.version ){
+					NotifyService.notify('New version detected, clearing caches...');      
+					$cacheFactory.get('$http').removeAll();
+					$templateCache.removeAll();
+				}
+				
 				SettingsService.setSetting('version',response.data.version);
+				
 				if( response.data.version.upgrade_available ){
 					NotifyService.notify( 'New version ('+response.data.version.latest_version+') available!' );
 				}
