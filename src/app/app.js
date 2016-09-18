@@ -319,9 +319,9 @@ angular.module('spotmop', [
         $scope.spotify.start();
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
-				SettingsService.setSetting('version',response.data);
-				if( response.data.upgrade_available ){
-					NotifyService.notify( 'New version ('+response.data.latest_version+') available!' );
+				SettingsService.setSetting('version',response.data.version);
+				if( response.data.version.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.version.latest_version+') available!' );
 				}
 			});
 	});
