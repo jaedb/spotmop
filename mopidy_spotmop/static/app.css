@@ -959,8 +959,8 @@ h1 .flag {
 
 .body .button.disabled,
 .body .button.disabled:hover {
-  cursor: not-allowed;
-  opacity: 0.5; }
+  opacity: 0.3 !important;
+  cursor: not-allowed; }
 
 .body .button.float-right {
   float: right; }
@@ -1298,6 +1298,11 @@ h1 .flag {
  **/
 .queue-intro {
   padding-bottom: 20px; }
+
+.radio-intro {
+  padding: 10px 12px;
+  background: #EEEEEE;
+  color: #777777; }
 
 .now-playing-page .page-header {
   display: none; }
@@ -1674,7 +1679,7 @@ h1 .flag {
   text-align: top; }
   .field .disabled .label,
   .field .disabled label {
-    opacity: 0.5;
+    opacity: 0.3;
     cursor: not-allowed !important; }
   .field .label {
     float: left;
@@ -2607,15 +2612,22 @@ body.dragging .tracklist .track.dropping {
   opacity: 0.75;
   display: inline-block;
   background: transparent; }
-
-.player .button.active,
-.player .button:hover {
-  opacity: 1;
-  cursor: pointer; }
-
-.player .button.active {
-  color: #08d58f; }
-
+  .player .button.stop-radio {
+    padding-right: 0;
+    margin-right: 0; }
+    .player .button.stop-radio .label {
+      font-size: 14px;
+      display: inline-block;
+      vertical-align: top;
+      margin-top: 4px;
+      text-transform: uppercase;
+      font-weight: bold;
+      padding-left: 3px; }
+  .player .button.active, .player .button:hover {
+    opacity: 1;
+    cursor: pointer; }
+  .player .button.active {
+    color: #08d58f; }
 .player .track-info {
   text-align: center;
   font-size: 16px;
@@ -2623,25 +2635,21 @@ body.dragging .tracklist .track.dropping {
   padding-bottom: 20px;
   padding-left: 15px;
   padding-right: 15px; }
-
-.player .track-info .track {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis; }
-
-.player .track-info .artist {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.5; }
-
-.player .track-info .artist a {
-  text-decoration: none;
-  color: #FFFFFF;
-  border-bottom: 1px dotted transparent; }
-
-.player .track-info .artist a:hover {
-  border-color: #FFFFFF; }
+  .player .track-info .track {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+  .player .track-info .artist {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.5; }
+    .player .track-info .artist a {
+      text-decoration: none;
+      color: #FFFFFF;
+      border-bottom: 1px dotted transparent; }
+      .player .track-info .artist a:hover {
+        border-color: #FFFFFF; }
 
 /**
  * Playback controls

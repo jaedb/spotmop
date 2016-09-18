@@ -27,7 +27,6 @@ angular.module('spotmop.settings', [])
 	$scope.version;
 	$scope.settings = SettingsService;
     $scope.pusher = PusherService;
-	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};

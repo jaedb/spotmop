@@ -130,7 +130,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         self.core.playback.play()
         
         # notify clients
-        pusher.broadcast( 'radio_started', self.radio )
+        pusher.broadcast( 'radio_started', { 'radio': self.radio })
         
         # return new radio state to initial call
         return self.radio
@@ -152,7 +152,7 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         self.core.tracklist.clear()
         
         # notify clients
-        pusher.broadcast( 'radio_stopped', self.radio )
+        pusher.broadcast( 'radio_stopped', { 'radio': self.radio })
         
         # return new radio state to initial call
         return self.radio

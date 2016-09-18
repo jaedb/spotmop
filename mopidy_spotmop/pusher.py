@@ -159,7 +159,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    connectionsDetailsList
+                    { 'connections': connectionsDetailsList }
                 )
             
             # change connection's client username
@@ -173,22 +173,30 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     self.connectionid, 
                     'response', 
                     messageJson['action'], 
-                    messageJson['message_id'], 
-                    connections[messageJson['origin']['connectionid']]['client']
+                    messageJson['message_id'],
+                    { 'connection': connections[messageJson['origin']['connectionid']]['client'] }
                 )
                 
                 # notify all clients of this change
-                broadcast( 'connection_updated', connections[messageJson['origin']['connectionid']]['client'] )
+                broadcast( 'connection_updated', { 'connections': connections[messageJson['origin']['connectionid']]['client'] })
         
             # start radio
             elif messageJson['action'] == 'start_radio':
-                radio = self.frontend.start_radio( messageJson )
+            
+                # pull out just the radio data (we don't want all the message_id guff)
+                radio = {
+                    'enabled': 1,
+                    'seed_artists': messageJson['seed_artists'],
+                    'seed_genres': messageJson['seed_genres'],
+                    'seed_tracks': messageJson['seed_tracks']
+                }
+                radio = self.frontend.start_radio( radio )
                 send_message( 
                     self.connectionid, 
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    radio
+                    { 'radio': radio }
                 )
         
             # stop radio
@@ -199,7 +207,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    radio
+                    { 'radio': self.frontend.radio }
                 )
             
             # fetch our current radio state
@@ -209,7 +217,7 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'],
-                    self.frontend.radio
+                    { 'radio': self.frontend.radio }
                 )
         
             # get our spotify authentication token
@@ -219,45 +227,45 @@ class PusherWebsocketHandler(tornado.websocket.WebSocketHandler):
                     'response',
                     messageJson['action'],
                     messageJson['message_id'],
-                    self.frontend.spotify_token
+                    { 'token': self.frontend.spotify_token } 
                 )
         
             # refresh our spotify authentication token
             elif messageJson['action'] == 'refresh_spotify_token':
-                new_token = self.frontend.refresh_spotify_token()
+                token = self.frontend.refresh_spotify_token()
                 send_message( 
                     self.connectionid, 
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    new_token 
+                    { 'token': token } 
                 )
         
             # get system version and check for upgrade
             elif messageJson['action'] == 'get_version':
-                data = self.frontend.get_version()
+                version = self.frontend.get_version()
                 send_message( 
                     self.connectionid, 
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    data 
+                    { 'version': version } 
                 )
         
             # get system version and check for upgrade
             elif messageJson['action'] == 'perform_upgrade':
-                data = self.frontend.get_version()
-                data['upgrade_successful'] = self.frontend.perform_upgrade()
+                version = self.frontend.get_version()
+                version['upgrade_successful'] = self.frontend.perform_upgrade()
                 send_message( 
                     self.connectionid, 
                     'response', 
                     messageJson['action'], 
                     messageJson['message_id'], 
-                    data 
+                    { 'version': version } 
                 )
                 
                 # notify all clients of this change
-                broadcast( 'upgraded', data )
+                broadcast( 'upgraded', { 'version': version })
         
             # restart mopidy
             elif messageJson['action'] == 'restart':

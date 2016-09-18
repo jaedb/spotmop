@@ -88,16 +88,16 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('spotmop:pusher:online', function( event, message ){
 		PusherService.query({ action: 'get_radio' })
             .then( function(response){
-                state.radio = response.data;
+                state.radio = response.data.radio;
             });
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
-		state.radio = message.data;
+		state.radio = message.data.radio;
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
-		state.radio = message.data;
+		state.radio = message.data.radio;
 	});
 	
 	// update our toggle states from the mopidy server
@@ -464,14 +464,14 @@ angular.module('spotmop.services.player', [])
             
 			PusherService.query( data )
                 .then( function(response){
-                    state.radio = response.data;
+                    state.radio = response.data.radio;
                 });
         },
         
         stopRadio: function(){
 			PusherService.query({ action: 'stop_radio' })
                 .then( function(response){
-                    state.radio = response.data;
+                    state.radio = response.data.radio;
                 });
         },
 		

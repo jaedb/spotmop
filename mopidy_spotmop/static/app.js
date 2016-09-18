@@ -30552,7 +30552,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService, PlayerService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = { type: 'track' };
@@ -30582,21 +30582,8 @@ angular.module('spotmop.browse.artist', [])
 		}
 		$scope.playArtistRadio = function(){
 		
-			NotifyService.notify('Starting artist radio (beta)');
-			
-			// get the artist's top tracks
-			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
-				.then( function( response ){
-				
-					var uris = [];
-					for( var i = 0; i < response.tracks.length; i++ ){
-						uris.push( response.tracks[i].uri );
-					}
-					MopidyService.clearCurrentTrackList()
-						.then( function(){
-							MopidyService.playTrack( uris, 0 );
-						});
-				});
+			NotifyService.notify('Starting artist radio');
+			PlayerService.startRadio([ $stateParams.uri ]);
 		}
 		
 		// get the artist from Spotify
@@ -34927,16 +34914,16 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('spotmop:pusher:online', function( event, message ){
 		PusherService.query({ action: 'get_radio' })
             .then( function(response){
-                state.radio = response.data;
+                state.radio = response.data.radio;
             });
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
-		state.radio = message.data;
+		state.radio = message.data.radio;
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
-		state.radio = message.data;
+		state.radio = message.data.radio;
 	});
 	
 	// update our toggle states from the mopidy server
@@ -35303,14 +35290,14 @@ angular.module('spotmop.services.player', [])
             
 			PusherService.query( data )
                 .then( function(response){
-                    state.radio = response.data;
+                    state.radio = response.data.radio;
                 });
         },
         
         stopRadio: function(){
 			PusherService.query({ action: 'stop_radio' })
                 .then( function(response){
-                    state.radio = response.data;
+                    state.radio = response.data.radio;
                 });
         },
 		
@@ -36327,37 +36314,52 @@ angular.module('spotmop.services.mopidy', [
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
 			
-			var self = this;
-			if( typeof(at_position) === 'undefined' ) var at_position = 0;
-			
-			cfpLoadingBar.start();
-			cfpLoadingBar.set(0.25);
-			
-			// add the first track immediately
-			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
-			
-				// then play it
-				.then( function( response ){
-					
-					// make sure we added the track successfully
-					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
-					var playTrack = null;					
-					if( response.length > 0 ){
-						playTrack = { tlid: response[0].tlid };
-					}
-					
-					return self.mopidy.playback.play( playTrack )
-				
-						// now add all the remaining tracks
-						.then( function(){
-							if( trackUris.length > 0 ){
-								return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
-									.then( function(){
-										cfpLoadingBar.complete();
-									});
-							}
-						}, consoleError);
-				}, consoleError);
+            var self = this;
+            var playTheTracks = function(){                
+                if( typeof(at_position) === 'undefined' ) var at_position = 0;
+                
+                cfpLoadingBar.start();
+                cfpLoadingBar.set(0.25);
+                
+                // add the first track immediately
+                return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
+                
+                    // then play it
+                    .then( function( response ){
+                        
+                        // make sure we added the track successfully
+                        // this handles failed adds due to geo-blocked spotify and typos in uris, etc
+                        var playTrack = null;					
+                        if( response.length > 0 ){
+                            playTrack = { tlid: response[0].tlid };
+                        }
+                        
+                        return self.mopidy.playback.play( playTrack )
+                    
+                            // now add all the remaining tracks
+                            .then( function(){
+                                if( trackUris.length > 0 ){
+                                    return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
+                                        .then( function(){
+                                            cfpLoadingBar.complete();
+                                        });
+                                }
+                            }, consoleError);
+                    }, consoleError);
+            };
+            
+            PusherService.query({ action: 'get_radio' })
+                .then( function(response){
+                    if( response.data.radio.enabled ){
+                        PusherService.query({ action: 'stop_radio' })
+                            .then( function(){
+                                playTheTracks();
+                            });
+                    }else{
+                        playTheTracks();
+                    }
+                });
+                
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
@@ -37196,7 +37198,7 @@ angular.module('spotmop.services.pusher', [
         updateConnections: function(){
 			service.query({ action: 'get_connections' })
                 .then( function(response){
-                    state.connections = response.data;
+                    state.connections = response.data.connections;
                 });
         }
 	};
@@ -38870,7 +38872,6 @@ angular.module('spotmop.settings', [])
 	$scope.version;
 	$scope.settings = SettingsService;
     $scope.pusher = PusherService;
-	$scope.currentSubpage = 'mopidy';
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};

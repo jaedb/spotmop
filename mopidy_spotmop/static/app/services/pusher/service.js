@@ -220,7 +220,7 @@ angular.module('spotmop.services.pusher', [
         updateConnections: function(){
 			service.query({ action: 'get_connections' })
                 .then( function(response){
-                    state.connections = response.data;
+                    state.connections = response.data.connections;
                 });
         }
 	};

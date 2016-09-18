@@ -199,37 +199,52 @@ angular.module('spotmop.services.mopidy', [
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
 			
-			var self = this;
-			if( typeof(at_position) === 'undefined' ) var at_position = 0;
-			
-			cfpLoadingBar.start();
-			cfpLoadingBar.set(0.25);
-			
-			// add the first track immediately
-			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
-			
-				// then play it
-				.then( function( response ){
-					
-					// make sure we added the track successfully
-					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
-					var playTrack = null;					
-					if( response.length > 0 ){
-						playTrack = { tlid: response[0].tlid };
-					}
-					
-					return self.mopidy.playback.play( playTrack )
-				
-						// now add all the remaining tracks
-						.then( function(){
-							if( trackUris.length > 0 ){
-								return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
-									.then( function(){
-										cfpLoadingBar.complete();
-									});
-							}
-						}, consoleError);
-				}, consoleError);
+            var self = this;
+            var playTheTracks = function(){                
+                if( typeof(at_position) === 'undefined' ) var at_position = 0;
+                
+                cfpLoadingBar.start();
+                cfpLoadingBar.set(0.25);
+                
+                // add the first track immediately
+                return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
+                
+                    // then play it
+                    .then( function( response ){
+                        
+                        // make sure we added the track successfully
+                        // this handles failed adds due to geo-blocked spotify and typos in uris, etc
+                        var playTrack = null;					
+                        if( response.length > 0 ){
+                            playTrack = { tlid: response[0].tlid };
+                        }
+                        
+                        return self.mopidy.playback.play( playTrack )
+                    
+                            // now add all the remaining tracks
+                            .then( function(){
+                                if( trackUris.length > 0 ){
+                                    return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
+                                        .then( function(){
+                                            cfpLoadingBar.complete();
+                                        });
+                                }
+                            }, consoleError);
+                    }, consoleError);
+            };
+            
+            PusherService.query({ action: 'get_radio' })
+                .then( function(response){
+                    if( response.data.radio.enabled ){
+                        PusherService.query({ action: 'stop_radio' })
+                            .then( function(){
+                                playTheTracks();
+                            });
+                    }else{
+                        playTheTracks();
+                    }
+                });
+                
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
