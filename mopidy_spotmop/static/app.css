@@ -2037,26 +2037,6 @@ input[type="submit"] {
     -webkit-filter: invert(1);
     -moz-filter: invert(1);
     filter: invert(1); } }
-.si.light {
-  -webkit-filter: invert(1) brightness(75%);
-  -moz-filter: invert(1) brightness(75%);
-  filter: invert(1) brightness(75%); }
-
-.si.yellow {
-  -webkit-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
-  -moz-filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%);
-  filter: invert(60%) sepia(50%) hue-rotate(360deg) saturate(510%) brightness(110%); }
-
-.si.red {
-  -webkit-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
-  -moz-filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%);
-  filter: invert(45%) sepia(50%) hue-rotate(320deg) saturate(720%) brightness(90%); }
-
-.si.green {
-  -webkit-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
-  -moz-filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%);
-  filter: invert(50%) sepia(50%) hue-rotate(50deg) saturate(450%) brightness(110%); }
-
 /**
  * touchDevice specific elements
  * This is how we show touch-friendly track selection and context menus, etc
@@ -2176,8 +2156,18 @@ input[type="submit"] {
     position: absolute;
     top: 9px;
     right: 3px; }
+    .tracklist .track .source .fa {
+      opacity: 0.5; }
   .tracklist .track.playing {
     font-weight: bold; }
+    .tracklist .track.playing .source .fa {
+      opacity: 1; }
+    .tracklist .track.playing .source .fa-local {
+      color: #e8ae26; }
+    .tracklist .track.playing .source .fa-youtube {
+      color: #e62610; }
+    .tracklist .track.playing .source .fa-spotify {
+      color: #68b82b; }
   .tracklist .track.folder .icon {
     width: 24px;
     float: left; }
