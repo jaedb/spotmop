@@ -137,9 +137,13 @@ angular.module('spotmop.search', [])
 		$scope.results.playlists = [];
 		
 		// perform the mopidy search
+        console.log('Performing search for '+query);
+        
 		MopidyService.search(fields, query, sources)
 			.then( function(sources){
 				
+                console.log( sources );
+                
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					

@@ -7,7 +7,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: function( $element, $scope, $rootScope, MopidyService, NotifyService, PlayerService ){
+		controller: function( $element, $scope, $rootScope, $filter, MopidyService, NotifyService, PlayerService ){
 			
             // parse our parent tracklist into the track itself
             // useful for detecting drag event capabilities
@@ -20,23 +20,13 @@ angular.module('spotmop.common.track', [])
 			$scope.isCurrentlyPlaying = function(){
 				return ( typeof($scope.track.tlid) !== 'undefined' && $scope.track.tlid == $scope.state().currentTlTrack.tlid );
 			}
-			
-			/**
-			 * What type of track are we? Use our uri to figure this out
-			 * @return string
-			 **/
-			$scope.sourceIconClasses = function(){
-                if( typeof($scope.track.uri) !== 'undefined' ){
-                    var source = $scope.track.uri.split(':')[0];
-                    var state = 'light';
-                    if( $scope.isCurrentlyPlaying() ){
-                        if( source == 'spotify' ) state = 'green';
-                        if( source == 'local' ) state = 'yellow';
-                        if( source == 'soundcloud' ) state = 'red';
-                    }
-                    return source +' '+ state;
-                }
-			}
+            
+            // get source for this track (ie spotify, youtube, local)
+            $scope.source = function(){
+                var source = $filter('assetOrigin')( $scope.track.uri );
+                if( source == 'local' || source == 'file' ) source = 'folder';
+                return source;
+            }
 			
 			/**
 			 * Single click
