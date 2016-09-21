@@ -58,13 +58,13 @@
 					<div class="label">Current version</div>
 					<div class="input readonly">
 					
-						<span ng-bind="settings.state().version.version"></span>
+						<span ng-bind="settings.state().version.current"></span>
 						<span ng-show="!settings.state().version.upgrade_available">(latest version)</span>
 						
 						<span ng-show="settings.state().version.upgrade_available">
 						
 							<span ng-show="settings.state().version.is_root">
-								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ settings.state().version.latest_version }}</a>
+								<a class="button secondary" ng-click="upgrade()" ng-show="!upgrading">Upgrade to {{ settings.state().version.latest }}</a>
 								<a class="button secondary disabled" ng-show="upgrading"><i class="fa fa-spin fa-circle-o-notch"></i>&nbsp; Upgrading</a>
 							</span>
 							

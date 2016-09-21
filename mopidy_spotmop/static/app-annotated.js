@@ -30095,17 +30095,18 @@ angular.module('spotmop', [
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
 				
-				// detect recent upgrades first
-				if( SettingsService.setSetting('version') != response.data.version ){
-					NotifyService.notify('New version detected, clearing caches...');      
+				// check if we've upgraded since we last loaded
+				if( SettingsService.getSetting('version.current') != response.data.version.current ){
+					NotifyService.notify('New version detected, clearing caches...');
 					$cacheFactory.get('$http').removeAll();
 					$templateCache.removeAll();
 				}
 				
-				SettingsService.setSetting('version',response.data.version);
+				// update our storage
+				SettingsService.setSetting('version', response.data.version);
 				
 				if( response.data.version.upgrade_available ){
-					NotifyService.notify( 'New version ('+response.data.version.latest_version+') available!' );
+					NotifyService.notify( 'New version ('+response.data.version.latest+') available!' );
 				}
 			});
 	});
@@ -33556,6 +33557,8 @@ angular.module('spotmop.common.tracklist', [])
 					else selectedTracksUris.push( track.uri );
 				});
 				
+				NotifyService.notify('Starting track radio');
+
 				PlayerService.startRadio( selectedTracksUris );
 			});
             
@@ -34852,7 +34855,8 @@ angular.module('spotmop.services.player', [])
 	var state = {
 		playbackState: 'stopped',
         radio: {
-			enabled: false
+			enabled: false,
+			resolvedSeeds: []
 		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
@@ -34928,17 +34932,55 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('spotmop:pusher:online', function( event, message ){
 		PusherService.query({ action: 'get_radio' })
             .then( function(response){
-                state.radio = response.data.radio;
-            });
+            	updateRadio( response.data.radio );
+			});
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
-		state.radio = message.data.radio;
+		updateRadio( message.data.radio );
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
-		state.radio = message.data.radio;
+		updateRadio( message.data.radio );
 	});
+
+
+	/**
+	 * Update our radio data
+	 *
+	 * Provides an opportunity for us to resolve seed objects into Spotify tracks, albums, etc
+	 * @param object radio
+	 **/
+	function updateRadio( radio ){
+
+    	radio.resolvedSeeds = [];
+        state.radio = radio;
+
+		if( state.radio.seed_tracks.length > 0 ){
+			var trackids = [];
+			for( var i = 0; i < radio.seed_tracks.length; i++ ){
+				trackids.push( SpotifyService.getFromUri('trackid', state.radio.seed_tracks[i]) );
+			}
+
+			SpotifyService.getTracks( trackids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response.tracks );
+				});
+		}
+
+		if( state.radio.seed_artists.length > 0 ){
+			var artistids = [];
+			for( var i = 0; i < radio.seed_artists.length; i++ ){
+				artistids.push( SpotifyService.getFromUri('artistid', state.radio.seed_artists[i]) );
+			}
+
+			SpotifyService.getArtists( artistids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response );
+				});
+		}
+	}
+
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -35414,19 +35456,6 @@ angular.module('spotmop.queue', [])
 	$scope.stopRadio = function(){
 		PlayerService.stopRadio();
 	};
-	
-	
-    /**
-     * Watch the current tracklist
-     * And update our totalTime when the tracklist changes
-     **/
-     /*
-    $scope.$watch(
-        'player.currentTracklist',
-        function(newTracklist, oldTracklist){
-			$scope.tracks = newTracklist;
-        }
-    );*/
 	
 	
 	/**

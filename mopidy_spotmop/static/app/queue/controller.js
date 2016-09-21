@@ -59,19 +59,6 @@ angular.module('spotmop.queue', [])
 	};
 	
 	
-    /**
-     * Watch the current tracklist
-     * And update our totalTime when the tracklist changes
-     **/
-     /*
-    $scope.$watch(
-        'player.currentTracklist',
-        function(newTracklist, oldTracklist){
-			$scope.tracks = newTracklist;
-        }
-    );*/
-	
-	
 	/**
 	 * When the delete key is broadcast, delete the selected tracks
 	 **/

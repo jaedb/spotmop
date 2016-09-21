@@ -82,7 +82,7 @@
 		</div>
         
         <div class="radio-intro" ng-if="state().radio.enabled">
-            Playing radio based on {{ state().radio.seed_artists.length }} artists and {{ state().radio.seed_tracks.length }} tracks
+            Radio based on <span ng-repeat="seed in state().radio.resolvedSeeds"><span ng-if="$last">and </span><span ng-bind="seed.name"></span> (<span ng-bind="seed.type"></span>)<span ng-if="!$last">, </span></span>
         </div>
 		
 		<div class="queue-intro" ng-if="!state().radio.enabled">		

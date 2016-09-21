@@ -12,7 +12,8 @@ angular.module('spotmop.services.player', [])
 	var state = {
 		playbackState: 'stopped',
         radio: {
-			enabled: false
+			enabled: false,
+			resolvedSeeds: []
 		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
@@ -88,17 +89,55 @@ angular.module('spotmop.services.player', [])
 	$rootScope.$on('spotmop:pusher:online', function( event, message ){
 		PusherService.query({ action: 'get_radio' })
             .then( function(response){
-                state.radio = response.data.radio;
-            });
+            	updateRadio( response.data.radio );
+			});
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
-		state.radio = message.data.radio;
+		updateRadio( message.data.radio );
 	});
 	
 	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
-		state.radio = message.data.radio;
+		updateRadio( message.data.radio );
 	});
+
+
+	/**
+	 * Update our radio data
+	 *
+	 * Provides an opportunity for us to resolve seed objects into Spotify tracks, albums, etc
+	 * @param object radio
+	 **/
+	function updateRadio( radio ){
+
+    	radio.resolvedSeeds = [];
+        state.radio = radio;
+
+		if( state.radio.seed_tracks.length > 0 ){
+			var trackids = [];
+			for( var i = 0; i < radio.seed_tracks.length; i++ ){
+				trackids.push( SpotifyService.getFromUri('trackid', state.radio.seed_tracks[i]) );
+			}
+
+			SpotifyService.getTracks( trackids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response.tracks );
+				});
+		}
+
+		if( state.radio.seed_artists.length > 0 ){
+			var artistids = [];
+			for( var i = 0; i < radio.seed_artists.length; i++ ){
+				artistids.push( SpotifyService.getFromUri('artistid', state.radio.seed_artists[i]) );
+			}
+
+			SpotifyService.getArtists( artistids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response );
+				});
+		}
+	}
+
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	

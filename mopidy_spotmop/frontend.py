@@ -148,9 +148,9 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
             "seed_tracks": []
         }
         
-        # clear all tracks
-        self.core.tracklist.clear()
-        
+        # stop track playback
+        self.core.playback.stop()
+
         # notify clients
         pusher.broadcast( 'radio_stopped', { 'radio': self.radio })
         
@@ -212,10 +212,10 @@ class SpotmopFrontend(pykka.ThreadingActor, CoreListener):
         
         # prepare our response
         data = {
-            'version': self.version,
+            'current': self.version,
+            'latest': latest_version,
             'is_root': self.is_root,
-            'upgrade_available': upgrade_available,
-            'latest_version': latest_version
+            'upgrade_available': upgrade_available
         }
         return data
         

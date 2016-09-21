@@ -358,6 +358,8 @@ angular.module('spotmop.common.tracklist', [])
 					else selectedTracksUris.push( track.uri );
 				});
 				
+				NotifyService.notify('Starting track radio');
+
 				PlayerService.startRadio( selectedTracksUris );
 			});
             

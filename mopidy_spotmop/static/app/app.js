@@ -325,17 +325,18 @@ angular.module('spotmop', [
 		$scope.pusher.query({ action: 'get_version' })
 			.then( function(response){
 				
-				// detect recent upgrades first
-				if( SettingsService.setSetting('version') != response.data.version ){
-					NotifyService.notify('New version detected, clearing caches...');      
+				// check if we've upgraded since we last loaded
+				if( SettingsService.getSetting('version.current') != response.data.version.current ){
+					NotifyService.notify('New version detected, clearing caches...');
 					$cacheFactory.get('$http').removeAll();
 					$templateCache.removeAll();
 				}
 				
-				SettingsService.setSetting('version',response.data.version);
+				// update our storage
+				SettingsService.setSetting('version', response.data.version);
 				
 				if( response.data.version.upgrade_available ){
-					NotifyService.notify( 'New version ('+response.data.version.latest_version+') available!' );
+					NotifyService.notify( 'New version ('+response.data.version.latest+') available!' );
 				}
 			});
 	});
