@@ -10,55 +10,72 @@
 	display: none;
 }
 
-.player .button {
-	padding: 5px;
-	margin: 0 5px;
-	font-size: 14px;
-	opacity: 0.75;
-	display: inline-block;
-	background: transparent;
-}
+.player {
 
-.player .button.active,
-.player .button:hover {
-	opacity: 1;
-	cursor: pointer;
-}
+    .button {
+        padding: 5px;
+        margin: 0 5px;
+        font-size: 14px;
+        opacity: 0.75;
+        display: inline-block;
+        background: transparent;
+        
+        &.stop-radio {
+            padding-right: 0;
+            margin-right: 0;
+            .label {
+                font-size: 14px;
+                display: inline-block;
+                vertical-align: top;
+                margin-top: 4px;
+                text-transform: uppercase;
+                font-weight: bold;
+                padding-left: 3px;
+            }
+        }
+        
+        &.active,
+        &:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
 
-.player .button.active {
-    color: #08d58f;
-}
+        &.active {
+            color: #08d58f;
+        }
+    }
 
-.player .track-info {
-	text-align: center;
-	font-size: 16px;
-	text-transform: uppercase;
-	padding-bottom: 20px;
-	padding-left: 15px;
-	padding-right: 15px;
-}
-
-.player .track-info .track {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.player .track-info .artist {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	opacity: 0.5;
-}
-
-.player .track-info .artist a{
-	text-decoration: none;
-	color: #FFFFFF;
-	border-bottom: 1px dotted transparent;
-}
-
-.player .track-info .artist a:hover {
-	border-color: #FFFFFF;
+    .track-info {
+        text-align: center;
+        font-size: 16px;
+        text-transform: uppercase;
+        padding-bottom: 20px;
+        padding-left: 15px;
+        padding-right: 15px;
+        
+        .track {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .artist {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0.5;
+            
+            a {
+                text-decoration: none;
+                color: #FFFFFF;
+                border-bottom: 1px dotted transparent;
+                
+                &:hover {
+                    border-color: #FFFFFF;
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -98,7 +115,8 @@
  * Scrobbling
  **/
 
-.player .slider {
+.player .slider,
+.volume .slider {
 	
 	&.progress {
 		padding-top: 5px;
@@ -139,6 +157,12 @@
 			max-width: 100%;
 		}
 	}
+}
+
+.volume-controls-dialog .slider {
+	.track {
+		height: 12px;
+    }
 }
 
 

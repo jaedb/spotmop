@@ -15,7 +15,7 @@
                 Artists
             </h1>
 		
-            <div class="flag bad" ng-show="!spotifyAuthorized">
+            <div class="flag bad" ng-show="!spotify.isAuthorized()">
                 <i class="fa fa-exclamation-triangle white-text"></i>
                 &nbsp;
                 Please authorize Spotify
@@ -25,8 +25,8 @@
         
         <!-- FULL VIEW -->
 		
-		<div class="artist-items square-panels" ng-if="!settings.artists.view || settings.artists.view == 'grid'">
-			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
+		<div class="artist-items square-panels" ng-if="!settings.state().artists.view || settings.state().artists.view == 'grid'">
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.state().artists.sortField:settings.state().artists.sortReverse track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="square-panel album">
 					<div class="image-container">
                         <thumbnail size="medium" images="artist.images"></thumbnail>
@@ -41,28 +41,28 @@
         
         <!-- LIST VIEW -->
 		
-		<div class="artist-items list" ng-if="settings.artists.view == 'list'">
+		<div class="artist-items list" ng-if="settings.state().artists.view == 'list'">
         
             <div class="list-item header">
                 <div class="col w40">
                     Name
-                    <span ng-show="settings.artists.sortField == 'name'">
-                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().artists.sortField == 'name'">
+                        <i ng-show="!settings.state().artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w45">
                     Genres
-                    <span ng-show="settings.artists.sortField == 'genres[0]'">
-                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().artists.sortField == 'genres[0]'">
+                        <i ng-show="!settings.state().artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w10">
                     Followers
-                    <span ng-show="settings.artists.sortField == 'followers.total'">
-                        <i ng-show="!settings.artists.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.artists.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().artists.sortField == 'followers.total'">
+                        <i ng-show="!settings.state().artists.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().artists.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="info">
@@ -70,7 +70,7 @@
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.artists.sortField:settings.artists.sortReverse track by artist.uri">
+			<div class="item-container" ng-repeat="artist in artists.items | orderBy:settings.state().artists.sortField:settings.state().artists.sortReverse track by artist.uri">
 				<a ui-sref="browse.artist.overview({ uri: artist.uri })" class="list-item">
                     <div class="col w40 name">
                         <span ng-bind="artist.name"></span>

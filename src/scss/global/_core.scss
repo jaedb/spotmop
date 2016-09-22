@@ -320,35 +320,6 @@ body.dragging .body * {
 }
 
 
-/**
- * Playlist Submenu
- **/
-
-.main-menu .submenu.playlists {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 100%;
-	overflow: hidden;
-	background: rgba(48,48,48,0.95);
-	padding: 20px 0;
-	z-index: 1;
-	display: block;
-}
-
-.main-menu .submenu.playlists .menu-item > a {
-	color: #FFFFFF;
-	font-size: 16px;
-	padding: 10px 0 10px 20px;
-}
-
-.main-menu .menu-item.top-level.playlists.show-submenu .submenu.playlists,
-.dragging .main-menu .menu-item.top-level.playlists.dropping-within .submenu.playlists {
-	left: 20%;
-}
-
-
 
 /**
  * Sub-page navigation
@@ -357,27 +328,31 @@ body.dragging .body * {
 .sub-page-navigation {
 	margin-bottom: 35px;
 	margin-top: -15px;
-}
 
-.sub-page-navigation .menu-item {
-	padding: 12px 0;
-	margin-right: 25px;
-	border-bottom: 3px solid transparent;
-	display: inline-block;
-	font-size: 18px;
-	text-transform: capitalize;
-}
+	.menu-item {
+		padding: 12px 0;
+		margin-right: 25px;
+		border-bottom: 3px solid transparent;
+		display: inline-block;
+		font-size: 18px;
+		text-transform: capitalize;
 
-.sub-page-navigation .menu-item > i {
-	font-size: 6px;
-	vertical-align: middle;
-	margin-top: -4px;
-	padding-right: 2px;
-}
+		i {
+			font-size: 6px;
+			vertical-align: middle;
+			margin-top: -4px;
+			padding-right: 2px;
+		}
 
-.sub-page-navigation .menu-item:hover {
-	border-color: rgba(255,255,255,0.5);
-	cursor: pointer;
+		&:hover {
+			border-color: rgba(255,255,255,0.5);
+			cursor: pointer;
+		}
+		
+		&.active {
+			border-color: #FFFFFF;
+		}
+	}
 }
 
 
@@ -1076,8 +1051,8 @@ h1 .flag {
 
 .body .button.disabled,
 .body .button.disabled:hover {
-	cursor: not-allowed;
-	opacity: 0.5;
+	opacity: 0.3 !important;
+    cursor: not-allowed;
 }
 
 .body .button.float-right {				float: right; }
@@ -1167,47 +1142,55 @@ h1 .flag {
 
 .artist-grid {
 	padding: 0;
+
+	.artist {
+		display: block;
+		float: left;
+		border: 0 !important;
+		width: 50%;
+		position: relative;
+
+		.image {
+			display: block;
+			width: 100%;
+			padding-bottom: 100%;
+			background-image: url('assets/svg/no-image.svg');
+			background-repeat: no-repeat;
+			background-position: 50% 50%;
+			background-size: cover;
+			background-color: #777777;
+		}
+
+		.name {
+			padding-top: 45%;
+			font-weight: bold;
+		}
+
+		.name-wrapper {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: -0.5px;
+			right: 0;
+			text-align: center;
+			color: #FFFFFF;
+			opacity: 0;
+			background: rgba(0,0,0,0.8);
+		}
+
+		&.artist-overflow .name-wrapper {
+			opacity: 1;
+			background: #CCCCCC;
+			cursor: default;
+		}
+
+		&:hover .name-wrapper {
+			opacity: 1;
+		}
+	}
 }
 
-.artist-grid .artist {
-	display: block;
-	float: left;
-	border: 0 !important;
-	width: 50%;
-	position: relative;
-}
 
-.artist-grid .artist .image {
-	display: block;
-	width: 100%;
-	padding-bottom: 100%;
-	background-image: url('assets/svg/no-image.svg');
-	background-repeat: no-repeat;
-	background-position: 50% 50%;
-	background-size: cover;
-	background-color: #777777;
-}
-
-.artist-grid .artist .name-wrapper {
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: -0.5px;
-	right: 0;
-	text-align: center;
-	color: #FFFFFF;
-	opacity: 0;
-	background: rgba(0,0,0,0.8);
-}
-
-.artist-grid .artist:hover .name-wrapper {
-	opacity: 1;
-}
-
-.artist-grid .artist .name {
-	padding-top: 45%;
-	font-weight: bold;
-}
 
 
 /**
@@ -1516,6 +1499,12 @@ h1 .flag {
  
 .queue-intro {
 	padding-bottom: 20px;
+}
+
+.radio-intro {
+    padding: 10px 12px;
+    background: #EEEEEE;
+    color: #777777;
 }
 
 .now-playing-page .page-header {

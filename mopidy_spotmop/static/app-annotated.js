@@ -29830,7 +29830,6 @@ angular.module('spotmop', [
 	cfpLoadingBarProvider.parentSelector = 'body';
 }])
 
-
 .run( ["$rootScope", "SettingsService", "Analytics", function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 }])
@@ -29842,7 +29841,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "PlaylistManagerService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
+.controller('ApplicationController', ["$scope", "$rootScope", "$state", "$filter", "$localStorage", "$timeout", "$location", "$cacheFactory", "$templateCache", "SpotifyService", "MopidyService", "PlayerService", "SettingsService", "NotifyService", "PusherService", "DialogService", "PlaylistManagerService", "Analytics", function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, $cacheFactory, $templateCache, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -30038,39 +30037,17 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		PlaylistManagerService.refreshPlaylists();
+		
+		// refresh our spotify token, then fetch all our playlists
+		SpotifyService.refreshToken()
+			.then( function(){
+				PlaylistManagerService.refreshPlaylists();
+			});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
-    
-	
-	/**
-	 * Spotify is online and authorized
-	 **/
-	$rootScope.spotifyAuthorized = false;
-	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
-		if( newMethod == 'client' ){
-			$rootScope.spotifyAuthorized = true;
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
-		}else{
-			$rootScope.spotifyAuthorized = false;
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:online', function(){
-		$rootScope.spotifyOnline = true;
-		if( $rootScope.spotifyAuthorized ){
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:offline', function(){
-		$rootScope.spotifyOnline = false;
-	});
-	
     
 	
 	/**
@@ -30101,31 +30078,65 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	PusherService.start();
-	MopidyService.start();
-	SpotifyService.start();
+    $scope.settings = SettingsService;
+    $scope.settings.start();
+    
+    $scope.pusher = PusherService;
+    $scope.pusher.start();
+    
+    $scope.mopidy = MopidyService;
+    $scope.mopidy.start();
+    
+    $scope.spotify = SpotifyService;
+	
+	// wait for pusher to connect before we kick in spotify
+	$rootScope.$on('spotmop:pusher:online', function(event,data){
+        $scope.spotify.start();
+		$scope.pusher.query({ action: 'get_version' })
+			.then( function(response){
+				
+				// check if we've upgraded since we last loaded
+				if( SettingsService.getSetting('version.current') != response.data.version.current ){
+					NotifyService.notify('New version detected, clearing caches...');
+					$cacheFactory.get('$http').removeAll();
+					$templateCache.removeAll();
+				}
+				
+				// update our storage
+				SettingsService.setSetting('version', response.data.version);
+				
+				if( response.data.version.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.version.latest+') available!' );
+				}
+			});
+	});
+    
+	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
+		if( newMethod == 'client' ){
+			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+		}
+	});
 	
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
 	// when a client requests sync pairing
 	$rootScope.$on('spotmop:pusher:config_push', function(event, message){
-        console.log( message );
+        
 		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this? This will overwrite your current Spotify and Mopidy configuration. ') == true ){
             
             if( message.data.spotify === null ) message.data.spotify = {};
             SettingsService.setSetting('spotify', message.data.spotify);
+            $scope.spotify.setState( message.data.spotify );
             
-            if( message.data.spotifyuser === null ) message.data.spotifyuser = {};
-            SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
+            if( message.data.pusher === null ) message.data.pusher = {};
+            SettingsService.setSetting('pusher', message.data.pusher);
             
             if( message.data.mopidy === null ) message.data.mopidy = {};
             SettingsService.setSetting('mopidy', message.data.mopidy);
             
-            SpotifyService.start();
-            
-            PusherService.send({
-                type: 'soft_notification',
+            PusherService.broadcast({
+                action: 'soft_notification',
                 recipients: [ message.origin.connectionid ],
                 data: {
                     body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'
@@ -30556,7 +30567,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', ["$scope", "$rootScope", "$timeout", "$interval", "$stateParams", "$sce", "$filter", "SpotifyService", "SettingsService", "MopidyService", "NotifyService", "LastfmService", function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', ["$scope", "$rootScope", "$timeout", "$interval", "$stateParams", "$sce", "$filter", "SpotifyService", "SettingsService", "MopidyService", "NotifyService", "LastfmService", "PlayerService", function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService, PlayerService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = { type: 'track' };
@@ -30586,21 +30597,8 @@ angular.module('spotmop.browse.artist', [])
 		}
 		$scope.playArtistRadio = function(){
 		
-			NotifyService.notify('Starting artist radio (beta)');
-			
-			// get the artist's top tracks
-			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
-				.then( function( response ){
-				
-					var uris = [];
-					for( var i = 0; i < response.tracks.length; i++ ){
-						uris.push( response.tracks[i].uri );
-					}
-					MopidyService.clearCurrentTrackList()
-						.then( function(){
-							MopidyService.playTrack( uris, 0 );
-						});
-				});
+			NotifyService.notify('Starting artist radio');
+			PlayerService.startRadio([ $stateParams.uri ]);
 		}
 		
 		// get the artist from Spotify
@@ -30611,7 +30609,7 @@ angular.module('spotmop.browse.artist', [])
 			});
 
 		// figure out if we're following this playlist
-		if( $rootScope.spotifyAuthorized ){
+		if( $scope.spotify.isAuthorized() ){
 			
 			var spotifyuserid = SettingsService.getSetting('spotifyuser.id');
 			if( !spotifyuserid ) return false;
@@ -31288,15 +31286,13 @@ angular.module('spotmop.browse.playlist', [])
                     $scope.playlist.description = $sce.trustAsHtml( $scope.playlist.description );
                 
                     // get the owner
-                    if( $rootScope.spotifyAuthorized ){
-                        SpotifyService.getUser( $scope.playlist.owner.uri )
-                            .then( function( response ){
-                                $scope.playlist.owner = response;
-                            });
-                    }
+					SpotifyService.getUser( $scope.playlist.owner.uri )
+						.then( function( response ){
+							$scope.playlist.owner = response;
+						});
                 
                     // figure out if we're following this playlist
-                    if( $rootScope.spotifyAuthorized ){
+                    if( $scope.spotify.isAuthorized() ){
                         SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
                             .then( function( isFollowing ){
                                 $scope.following = $.parseJSON(isFollowing);
@@ -31721,6 +31717,11 @@ angular.module('spotmop.common.contextmenu', [
 			
 			$scope.copyURIs = function(){
 				$rootScope.$broadcast('spotmop:tracklist:copyURIsToClipboard');
+				$element.fadeOut('fast');
+			}
+			
+			$scope.startRadio = function(){
+				$rootScope.$broadcast('spotmop:tracklist:startRadio');
 				$element.fadeOut('fast');
 			}
 			
@@ -33100,7 +33101,7 @@ angular.module('spotmop.common.track', [])
 	return {
 		restrict: 'E',
 		templateUrl: 'app/common/tracklist/track.template.html',
-		controller: ["$element", "$scope", "$rootScope", "MopidyService", "NotifyService", "PlayerService", function( $element, $scope, $rootScope, MopidyService, NotifyService, PlayerService ){
+		controller: ["$element", "$scope", "$rootScope", "$filter", "MopidyService", "NotifyService", "PlayerService", function( $element, $scope, $rootScope, $filter, MopidyService, NotifyService, PlayerService ){
 			
             // parse our parent tracklist into the track itself
             // useful for detecting drag event capabilities
@@ -33113,23 +33114,13 @@ angular.module('spotmop.common.track', [])
 			$scope.isCurrentlyPlaying = function(){
 				return ( typeof($scope.track.tlid) !== 'undefined' && $scope.track.tlid == $scope.state().currentTlTrack.tlid );
 			}
-			
-			/**
-			 * What type of track are we? Use our uri to figure this out
-			 * @return string
-			 **/
-			$scope.sourceIconClasses = function(){
-                if( typeof($scope.track.uri) !== 'undefined' ){
-                    var source = $scope.track.uri.split(':')[0];
-                    var state = 'light';
-                    if( $scope.isCurrentlyPlaying() ){
-                        if( source == 'spotify' ) state = 'green';
-                        if( source == 'local' ) state = 'yellow';
-                        if( source == 'soundcloud' ) state = 'red';
-                    }
-                    return source +' '+ state;
-                }
-			}
+            
+            // get source for this track (ie spotify, youtube, local)
+            $scope.source = function(){
+                var source = $filter('assetOrigin')( $scope.track.uri );
+                if( source == 'local' || source == 'file' ) source = 'folder';
+                return source;
+            }
 			
 			/**
 			 * Single click
@@ -33425,7 +33416,13 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
-			
+				
+				// if we're in radio mode, turn it off
+				if( PlayerService.state().radio.enabled ){
+					PlayerService.stopRadio();
+					NotifyService.notify("Stopping radio");
+				}
+				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var firstSelectedTrack = selectedTracks[0];
 				
@@ -33530,6 +33527,31 @@ angular.module('spotmop.common.tracklist', [])
 				
 				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
+			
+			
+			/**
+			 * Misc other tracklist events
+			 **/
+			 
+			$scope.$on('spotmop:tracklist:startRadio', function(event){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = [];
+				
+				angular.forEach( selectedTracks, function(track){
+					
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris.push( track.track.uri );
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris.push( track.uri );
+				});
+				
+				NotifyService.notify('Starting track radio');
+
+				PlayerService.startRadio( selectedTracksUris );
+			});
+            
 			
 			/**
 			 * Selected Tracks >> Add to library
@@ -33961,7 +33983,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', ["$scope", "$rootScope", "$filter", "SpotifyService", "SettingsService", "DialogService", function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'grid',
@@ -33997,12 +34018,8 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
     
 	SpotifyService.getMyArtists( userid )
-		.then( function( response ){ // successful
+		.then( function( response ){
 				$scope.artists = response.artists;
-				console.log( response.artists );
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
 			});
     
 	
@@ -34051,7 +34068,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', ["$scope", "$rootScope", "$filter", "SpotifyService", "SettingsService", "DialogService", "MopidyService", "NotifyService", function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'detail',
@@ -34090,7 +34106,7 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
-	if( $rootScope.spotifyAuthorized ){	
+	if( $scope.spotify.isAuthorized() ){	
     
 		SpotifyService.getMyAlbums( userid )
 			.then( function( response ){
@@ -34169,7 +34185,6 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.filterOptions = [
 			{
 				value: 'all',
@@ -34407,7 +34422,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.allArtists = [];
     $scope.limit = 50;
 	var uri;
@@ -34495,7 +34509,6 @@ angular.module('spotmop.local', [])
 			}
 		];
 		
-	$scope.settings = SettingsService.getSettings();
 	$scope.allAlbums = [];
     $scope.limit = 50;
 	var uri;
@@ -34826,11 +34839,15 @@ angular.module('spotmop.player', [
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService',  'PusherService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, PusherService, LastfmService ){
 	
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
+        radio: {
+			enabled: false,
+			resolvedSeeds: []
+		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -34902,6 +34919,58 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
+	$rootScope.$on('spotmop:pusher:online', function( event, message ){
+		PusherService.query({ action: 'get_radio' })
+            .then( function(response){
+            	updateRadio( response.data.radio );
+			});
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
+		updateRadio( message.data.radio );
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
+		updateRadio( message.data.radio );
+	});
+
+
+	/**
+	 * Update our radio data
+	 *
+	 * Provides an opportunity for us to resolve seed objects into Spotify tracks, albums, etc
+	 * @param object radio
+	 **/
+	function updateRadio( radio ){
+
+    	radio.resolvedSeeds = [];
+        state.radio = radio;
+
+		if( state.radio.seed_tracks.length > 0 ){
+			var trackids = [];
+			for( var i = 0; i < radio.seed_tracks.length; i++ ){
+				trackids.push( SpotifyService.getFromUri('trackid', state.radio.seed_tracks[i]) );
+			}
+
+			SpotifyService.getTracks( trackids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response.tracks );
+				});
+		}
+
+		if( state.radio.seed_artists.length > 0 ){
+			var artistids = [];
+			for( var i = 0; i < radio.seed_artists.length; i++ ){
+				artistids.push( SpotifyService.getFromUri('artistid', state.radio.seed_artists[i]) );
+			}
+
+			SpotifyService.getArtists( artistids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response );
+				});
+		}
+	}
+
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -35240,6 +35309,43 @@ angular.module('spotmop.services.player', [])
 			state.volume = percent;
 			MopidyService.setVolume( percent );
 		},
+        
+        /**
+         * Radio functionality
+         * TODO: Move this into a dedicated service
+         **/
+        startRadio: function(uris){
+            
+            var data = {
+				action: 'start_radio',
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            for( var i = 0; i < uris.length; i++){
+                switch( SpotifyService.uriType( uris[i] ) ){
+                    case 'artist':
+                        data.seed_artists.push( uris[i] );
+                        break;
+                    case 'track':
+                        data.seed_tracks.push( uris[i] );
+                        break;
+                }
+            }
+            
+			PusherService.query( data )
+                .then( function(response){
+                    state.radio = response.data.radio;
+                });
+        },
+        
+        stopRadio: function(){
+			PusherService.query({ action: 'stop_radio' })
+                .then( function(response){
+                    state.radio = response.data.radio;
+                });
+        },
 		
 		/**
 		 * Playback behavior toggles
@@ -35336,19 +35442,10 @@ angular.module('spotmop.queue', [])
 	$scope.clearQueue = function(){
 		MopidyService.clearCurrentTrackList();
 	};
-	
-	
-    /**
-     * Watch the current tracklist
-     * And update our totalTime when the tracklist changes
-     **/
-     /*
-    $scope.$watch(
-        'player.currentTracklist',
-        function(newTracklist, oldTracklist){
-			$scope.tracks = newTracklist;
-        }
-    );*/
+
+	$scope.stopRadio = function(){
+		PlayerService.stopRadio();
+	};
 	
 	
 	/**
@@ -35393,7 +35490,6 @@ angular.module('spotmop.search', [])
  **/
 .controller('SearchController', ["$scope", "$rootScope", "$state", "$stateParams", "$timeout", "$filter", "SpotifyService", "MopidyService", "SettingsService", function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService, SettingsService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.results = {
 		tracks: [],
 		albums: [],
@@ -35414,17 +35510,9 @@ angular.module('spotmop.search', [])
 	
 	$scope.query = '';
     if( $stateParams.query ) $scope.query = $filter('stripAccents')( $stateParams.query );
-		
-	var nextOffset = 50;
-        
-	$scope.loading = false;
-	var searchDelayer;
 
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchMode() ) $(document).find('.search-form input.query').focus();
-	
-	// if we've just loaded this page, and we have params, let's perform a search
-	if( $scope.query ) initiateSearch();
 	
 	// when our source changes, perform a new search
 	$scope.$on('spotmop:settingchanged:search.source', function(event,value){
@@ -35440,7 +35528,7 @@ angular.module('spotmop.search', [])
 	 * We can't jump straight in, as we need to make sure Mopidy is online first
 	 **/
 	function initiateSearch(){
-		if( $rootScope.mopidyOnline && $scope.query ){
+		if( $scope.query ){
 			performSearch( $scope.query );
 		}
 	}
@@ -35453,6 +35541,7 @@ angular.module('spotmop.search', [])
         $rootScope.$on('mopidy:state:online', function(){
             getUriSchemes();
             initiateSearch();
+            console.log('online');
         });
     }
 	
@@ -35514,9 +35603,13 @@ angular.module('spotmop.search', [])
 		$scope.results.playlists = [];
 		
 		// perform the mopidy search
+        console.log('Performing search for '+query);
+        
 		MopidyService.search(fields, query, sources)
 			.then( function(sources){
 				
+                console.log( sources );
+                
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					
@@ -35673,7 +35766,7 @@ angular.module('spotmop.services.dialog', [])
 /**
  * Directive to handle wrapping functionality
  **/
-.directive('dialog', ["$compile", function( $compile ){
+.directive('dialog', ["$compile", "SpotifyService", function( $compile, SpotifyService ){
 	
 	return {
 		restrict: 'E',
@@ -35688,6 +35781,8 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: ["$scope", "$element", "DialogService", function( $scope, $element, DialogService ){
 			
+            $scope.spotify = SpotifyService;
+            
 			$scope.closeDisabled = false;
 			if( $scope.type == 'initialsetup' )
 				$scope.closeDisabled = true;
@@ -35915,62 +36010,6 @@ angular.module('spotmop.services.dialog', [])
 				
 				PlayerService.setVolume( percent );
 			};
-		}]
-	};
-})
-
-
-/**
- * Dialog: Setup new user
- * Initial setup
- **/
-
-.directive('initialsetupdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: ["$scope", "$element", "$rootScope", "$filter", "DialogService", "SettingsService", "SpotifyService", "PusherService", function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
-			
-			$scope.settings = SettingsService.getSettings();
-			
-			// default to on
-			SettingsService.setSetting('spotify.authorizationenabled',true);
-			SettingsService.setSetting('keyboardShortcutsEnabled',true);
-			SettingsService.setSetting('pointerMode','default');
-		
-            $scope.saving = false;
-            $scope.save = function(){          
-				if( $scope.name && $scope.name != '' ){
-					
-					// set state to saving (this swaps save button for spinner)
-					$scope.saving = true;
-					
-					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('spotify.authorizationenabled') ){
-						SpotifyService.authorize();
-					}
-					
-					// perform the creation
-					SettingsService.setSetting('pusher.name', $scope.name);
-					
-					// and go tell the server to update
-					PusherService.send({
-						type: 'client_updated', 
-						data: {
-							attribute: 'name',
-							oldVal: '',
-							newVal: $scope.name
-						}
-					});
-					
-					DialogService.remove();
-				}else{
-					$scope.error = true;
-				}
-            }
 		}]
 	};
 })
@@ -36304,37 +36343,53 @@ angular.module('spotmop.services.mopidy', [
 			return wrapMopidyFunc("mopidy.playback.getState", this)();
 		},
 		playTrack: function( trackUris, trackToPlayIndex, at_position ){
-			var self = this;
-			if( typeof(at_position) === 'undefined' ) var at_position = 0;
 			
-			cfpLoadingBar.start();
-			cfpLoadingBar.set(0.25);
-			
-			// add the first track immediately
-			return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
-			
-				// then play it
-				.then( function( response ){
-					
-					// make sure we added the track successfully
-					// this handles failed adds due to geo-blocked spotify and typos in uris, etc
-					var playTrack = null;					
-					if( response.length > 0 ){
-						playTrack = { tlid: response[0].tlid };
-					}
-					
-					return self.mopidy.playback.play( playTrack )
-				
-						// now add all the remaining tracks
-						.then( function(){
-							if( trackUris.length > 0 ){
-								return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
-									.then( function(){
-										cfpLoadingBar.complete();
-									});
-							}
-						}, consoleError);
-				}, consoleError);
+            var self = this;
+            var playTheTracks = function(){                
+                if( typeof(at_position) === 'undefined' ) var at_position = 0;
+                
+                cfpLoadingBar.start();
+                cfpLoadingBar.set(0.25);
+                
+                // add the first track immediately
+                return self.mopidy.tracklist.add({ uris: [ trackUris.shift() ], at_position: at_position })
+                
+                    // then play it
+                    .then( function( response ){
+                        
+                        // make sure we added the track successfully
+                        // this handles failed adds due to geo-blocked spotify and typos in uris, etc
+                        var playTrack = null;					
+                        if( response.length > 0 ){
+                            playTrack = { tlid: response[0].tlid };
+                        }
+                        
+                        return self.mopidy.playback.play( playTrack )
+                    
+                            // now add all the remaining tracks
+                            .then( function(){
+                                if( trackUris.length > 0 ){
+                                    return self.mopidy.tracklist.add({ uris: trackUris, at_position: at_position+1 })
+                                        .then( function(){
+                                            cfpLoadingBar.complete();
+                                        });
+                                }
+                            }, consoleError);
+                    }, consoleError);
+            };
+            
+            PusherService.query({ action: 'get_radio' })
+                .then( function(response){
+                    if( response.data.radio.enabled ){
+                        PusherService.query({ action: 'stop_radio' })
+                            .then( function(){
+                                playTheTracks();
+                            });
+                    }else{
+                        playTheTracks();
+                    }
+                });
+                
 		},
 		playTlTrack: function( tlTrack ){
             return this.mopidy.playback.play( tlTrack );
@@ -36424,7 +36479,7 @@ angular.module('spotmop.services.mopidy', [
 			var spotifyuser = SettingsService.getSetting('spotifyuser');  
 			if( spotifyuser ) icon = spotifyuser.images[0].url;
             
-            PusherService.send({
+            PusherService.broadcast({
 				type: 'notification',
 				ignore_self: true,
                 data: {
@@ -36777,7 +36832,7 @@ angular.module('spotmop.services.playlistManager', [])
                 var origin = $filter('assetOrigin')(playlist.uri);
                 if( origin == 'spotify' ){
                     var user = SettingsService.getSetting('spotifyuser.id');
-                    if( $rootScope.spotifyAuthorized && playlist.uri.startsWith('spotify:user:'+user) ){
+                    if( SpotifyService.isAuthorized() && playlist.uri.startsWith('spotify:user:'+user) ){
                         myPlaylists.push( playlist );
                     }
                 }else{
@@ -36970,14 +37025,37 @@ angular.module('spotmop.services.pusher', [
 	
 	var urlBase = '//'+ mopidyhost +':'+ mopidyport +'/spotmop/';
     
-	$rootScope.$on('spotmop:pusher:client_connected', function(event, data){
+	// generate a complex unique id
+	function generateMessageID(){
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+			return v.toString(16);
+		});
+	}
 	
-	});
+	var deferredRequests = [];
+
+	function resolveRequest(requestId, message ){
+		var response = JSON.parse( message );
+		deferredRequests[request_id].resolve( response );
+		delete deferredRequests[request_id];
+	}
+
+	function rejectRequest(requestId, message) {
+		deferredRequests[requestId].reject( message );
+	}
+	
+	var state = {
+		isConnected: false,
+        connections: []
+    }
     
 	var service = {
+        
+        state: function(){
+            return state;
+        },
 		pusher: {},
-		
-		isConnected: false,
 		
 		start: function(){
             var self = this;
@@ -37013,62 +37091,72 @@ angular.module('spotmop.services.pusher', [
 
 				pusher.onopen = function(){
 					$rootScope.$broadcast('spotmop:pusher:online');
-					this.isConnected = true;
+					state.isConnected = true;
+                    service.updateConnections();
 				}
 
 				pusher.onmessage = function( response ){
                     
 					var message = JSON.parse(response.data);
 					console.log(message);
+					
+					if( message.type == 'response' ){
+						
+						if( typeof( deferredRequests[ message.message_id ] ) !== 'undefined' ){
+							deferredRequests[ message.message_id ].resolve( message );
+						}else{
+							console.error('Incoming response missing a matching request');
+						}
+						
+					}else if( message.type == 'broadcast'){
                     
-					$rootScope.$broadcast('spotmop:pusher:'+message.type, message);
-					
-					switch( message.type ){
-					
-						// initial connection status message, just parse it through quietly
-						case 'client_connected':
+						$rootScope.$broadcast('spotmop:pusher:'+message.action, message);
 						
-							// if the new connection is mine
-							if( message.data.connectionid == SettingsService.getSetting('pusher.connectionid') ){
-								console.info('Pusher connection '+message.data.connectionid+' accepted');
-								
-								// detect if the core has been updated
-								if( message.data.version != SettingsService.getSetting('version.installed') ){
-									NotifyService.notify('New version detected, clearing caches...');      
-									$cacheFactory.get('$http').removeAll();
-									$templateCache.removeAll();
-									SettingsService.setSetting('version.installed', message.data.version);
-									SettingsService.runUpgrade();
-								}
-							}							
-							break;
+						switch( message.action ){
 						
-						case 'notification':
-							var title = '';
-							var body = '';
-							var icon = '';
-							if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
-							if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
-							if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
-							NotifyService.browserNotify( title, body, icon );
-							break;
+							case 'client_connected':                                
+                                service.updateConnections();					
+								break;
+						
+							case 'client_disconnected':                                
+                                service.updateConnections();
+                                break;
+						
+							case 'connection_updated':                                
+                                service.updateConnections();
+                                break;
 							
-						case 'soft_notification':
-							NotifyService.notify( message.data.body );
-							break;
-						
-						case 'enforced_refresh':
-							location.reload();
-							NotifyService.notify('System updating...');      
-							$cacheFactory.get('$http').removeAll();
-							$templateCache.removeAll();
-							break;
+							case 'notification':
+								var title = '';
+								var body = '';
+								var icon = '';
+								if( typeof(message.data.title) !== 'undefined' ) title = message.data.title;
+								if( typeof(message.data.body) !== 'undefined' ) body = message.data.body;
+								if( typeof(message.data.icon) !== 'undefined' ) icon = message.data.icon;
+								NotifyService.browserNotify( title, body, icon );
+								break;
+								
+							case 'soft_notification':
+								NotifyService.notify( message.data.body );
+								break;
+								
+							case 'upgraded':
+								NotifyService.notify( 'Mopidy has been upgraded to '+message.data.version );
+								break;
+							
+							case 'enforced_refresh':
+								location.reload();
+								NotifyService.notify('System updating...');      
+								$cacheFactory.get('$http').removeAll();
+								$templateCache.removeAll();
+								break;
+						}
 					}
 				}
 
 				pusher.onclose = function(){
 					$rootScope.$broadcast('spotmop:pusher:offline');
-					service.isConnected = false;
+					state.isConnected = false;
                     setTimeout(function(){ service.start() }, 5000);
 				}
 				
@@ -37080,46 +37168,52 @@ angular.module('spotmop.services.pusher', [
 		},
 		
 		stop: function() {
-			this.pusher = null;
-			this.isConnected = false;
+			service.pusher = null;
+			state.isConnected = false;
+			$rootScope.pusherOnline = false;
 		},
 		
-		send: function( data ){            
+		// Point-and-shoot, one-way broadcast
+		broadcast: function( data ){
+			
+			// Set type
+			data.type = 'broadcast';
+			
+			// Send off the payload
+			// We do not expect a response, so no loitering buddy...
 			service.pusher.send( JSON.stringify(data) );
 		},
-        
-        /**
-         * Notify the Pusher service of our name
-         * @param name (string)
-         * @return deferred promise
-         **/
-        setMe: function( name ){
-            var id = SettingsService.getSetting('pusher.id');
-            $.ajax({
-                method: 'GET',
-                cache: false,
-                url: urlBase+'pusher/me?id='+id+'&name='+name
-            });
-        },
+		
+		// A query that we require a response from the server for
+		// We create a unique ID to map responses with our deferred requests' ID
+		query: function( data ){
+			return $q(function(resolve, reject){
+				
+				// set type
+				data.type = 'query';
+				
+				// construct a unique id
+				data.message_id = generateMessageID();
+				
+				// send the payload
+				service.pusher.send( JSON.stringify(data) );
+				
+				// add query to our deferred responses
+				deferredRequests[ data.message_id ] = {
+					resolve: resolve,
+					reject: reject
+				};
+			});
+		},
         
         /**
          * Get a list of all active connections
          **/
-        getConnections: function(){
-            var deferred = $q.defer();
-            $http({
-                    method: 'GET',
-                    cache: false,
-                    url: urlBase+'pusher/connections'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
+        updateConnections: function(){
+			service.query({ action: 'get_connections' })
+                .then( function(response){
+                    state.connections = response.data.connections;
+                });
         }
 	};
     
@@ -37136,36 +37230,59 @@ angular.module('spotmop.services.pusher', [
  
 angular.module('spotmop.services.spotify', [])
 
-.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', '$cacheFactory', 'SettingsService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, $cacheFactory, SettingsService, NotifyService ){
+.factory("SpotifyService", ['$rootScope', '$resource', '$localStorage', '$http', '$interval', '$timeout', '$filter', '$q', 'SettingsService', 'PusherService', 'NotifyService', function( $rootScope, $resource, $localStorage, $http, $interval, $timeout, $filter, $q, SettingsService, PusherService, NotifyService ){
+	
+    // set out-of-the-box defaults
+	var state = {
+        online: false,
+        auth_method: 'server',
+        user: false,
+        auth: {
+            authentication_code: false,
+            refresh_token: false,
+            access_token: false,
+            access_token_expiry: false,
+            scope: false
+        }
+	};
+	
+    // if we have local storage, then load this in
+	if( SettingsService.getSetting('spotify') ){
+		
+		// old-style user storage
+		if( SettingsService.getSetting('spotifyuser') )
+			state.user = SettingsService.getSetting('spotifyuser');
+		
+		if( SettingsService.getSetting('spotify.auth_method') )
+			state.auth_method = SettingsService.getSetting('spotify.auth_method');
+		
+		if( SettingsService.getSetting('spotify.auth') )
+			state.auth = SettingsService.getSetting('spotify.auth');
+		
+		if( SettingsService.getSetting('spotify.user') )
+			state.user = SettingsService.getSetting('spotify.user');
+	}
 	
 	// setup response object
     var service = {
 		
-		authenticationMethod: 'server',
-		
+        state: function(){
+            return state;
+        },
+        
+        setState: function(new_state){
+            state = new_state;
+        },
+        
 		start: function(){
 	
 			// inject our authorization frame, on the placeholder action
+			// TODO: upgrade spotmop php
 			var frame = $('<iframe id="authorization-frame" style="width: 1px; height: 1px; display: none;" src="//jamesbarnsley.co.nz/spotmop.php?action=frame"></iframe>');
 			$(body).append(frame);
 			
-			// set container for spotify storage
-			if( typeof($localStorage.spotify) === 'undefined' )
-				$localStorage.spotify = {};
-				
-			if( typeof($localStorage.spotify.AccessToken) === 'undefined' )
-				$localStorage.spotify.AccessToken = null;
-				
-			if( typeof($localStorage.spotify.RefreshToken) === 'undefined' )
-				$localStorage.spotify.RefreshToken = null;
-				
-			if( typeof($localStorage.spotify.AuthorizationCode) === 'undefined' )
-				$localStorage.spotify.AuthorizationCode = null;
-				
-			if( typeof($localStorage.spotify.AccessTokenExpiry) === 'undefined' )
-				$localStorage.spotify.AccessTokenExpiry = null;
-			
 			// listen for incoming messages from the authorization iframe
+			// this is triggered when authentication is granted from the popup
 			window.addEventListener('message', function(event){
 				
 				// only allow incoming data from our authorized authenticator proxy
@@ -37177,48 +37294,44 @@ angular.module('spotmop.services.spotify', [])
 				
 				console.info('Spotify authorization successful');
 				
-				// take our returned data, and save it to our localStorage
-				$localStorage.spotify.AuthorizationCode = data.authorization_code;
-				$localStorage.spotify.AccessToken = data.access_token;
-				$localStorage.spotify.RefreshToken = data.refresh_token;
-				$rootScope.spotifyOnline = true;
-				this.authenticationMethod = 'client';
+				// take our returned data, and save it
+				state.auth = data;
+				state.auth_method = 'client';
+				SettingsService.setSetting('spotify.auth', state.auth);
+				SettingsService.setSetting('spotify.auth_method', state.auth_method);
 				
 				// get my details and store 'em
 				service.getMe()
 					.then( function(response){
-						SettingsService.setSetting('spotifyuser', response);
-						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+                        state.user = response;
+						SettingsService.setSetting('spotify.user', response);
+						$rootScope.$broadcast('spotmop:spotify:authenticationChanged', state.auth_method);
 					});
 				
 			}, false);
 			
-			
-			/**
-			 * The real starter
-			 **/
-			if( this.isAuthorized() ){
-				$rootScope.spotifyAuthorized = true;
-				this.authenticationMethod = 'client';
-			}else{
-				SettingsService.setSetting('spotifyuser', false);
-				$rootScope.spotifyAuthorized = false;
-				this.authenticationMethod = 'server';
-			}
-			
+            state.online = true;
 			$rootScope.$broadcast('spotmop:spotify:online');
+		},
+		
+		getToken: function(){
+			return state.auth.access_token;
 		},
 		
 		logout: function(){
 			$localStorage.spotify = {};
-			this.authenticationMethod = 'server';
-			this.refreshToken();
-			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', this.authenticationMethod);
+			state.auth_method = 'server';
+			state.auth = {};
+			service.refreshToken();
+			$rootScope.$broadcast('spotmop:spotify:authenticationChanged', state.auth_method);
 		},
 		
 		/**
-		 * Authorize this Spotmop instance with a Spotify account
-		 * This is only needed once (in theory) for this account on this device. It is used to acquire access tokens (which expire)
+		 * Request authorization with a Spotify account
+		 *
+		 * When granted, this provides the highest-level of access to a user's account. It is required
+		 * for advanced account and playlist management actions. It is also necessary for the bulk of 
+		 * Spotmop's functionality.
 		 **/
 		authorize: function(){
 			var frame = $(document).find('#authorization-frame');
@@ -37226,9 +37339,15 @@ angular.module('spotmop.services.spotify', [])
 		},
 		
 		isAuthorized: function(){
-			if( $localStorage.spotify.AuthorizationCode && $localStorage.spotify.RefreshToken )
+			if( state.auth.authorization_code )
 				return true;
 			return false;
+		},
+		
+		setAccessToken: function( access_token, access_token_expiry ){
+			state.auth.access_token = access_token;
+			state.auth.access_token_expiry = access_token_expiry;
+			SettingsService.setSetting('spotify.auth', state.auth);
 		},
 		
 		/**
@@ -37238,49 +37357,41 @@ angular.module('spotmop.services.spotify', [])
 		 **/
         refreshToken: function(){
 			
-            var deferred = $q.defer();
-			var url = '';
+			var deferred = $q.defer();
 			
-			// sweet, client has authorized interface!
-			if( this.authenticationMethod == 'client' ){
-			
-				url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+$localStorage.spotify.RefreshToken;
-			
-			// client hasn't authorized spotmop with spotify, so let's just use the backend
-			}else if( this.authenticationMethod == 'server' ){
+			if( state.auth_method == 'server' ){
 				
-				var mopidyhost = SettingsService.getSetting("mopidy.host");
-				if( !mopidyhost ) mopidyhost = window.location.hostname;
-				var mopidyport = SettingsService.getSetting("mopidy.port");
-				if( !mopidyport ) mopidyport = "6680";
-				url = '//'+mopidyhost+':'+mopidyport+'/spotmop/auth';
-			
-			// no authentication method, so cannot refresh token!
-			}else{
-				return false;
+				PusherService.query({ action: 'refresh_spotify_token' })
+					.then( function(response){
+						service.setAccessToken( response.data.token.access_token, new Date().getTime() + 3600000 );
+						deferred.resolve( response.data.token );
+					});
+				
+			}else if( state.auth_method == 'client' ){
+				
+				var url = '//jamesbarnsley.co.nz/spotmop.php?action=refresh&refresh_token='+state.auth.refresh_token;
+							
+				$http({
+						method: 'GET',
+						url: url,
+						dataType: "json",
+						async: false,
+						timeout: 10000
+					})
+					.success(function( response ){
+						
+						// check for error response
+						if( typeof(response.error) !== 'undefined' ){
+							NotifyService.error('Spotify authorization error: '+response.error_description);
+							state.online = false;
+							deferred.reject( response.error.message );
+						}else{							
+							service.setAccessToken( response.access_token, new Date().getTime() + 3600000 );
+							state.online = true;
+							deferred.resolve( response );
+						}
+					});
 			}
-			
-            $http({
-					method: 'GET',
-					url: url,
-					dataType: "json",
-					async: false,
-					timeout: 10000
-				})
-                .success(function( response ){
-					
-					// check for error response
-					if( typeof(response.error) !== 'undefined' ){
-						NotifyService.error('Spotify authorization error: '+response.error_description);
-						$rootScope.spotifyOnline = false;
-						deferred.reject( response.error.message );
-					}else{
-						$localStorage.spotify.AccessToken = response.access_token;
-						$localStorage.spotify.AccessTokenExpiry = new Date().getTime() + 3600000;
-						$rootScope.spotifyOnline = true;					
-						deferred.resolve( response );
-					}
-                });
 				
             return deferred.promise;
         },
@@ -37345,7 +37456,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: $url,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37366,27 +37477,25 @@ angular.module('spotmop.services.spotify', [])
          **/
         
         getMe: function(){
-			
+            
             var deferred = $q.defer();
 			
 			if( !this.isAuthorized() ){
                 deferred.reject();
 				return deferred.promise;
 			}
-
+            
             $http({
 					method: 'GET',
 					url: urlBase+'me/',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
-					
                     deferred.resolve( response );
                 })
-                .error(function( response ){
-					
+                .error(function( response ){					
 					NotifyService.error( response.error.message );
                     deferred.reject( response.error.message );
                 });
@@ -37430,7 +37539,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following/contains?type='+type+'&ids='+id,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37492,7 +37601,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/tracks/?limit=50',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37528,7 +37637,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: trackids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37566,7 +37675,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: albumids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37598,7 +37707,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: albumids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37632,7 +37741,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { ids: trackids } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37661,7 +37770,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following?type=artist',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37694,7 +37803,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/albums?limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -37723,7 +37832,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/following/contains?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37752,7 +37861,7 @@ angular.module('spotmop.services.spotify', [])
 					cache: false,
 					url: urlBase+'me/following?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -37781,7 +37890,7 @@ angular.module('spotmop.services.spotify', [])
 					cache: false,
 					url: urlBase+'me/following?type=artist&ids='+artistid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37809,7 +37918,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'tracks?ids='+trackids,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37840,7 +37949,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37866,7 +37975,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'?market='+country,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37896,7 +38005,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers/contains?ids='+ids,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37925,7 +38034,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'PUT',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37954,7 +38063,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'DELETE',
 					url: urlBase+'users/'+userid+'/playlists/'+playlistid+'/followers',
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -37983,7 +38092,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/featured-playlists?timestamp='+timestamp+'&country='+country+'&limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38018,7 +38127,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { uris: tracks } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38058,7 +38167,7 @@ angular.module('spotmop.services.spotify', [])
 					}),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -38087,7 +38196,7 @@ angular.module('spotmop.services.spotify', [])
 					data: JSON.stringify( { snapshot_id: snapshotid, positions: positions } ),
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38120,7 +38229,7 @@ angular.module('spotmop.services.spotify', [])
 					data: data,
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38157,7 +38266,7 @@ angular.module('spotmop.services.spotify', [])
 					data: data,
 					contentType: "application/json; charset=utf-8",
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38186,7 +38295,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/new-releases?country='+ country +'&limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){	
@@ -38237,7 +38346,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38260,7 +38369,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories/'+categoryid,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38286,7 +38395,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'browse/categories/'+categoryid+'/playlists?limit='+limit,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38319,7 +38428,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/top/'+type+'?limit='+limit+'&offset='+offset+'&time_range='+time_range,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38350,7 +38459,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: url,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){					
@@ -38578,7 +38687,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'me/albums/contains?ids='+albumids_string,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){
@@ -38611,7 +38720,7 @@ angular.module('spotmop.services.spotify', [])
 					method: 'GET',
 					url: urlBase+'search?q='+query+'&type='+type+'&country='+country+'&limit='+limit+'&offset='+offset,
 					headers: {
-						Authorization: 'Bearer '+ $localStorage.spotify.AccessToken
+						Authorization: 'Bearer '+ service.getToken()
 					}
 				})
                 .success(function( response ){		
@@ -38787,45 +38896,16 @@ angular.module('spotmop.settings', [])
 	
 	// load our current settings into the template
 	$scope.version;
-	$scope.storage = SettingsService.getSettings();
-	$scope.currentSubpage = 'mopidy';
+	$scope.settings = SettingsService;
+    $scope.pusher = PusherService;
 	$scope.subpageNavigate = function( subpage ){
 		$scope.currentSubpage = subpage;
 	};
-	$scope.authorizeSpotify = function(){
-		SpotifyService.authorize();
-	};
-    $scope.refreshSpotifyToken = function(){
-		NotifyService.notify( 'Refreshing token' );
-        SpotifyService.refreshToken().then( function(){});
-    };
-    $scope.spotifyLogout = function(){
-        SpotifyService.logout();
-    };
-	$scope.upgradeCheck = function(){
-		NotifyService.notify( 'Checking for updates' );
-		SettingsService.upgradeCheck()
-			.then( function(response){				
-				SettingsService.setSetting('version.latest', response);
-				if( SettingsService.getSetting('version.installed') < response ){
-					SettingsService.setSetting('version.upgradeAvailable',true);
-					NotifyService.notify( 'Upgrade is available!' );
-				}else{
-					SettingsService.setSetting('version.upgradeAvailable',false);
-					NotifyService.notify( 'You\'re already running the latest version' );
-				}
-			});
-	}
 	$scope.upgrade = function(){
-		NotifyService.notify( 'Upgrade started' );
-		SettingsService.upgrade()
-			.then( function(response){				
-				if( response.status == 'error' ){
-					NotifyService.error( response.message );
-				}else{
-					NotifyService.notify( response.message );
-					SettingsService.setSetting('version.upgradeAvailable', false);
-				}
+		$scope.upgrading = true;
+		PusherService.query({ action: 'perform_upgrade' })
+			.then( function(response){
+				$scope.upgrading = false;
 			});
 	}
 	$scope.resetSettings = function(){
@@ -38838,24 +38918,16 @@ angular.module('spotmop.settings', [])
 	 * Send configuration to another connection
 	 **/
 	$scope.pushConfig = function( connection ){
-		PusherService.send({
-			type: 'config_push',
+		PusherService.broadcast({
+			action: 'config_push',
 			recipients: [ connection.connectionid ],
             data: {
                 mopidy: SettingsService.getSetting('mopidy'),
                 spotify: SettingsService.getSetting('spotify'),
-                spotifyuser: SettingsService.getSetting('spotifyuser')
+                pusher: SettingsService.getSetting('pusher')
             }
 		});
 	};
-	
-	SettingsService.getVersion()
-		.then( function(response){
-			if( response && response.status != 'error' ){
-				SettingsService.setSetting('version.installed',response.currentVersion);
-				SettingsService.setSetting('version.root',response.root);
-			}
-		});
 	
 	// save the fields to the localStorage
 	// this is fired when an input field is blurred
@@ -38863,38 +38935,18 @@ angular.module('spotmop.settings', [])
 		SettingsService.setSetting( $(event.target).attr('name'), $(event.target).val() );
 	};
 	
-	var oldPusherName = SettingsService.getSetting( 'pusher.name' );
 	$scope.savePusherName = function( name ){
 	
 		// update our setting storage
 		SettingsService.setSetting( 'pusher.name', name );
 		
 		// and go tell the server to update
-		PusherService.send({
-			type: 'client_updated', 
-			data: {
-				attribute: 'name',
-				oldVal: oldPusherName,
-				newVal: name
-			}
+		PusherService.query({
+			type: 'query',
+			action: 'change_username', 
+			data: name
 		});
-		
-		// and now update our old one
-		oldPusherName = name;
-	};	
-    
-    function updatePusherConnections(){
-        PusherService.getConnections()
-            .then( function(connections){
-                $scope.pusherConnections = connections;
-            });
-    }
-    
-    // update whenever setup is completed, or another client opens a connection
-    updatePusherConnections();
-    $rootScope.$on('spotmop:pusher:client_connected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_disconnected', function(event, data){ updatePusherConnections(); });
-    $rootScope.$on('spotmop:pusher:client_updated', function(event, data){ updatePusherConnections(); });
+	};
 }])
 
 
@@ -38918,10 +38970,18 @@ angular.module('spotmop.settings', [])
 		}
 	
 	$scope.pusherTest = {
-			payload: '{"type":"notification","recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
+			payload: '{"type":"broadcast", "action": "notification", "recipients":["'+SettingsService.getSetting('pusher.connectionid')+'"], "data":{ "title":"Title","body":"Test notification","icon":"http://lorempixel.com/100/100/nature/"}}',
 			run: function(){
-				PusherService.send( JSON.parse($scope.pusherTest.payload) );
-				$scope.response = {status: 'sent', payload: JSON.parse($scope.pusherTest.payload) };
+                var data = JSON.parse($scope.pusherTest.payload);
+                if( data['type'] == 'broadcast' ){
+                    PusherService.broadcast( data );
+                    $scope.response = {status: 'sent', data: data };
+                }else{
+                    PusherService.query( data )
+                        .then( function(response){
+                            $scope.response = response;
+                        });
+                }
 			}
 		}
 	
@@ -38940,10 +39000,20 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
+   
+    var state = {};
     
 	// setup response object
 	service = {
 		
+        state: function(){
+            return state;
+        },
+        
+        start: function(){
+            state = $localStorage;
+        },
+        
 		/**
 		 * Set a setting
 		 * @param setting = string (the setting to change)
@@ -39019,118 +39089,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		getSettings: function(){
-			return $localStorage;
-		},
-        
-		getUser: function( username ){            
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'users'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-            return deferred.promise;
-		},
-        
-		setUser: function( username ){		
-            return $.ajax({
-                url: urlBase+'users',
-                method: "POST",
-                data: '{"name":"'+ username +'"}'
-            });
-		},
-		
-		
-		/**
-		 * Identify the client, by IP address
-		 **/
-		identifyClient: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'pusher/me'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		
-		/**
-		 * Spotmop extension upgrade
-		 **/
-		upgradeCheck: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response.info.version );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		upgrade: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'POST',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		// perform post-upgrade commands
-		runUpgrade: function(){
-			
-			// depreciated settings
-			service.setSetting('emulateTouchDevice',false);
-			service.setSetting('pointerMode','default');
-		},
-		
-		
-		/**
-		 * Identify our current Spotmop version
-		 **/
-		getVersion: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
 		}
 	};
 		

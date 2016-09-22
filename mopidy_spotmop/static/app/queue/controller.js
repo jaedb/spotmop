@@ -53,19 +53,10 @@ angular.module('spotmop.queue', [])
 	$scope.clearQueue = function(){
 		MopidyService.clearCurrentTrackList();
 	};
-	
-	
-    /**
-     * Watch the current tracklist
-     * And update our totalTime when the tracklist changes
-     **/
-     /*
-    $scope.$watch(
-        'player.currentTracklist',
-        function(newTracklist, oldTracklist){
-			$scope.tracks = newTracklist;
-        }
-    );*/
+
+	$scope.stopRadio = function(){
+		PlayerService.stopRadio();
+	};
 	
 	
 	/**

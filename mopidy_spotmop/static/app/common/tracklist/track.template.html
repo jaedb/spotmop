@@ -20,6 +20,10 @@
 			class="title"
 			ng-if="!track.name && !track.artists"
 			ng-bind="track.uri"></div>
+        <div
+			class="title"
+			ng-if="source() == 'youtube'"
+			ng-bind="track.name"></div>
 
         <div class="artist" ng-class="{ empty: track.artists.length < 1 }">
             <artistlist artists="track.artists"></artistlist>
@@ -45,7 +49,7 @@
             </div>
         
             <div class="source">
-                <span class="si {{ sourceIconClasses() }}"></span>
+                <span class="fa fa-{{ source() }}"></span>
             </div>
             
         </div>

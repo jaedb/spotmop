@@ -37,7 +37,7 @@ angular.module('spotmop.services.dialog', [])
 /**
  * Directive to handle wrapping functionality
  **/
-.directive('dialog', function( $compile ){
+.directive('dialog', function( $compile, SpotifyService ){
 	
 	return {
 		restrict: 'E',
@@ -52,6 +52,8 @@ angular.module('spotmop.services.dialog', [])
 		},
 		controller: function( $scope, $element, DialogService ){
 			
+            $scope.spotify = SpotifyService;
+            
 			$scope.closeDisabled = false;
 			if( $scope.type == 'initialsetup' )
 				$scope.closeDisabled = true;
@@ -279,62 +281,6 @@ angular.module('spotmop.services.dialog', [])
 				
 				PlayerService.setVolume( percent );
 			};
-		}
-	};
-})
-
-
-/**
- * Dialog: Setup new user
- * Initial setup
- **/
-
-.directive('initialsetupdialog', function(){
-	
-	return {
-		restrict: 'E',
-		replace: true,
-		transclude: true,
-		templateUrl: 'app/services/dialog/initialsetup.template.html',
-		controller: function( $scope, $element, $rootScope, $filter, DialogService, SettingsService, SpotifyService, PusherService ){
-			
-			$scope.settings = SettingsService.getSettings();
-			
-			// default to on
-			SettingsService.setSetting('spotify.authorizationenabled',true);
-			SettingsService.setSetting('keyboardShortcutsEnabled',true);
-			SettingsService.setSetting('pointerMode','default');
-		
-            $scope.saving = false;
-            $scope.save = function(){          
-				if( $scope.name && $scope.name != '' ){
-					
-					// set state to saving (this swaps save button for spinner)
-					$scope.saving = true;
-					
-					// unless the user has unchecked spotify authorization, authorize
-					if( SettingsService.getSetting('spotify.authorizationenabled') ){
-						SpotifyService.authorize();
-					}
-					
-					// perform the creation
-					SettingsService.setSetting('pusher.name', $scope.name);
-					
-					// and go tell the server to update
-					PusherService.send({
-						type: 'client_updated', 
-						data: {
-							attribute: 'name',
-							oldVal: '',
-							newVal: $scope.name
-						}
-					});
-					
-					DialogService.remove();
-				}else{
-					$scope.error = true;
-				}
-            }
 		}
 	};
 })

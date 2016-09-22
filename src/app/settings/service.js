@@ -11,10 +11,20 @@ angular.module('spotmop.services.settings', [])
 	// make sure we have a settings container
 	if( typeof( $localStorage.settings ) === 'undefined' )
 		$localStorage.settings = {};
+   
+    var state = {};
     
 	// setup response object
 	service = {
 		
+        state: function(){
+            return state;
+        },
+        
+        start: function(){
+            state = $localStorage;
+        },
+        
 		/**
 		 * Set a setting
 		 * @param setting = string (the setting to change)
@@ -90,118 +100,6 @@ angular.module('spotmop.services.settings', [])
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];
 					break;
 			}
-		},
-		
-		getSettings: function(){
-			return $localStorage;
-		},
-        
-		getUser: function( username ){            
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'users'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });
-            return deferred.promise;
-		},
-        
-		setUser: function( username ){		
-            return $.ajax({
-                url: urlBase+'users',
-                method: "POST",
-                data: '{"name":"'+ username +'"}'
-            });
-		},
-		
-		
-		/**
-		 * Identify the client, by IP address
-		 **/
-		identifyClient: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'pusher/me'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		
-		/**
-		 * Spotmop extension upgrade
-		 **/
-		upgradeCheck: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: 'https://pypi.python.org/pypi/Mopidy-Spotmop/json'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response.info.version );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		upgrade: function(){			
-            var deferred = $q.defer();
-            $http({
-					method: 'POST',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
-		},
-		
-		// perform post-upgrade commands
-		runUpgrade: function(){
-			
-			// depreciated settings
-			service.setSetting('emulateTouchDevice',false);
-			service.setSetting('pointerMode','default');
-		},
-		
-		
-		/**
-		 * Identify our current Spotmop version
-		 **/
-		getVersion: function(){
-            var deferred = $q.defer();
-            $http({
-					method: 'GET',
-					url: urlBase+'upgrade'
-				})
-                .success(function( response ){					
-                    deferred.resolve( response );
-                })
-                .error(function( response ){					
-					NotifyService.error( response.error.message );
-                    deferred.reject( response.error.message );
-                });				
-            return deferred.promise;
 		}
 	};
 		

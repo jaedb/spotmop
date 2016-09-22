@@ -145,7 +145,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryArtistsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'grid',
@@ -181,12 +180,8 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
     
 	SpotifyService.getMyArtists( userid )
-		.then( function( response ){ // successful
+		.then( function( response ){
 				$scope.artists = response.artists;
-				console.log( response.artists );
-				// if it was 401, refresh token
-				if( typeof(response.error) !== 'undefined' && response.error.status == 401 )
-					Spotify.refreshToken();
 			});
     
 	
@@ -235,7 +230,6 @@ angular.module('spotmop.library', [])
  **/
 .controller('LibraryAlbumsController', function ( $scope, $rootScope, $filter, SpotifyService, SettingsService, DialogService, MopidyService, NotifyService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.viewOptions = [
 			{
 				value: 'detail',
@@ -274,7 +268,7 @@ angular.module('spotmop.library', [])
     var userid = SettingsService.getSetting('spotifyuser.id');
 	
 	// if we have full spotify authorization
-	if( $rootScope.spotifyAuthorized ){	
+	if( $scope.spotify.isAuthorized() ){	
     
 		SpotifyService.getMyAlbums( userid )
 			.then( function( response ){
@@ -353,7 +347,6 @@ angular.module('spotmop.library', [])
         DialogService.create('createPlaylist', $scope);
 	}
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.filterOptions = [
 			{
 				value: 'all',

@@ -40,9 +40,10 @@
 			
 			<span class="buttons">
 			
-				<a class="button primary" ng-click="playArtistRadio()"><i class="fa fa-play"></i>&nbsp; Play</a>		
+				<a class="button primary" ng-if="origin == 'spotify'" ng-click="playArtistRadio()"><i class="fa fa-play"></i>&nbsp; Start artist radio</a>
+				<a class="button secondary disabled" ng-if="origin != 'spotify'"><i class="fa fa-play"></i>&nbsp; Start artist radio</a>
 				
-				<span class="follow-unfollow" ng-class="{ 'following': following }" ng-if="spotifyAuthorized && origin == 'spotify'">
+				<span class="follow-unfollow" ng-class="{ 'following': following }" ng-if="spotify.isAuthorized() && origin == 'spotify'">
 					<a class="button unfollow"
 						  ng-class="{destructive: hovering}"
 						  ng-click="unfollowArtist()"

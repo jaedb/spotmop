@@ -6,11 +6,15 @@
  
 angular.module('spotmop.services.player', [])
 
-.factory("PlayerService", ['$rootScope', '$interval', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService', 'LastfmService', function( $rootScope, $interval, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, LastfmService ){
+.factory("PlayerService", ['$rootScope', '$interval', '$http', '$filter', 'SettingsService', 'MopidyService', 'SpotifyService', 'NotifyService',  'PusherService', 'LastfmService', function( $rootScope, $interval, $http, $filter, SettingsService, MopidyService, SpotifyService, NotifyService, PusherService, LastfmService ){
 	
 	// setup initial states
 	var state = {
 		playbackState: 'stopped',
+        radio: {
+			enabled: false,
+			resolvedSeeds: []
+		},
 		isPlaying: function(){ return state.playbackState == 'playing' },
 		isRepeat: false,
 		isRandom: false,
@@ -82,6 +86,58 @@ angular.module('spotmop.services.player', [])
 			updateVolume( volume.volume );
 	});
 	
+	$rootScope.$on('spotmop:pusher:online', function( event, message ){
+		PusherService.query({ action: 'get_radio' })
+            .then( function(response){
+            	updateRadio( response.data.radio );
+			});
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_started', function( event, message ){
+		updateRadio( message.data.radio );
+	});
+	
+	$rootScope.$on('spotmop:pusher:radio_stopped', function( event, message ){
+		updateRadio( message.data.radio );
+	});
+
+
+	/**
+	 * Update our radio data
+	 *
+	 * Provides an opportunity for us to resolve seed objects into Spotify tracks, albums, etc
+	 * @param object radio
+	 **/
+	function updateRadio( radio ){
+
+    	radio.resolvedSeeds = [];
+        state.radio = radio;
+
+		if( state.radio.seed_tracks.length > 0 ){
+			var trackids = [];
+			for( var i = 0; i < radio.seed_tracks.length; i++ ){
+				trackids.push( SpotifyService.getFromUri('trackid', state.radio.seed_tracks[i]) );
+			}
+
+			SpotifyService.getTracks( trackids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response.tracks );
+				});
+		}
+
+		if( state.radio.seed_artists.length > 0 ){
+			var artistids = [];
+			for( var i = 0; i < radio.seed_artists.length; i++ ){
+				artistids.push( SpotifyService.getFromUri('artistid', state.radio.seed_artists[i]) );
+			}
+
+			SpotifyService.getArtists( artistids )
+				.then(function(response){
+					state.radio.resolvedSeeds = state.radio.resolvedSeeds.concat( response );
+				});
+		}
+	}
+
 	
 	// update our toggle states from the mopidy server
 	function updateToggles(){	
@@ -420,6 +476,43 @@ angular.module('spotmop.services.player', [])
 			state.volume = percent;
 			MopidyService.setVolume( percent );
 		},
+        
+        /**
+         * Radio functionality
+         * TODO: Move this into a dedicated service
+         **/
+        startRadio: function(uris){
+            
+            var data = {
+				action: 'start_radio',
+                seed_artists: [],
+                seed_genres: [],
+                seed_tracks: []
+            }
+            
+            for( var i = 0; i < uris.length; i++){
+                switch( SpotifyService.uriType( uris[i] ) ){
+                    case 'artist':
+                        data.seed_artists.push( uris[i] );
+                        break;
+                    case 'track':
+                        data.seed_tracks.push( uris[i] );
+                        break;
+                }
+            }
+            
+			PusherService.query( data )
+                .then( function(response){
+                    state.radio = response.data.radio;
+                });
+        },
+        
+        stopRadio: function(){
+			PusherService.query({ action: 'stop_radio' })
+                .then( function(response){
+                    state.radio = response.data.radio;
+                });
+        },
 		
 		/**
 		 * Playback behavior toggles

@@ -227,7 +227,13 @@ angular.module('spotmop.common.tracklist', [])
 				// ignore if we're not the tracklist in focus
 				if( $rootScope.tracklistInFocus !== $scope.$id )
 					return;
-			
+				
+				// if we're in radio mode, turn it off
+				if( PlayerService.state().radio.enabled ){
+					PlayerService.stopRadio();
+					NotifyService.notify("Stopping radio");
+				}
+				
 				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
 				var firstSelectedTrack = selectedTracks[0];
 				
@@ -332,6 +338,31 @@ angular.module('spotmop.common.tracklist', [])
 				
 				PlaylistManagerService.addTracksToPlaylist(uri, trackUris);
             });
+			
+			
+			/**
+			 * Misc other tracklist events
+			 **/
+			 
+			$scope.$on('spotmop:tracklist:startRadio', function(event){
+				
+				var selectedTracks = $filter('filter')( $scope.tracks, {selected: true} );
+				var selectedTracksUris = [];
+				
+				angular.forEach( selectedTracks, function(track){
+					
+					// if we have a nested track object (ie TlTrack objects)
+					if( typeof(track.track) !== 'undefined' ) selectedTracksUris.push( track.track.uri );
+					
+					// nope, so let's use a non-nested version
+					else selectedTracksUris.push( track.uri );
+				});
+				
+				NotifyService.notify('Starting track radio');
+
+				PlayerService.startRadio( selectedTracksUris );
+			});
+            
 			
 			/**
 			 * Selected Tracks >> Add to library

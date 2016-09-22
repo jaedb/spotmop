@@ -46,7 +46,7 @@ angular.module('spotmop.browse.artist', [])
 /**
  * Main controller
  **/
-.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService ){
+.controller('ArtistController', function ( $scope, $rootScope, $timeout, $interval, $stateParams, $sce, $filter, SpotifyService, SettingsService, MopidyService, NotifyService, LastfmService, PlayerService ){
 	
 	$scope.artist = {};
 	$scope.tracklist = { type: 'track' };
@@ -76,21 +76,8 @@ angular.module('spotmop.browse.artist', [])
 		}
 		$scope.playArtistRadio = function(){
 		
-			NotifyService.notify('Starting artist radio (beta)');
-			
-			// get the artist's top tracks
-			SpotifyService.getRecommendations( 5, 0, $scope.artist.id )
-				.then( function( response ){
-				
-					var uris = [];
-					for( var i = 0; i < response.tracks.length; i++ ){
-						uris.push( response.tracks[i].uri );
-					}
-					MopidyService.clearCurrentTrackList()
-						.then( function(){
-							MopidyService.playTrack( uris, 0 );
-						});
-				});
+			NotifyService.notify('Starting artist radio');
+			PlayerService.startRadio([ $stateParams.uri ]);
 		}
 		
 		// get the artist from Spotify
@@ -101,7 +88,7 @@ angular.module('spotmop.browse.artist', [])
 			});
 
 		// figure out if we're following this playlist
-		if( $rootScope.spotifyAuthorized ){
+		if( $scope.spotify.isAuthorized() ){
 			
 			var spotifyuserid = SettingsService.getSetting('spotifyuser.id');
 			if( !spotifyuserid ) return false;

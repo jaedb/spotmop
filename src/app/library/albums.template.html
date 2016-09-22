@@ -15,7 +15,7 @@
                 Albums
             </h1>
 		
-            <div class="flag bad" ng-show="!spotifyAuthorized">
+            <div class="flag bad" ng-show="!spotify.isAuthorized()">
                 <i class="fa fa-exclamation-triangle white-text"></i>
                 &nbsp;
                 Please authorize Spotify
@@ -25,9 +25,9 @@
 		
         <!-- FULL VIEW -->
         
-		<div class="album-items" ng-if="!settings.albums.view || settings.albums.view == 'detail'">
+		<div class="album-items" ng-if="!settings.state().albums.view || settings.state().albums.view == 'detail'">
 			
-			<div class="item-container full-album" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
+			<div class="item-container full-album" ng-repeat="album in albums.items | orderBy:settings.state().albums.sortField:settings.state().albums.sortReverse track by album.album.uri" ng-class="{ transitioning: album.transitioning }">
             
                 <div class="col w20 info">
                     <div class="album-header">
@@ -46,7 +46,7 @@
                         </div>
                         <div class="buttons">
                             <a class="button primary" ng-click="playAlbum( album.album )"><i class="fa fa-play"></i>&nbsp; Play</a>
-                            <a class="button" ng-click="removeFromLibrary( album.album )" ng-if="spotifyAuthorized">Remove</a>
+                            <a class="button" ng-click="removeFromLibrary( album.album )" ng-if="spotify.isAuthorized()">Remove</a>
                         </div>
                     </div>
                 </div>
@@ -74,8 +74,8 @@
         
         <!-- GRID VIEW -->
 		
-		<div class="album-items square-panels" ng-if="settings.albums.view == 'grid'">
-			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri">
+		<div class="album-items square-panels" ng-if="settings.state().albums.view == 'grid'">
+			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.state().albums.sortField:settings.state().albums.sortReverse track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="square-panel album">
 					<div class="image-container">
                         <thumbnail size="medium" images="album.album.images"></thumbnail>
@@ -93,20 +93,20 @@
         
         <!-- LIST VIEW -->
         
-		<div class="album-items list" ng-if="settings.albums.view == 'list'">
+		<div class="album-items list" ng-if="settings.state().albums.view == 'list'">
             <div class="list-item header">
                 <div class="col w35">
                     Title
-                    <span ng-show="settings.albums.sortField == 'album.name'">
-                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().albums.sortField == 'album.name'">
+                        <i ng-show="!settings.state().albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().albums.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w30">
                     Artists
-                    <span ng-show="settings.albums.sortField == 'album.artists[0].name'">
-                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().albums.sortField == 'album.artists[0].name'">
+                        <i ng-show="!settings.state().albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().albums.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="col w10">
@@ -117,9 +117,9 @@
                 </div>
                 <div class="col w10">
                     Added
-                    <span ng-show="settings.albums.sortField == 'added_at'">
-                        <i ng-show="!settings.albums.sortReverse" class="fa fa-caret-down"></i>
-                        <i ng-show="settings.albums.sortReverse" class="fa fa-caret-up"></i>
+                    <span ng-show="settings.state().albums.sortField == 'added_at'">
+                        <i ng-show="!settings.state().albums.sortReverse" class="fa fa-caret-down"></i>
+                        <i ng-show="settings.state().albums.sortReverse" class="fa fa-caret-up"></i>
                     </span>
                 </div>
                 <div class="info">
@@ -127,7 +127,7 @@
                 </div>
                 <div class="clear-both"></div>
             </div>
-			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.albums.sortField:settings.albums.sortReverse track by album.album.uri">
+			<div class="item-container" ng-repeat="album in albums.items | orderBy:settings.state().albums.sortField:settings.state().albums.sortReverse track by album.album.uri">
 				<a ui-sref="browse.album({ uri: album.album.uri })" class="list-item">
                     <div class="col w35 name">
                         <span ng-bind="album.album.name"></span>

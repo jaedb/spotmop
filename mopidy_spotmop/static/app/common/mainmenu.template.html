@@ -42,19 +42,19 @@
 		My music
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.albums') }}">
-		<a ui-sref="library.albums" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.albums" class="droppable" ng-class="{ unavailable: !spotify.isAuthorized() }">
 			<i class="si cd white"></i>
 			Albums
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode('library.tracks') }}">
-		<a ui-sref="library.tracks" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.tracks" class="droppable" ng-class="{ unavailable: !spotify.isAuthorized() }">
 			<i class="si music white"></i>
 			Tracks
 		</a>
 	</li>
 	<li class="menu-item top-level {{ linkingMode(['library.artists', 'library.artist']) }}">
-		<a ui-sref="library.artists" class="droppable" ng-class="{ unavailable: !spotifyAuthorized }">
+		<a ui-sref="library.artists" class="droppable" ng-class="{ unavailable: !spotify.isAuthorized() }">
 			<i class="si mic white"></i>
 			Artists
 		</a>
@@ -76,7 +76,7 @@
 		<a ui-sref="settings">
 			<i class="si cog white"></i>
 			Settings
-			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotifyOnline || !mopidyOnline"></i>
+			<i class="fa fa-exclamation-triangle red-text services-alert" ng-show="!spotify.state().online || !mopidyOnline"></i>
 		</a>
 	</li>
 </ul>

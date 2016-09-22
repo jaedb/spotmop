@@ -10,11 +10,11 @@
 		</div>
 		
 		<div class="field radio">
-			<label>
+			<label ng-class="{ disabled: !spotify.isAuthorized() }">
 				<input type="radio" name="public" value="true" ng-model="playlistPublic" />
 				<span class="label">Public</span>
 			</label>
-			<label>
+			<label ng-class="{ disabled: !spotify.isAuthorized() }">
 				<input type="radio" name="public" value="false" ng-model="playlistPublic" />
 				<span class="label">Private</span>
 			</label>
@@ -26,8 +26,12 @@
 				<input type="radio" name="scheme" value="m3u" ng-model="scheme" />
 				<span class="label">Local (Mopidy)</span>
 			</label>
-			<label ng-class="{ disabled: !spotifyAuthorized }">
+			<label ng-if="spotify.isAuthorized()">
 				<input type="radio" name="scheme" value="spotify" ng-model="scheme" />
+				<span class="label">Remote (Spotify)</span>
+			</label>
+			<label ng-if="!spotify.isAuthorized()" class="disabled">
+				<input type="radio" name="scheme" value="spotify" ng-model="scheme" disabled="disabled" />
 				<span class="label">Remote (Spotify)</span>
 			</label>
 			<div class="clear"></div>

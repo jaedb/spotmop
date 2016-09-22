@@ -24,7 +24,7 @@
         
 		<div class="artist-grid small">
 			<a
-                ng-repeat="artist in album.artists"
+                ng-repeat="artist in album.artists | limitTo: 3"
                 class="artist draggable"
                 ui-sref="browse.artist.overview({ uri: artist.uri })"
                 draggable="false"
@@ -33,13 +33,19 @@
                     <thumbnail size="medium" images="artist.images"></thumbnail>
 					<div class="name-wrapper animate"><div class="name" ng-bind="artist.name"></div></div>
 			</a>
+			<a
+				class="artist artist-overflow"
+                ng-if="album.artists.length > 3">
+                    <div size="medium" class="thumbnail-image image animate ng-isolate-scope"></div>
+					<div class="name-wrapper animate"><div class="name">+ {{ album.artists.length }} more</div></div>
+			</a>
 		</div>
         
         <div class="clear-left"><!-- clear --></div>
 		
 		<div class="buttons">
 			<a class="button primary" ng-click="playAlbum()"><i class="fa fa-play"></i>&nbsp; Play</a>
-            <span ng-if="spotifyAuthorized && origin == 'spotify'">
+            <span ng-if="spotify.isAuthorized() && origin == 'spotify'">
                 <a class="button" ng-click="addToLibrary()" ng-if="!isInLibrary">Add to library</a>
                 <a class="button" ng-click="removeFromLibrary()" ng-if="isInLibrary">Remove from library</a>
             </span>

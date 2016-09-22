@@ -104,6 +104,11 @@ angular.module('spotmop.common.contextmenu', [
 				$element.fadeOut('fast');
 			}
 			
+			$scope.startRadio = function(){
+				$rootScope.$broadcast('spotmop:tracklist:startRadio');
+				$element.fadeOut('fast');
+			}
+			
 			$scope.copiedToClipboard = function(event){
 				NotifyService.notify('Copied selected track URIs to clipboard');
 				$element.fadeOut('fast');

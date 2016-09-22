@@ -40,18 +40,29 @@
 				</div>
 				
 				<div class="pull-right">
-					<span class="button consume has-tooltip" ng-click="toggleConsume()" ng-class="{active: state().isConsume}">
-						<i class="fa fa-fire"></i>
-                        <span class="tooltip">Consume mode</span>
+                
+                    <span ng-if="state().radio.enabled">
+                        <span class="button has-tooltip stop-radio red-text" ng-click="stopRadio()">
+                            <i class="fa fa-close"></i>
+                            <span class="label">Stop radio</span>
+                        </span>
+                    </span>
+                    
+                    <span ng-if="!state().radio.enabled">
+                        <span class="button consume has-tooltip" ng-click="toggleConsume()" ng-class="{active: state().isConsume}">
+                            <i class="fa fa-fire"></i>
+                            <span class="tooltip">Consume mode</span>
+                        </span>
+                        <span class="button random has-tooltip" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
+                            <i class="fa fa-random"></i>
+                            <span class="tooltip">Randomise</span>
+                        </span>
+                        <span class="button repeat has-tooltip" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
+                            <i class="fa fa-repeat"></i>
+                            <span class="tooltip">Repeat all</span>
+                        </span>
 					</span>
-					<span class="button random has-tooltip" ng-click="toggleRandom()" ng-class="{active: state().isRandom}">
-						<i class="fa fa-random"></i>
-                        <span class="tooltip">Randomise</span>
-					</span>
-					<span class="button repeat has-tooltip" ng-click="toggleRepeat()" ng-class="{active: state().isRepeat}">
-						<i class="fa fa-repeat"></i>
-                        <span class="tooltip">Repeat all</span>
-					</span>
+                    
 				</div>
 				
 				<div class="clear-both"></div>
@@ -69,8 +80,12 @@
 			
 			</div>
 		</div>
+        
+        <div class="radio-intro" ng-if="state().radio.enabled">
+            Radio based on <span ng-repeat="seed in state().radio.resolvedSeeds"><span ng-if="$last">and </span><span ng-bind="seed.name"></span> (<span ng-bind="seed.type"></span>)<span ng-if="!$last">, </span></span>
+        </div>
 		
-		<div class="queue-intro">		
+		<div class="queue-intro" ng-if="!state().radio.enabled">		
 			<div class="info-text">
 				<span ng-bind="player.currentTracklist.length"></span> track<span ng-show="player.currentTracklist.length != 1">s</span>
 				&nbsp;|&nbsp; <span ng-bind="totalTime()"></span> minute<span ng-show="totalTime() != 1">s</span>

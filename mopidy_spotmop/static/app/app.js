@@ -60,7 +60,6 @@ angular.module('spotmop', [
 	cfpLoadingBarProvider.parentSelector = 'body';
 })
 
-
 .run( function($rootScope, SettingsService, Analytics){
 	// this code is run before any controllers
 })
@@ -72,7 +71,7 @@ angular.module('spotmop', [
 /**
  * Global controller
  **/
-.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
+.controller('ApplicationController', function ApplicationController( $scope, $rootScope, $state, $filter, $localStorage, $timeout, $location, $cacheFactory, $templateCache, SpotifyService, MopidyService, PlayerService, SettingsService, NotifyService, PusherService, DialogService, PlaylistManagerService, Analytics ){
     
 	// track core started
 	Analytics.trackEvent('Spotmop', 'Started');
@@ -268,39 +267,17 @@ angular.module('spotmop', [
 	$scope.$on('mopidy:state:online', function(){
 		Analytics.trackEvent('Mopidy', 'Online');
 		$rootScope.mopidyOnline = true;
-		PlaylistManagerService.refreshPlaylists();
+		
+		// refresh our spotify token, then fetch all our playlists
+		SpotifyService.refreshToken()
+			.then( function(){
+				PlaylistManagerService.refreshPlaylists();
+			});
 	});
 	
 	$scope.$on('mopidy:state:offline', function(){
 		$rootScope.mopidyOnline = false;
 	});
-    
-	
-	/**
-	 * Spotify is online and authorized
-	 **/
-	$rootScope.spotifyAuthorized = false;
-	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
-		if( newMethod == 'client' ){
-			$rootScope.spotifyAuthorized = true;
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
-		}else{
-			$rootScope.spotifyAuthorized = false;
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:online', function(){
-		$rootScope.spotifyOnline = true;
-		if( $rootScope.spotifyAuthorized ){
-			$scope.spotifyUser = SettingsService.getSetting('spotifyuser');
-		}
-	});
-	
-	$scope.$on('spotmop:spotify:offline', function(){
-		$rootScope.spotifyOnline = false;
-	});
-	
     
 	
 	/**
@@ -331,31 +308,65 @@ angular.module('spotmop', [
      * Without this sucker, we have no operational services. This is the ignition sequence.
      * We use $timeout to delay start until $digest is completed
      **/
-	PusherService.start();
-	MopidyService.start();
-	SpotifyService.start();
+    $scope.settings = SettingsService;
+    $scope.settings.start();
+    
+    $scope.pusher = PusherService;
+    $scope.pusher.start();
+    
+    $scope.mopidy = MopidyService;
+    $scope.mopidy.start();
+    
+    $scope.spotify = SpotifyService;
+	
+	// wait for pusher to connect before we kick in spotify
+	$rootScope.$on('spotmop:pusher:online', function(event,data){
+        $scope.spotify.start();
+		$scope.pusher.query({ action: 'get_version' })
+			.then( function(response){
+				
+				// check if we've upgraded since we last loaded
+				if( SettingsService.getSetting('version.current') != response.data.version.current ){
+					NotifyService.notify('New version detected, clearing caches...');
+					$cacheFactory.get('$http').removeAll();
+					$templateCache.removeAll();
+				}
+				
+				// update our storage
+				SettingsService.setSetting('version', response.data.version);
+				
+				if( response.data.version.upgrade_available ){
+					NotifyService.notify( 'New version ('+response.data.version.latest+') available!' );
+				}
+			});
+	});
+    
+	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
+		if( newMethod == 'client' ){
+			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+		}
+	});
 	
 	// set default settings 
 	if( SettingsService.getSetting('keyboardShortcutsEnabled') === null ) SettingsService.setSetting('keyboardShortcutsEnabled',true);
 	
 	// when a client requests sync pairing
 	$rootScope.$on('spotmop:pusher:config_push', function(event, message){
-        console.log( message );
+        
 		if( confirm( 'Config received from '+ message.origin.username +'. Would you like to import this? This will overwrite your current Spotify and Mopidy configuration. ') == true ){
             
             if( message.data.spotify === null ) message.data.spotify = {};
             SettingsService.setSetting('spotify', message.data.spotify);
+            $scope.spotify.setState( message.data.spotify );
             
-            if( message.data.spotifyuser === null ) message.data.spotifyuser = {};
-            SettingsService.setSetting('spotifyuser', message.data.spotifyuser);
+            if( message.data.pusher === null ) message.data.pusher = {};
+            SettingsService.setSetting('pusher', message.data.pusher);
             
             if( message.data.mopidy === null ) message.data.mopidy = {};
             SettingsService.setSetting('mopidy', message.data.mopidy);
             
-            SpotifyService.start();
-            
-            PusherService.send({
-                type: 'soft_notification',
+            PusherService.broadcast({
+                action: 'soft_notification',
                 recipients: [ message.origin.connectionid ],
                 data: {
                     body: 'Config push to <em>'+ SettingsService.getSetting('pusher.username') +'</em> accepted'

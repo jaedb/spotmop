@@ -51,10 +51,23 @@
 			position: absolute;
 			top: 9px;
 			right: 3px;
+            
+            .fa {
+                opacity: 0.5;
+            }
 		}
 		
 		&.playing {
 			font-weight: bold;
+            
+            .source {
+                .fa {
+                    opacity: 1;
+                }
+                .fa-local {     color: #e8ae26; }
+                .fa-youtube {    color: #e62610; }
+                .fa-spotify {    color: #68b82b; }
+            }
 		}
 
 		

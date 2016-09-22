@@ -17,7 +17,6 @@ angular.module('spotmop.search', [])
  **/
 .controller('SearchController', function SearchController( $scope, $rootScope, $state, $stateParams, $timeout, $filter, SpotifyService, MopidyService, SettingsService ){
 	
-	$scope.settings = SettingsService.getSettings();
 	$scope.results = {
 		tracks: [],
 		albums: [],
@@ -38,17 +37,9 @@ angular.module('spotmop.search', [])
 	
 	$scope.query = '';
     if( $stateParams.query ) $scope.query = $filter('stripAccents')( $stateParams.query );
-		
-	var nextOffset = 50;
-        
-	$scope.loading = false;
-	var searchDelayer;
 
 	// focus on our search field on load (if not touch device, otherwise we get annoying on-screen keyboard)
 	if( !$scope.isTouchMode() ) $(document).find('.search-form input.query').focus();
-	
-	// if we've just loaded this page, and we have params, let's perform a search
-	if( $scope.query ) initiateSearch();
 	
 	// when our source changes, perform a new search
 	$scope.$on('spotmop:settingchanged:search.source', function(event,value){
@@ -64,7 +55,7 @@ angular.module('spotmop.search', [])
 	 * We can't jump straight in, as we need to make sure Mopidy is online first
 	 **/
 	function initiateSearch(){
-		if( $rootScope.mopidyOnline && $scope.query ){
+		if( $scope.query ){
 			performSearch( $scope.query );
 		}
 	}
@@ -77,6 +68,7 @@ angular.module('spotmop.search', [])
         $rootScope.$on('mopidy:state:online', function(){
             getUriSchemes();
             initiateSearch();
+            console.log('online');
         });
     }
 	
@@ -138,9 +130,13 @@ angular.module('spotmop.search', [])
 		$scope.results.playlists = [];
 		
 		// perform the mopidy search
+        console.log('Performing search for '+query);
+        
 		MopidyService.search(fields, query, sources)
 			.then( function(sources){
 				
+                console.log( sources );
+                
 				for( var i = 0; i < sources.length; i++ ){
 					var source = sources[i];
 					
