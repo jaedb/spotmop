@@ -44,7 +44,7 @@ angular.module('spotmop.library', [])
 	$scope.tracklist = {tracks: [], type: 'track'};
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    var userid = SettingsService.getSetting('spotify.user.id');
     
 	SpotifyService.getMyTracks( userid )
 		.then( function( response ){ // successful
@@ -177,7 +177,7 @@ angular.module('spotmop.library', [])
 	$scope.artists = [];
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    var userid = SettingsService.getSetting('spotify.user.id');
     
 	SpotifyService.getMyArtists( userid )
 		.then( function( response ){
@@ -265,7 +265,7 @@ angular.module('spotmop.library', [])
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser.id');
+    var userid = SettingsService.getSetting('spotif.user.id');
 	
 	// if we have full spotify authorization
 	if( $scope.spotify.isAuthorized() ){	

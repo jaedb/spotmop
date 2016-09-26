@@ -51,7 +51,7 @@
                             </div>
                             <div class="info animate">
                                 <div class="name" ng-bind="playlist.name"></div>
-                                <div class="secondary tracks" ng-if="playlist.tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != spotifyUser.id">&nbsp;<i class="fa fa-lock"></i></span></div>
+                                <div class="secondary tracks" ng-if="playlist.tracks"><span ng-bind="playlist.tracks.total"></span> tracks <span ng-if="playlist.owner.id != settings.state().spotify.user.id">&nbsp;<i class="fa fa-lock"></i></span></div>
                             </div>
 					</a>
 				</div>

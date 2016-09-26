@@ -97,7 +97,7 @@ angular.module('spotmop', [
 	$scope.playlists = function(){
         return PlaylistManagerService.myPlaylists();
     }
-	$scope.spotifyUser = {};
+	$scope.settings = SettingsService;
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
 		window.location.reload();

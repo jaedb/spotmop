@@ -331,7 +331,7 @@ angular.module('spotmop.services.mopidy', [
 			if( !name ) name = 'User';
 			
 			var icon = '';
-			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			var spotifyuser = SettingsService.getSetting('spotify.user');  
 			if( spotifyuser ) icon = spotifyuser.images[0].url;
             
             PusherService.broadcast({

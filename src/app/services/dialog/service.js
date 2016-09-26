@@ -104,7 +104,7 @@ angular.module('spotmop.services.dialog', [])
 					// spotify playlist
 					if( $scope.scheme == 'spotify' ){
 						SpotifyService.createPlaylist(
-								$scope.$parent.spotifyUser.id,
+								SettingsService.getSetting('spotify.user.id'),
 								{ name: $scope.playlistName, public: $scope.playlistPublic } 
 							)
 							.then( function(response){

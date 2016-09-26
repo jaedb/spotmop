@@ -14,7 +14,7 @@
 				<h1>
 					<span ng-if="user.display_name" ng-bind="user.display_name"></span>
 					<span ng-if="!user.display_name" ng-bind="user.id"></span>
-					<span class="flag blue" ng-show="user.id == spotifyUser.id"><i class="fa fa-star"></i> You</span>
+					<span class="flag blue" ng-show="user.id == settings.state().spotify.user.id"><i class="fa fa-star"></i> You</span>
 				</h1>
 				<div class="info-text">
 					<span ng-bind="user.id"></span>
