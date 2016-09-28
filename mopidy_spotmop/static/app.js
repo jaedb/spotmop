@@ -30113,7 +30113,7 @@ angular.module('spotmop', [
     
 	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
 		if( newMethod == 'client' ){
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+			Analytics.trackEvent('Spotify', 'Authorized', SettingsService.getSetting('spotify.user.id'));
 		}
 	});
 	
@@ -39080,6 +39080,8 @@ angular.module('spotmop.services.settings', [])
 					break;
 				case 3:
 					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
 						return null;
 					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
 						return null;

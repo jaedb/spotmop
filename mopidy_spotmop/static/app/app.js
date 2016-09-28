@@ -343,7 +343,7 @@ angular.module('spotmop', [
     
 	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
 		if( newMethod == 'client' ){
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+			Analytics.trackEvent('Spotify', 'Authorized', SettingsService.getSetting('spotify.user.id'));
 		}
 	});
 	
