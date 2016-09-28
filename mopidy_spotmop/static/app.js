@@ -37138,7 +37138,7 @@ angular.module('spotmop.services.pusher', [
 								break;
 								
 							case 'upgraded':
-								NotifyService.notify( 'Mopidy has been upgraded to '+message.data.version );
+								NotifyService.notify( 'Mopidy has been upgraded to '+message.data.version.current );
 								break;
 							
 							case 'enforced_refresh':
