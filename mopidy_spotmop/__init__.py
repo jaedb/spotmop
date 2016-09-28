@@ -7,7 +7,7 @@ from mopidy import config, ext
 from frontend import SpotmopFrontend
 
 logger = logging.getLogger(__name__)
-__version__ = '2.10.0'
+__version__ = '2.10.1'
 
 ##
 # Core extension class

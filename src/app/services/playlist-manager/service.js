@@ -29,7 +29,7 @@ angular.module('spotmop.services.playlistManager', [])
 					digestSpotifyPlaylists( response );
 				});			
 		}else{		
-			var userid = SettingsService.getSetting('spotifyuser.id');
+			var userid = SettingsService.getSetting('spotify.user.id');
 			SpotifyService.getPlaylists( userid, 50 )
 				.then( function(response){
 					digestSpotifyPlaylists( response );
@@ -83,7 +83,7 @@ angular.module('spotmop.services.playlistManager', [])
                 var playlist = playlists[i];
                 var origin = $filter('assetOrigin')(playlist.uri);
                 if( origin == 'spotify' ){
-                    var user = SettingsService.getSetting('spotifyuser.id');
+                    var user = SettingsService.getSetting('spotify.user.id');
                     if( SpotifyService.isAuthorized() && playlist.uri.startsWith('spotify:user:'+user) ){
                         myPlaylists.push( playlist );
                     }
@@ -207,7 +207,7 @@ angular.module('spotmop.services.playlistManager', [])
 				case 'spotify':
 		
 					var playlistOwnerID = SpotifyService.getFromUri('userid', uri);
-					var currentUserID = SettingsService.getSetting('spotifyuser.id');
+					var currentUserID = SettingsService.getSetting('spotify.user.id');
 					
 					if( playlistOwnerID != currentUserID ){
 						NotifyService.error('Cannot modify to a playlist you don\'t own');

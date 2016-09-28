@@ -29867,7 +29867,7 @@ angular.module('spotmop', [
 	$scope.playlists = function(){
         return PlaylistManagerService.myPlaylists();
     }
-	$scope.spotifyUser = {};
+	$scope.settings = SettingsService;
 	$scope.menuCollapsable = false;
 	$scope.reloadApp = function(){
 		window.location.reload();
@@ -30113,7 +30113,7 @@ angular.module('spotmop', [
     
 	$scope.$on('spotmop:spotify:authenticationChanged', function( event, newMethod ){
 		if( newMethod == 'client' ){
-			Analytics.trackEvent('Spotify', 'Authorized', $scope.spotifyUser.id);
+			Analytics.trackEvent('Spotify', 'Authorized', SettingsService.getSetting('spotify.user.id'));
 		}
 	});
 	
@@ -30611,7 +30611,7 @@ angular.module('spotmop.browse.artist', [])
 		// figure out if we're following this playlist
 		if( $scope.spotify.isAuthorized() ){
 			
-			var spotifyuserid = SettingsService.getSetting('spotifyuser.id');
+			var spotifyuserid = SettingsService.getSetting('spotify.user.id');
 			if( !spotifyuserid ) return false;
 			
 			SpotifyService.isFollowingArtist( $stateParams.uri, spotifyuserid )
@@ -31200,7 +31200,7 @@ angular.module('spotmop.browse.playlist', [])
 		if( $scope.origin == 'm3u' ) return true;
 		if( $scope.origin == 'spotify' ){
 			if( typeof( $scope.playlist ) !== 'undefined' && typeof( $scope.playlist.owner ) !== 'undefined' ){
-				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotifyuser.id') );
+				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotify.user.id') );
 			}
 		}
 		return false;
@@ -31219,7 +31219,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Following playlist' );
-				$scope.updatePlaylists();
             });
     }
     $scope.unfollowPlaylist = function(){
@@ -31227,7 +31226,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = false;
 				NotifyService.notify( 'Playlist removed' );
-				$scope.updatePlaylists();
             });
     }
     $scope.recoverPlaylist = function(){
@@ -31235,7 +31233,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Playlist recovered' );
-				$scope.updatePlaylists();
             });
     }
     $scope.editPlaylist = function(){
@@ -31293,7 +31290,7 @@ angular.module('spotmop.browse.playlist', [])
                 
                     // figure out if we're following this playlist
                     if( $scope.spotify.isAuthorized() ){
-                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotify.user.id') )
                             .then( function( isFollowing ){
                                 $scope.following = $.parseJSON(isFollowing);
                             });
@@ -31385,7 +31382,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser.id');
+		var currentUserID = SettingsService.getSetting('spotify.user.id');
         
 		if( $scope.origin == 'spotify' ){
 			if( playlistOwnerID != currentUserID ){				
@@ -33882,7 +33879,7 @@ angular.module('spotmop.library', [])
 	$scope.tracklist = {tracks: [], type: 'track'};
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    var userid = SettingsService.getSetting('spotify.user.id');
     
 	SpotifyService.getMyTracks( userid )
 		.then( function( response ){ // successful
@@ -34015,7 +34012,7 @@ angular.module('spotmop.library', [])
 	$scope.artists = [];
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuserid',$scope.$parent.spotifyUser.id);
+    var userid = SettingsService.getSetting('spotify.user.id');
     
 	SpotifyService.getMyArtists( userid )
 		.then( function( response ){
@@ -34103,7 +34100,7 @@ angular.module('spotmop.library', [])
 	$scope.albums = { items: [] };
 	
     // if we've got a userid already in storage, use that
-    var userid = SettingsService.getSetting('spotifyuser.id');
+    var userid = SettingsService.getSetting('spotif.user.id');
 	
 	// if we have full spotify authorization
 	if( $scope.spotify.isAuthorized() ){	
@@ -35833,7 +35830,7 @@ angular.module('spotmop.services.dialog', [])
 					// spotify playlist
 					if( $scope.scheme == 'spotify' ){
 						SpotifyService.createPlaylist(
-								$scope.$parent.spotifyUser.id,
+								SettingsService.getSetting('spotify.user.id'),
 								{ name: $scope.playlistName, public: $scope.playlistPublic } 
 							)
 							.then( function(response){
@@ -36476,7 +36473,7 @@ angular.module('spotmop.services.mopidy', [
 			if( !name ) name = 'User';
 			
 			var icon = '';
-			var spotifyuser = SettingsService.getSetting('spotifyuser');  
+			var spotifyuser = SettingsService.getSetting('spotify.user');  
 			if( spotifyuser ) icon = spotifyuser.images[0].url;
             
             PusherService.broadcast({
@@ -36777,7 +36774,7 @@ angular.module('spotmop.services.playlistManager', [])
 					digestSpotifyPlaylists( response );
 				});			
 		}else{		
-			var userid = SettingsService.getSetting('spotifyuser.id');
+			var userid = SettingsService.getSetting('spotify.user.id');
 			SpotifyService.getPlaylists( userid, 50 )
 				.then( function(response){
 					digestSpotifyPlaylists( response );
@@ -36831,7 +36828,7 @@ angular.module('spotmop.services.playlistManager', [])
                 var playlist = playlists[i];
                 var origin = $filter('assetOrigin')(playlist.uri);
                 if( origin == 'spotify' ){
-                    var user = SettingsService.getSetting('spotifyuser.id');
+                    var user = SettingsService.getSetting('spotify.user.id');
                     if( SpotifyService.isAuthorized() && playlist.uri.startsWith('spotify:user:'+user) ){
                         myPlaylists.push( playlist );
                     }
@@ -36955,7 +36952,7 @@ angular.module('spotmop.services.playlistManager', [])
 				case 'spotify':
 		
 					var playlistOwnerID = SpotifyService.getFromUri('userid', uri);
-					var currentUserID = SettingsService.getSetting('spotifyuser.id');
+					var currentUserID = SettingsService.getSetting('spotify.user.id');
 					
 					if( playlistOwnerID != currentUserID ){
 						NotifyService.error('Cannot modify to a playlist you don\'t own');
@@ -39083,6 +39080,8 @@ angular.module('spotmop.services.settings', [])
 					break;
 				case 3:
 					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
+						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
 						return null;
 					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
 						return null;

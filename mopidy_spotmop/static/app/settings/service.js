@@ -95,6 +95,8 @@ angular.module('spotmop.services.settings', [])
 				case 3:
 					if( typeof($localStorage[settingElements[0]]) === 'undefined' )
 						return null;
+					if( typeof($localStorage[settingElements[0]][settingElements[1]]) === 'undefined' )
+						return null;
 					if( typeof($localStorage[settingElements[0]][settingElements[1]][settingElements[2]]) === 'undefined' )
 						return null;
 					return $localStorage[settingElements[0]][settingElements[1]][settingElements[2]];

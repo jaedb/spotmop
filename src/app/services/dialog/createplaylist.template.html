@@ -26,11 +26,11 @@
 				<input type="radio" name="scheme" value="m3u" ng-model="scheme" />
 				<span class="label">Local (Mopidy)</span>
 			</label>
-			<label ng-if="spotify.isAuthorized()">
+			<label ng-show="spotify.isAuthorized()">
 				<input type="radio" name="scheme" value="spotify" ng-model="scheme" />
 				<span class="label">Remote (Spotify)</span>
 			</label>
-			<label ng-if="!spotify.isAuthorized()" class="disabled">
+			<label ng-show="!spotify.isAuthorized()" class="disabled">
 				<input type="radio" name="scheme" value="spotify" ng-model="scheme" disabled="disabled" />
 				<span class="label">Remote (Spotify)</span>
 			</label>

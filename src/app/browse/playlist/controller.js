@@ -31,7 +31,7 @@ angular.module('spotmop.browse.playlist', [])
 		if( $scope.origin == 'm3u' ) return true;
 		if( $scope.origin == 'spotify' ){
 			if( typeof( $scope.playlist ) !== 'undefined' && typeof( $scope.playlist.owner ) !== 'undefined' ){
-				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotifyuser.id') );
+				return ( $scope.playlist.owner.id == SettingsService.getSetting('spotify.user.id') );
 			}
 		}
 		return false;
@@ -50,7 +50,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Following playlist' );
-				$scope.updatePlaylists();
             });
     }
     $scope.unfollowPlaylist = function(){
@@ -58,7 +57,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = false;
 				NotifyService.notify( 'Playlist removed' );
-				$scope.updatePlaylists();
             });
     }
     $scope.recoverPlaylist = function(){
@@ -66,7 +64,6 @@ angular.module('spotmop.browse.playlist', [])
             .then( function(response){
                 $scope.following = true;
 				NotifyService.notify( 'Playlist recovered' );
-				$scope.updatePlaylists();
             });
     }
     $scope.editPlaylist = function(){
@@ -124,7 +121,7 @@ angular.module('spotmop.browse.playlist', [])
                 
                     // figure out if we're following this playlist
                     if( $scope.spotify.isAuthorized() ){
-                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotifyuser',{id: null}).id )
+                        SpotifyService.isFollowingPlaylist( $stateParams.uri, SettingsService.getSetting('spotify.user.id') )
                             .then( function( isFollowing ){
                                 $scope.following = $.parseJSON(isFollowing);
                             });
@@ -216,7 +213,7 @@ angular.module('spotmop.browse.playlist', [])
 	
 		var playlisturi = $state.params.uri;
 		var playlistOwnerID = SpotifyService.getFromUri('userid', playlisturi);
-		var currentUserID = SettingsService.getSetting('spotifyuser.id');
+		var currentUserID = SettingsService.getSetting('spotify.user.id');
         
 		if( $scope.origin == 'spotify' ){
 			if( playlistOwnerID != currentUserID ){				
