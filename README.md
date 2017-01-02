@@ -1,5 +1,8 @@
-Spotmop
-=======
+The Iris repository (formerly Spotmop) has moved [here](https://github.com/jaedb/iris).
+====
+
+Spotmop has been renamed to [Iris](https://github.com/jaedb/iris). The Spotmop repository is no longer in development. Issues raised in the Spotmop repository will not be actioned; please only raise issues in [Iris](https://github.com/jaedb/iris/issues).
+--------
 
 Mopidy web-based frontend that utilizes Spotify to create an interactive, user-friendly and collaborative music interface. Built and maintained by James Barnsley.
 
@@ -58,6 +61,6 @@ To-do
 Support
 -------
 
-* [Changelog](https://github.com/jaedb/spotmop/releases)
-* [Issues and requests](https://github.com/jaedb/spotmop/issues)
+* [Changelog](https://github.com/jaedb/iris/releases)
+* [Issues and requests](https://github.com/jaedb/iris/issues)
 
